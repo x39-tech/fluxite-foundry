@@ -1,11 +1,14 @@
-# default:
-#   image: node:latest
-#
+default:
+  image: node:latest
+
 #   before_script:
 #     - npm install
 #     - git config --global push.default simple
 #
-#
+
+build-and-deploy:
+  script:
+    - echo "Hello, world!"
 # build and deploy:
 #   only:
 #     - develop
