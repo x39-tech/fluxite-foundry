@@ -1,6 +1,5 @@
 import FixtureYokeBottom from "./FixtureYokeBottom";
 import FixtureYokeSide from "./FixtureYokeSide";
-import * as THREE from "three";
 import React from "react";
 import { ReactThreeFiber } from "@react-three/fiber";
 
