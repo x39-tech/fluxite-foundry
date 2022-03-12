@@ -1,15 +1,27 @@
-.App {
-  background-color: #282c34;
+.app {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
 
-.DisplayArea {
+.editor-selection {
+  display: flex;
+  flex-direction: row;
+}
+
+.editor-selector-button {
+  padding: 1em 1em 1em 1em;
+}
+
+/*
+.editor-title {
+  margin: 1em 1em 1em 1em;
+}
+*/
+
+.display-area {
   flex-grow: 1;
   display: flex;
   flex-direction: row;
