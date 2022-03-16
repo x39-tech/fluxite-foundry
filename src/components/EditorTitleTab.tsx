@@ -5,12 +5,16 @@ import "./EditorTitleTab.css";
 export interface EditorTitleTabProps {
   name: string;
   id: string;
+  active: boolean;
+  onSelect: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
 export const EditorTitleTab: React.FC<EditorTitleTabProps> = ({
   name,
   id,
+  active,
+  onSelect,
   onDelete,
 }) => {
   const [hovered, setHovered] = useState(false);
@@ -19,7 +23,9 @@ export const EditorTitleTab: React.FC<EditorTitleTabProps> = ({
     <>
       <Button
         minimal
+        active={active}
         className="editor-selector-button"
+        onClick={() => {onSelect(id)}}
         onMouseEnter={() => {
           setHovered(true);
         }}

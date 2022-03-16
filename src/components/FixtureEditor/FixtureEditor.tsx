@@ -9,10 +9,10 @@ export interface FixtureEditorProps {
   id: string;
 }
 
-export const FixtureEditor: React.FC<FixtureEditorProps> = () => {
+export const FixtureEditor: React.FC<FixtureEditorProps> = (props) => {
   return (
     <div className="FixtureEditor">
-      <FixtureEditorSidebar />
+      <FixtureEditorSidebar name={props.name} />
       <Divider />
       <FixtureDisplayArea />
     </div>
