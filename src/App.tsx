@@ -57,7 +57,7 @@ class App extends React.Component<{}, AppState> {
     const newId: string =
       this.state.openEditors.length === 1
         ? ""
-        : index == this.state.openEditors.length - 1
+        : index === this.state.openEditors.length - 1
         ? this.state.openEditors[index - 1].id
         : this.state.openEditors[index + 1].id;
     this.setState({

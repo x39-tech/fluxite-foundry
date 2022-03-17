@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "UDR Builder",
+  "name": "Device builder for the ESTA UDR standard",
   "icons": [
     {
       "src": "favicon.ico",
