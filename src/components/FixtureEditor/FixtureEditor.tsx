@@ -1,7 +1,8 @@
-import React from "react";
+import React, { ReactDOM } from "react";
 import { Divider } from "@blueprintjs/core";
+import Split from "react-split";
 import { FixtureEditorSidebar } from "./FixtureEditorSidebar";
-import { FixtureDisplayArea } from "./FixtureDisplayArea";
+import { FixturePropertiesEditor } from "./FixturePropertiesEditor";
 import "./FixtureEditor.css";
 
 export interface FixtureEditorProps {
@@ -9,12 +10,23 @@ export interface FixtureEditorProps {
   id: string;
 }
 
+// TODO reevaluate split gutter styling / use of blueprint divider
+
 export const FixtureEditor: React.FC<FixtureEditorProps> = (props) => {
   return (
-    <div className="FixtureEditor">
+    <Split
+      className="fixture-editor"
+      gutter={() => {
+        const gutter = document.createElement("div");
+        gutter.className = "gutter bp3-divider";
+        return gutter;
+      }}
+      gutterStyle={() => {
+        return {};
+      }}
+    >
       <FixtureEditorSidebar name={props.name} />
-      <Divider />
-      <FixtureDisplayArea />
-    </div>
+      <FixturePropertiesEditor />
+    </Split>
   );
 };

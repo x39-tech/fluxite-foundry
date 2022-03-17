@@ -6,7 +6,7 @@ import {
   useFrame,
   useThree,
 } from "@react-three/fiber";
-import "./FixtureDisplayArea.css";
+import "./Fixture3DView.css";
 import FixtureBase from "./3DComponents/FixtureBase";
 import FixtureYoke from "./3DComponents/FixtureYoke";
 import FixtureWashHead from "./3DComponents/FixtureWashHead";
@@ -39,9 +39,9 @@ function CameraControls() {
   return <orbitControls ref={controls} args={[camera, domElement]} />;
 }
 
-export function FixtureDisplayArea() {
+export function Fixture3DView() {
   return (
-    <div className="FixtureDisplayArea">
+    <div className="fixture-3d-view">
       <Canvas camera={{ position: [5, 5, 5] }}>
         <CameraControls />
         <ambientLight />

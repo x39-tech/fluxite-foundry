@@ -37,7 +37,8 @@ export const EditorTitleTab: React.FC<EditorTitleTabProps> = ({
         <Icon
           icon="delete"
           style={{ visibility: hovered ? "visible" : "hidden" }}
-          onClick={() => {
+          onClick={e => {
+            e.stopPropagation();
             onDelete(id);
           }}
         />
