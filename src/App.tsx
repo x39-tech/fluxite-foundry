@@ -87,7 +87,7 @@ class App extends React.Component<{}, AppState> {
 
   render() {
     return (
-      <div className="app">
+      <div className={this.state.settings.darkMode ? "app bp3-dark" : "app"}>
         <Navbar>
           <Navbar.Group align={Alignment.LEFT}>
             <Navbar.Heading>UDR Builder</Navbar.Heading>

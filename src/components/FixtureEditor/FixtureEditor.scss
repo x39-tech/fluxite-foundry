@@ -1,0 +1,14 @@
+@import "@blueprintjs/core/src/common/variables";
+
+.fixture-editor {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: stretch;
+  background-color: $pt-app-background-color;
+}
+
+.bp3-dark .fixture-editor {
+  background-color: $pt-dark-app-background-color;
+}

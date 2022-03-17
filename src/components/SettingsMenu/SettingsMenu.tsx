@@ -1,14 +1,16 @@
 import React from "react";
-import { Button, Menu, MenuItem, Popover } from "@blueprintjs/core";
+import { Button, Icon, Menu, MenuItem, Popover } from "@blueprintjs/core";
 // Note: Popover is deprecated, but I can't figure out how to make Popover2 look right and have the
 // proper animations etc.
 // import { Popover2 } from "@blueprintjs/popover2";
 
 export interface AppSettings {
+  darkMode: boolean;
   threeDViewEnabled: boolean;
 }
 
 export const defaultAppSettings: AppSettings = {
+  darkMode: false,
   threeDViewEnabled: false,
 };
 
@@ -21,13 +23,30 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
   settings,
   onSettingsChanged,
 }) => {
+  const checkedIf = (condition: boolean) => {
+    return condition ? <Icon icon="tick" /> : <></>;
+  };
+
   const settingsMenu = (
     <Menu>
       <MenuItem
-        text="Show 3D View"
-        icon={settings.threeDViewEnabled ? "tick" : "blank"}
+        text="Dark Mode"
+        icon="moon"
+        labelElement={checkedIf(settings.darkMode)}
         onClick={() => {
           onSettingsChanged({
+            ...settings,
+            darkMode: !settings.darkMode,
+          });
+        }}
+      />
+      <MenuItem
+        text="Show 3D View"
+        icon="cube"
+        labelElement={checkedIf(settings.threeDViewEnabled)}
+        onClick={() => {
+          onSettingsChanged({
+            ...settings,
             threeDViewEnabled: !settings.threeDViewEnabled,
           });
         }}
