@@ -1,14 +1,15 @@
 import React from "react";
 import { Alignment, Button, Divider, Navbar } from "@blueprintjs/core";
 import { v4 as uuidv4 } from "uuid";
-import { EditorTitleTab } from "./components/EditorTitleTab/EditorTitleTab";
-import { FixtureEditor } from "./components/FixtureEditor/FixtureEditor";
+import { EditorTitleTab } from "components/EditorTitleTab/EditorTitleTab";
+import { FixtureEditor } from "components/FixtureEditor/FixtureEditor";
+import { SettingsMenu } from "components/SettingsMenu/SettingsMenu";
+import { Fixture3DView } from "components/Fixture3DView/Fixture3DView";
 import {
   AppSettings,
-  defaultAppSettings,
-  SettingsMenu,
-} from "./components/SettingsMenu/SettingsMenu";
-import { Fixture3DView } from "./components/Fixture3DView/Fixture3DView";
+  loadAppSettings,
+  saveAppSettings,
+} from "utils/app_settings";
 import "./App.css";
 
 interface EditorState {
@@ -31,7 +32,7 @@ class App extends React.Component<{}, AppState> {
         { id: "1f1c3350-1a14-4a4c-b90f-d8b076b4ae03", name: "My Fixture 2" },
       ],
       selectedEditor: "1f1c3350-1a14-4a4c-b90f-d8b076b4ae02",
-      settings: defaultAppSettings,
+      settings: loadAppSettings(),
     };
 
     this.handleNewEditor = this.handleNewEditor.bind(this);
@@ -60,6 +61,7 @@ class App extends React.Component<{}, AppState> {
         : index === this.state.openEditors.length - 1
         ? this.state.openEditors[index - 1].id
         : this.state.openEditors[index + 1].id;
+
     this.setState({
       openEditors: this.state.openEditors.filter((editor: EditorState) => {
         return editor.id !== idToDelete;
@@ -80,6 +82,7 @@ class App extends React.Component<{}, AppState> {
   }
 
   handleSettingsChanged(newSettings: AppSettings) {
+    saveAppSettings(newSettings);
     this.setState({
       settings: newSettings,
     });

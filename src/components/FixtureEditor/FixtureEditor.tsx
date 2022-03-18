@@ -1,5 +1,5 @@
 import React from "react";
-import { BPSplit } from "../BPSplit/BPSplit";
+import { BPSplit } from "components/BPSplit/BPSplit";
 import { FixtureEditorSidebar } from "./FixtureEditorSidebar";
 import { FixturePropertiesEditor } from "./FixturePropertiesEditor";
 import "./FixtureEditor.scss";

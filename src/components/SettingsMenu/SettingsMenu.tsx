@@ -1,18 +1,9 @@
 import React from "react";
 import { Button, Icon, Menu, MenuItem, Popover } from "@blueprintjs/core";
+import { AppSettings } from "utils/app_settings";
 // Note: Popover is deprecated, but I can't figure out how to make Popover2 look right and have the
 // proper animations etc.
 // import { Popover2 } from "@blueprintjs/popover2";
-
-export interface AppSettings {
-  darkMode: boolean;
-  threeDViewEnabled: boolean;
-}
-
-export const defaultAppSettings: AppSettings = {
-  darkMode: false,
-  threeDViewEnabled: false,
-};
 
 export interface SettingsMenuProps {
   settings: AppSettings;
