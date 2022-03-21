@@ -2,26 +2,29 @@
 
 // TODO: make more robust, add tests
 
-export interface AppSettings {
-  darkMode: boolean;
-  threeDViewEnabled: boolean;
+export class AppSettings {
+  darkMode = false;
+  threeDViewEnabled = false;
+  [key: string]: any;
 }
-
-export const defaultAppSettings: AppSettings = {
-  darkMode: false,
-  threeDViewEnabled: false,
-};
 
 export function loadAppSettings(): AppSettings {
   const settings = localStorage.getItem("settings");
   if (!settings) {
-    return defaultAppSettings;
+    return new AppSettings();
   }
 
   try {
-    return JSON.parse(settings);
+    const parsedSettings = JSON.parse(settings);
+    const toReturn = new AppSettings();
+    for (const [key, value] of Object.entries(parsedSettings)) {
+      if (key in toReturn && typeof toReturn[key] === typeof value) {
+        toReturn[key] = value;
+      }
+    }
+    return toReturn;
   } catch (err) {
-    return defaultAppSettings;
+    return new AppSettings();
   }
 }
 
