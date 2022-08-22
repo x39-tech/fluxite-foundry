@@ -5,6 +5,7 @@
   "dependencies": {
     "@blueprintjs/core": "^4.6.0",
     "@blueprintjs/popover2": "^1.4.2",
+    "@blueprintjs/select": "^4.5.3",
     "@react-three/fiber": "^8.2.0",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.3.0",

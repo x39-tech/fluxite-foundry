@@ -1,0 +1,15 @@
+.structured-items-editor {
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+}
+
+.structured-items-editor-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.structured-items-editor-title {
+  margin: 10px 0px 10px 5px;
+  opacity: 0.8;
+}
