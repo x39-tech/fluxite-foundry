@@ -1,18 +1,12 @@
 import React from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { Button, Icon, Menu, MenuItem, Popover } from "@blueprintjs/core";
-import { RootState } from "app/store";
+import { Button, Icon, Menu } from "@blueprintjs/core";
 import { darkModeToggled, threeDViewToggled } from "./appSettingsSlice";
-// TODO: Popover is deprecated, but I can't figure out how to make Popover2 look right and have the
-// proper animations etc.
-// import { Popover2 } from "@blueprintjs/popover2";
+import { MenuItem2, Popover2 } from "@blueprintjs/popover2";
+import { useAppDispatch, useAppSelector } from "app/hooks";
 
 export const SettingsMenu: React.FC<{}> = () => {
-  const settings = useSelector((state: RootState) => {
-    return state.appSettings;
-  });
-
-  const dispatch = useDispatch();
+  const settings = useAppSelector((state) => state.appSettings);
+  const dispatch = useAppDispatch();
 
   const checkedIf = (condition: boolean) => {
     return condition ? <Icon icon="tick" /> : <></>;
@@ -20,7 +14,7 @@ export const SettingsMenu: React.FC<{}> = () => {
 
   const settingsMenu = (
     <Menu>
-      <MenuItem
+      <MenuItem2
         text="Dark Mode"
         icon="moon"
         labelElement={checkedIf(settings.darkMode)}
@@ -28,7 +22,7 @@ export const SettingsMenu: React.FC<{}> = () => {
           dispatch(darkModeToggled());
         }}
       />
-      <MenuItem
+      <MenuItem2
         text="Show 3D View"
         icon="cube"
         labelElement={checkedIf(settings.threeDViewEnabled)}
@@ -40,8 +34,8 @@ export const SettingsMenu: React.FC<{}> = () => {
   );
 
   return (
-    <Popover content={settingsMenu} placement="bottom-end">
+    <Popover2 content={settingsMenu} placement="bottom-end">
       <Button icon="cog" />
-    </Popover>
+    </Popover2>
   );
 };

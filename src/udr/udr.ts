@@ -14,6 +14,16 @@ export function getDefaultDeviceClass(): DeviceClass {
     publishDate: `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}`,
     author: "Firstname Lastname",
     history: {},
+    scalarItems: {
+      "main-dimmer": {
+        class: "org.esta.intensity-color.1/intensity/dimmer",
+        friendlyName: "Main Dimmer",
+        access: Access.READWRITE,
+        lifetime: Lifetime.RUNTIME,
+        minimum: 0,
+        maximum: 1,
+      },
+    },
     structuredItems: {
       deviceIdentification: {
         class: "device-identification",
@@ -21,7 +31,7 @@ export function getDefaultDeviceClass(): DeviceClass {
         lifetime: Lifetime.STATIC,
         default: {
           manufacturer: {
-            name: "Manufacturer Inc.",
+            name: "ACME Inc.",
           },
           model: {
             name: "Super Light",

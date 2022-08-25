@@ -1,9 +1,8 @@
 import { Divider } from "@blueprintjs/core";
-import React from "react";
-import { StructuredItem, StructuredItemValue } from "udr/objects/item";
-import { DeviceIdentification } from "udr/objects/structuredItems/device_identification";
+import { DeviceIdentification } from "udr/libraries/core/structuredItems/deviceIdentification";
 import { DeviceIdentificationEditor } from "./structuredItems/DeviceIdentificationEditor";
 import "./StructuredItemsEditor.css";
+import { useAppSelector } from "app/hooks";
 
 const editorFactory = {
   deviceIdentification: (udr: DeviceIdentification, key: number) => {
@@ -11,15 +10,17 @@ const editorFactory = {
   },
 };
 
-export interface StructuredItemsEditorProps {
-  udr?: Record<string, StructuredItem>;
-  structuredItemEditors: Array<string>;
-}
+export const StructuredItemsEditor = () => {
+  const { udr, structuredItemEditors } = useAppSelector((state) => {
+    const activeEditor =
+      state.fixtureEditor.openEditors[state.fixtureEditor.selectedEditor];
 
-export const StructuredItemsEditor: React.FC<StructuredItemsEditorProps> = ({
-  udr,
-  structuredItemEditors,
-}) => {
+    return {
+      udr: activeEditor.udr.structuredItems,
+      structuredItemEditors: activeEditor.structuredItemEditors,
+    };
+  });
+
   const editors: Array<JSX.Element> = [];
   for (const [index, structuredItemName] of structuredItemEditors.entries()) {
     if (
@@ -35,6 +36,7 @@ export const StructuredItemsEditor: React.FC<StructuredItemsEditorProps> = ({
       );
     }
   }
+
   return (
     <div className="structured-items-editor">
       <h2 className="structured-items-editor-title">Structured Items</h2>

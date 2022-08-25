@@ -1,23 +1,23 @@
 import { Access, Lifetime } from "../util/enums";
-import { DeviceIdentification } from "./structuredItems/device_identification";
+import { DeviceIdentification } from "../libraries/core/structuredItems/deviceIdentification";
 
 export type StructuredItemValue = DeviceIdentification;
 
 export interface ScalarItem {
   class: string;
-  friendlyName: string;
-  dynamicMinimum: number;
-  dynamicMaximum: number;
-  count: number;
+  friendlyName?: string;
+  dynamicMinimum?: number;
+  dynamicMaximum?: number;
+  count?: number;
   access: Access;
   lifetime: Lifetime;
-  atomicIdentifier: string;
-  minimum: number;
-  maximum: number;
-  minimumScalarItem: string;
-  maximumScalarItem: string;
-  defualt: number;
-  wrapping: boolean;
+  atomicIdentifier?: string;
+  minimum?: number;
+  maximum?: number;
+  minimumScalarItem?: string;
+  maximumScalarItem?: string;
+  default?: number;
+  wrapping?: boolean;
 }
 
 export interface StructuredItem {

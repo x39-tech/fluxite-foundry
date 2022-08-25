@@ -1,32 +1,29 @@
-import React from "react";
-import { Divider, HTMLTable } from "@blueprintjs/core";
-import "./ScalarItemsEditor.css";
+import { Button, Divider } from "@blueprintjs/core";
+import { useAppSelector } from "app/hooks";
+import { ScalarItemEditor } from "./ScalarItemEditor";
+import "./ScalarItemsEditor.scss";
 
-export interface ScalarItemsEditorProps {
-  name: string;
-}
+export const ScalarItemsEditor = () => {
+  const udr = useAppSelector(
+    (state) =>
+      state.fixtureEditor.openEditors[state.fixtureEditor.selectedEditor].udr
+        .scalarItems
+  );
 
-export const ScalarItemsEditor: React.FC<ScalarItemsEditorProps> = ({
-  name,
-}) => {
   return (
     <div className="scalar-items-editor">
       <h2 className="scalar-items-editor-title">Scalar Items</h2>
       <Divider />
-      <HTMLTable>
-        <thead>
-          <tr>
-            <td>Foo</td>
-            <td>Bar</td>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Name</td>
-            <td>{name}</td>
-          </tr>
-        </tbody>
-      </HTMLTable>
+      {udr ? (
+        Object.entries(udr!).map(([id, item]) => {
+          return <ScalarItemEditor key={id} id={id} udr={item} />;
+        })
+      ) : (
+        <></>
+      )}
+      <div className="add-scalar-item-section">
+        <Button icon="plus" minimal={true} />
+      </div>
     </div>
   );
 };

@@ -15,9 +15,9 @@ export interface ScalarItemClass {
   category: string;
   description: string;
   dataType: DataType;
-  unit: Unit;
-  default: number | string | boolean;
-  inherits: string;
+  unit?: Unit;
+  default?: number | string | boolean;
+  inherits?: string;
 }
 
 export interface StreamingStructuredItemClass {

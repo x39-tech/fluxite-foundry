@@ -49,6 +49,9 @@ export enum Unit {
   BYTE = "byte",
   PERCENT = "percent",
   UNITLESS = "unitless",
+
+  // TODO: document needs addition of these
+  RPM = "rpm",
 }
 
 export enum FileType {

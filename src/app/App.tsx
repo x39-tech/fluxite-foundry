@@ -1,5 +1,4 @@
 import React from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { Alignment, Button, Divider, Navbar } from "@blueprintjs/core";
 import { EditorTitleTab } from "utils/components/EditorTitleTab/EditorTitleTab";
 import { FixtureEditor } from "features/fixtureEditor/FixtureEditor";
@@ -11,15 +10,15 @@ import {
   setSelectedEditor,
 } from "features/fixtureEditor/fixtureEditorSlice";
 import { EditorTabState } from "utils/editorTabState";
-import { RootState } from "./store";
 import "./App.css";
+import { useAppDispatch, useAppSelector } from "./hooks";
 
 function getEditorComponent(id: string, editor: EditorTabState) {
   return <FixtureEditor key={id} {...editor} />;
 }
 
 export const App: React.FC<{}> = () => {
-  const editors = useSelector((state: RootState) => {
+  const editors = useAppSelector((state) => {
     return {
       openEditors: state.fixtureEditor.openEditors,
       editorTabOrder: state.fixtureEditor.editorTabOrder,
@@ -27,12 +26,9 @@ export const App: React.FC<{}> = () => {
     };
   });
   const currentEditor = editors.openEditors[editors.selectedEditor];
+  const settings = useAppSelector((state) => state.appSettings);
 
-  const settings = useSelector((state: RootState) => {
-    return state.appSettings;
-  });
-
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   return (
     <div className={settings.darkMode ? "app bp4-dark" : "app"}>
