@@ -75,7 +75,21 @@ export enum DeviceCategory {
 export enum DeviceSubCategory {
   FIXED_PROFILE = "fixed-profile",
   MOVING_PROFILE = "moving-profile",
-  // TODO add all
+  // TODO add rest of lighting subcategories
+  MEDIA_SERVER = "media-server",
+  // TODO add rest of video subcategories
+  AMPLIFIER = "amplifier",
+  // TODO add rest of audio subcategories
+  WINCH = "winch",
+  // TODO add rest of machinery-automation subcategories
+  SMOKE = "smoke",
+  // TODO add rest of atmosphere subcategories
+  PYRO = "pyro",
+  // TODO add rest of effect subcategories
+  NETWORK_SWITCH = "network-switch",
+  // TODO add rest of infrastructure subcategories
+  CONTROLLER = "controller",
+  // TODO add rest of other subcategories
 }
 
 export const deviceSubCategoryMap: {
@@ -85,11 +99,11 @@ export const deviceSubCategoryMap: {
     DeviceSubCategory.FIXED_PROFILE,
     DeviceSubCategory.MOVING_PROFILE,
   ],
-  [DeviceCategory.VIDEO]: [],
-  [DeviceCategory.AUDIO]: [],
-  [DeviceCategory.MACHINERY_AUTOMATION]: [],
-  [DeviceCategory.ATMOSPHERE]: [],
-  [DeviceCategory.EFFECT]: [],
-  [DeviceCategory.INFRASTRUCTURE]: [],
-  [DeviceCategory.OTHER]: [],
+  [DeviceCategory.VIDEO]: [DeviceSubCategory.MEDIA_SERVER],
+  [DeviceCategory.AUDIO]: [DeviceSubCategory.AMPLIFIER],
+  [DeviceCategory.MACHINERY_AUTOMATION]: [DeviceSubCategory.WINCH],
+  [DeviceCategory.ATMOSPHERE]: [DeviceSubCategory.SMOKE],
+  [DeviceCategory.EFFECT]: [DeviceSubCategory.PYRO],
+  [DeviceCategory.INFRASTRUCTURE]: [DeviceSubCategory.NETWORK_SWITCH],
+  [DeviceCategory.OTHER]: [DeviceSubCategory.CONTROLLER],
 };

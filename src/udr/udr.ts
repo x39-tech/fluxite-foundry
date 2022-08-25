@@ -1,4 +1,4 @@
-import { DeviceClass } from "./objects/device_class";
+import { DeviceClass } from "./objects/deviceClass";
 import {
   Access,
   DeviceCategory,

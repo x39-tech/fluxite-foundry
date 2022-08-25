@@ -1,14 +1,14 @@
-import App from "App";
-import { loadAppSettings, saveAppSettings, AppSettings } from "./app_settings";
+import App from "app/App";
+import { loadAppSettings, defaultAppSettings } from "./appSettings";
 
 describe("app settings API", () => {
   it("loads default settings when they are not present in storage", () => {
-    expect(loadAppSettings()).toEqual(new AppSettings());
+    expect(loadAppSettings()).toEqual(defaultAppSettings());
   });
 
   it("loads default settings when the storage is not valid JSON", () => {
     localStorage.setItem("settings", "foo");
-    expect(loadAppSettings()).toEqual(new AppSettings());
+    expect(loadAppSettings()).toEqual(defaultAppSettings());
   });
 
   it("loads non-default settings", () => {
@@ -23,7 +23,7 @@ describe("app settings API", () => {
 
   it("adds settings that are not present with their default values", () => {
     localStorage.setItem("settings", '{"darkMode":false}');
-    expect(loadAppSettings()).toEqual(new AppSettings());
+    expect(loadAppSettings()).toEqual(defaultAppSettings());
   });
 
   it("replaces settings that are not the correct type with their default value", () => {

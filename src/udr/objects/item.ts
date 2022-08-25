@@ -1,7 +1,7 @@
 import { Access, Lifetime } from "../util/enums";
-import { DeviceIdentification } from "./structured_items/device_identification";
+import { DeviceIdentification } from "./structuredItems/device_identification";
 
-type StructuredItemValue = DeviceIdentification;
+export type StructuredItemValue = DeviceIdentification;
 
 export interface ScalarItem {
   class: string;

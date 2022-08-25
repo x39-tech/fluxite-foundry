@@ -3,7 +3,7 @@ import {
   ScalarItemClass,
   StreamingStructuredItemClass,
   StructuredItemClass,
-} from "./item_class";
+} from "./itemClass";
 
 export interface Library {
   id: string;

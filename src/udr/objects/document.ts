@@ -1,4 +1,4 @@
-import { DeviceClass } from "./device_class";
+import { DeviceClass } from "./deviceClass";
 import { Library } from "./library";
 
 export interface Document {
