@@ -18,12 +18,10 @@ export interface DeviceIdentificationEditorProps {
 export const DeviceIdentificationEditor: React.FC<
   DeviceIdentificationEditorProps
 > = ({ udr }) => {
-  const dispatch = useAppDispatch();
-
   const fieldFactory = new StructuredItemFieldFactory(
     "deviceIdentification",
     udr,
-    dispatch
+    useAppDispatch()
   );
 
   return (
@@ -83,6 +81,17 @@ export const DeviceIdentificationEditor: React.FC<
           udr.model.subcategory,
           (draft, newValue) => {
             draft.model.subcategory = newValue as DeviceSubCategory;
+          }
+        )}
+      </SimplePropsTable>
+      <SimplePropsTable name="Compatibility">
+        {fieldFactory.getTagListRow(
+          "Firmware Versions",
+          udr.compatibility?.firmwareVersions || [],
+          (draft, newValue) => {
+            draft.compatibility = {
+              firmwareVersions: newValue,
+            };
           }
         )}
       </SimplePropsTable>

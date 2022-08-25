@@ -1,12 +1,17 @@
-import { EditableText, HTMLSelect } from "@blueprintjs/core";
+import { EditableText, HTMLSelect, TagInput } from "@blueprintjs/core";
 import produce from "immer";
 import { AppDispatch } from "app/store";
 import { updateStructuredItem } from "features/fixtureEditor/fixtureEditorSlice";
 import { StructuredItemValue } from "udr/objects/item";
 
-type PropertyChangeRecipe = (
+type StringChangeRecipe = (
   draft: StructuredItemValue,
   newValue: string
+) => void;
+
+type StringListChangeRecipe = (
+  draft: StructuredItemValue,
+  newValue: string[]
 ) => void;
 
 export class StructuredItemFieldFactory {
@@ -27,7 +32,7 @@ export class StructuredItemFieldFactory {
   getTextEditorRow(
     name: string,
     value: string | undefined,
-    changeRecipe: PropertyChangeRecipe
+    changeRecipe: StringChangeRecipe
   ) {
     return (
       <tr>
@@ -55,7 +60,7 @@ export class StructuredItemFieldFactory {
     name: string,
     values: string[],
     selectedValue: string,
-    changeRecipe: PropertyChangeRecipe
+    changeRecipe: StringChangeRecipe
   ) {
     return (
       <tr>
@@ -70,6 +75,36 @@ export class StructuredItemFieldFactory {
                   name: "deviceIdentification",
                   newValue: produce(this.udr, (draft) => {
                     changeRecipe(draft, event.currentTarget.value);
+                  }),
+                })
+              );
+            }}
+          />
+        </td>
+      </tr>
+    );
+  }
+
+  getTagListRow(
+    name: string,
+    values: string[],
+    changeRecipe: StringListChangeRecipe
+  ) {
+    return (
+      <tr>
+        <td>{name}</td>
+        <td>
+          <TagInput
+            values={values}
+            onChange={(values) => {
+              this.dispatch(
+                updateStructuredItem({
+                  name: this.structuredItemName,
+                  newValue: produce(this.udr, (draft) => {
+                    changeRecipe(
+                      draft,
+                      values.map((value) => value as string)
+                    );
                   }),
                 })
               );
