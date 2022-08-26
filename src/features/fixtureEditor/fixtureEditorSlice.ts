@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
 
-import { StructuredItemValue } from "udr/objects/item";
+import { ScalarItem, StructuredItemValue } from "udr/objects/item";
 import { EditorTabState, newEditorTab } from "utils/editorTabState";
 
 interface FixtureEditorState {
@@ -27,6 +27,11 @@ const initialState: FixtureEditorState = {
 interface StructuredItemUpdate {
   name: string;
   newValue: StructuredItemValue;
+}
+
+interface ScalarItemUpdate {
+  id: string;
+  newValue: ScalarItem;
 }
 
 export const fixtureEditorSlice = createSlice({
@@ -60,6 +65,11 @@ export const fixtureEditorSlice = createSlice({
     setSelectedEditor(state, action: PayloadAction<string>) {
       state.selectedEditor = action.payload;
     },
+    updateScalarItem(state, action: PayloadAction<ScalarItemUpdate>) {
+      state.openEditors[state.selectedEditor].udr.scalarItems![
+        action.payload.id
+      ] = action.payload.newValue;
+    },
     updateStructuredItem(state, action: PayloadAction<StructuredItemUpdate>) {
       state.openEditors[state.selectedEditor].udr.structuredItems![
         action.payload.name
@@ -72,6 +82,7 @@ export const {
   createNewEditor,
   deleteEditor,
   setSelectedEditor,
+  updateScalarItem,
   updateStructuredItem,
 } = fixtureEditorSlice.actions;
 

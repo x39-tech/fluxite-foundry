@@ -1,23 +1,4 @@
-.structured-item-editor {
-  border-radius: 15px;
-  padding: 10px 10px 10px 15px;
-  margin: 10px 5px 10px 5px;
-  display: flex;
-  flex-direction: column;
-}
-
 .structured-item-collapse-body {
   display: flex;
   flex-direction: column;
-}
-
-.structured-item-editor-title-section {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.structured-item-editor-title {
-  margin-top: 0px;
-  margin-bottom: 5px;
 }

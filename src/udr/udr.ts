@@ -2,8 +2,8 @@ import { DeviceClass } from "./objects/deviceClass";
 import {
   Access,
   DeviceCategory,
-  DeviceSubCategory,
   Lifetime,
+  LightingDeviceSubcategory,
 } from "./util/enums";
 
 export function getDefaultDeviceClass(): DeviceClass {
@@ -37,7 +37,7 @@ export function getDefaultDeviceClass(): DeviceClass {
             name: "Super Light",
             productIdentifier: "superlight",
             category: DeviceCategory.LIGHTING,
-            subcategory: DeviceSubCategory.MOVING_PROFILE,
+            subcategory: LightingDeviceSubcategory.MOVING_PROFILE,
           },
         },
       },

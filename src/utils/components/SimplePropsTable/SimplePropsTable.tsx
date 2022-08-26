@@ -1,9 +1,14 @@
 import { HTMLTable } from "@blueprintjs/core";
 
 export interface SimplePropsTableProps {
-  name: string;
+  name?: string;
   children: React.ReactNode;
 }
+
+// Provides a Blueprint HTMLTable with some options pre-set and optimized for display as part of
+// the fixture editor components.
+
+// If provided, 'name' will be rendered in a table header.
 
 export const SimplePropsTable: React.FC<SimplePropsTableProps> = ({
   name,
@@ -15,11 +20,15 @@ export const SimplePropsTable: React.FC<SimplePropsTableProps> = ({
         <col span={1} style={{ width: "25%" }} />
         <col span={1} />
       </colgroup>
-      <thead>
-        <tr>
-          <th colSpan={2}>{name}</th>
-        </tr>
-      </thead>
+      {name ? (
+        <thead>
+          <tr>
+            <th colSpan={2}>{name}</th>
+          </tr>
+        </thead>
+      ) : (
+        <></>
+      )}
       <tbody>{children}</tbody>
     </HTMLTable>
   );

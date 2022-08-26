@@ -75,38 +75,108 @@ export enum DeviceCategory {
   OTHER = "other",
 }
 
-export enum DeviceSubCategory {
+export enum LightingDeviceSubcategory {
   FIXED_PROFILE = "fixed-profile",
+  FIXED_FRESNEL = "fixed-fresnel",
+  FIXED_PC = "fixed-pc",
+  FIXED_WASH = "fixed-wash",
+  FIXED_STRIP = "fixed-strip",
   MOVING_PROFILE = "moving-profile",
-  // TODO add rest of lighting subcategories
-  MEDIA_SERVER = "media-server",
-  // TODO add rest of video subcategories
-  AMPLIFIER = "amplifier",
-  // TODO add rest of audio subcategories
-  WINCH = "winch",
-  // TODO add rest of machinery-automation subcategories
-  SMOKE = "smoke",
-  // TODO add rest of atmosphere subcategories
-  PYRO = "pyro",
-  // TODO add rest of effect subcategories
-  NETWORK_SWITCH = "network-switch",
-  // TODO add rest of infrastructure subcategories
+  MOVING_FRESNEL = "moving-fresnel",
+  MOVING_PC = "moving-pc",
+  MOVING_WASH = "moving-wash",
+  MOVING_STRIP = "moving-strip",
+  MOVING_MIRROR = "moving-mirror",
+  ACCESSORY_SCROLLER = "accessory-scroller",
+  ACCESSORY_GOBO_ROTATOR = "accessory-gobo-rotator",
+  ACCESSORY_ANIMATION = "accessory-animation",
+  ACCESSORY_IRIS = "accessory-iris",
+  ACCESSORY_OTHER = "accessory-other",
   CONTROLLER = "controller",
-  // TODO add rest of other subcategories
+  OTHER = "other",
 }
 
+export enum VideoDeviceSubcategory {
+  MEDIA_SERVER = "media-server",
+  PROJECTOR = "projector",
+  PANEL = "panel",
+  CAMERA = "camera",
+  CONTROLLER = "controller",
+  OTHER = "other",
+}
+
+export enum AudioDeviceSubcategory {
+  AMPLIFIER = "amplifier",
+  SPEAKER = "speaker",
+  CONTROLLER = "controller",
+  OTHER = "other",
+}
+
+export enum MachineryAutomationDeviceSubcategory {
+  WINCH = "winch",
+  HOIST = "hoist",
+  DRIVE = "drive",
+  REVOLVE = "revolve",
+  LOAD_CELL = "load-cell",
+  ESTOP = "estop",
+  CONTROLLER = "controller",
+  OTHER = "other",
+}
+
+export enum AtmosphereDeviceSubcategory {
+  SMOKE = "smoke",
+  HAZE = "haze",
+  CONTROLLER = "controller",
+  OTHER = "other",
+}
+
+export enum EffectDeviceSubcategory {
+  PYRO = "pyro",
+  FIRE = "fire",
+  STROBE = "strobe",
+  LASER = "laser",
+  WATER = "water",
+  SNOW = "snow",
+  BUBBLE = "bubble",
+  FAN = "fan",
+  CONTROLLER = "controller",
+  OTHER = "other",
+}
+
+export enum InfrastructureDeviceSubcategory {
+  NETWORK_SWITCH = "network-switch",
+  GATEWAY = "gateway",
+  SPLITTER = "splitter",
+}
+
+export enum OtherDeviceSubcategory {
+  CONTROLLER = "controller",
+  OTHER = "other",
+}
+
+export type DeviceSubcategory =
+  | LightingDeviceSubcategory
+  | VideoDeviceSubcategory
+  | AudioDeviceSubcategory
+  | MachineryAutomationDeviceSubcategory
+  | AtmosphereDeviceSubcategory
+  | EffectDeviceSubcategory
+  | InfrastructureDeviceSubcategory
+  | OtherDeviceSubcategory;
+
 export const deviceSubCategoryMap: {
-  [key in DeviceCategory]: Array<DeviceSubCategory>;
+  [key in DeviceCategory]: Array<DeviceSubcategory>;
 } = {
-  [DeviceCategory.LIGHTING]: [
-    DeviceSubCategory.FIXED_PROFILE,
-    DeviceSubCategory.MOVING_PROFILE,
-  ],
-  [DeviceCategory.VIDEO]: [DeviceSubCategory.MEDIA_SERVER],
-  [DeviceCategory.AUDIO]: [DeviceSubCategory.AMPLIFIER],
-  [DeviceCategory.MACHINERY_AUTOMATION]: [DeviceSubCategory.WINCH],
-  [DeviceCategory.ATMOSPHERE]: [DeviceSubCategory.SMOKE],
-  [DeviceCategory.EFFECT]: [DeviceSubCategory.PYRO],
-  [DeviceCategory.INFRASTRUCTURE]: [DeviceSubCategory.NETWORK_SWITCH],
-  [DeviceCategory.OTHER]: [DeviceSubCategory.CONTROLLER],
+  [DeviceCategory.LIGHTING]: Object.values(LightingDeviceSubcategory),
+  [DeviceCategory.VIDEO]: Object.values(VideoDeviceSubcategory),
+  [DeviceCategory.AUDIO]: Object.values(AudioDeviceSubcategory),
+  [DeviceCategory.MACHINERY_AUTOMATION]: Object.values(
+    MachineryAutomationDeviceSubcategory
+  ),
+  [DeviceCategory.ATMOSPHERE]: Object.values(AtmosphereDeviceSubcategory),
+  [DeviceCategory.EFFECT]: Object.values(EffectDeviceSubcategory),
+  [DeviceCategory.INFRASTRUCTURE]: Object.values(
+    InfrastructureDeviceSubcategory
+  ),
+  [DeviceCategory.OTHER]: Object.values(OtherDeviceSubcategory),
 };

@@ -1,4 +1,4 @@
-import { DeviceCategory, DeviceSubCategory } from "../../../util/enums";
+import { DeviceCategory, DeviceSubcategory } from "../../../util/enums";
 
 interface ManufacturerInfo {
   name: string;
@@ -10,7 +10,7 @@ interface ModelInfo {
   name: string;
   productIdentifier: string;
   category: DeviceCategory;
-  subcategory: DeviceSubCategory;
+  subcategory: DeviceSubcategory;
 }
 
 interface CompatibilityInfo {
