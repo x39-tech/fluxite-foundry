@@ -26,7 +26,7 @@ export interface TagInputTableRowProps extends TagInputFieldProps {
 export const TagInputTableRow: React.FC<TagInputTableRowProps> = (props) => {
   return (
     <tr>
-      <td>{props.label}</td>
+      <td style={{ verticalAlign: "middle" }}>{props.label}</td>
       <td>
         <TagInputField {...props} />
       </td>

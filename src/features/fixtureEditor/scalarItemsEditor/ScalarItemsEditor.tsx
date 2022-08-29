@@ -3,26 +3,40 @@ import { useAppSelector } from "app/hooks";
 import { ScalarItemEditor } from "./ScalarItemEditor";
 import "./ScalarItemsEditor.scss";
 
-export const ScalarItemsEditor = () => {
-  const udr = useAppSelector(
+export interface ScalarItemsEditorProps {
+  onNewScalarItemClicked: () => void;
+}
+
+export const ScalarItemsEditor: React.FC<ScalarItemsEditorProps> = ({
+  onNewScalarItemClicked,
+}) => {
+  const editorState = useAppSelector(
     (state) =>
-      state.fixtureEditor.openEditors[state.fixtureEditor.selectedEditor].udr
-        .scalarItems
+      state.fixtureEditor.openEditors[state.fixtureEditor.selectedEditor]
   );
+
+  const scalarItemEditors: Array<JSX.Element> = [];
+  if (editorState.udr.scalarItems) {
+    editorState.scalarItemEditors.forEach((editor) => {
+      if (editor.udrId in editorState.udr.scalarItems!) {
+        scalarItemEditors.push(
+          <ScalarItemEditor
+            key={editor.id}
+            id={editor.udrId}
+            udr={editorState.udr.scalarItems![editor.udrId]}
+          />
+        );
+      }
+    });
+  }
 
   return (
     <div className="scalar-items-editor">
       <h2 className="scalar-items-editor-title">Scalar Items</h2>
       <Divider />
-      {udr ? (
-        Object.entries(udr!).map(([id, item]) => {
-          return <ScalarItemEditor key={id} id={id} udr={item} />;
-        })
-      ) : (
-        <></>
-      )}
+      {scalarItemEditors}
       <div className="add-scalar-item-section">
-        <Button icon="plus" minimal={true} />
+        <Button icon="plus" minimal={true} onClick={onNewScalarItemClicked} />
       </div>
     </div>
   );

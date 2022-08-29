@@ -21,6 +21,6 @@
   overflow: hidden;
 }
 
-.bp4-dark .add-scalar-item-section {
+.#{$ns}-dark .add-scalar-item-section {
   border: 1px solid $pt-dark-divider-white
 }

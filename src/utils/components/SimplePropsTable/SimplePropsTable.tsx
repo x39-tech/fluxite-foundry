@@ -15,9 +15,9 @@ export const SimplePropsTable: React.FC<SimplePropsTableProps> = ({
   children,
 }) => {
   return (
-    <HTMLTable striped style={{ marginBottom: "10px" }}>
+    <HTMLTable striped condensed style={{ marginBottom: "10px" }}>
       <colgroup>
-        <col span={1} style={{ width: "25%" }} />
+        <col span={1} style={{ width: "35%" }} />
         <col span={1} />
       </colgroup>
       {name ? (

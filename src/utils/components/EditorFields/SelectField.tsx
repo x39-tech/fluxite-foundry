@@ -35,7 +35,7 @@ export interface SelectTableRowProps extends SelectFieldProps {
 export const SelectTableRow: React.FC<SelectTableRowProps> = (props) => {
   return (
     <tr>
-      <td>{props.label}</td>
+      <td style={{ verticalAlign: "middle" }}>{props.label}</td>
       <td>
         <SelectField {...props} />
       </td>

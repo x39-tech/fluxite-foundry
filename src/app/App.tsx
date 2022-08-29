@@ -1,5 +1,5 @@
 import React from "react";
-import { Alignment, Button, Divider, Navbar } from "@blueprintjs/core";
+import { Alignment, Button, Classes, Divider, Navbar } from "@blueprintjs/core";
 import { EditorTitleTab } from "utils/components/EditorTitleTab/EditorTitleTab";
 import { FixtureEditor } from "features/fixtureEditor/FixtureEditor";
 import { SettingsMenu } from "features/appSettings/SettingsMenu";
@@ -31,7 +31,7 @@ export const App: React.FC<{}> = () => {
   const dispatch = useAppDispatch();
 
   return (
-    <div className={settings.darkMode ? "app bp4-dark" : "app"}>
+    <div className={settings.darkMode ? "app " + Classes.DARK : "app"}>
       <Navbar>
         <Navbar.Group align={Alignment.LEFT}>
           <Navbar.Heading>UDR Builder</Navbar.Heading>

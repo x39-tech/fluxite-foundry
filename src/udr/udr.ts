@@ -16,7 +16,7 @@ export function getDefaultDeviceClass(): DeviceClass {
     history: {},
     scalarItems: {
       "main-dimmer": {
-        class: "org.esta.intensity-color.1/intensity/dimmer",
+        class: "org.esta.lib.intensity-color.1/intensity/dimmer",
         friendlyName: "Main Dimmer",
         access: Access.READWRITE,
         lifetime: Lifetime.RUNTIME,
