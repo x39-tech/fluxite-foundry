@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Callout, EditableText } from "@blueprintjs/core";
-import { Popover2 } from "@blueprintjs/popover2";
+import { Placement, Popover2 } from "@blueprintjs/popover2";
 import { InputValidationResult } from "utils/inputValidation";
 
 export type TextEditorValidator = (value: string) => InputValidationResult;
@@ -11,12 +11,14 @@ export interface TextEditorFieldProps {
   defaultValue?: string;
   onValueChanged: (value: string) => void;
   validator?: TextEditorValidator;
+  validationErrorPlacement?: Placement;
 }
 
 export const TextEditorField: React.FC<TextEditorFieldProps> = ({
   defaultValue,
   onValueChanged,
   validator,
+  validationErrorPlacement,
 }) => {
   const defaultText = defaultValue || "";
 
@@ -41,6 +43,8 @@ export const TextEditorField: React.FC<TextEditorFieldProps> = ({
       }
       content={<Callout intent="danger">{validationResult.feedback}</Callout>}
       autoFocus={false}
+      enforceFocus={false}
+      placement={validationErrorPlacement}
     >
       <EditableText
         value={stagedText}
@@ -73,7 +77,7 @@ export const TextEditorTableRow: React.FC<TextEditorTableRowProps> = (
 ) => {
   return (
     <tr>
-      <td>{props.label}</td>
+      <td style={{ verticalAlign: "middle" }}>{props.label}</td>
       <td>
         <TextEditorField {...props} />
       </td>

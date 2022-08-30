@@ -1,6 +1,5 @@
 import { ScalarItemClass } from "udr/objects/itemClass";
 import { DataType, Unit } from "udr/util/enums";
-import { generateScalarItemCategoryMap } from "../scalarItemLibraryUtils";
 
 // TODO: Import these from the library JSON.
 
@@ -25,6 +24,3 @@ export const intensityColorScalarItems: ScalarItemClass[] = [
     default: true,
   },
 ];
-
-export const intensityColorScalarItemsByCategory =
-  generateScalarItemCategoryMap(intensityColorScalarItems);

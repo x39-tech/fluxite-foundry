@@ -2,7 +2,6 @@ import { Callout, Colors } from "@blueprintjs/core";
 import { useAppDispatch } from "app/hooks";
 import { AppDispatch } from "app/store";
 import produce from "immer";
-import { getScalarItemClass } from "udr/libraries/scalarItems";
 import { ScalarItem } from "udr/objects/item";
 import { ScalarItemClass } from "udr/objects/itemClass";
 import { Access, DataType, Lifetime } from "udr/util/enums";
@@ -19,6 +18,7 @@ import {
   InputValidationResult,
   validateStringIsNumberOrEmpty,
 } from "utils/inputValidation";
+import { lookupScalarItemClass } from "utils/scalarItemDatabase";
 import { updateScalarItem, updateScalarItemId } from "../fixtureEditorSlice";
 import "./ScalarItemEditor.css";
 
@@ -270,7 +270,7 @@ export const ScalarItemEditor: React.FC<ScalarItemEditorProps> = ({
 }) => {
   const dispatch = useAppDispatch();
 
-  const itemClass = getScalarItemClass(udr.class);
+  const itemClass = lookupScalarItemClass(udr.class);
 
   return (
     <ItemEditor

@@ -1,6 +1,5 @@
 import { ScalarItemClass } from "udr/objects/itemClass";
 import { DataType, Unit } from "udr/util/enums";
-import { generateScalarItemCategoryMap } from "../scalarItemLibraryUtils";
 
 // TODO: Import these from the library JSON.
 
@@ -24,6 +23,3 @@ export const goboScalarItems: ScalarItemClass[] = [
     default: 0,
   },
 ];
-
-export const goboScalarItemsByCategory =
-  generateScalarItemCategoryMap(goboScalarItems);
