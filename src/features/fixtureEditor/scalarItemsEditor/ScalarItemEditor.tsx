@@ -1,4 +1,5 @@
 import { Callout, Colors } from "@blueprintjs/core";
+import { Popover2 } from "@blueprintjs/popover2";
 import { useAppDispatch, useAppSelector } from "app/hooks";
 import { AppDispatch } from "app/store";
 import produce from "immer";
@@ -12,6 +13,7 @@ import {
 import { SelectTableRow } from "utils/components/EditorFields/SelectField";
 import { TextEditorTableRow } from "utils/components/EditorFields/TextEditorField";
 import { ItemEditor } from "utils/components/ItemEditor/ItemEditor";
+import { ScalarItemClassDisplay } from "utils/components/ScalarItemClassDisplay/ScalarItemClassDisplay";
 import { SimplePropsTable } from "utils/components/SimplePropsTable/SimplePropsTable";
 import { DispatchOnChangeFactory } from "utils/dispatchOnChangeFactory";
 import {
@@ -20,7 +22,11 @@ import {
   validateStringIsNumberOrEmpty,
 } from "utils/inputValidation";
 import { lookupScalarItemClass } from "utils/scalarItemDatabase";
-import { updateScalarItem, updateScalarItemId } from "../fixtureEditorSlice";
+import {
+  deleteScalarItem,
+  updateScalarItem,
+  updateScalarItemId,
+} from "../fixtureEditorSlice";
 import "./ScalarItemEditor.css";
 
 enum ScalarItemInstantiationType {
@@ -191,7 +197,13 @@ function getScalarItemPropsTable(
       <tr>
         <td>Class</td>
         <td>
-          <pre>{udr.class}</pre>
+          <Popover2
+            content={<ScalarItemClassDisplay udr={itemClass} />}
+            position="right"
+            interactionKind="hover"
+          >
+            <pre>{udr.class}</pre>
+          </Popover2>
         </td>
       </tr>
       <TextEditorTableRow
@@ -285,6 +297,9 @@ export const ScalarItemEditor: React.FC<ScalarItemEditorProps> = ({
     <ItemEditor
       title={udr.friendlyName ? udr.friendlyName! : id}
       backgroundColor={{ light: Colors.SEPIA5, dark: Colors.SEPIA1 }}
+      onDelete={() => {
+        dispatch(deleteScalarItem(id));
+      }}
     >
       <div className="scalar-item-collapse-body">
         {itemClass

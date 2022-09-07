@@ -11,10 +11,11 @@ import {
   lookupScalarItemClass,
   ScalarItemClassWithId,
 } from "utils/scalarItemDatabase";
-import { Button, ButtonProps, HTMLTable } from "@blueprintjs/core";
+import { Button, ButtonProps } from "@blueprintjs/core";
 import "./ScalarItemClassSelector.scss";
 import React from "react";
 import { Popover2 } from "@blueprintjs/popover2";
+import { ScalarItemClassDisplay } from "utils/components/ScalarItemClassDisplay/ScalarItemClassDisplay";
 
 const ScalarItemClassSelect = Select2.ofType<ScalarItemClassWithId>();
 
@@ -33,7 +34,7 @@ export const ScalarItemClassSelector: React.FC<
 
     return (
       <Popover2
-        content={getClassTooltipContent(item)}
+        content={<ScalarItemClassDisplay udr={item} />}
         usePortal={false}
         position="right"
         minimal={true}
@@ -153,51 +154,4 @@ function getScalarItemRenderProps(
       </>
     ),
   };
-}
-
-function getClassTooltipContent(item: ScalarItemClassWithId): JSX.Element {
-  // TODO: Revisit this formatting, ideally tables should be sized reasonably to their contents
-  return (
-    <HTMLTable striped condensed style={{ width: "400px" }}>
-      <colgroup>
-        <col span={1} style={{ width: "30%" }} />
-        <col span={1} />
-      </colgroup>
-      <thead>
-        <tr>
-          <th colSpan={2}>{item.name}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Description</td>
-          <td>{item.description}</td>
-        </tr>
-        <tr>
-          <td>Category</td>
-          <td>{`${item.category}`}</td>
-        </tr>
-        <tr>
-          <td>ID</td>
-          <td>{item.identifier}</td>
-        </tr>
-        <tr>
-          <td>Data Type</td>
-          <td>{item.dataType}</td>
-        </tr>
-        <tr>
-          <td>Unit</td>
-          <td>{item.unit || "N/A"}</td>
-        </tr>
-        {item.default !== undefined ? (
-          <tr>
-            <td>Default Value</td>
-            <td>{item.default}</td>
-          </tr>
-        ) : (
-          <></>
-        )}
-      </tbody>
-    </HTMLTable>
-  );
 }

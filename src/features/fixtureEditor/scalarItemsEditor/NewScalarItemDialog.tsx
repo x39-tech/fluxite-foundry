@@ -101,10 +101,19 @@ function deDuplicateNewItemId(
   newItemId: string,
   existingItemIds: string[]
 ): string {
-  let deDupNumber = 1;
+  let itemIdPrefix = newItemId;
+
+  let deDupNumber = parseInt(newItemId.split("-").pop()!);
+  if (!isNaN(deDupNumber)) {
+    ++deDupNumber;
+    itemIdPrefix = newItemId.split("-").slice(0, -1).join("-");
+  } else {
+    deDupNumber = 1;
+  }
+
   let deDupedNewItemId = newItemId;
   while (existingItemIds.includes(deDupedNewItemId)) {
-    deDupedNewItemId = `${newItemId}-${deDupNumber++}`;
+    deDupedNewItemId = `${itemIdPrefix}-${deDupNumber++}`;
   }
   return deDupedNewItemId;
 }

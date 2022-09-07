@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, current, PayloadAction } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
 import { ScalarItem, StructuredItemValue } from "udr/objects/item";
 import { EditorTabState, newEditorTab } from "utils/editorTabState";
@@ -119,10 +119,25 @@ export const fixtureEditorSlice = createSlice({
         }
       });
     },
+    deleteScalarItem(state, action: PayloadAction<string>) {
+      const currentEditor = state.openEditors[state.selectedEditor];
+      delete currentEditor.udr.scalarItems![action.payload];
+      currentEditor.scalarItemEditors = currentEditor.scalarItemEditors.filter(
+        (value) => value.udrId !== action.payload
+      );
+    },
     updateStructuredItem(state, action: PayloadAction<StructuredItemUpdate>) {
       state.openEditors[state.selectedEditor].udr.structuredItems![
         action.payload.name
       ].default = action.payload.newValue;
+    },
+    deleteStructuredItem(state, action: PayloadAction<string>) {
+      const currentEditor = state.openEditors[state.selectedEditor];
+      delete currentEditor.udr.structuredItems![action.payload];
+      currentEditor.structuredItemEditors =
+        currentEditor.structuredItemEditors.filter(
+          (value) => value !== action.payload
+        );
     },
   },
 });
@@ -134,7 +149,9 @@ export const {
   createNewScalarItem,
   updateScalarItem,
   updateScalarItemId,
+  deleteScalarItem,
   updateStructuredItem,
+  deleteStructuredItem,
 } = fixtureEditorSlice.actions;
 
 export default fixtureEditorSlice.reducer;

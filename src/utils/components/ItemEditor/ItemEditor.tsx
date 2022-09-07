@@ -13,6 +13,7 @@ export interface ItemEditorProps {
   title: string;
   expanded?: boolean;
   backgroundColor: BackgroundColor;
+  onDelete: () => void;
   children: React.ReactNode;
 }
 
@@ -20,6 +21,7 @@ export const ItemEditor: React.FC<ItemEditorProps> = ({
   title,
   expanded = false,
   backgroundColor,
+  onDelete,
   children,
 }) => {
   const inDarkMode = useAppSelector((state) => state.appSettings.darkMode);
@@ -43,6 +45,8 @@ export const ItemEditor: React.FC<ItemEditorProps> = ({
           onClick={() => setExpanded(!isExpanded)}
         />
         <H4>{title}</H4>
+        <div style={{ flex: 1 }} />
+        <Button icon="delete" minimal={true} onClick={onDelete} />
       </div>
       <Collapse isOpen={isExpanded}>{children}</Collapse>
     </div>

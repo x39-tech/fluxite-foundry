@@ -11,7 +11,10 @@ import {
 import { useAppDispatch } from "app/hooks";
 import { SimplePropsTable } from "utils/components/SimplePropsTable/SimplePropsTable";
 import "./StructuredItemEditor.css";
-import { updateStructuredItem } from "features/fixtureEditor/fixtureEditorSlice";
+import {
+  deleteStructuredItem,
+  updateStructuredItem,
+} from "features/fixtureEditor/fixtureEditorSlice";
 import { TextEditorTableRow } from "utils/components/EditorFields/TextEditorField";
 import { SelectTableRow } from "utils/components/EditorFields/SelectField";
 import { TagInputTableRow } from "utils/components/EditorFields/TagInputField";
@@ -45,6 +48,7 @@ export const DeviceIdentificationEditor: React.FC<
       expanded
       title="Device Identification"
       backgroundColor={{ light: Colors.BLUE5, dark: Colors.BLUE1 }}
+      onDelete={() => dispatch(deleteStructuredItem("deviceIdentification"))}
     >
       <div className="structured-item-collapse-body">
         <SimplePropsTable name="Manufacturer Information">
