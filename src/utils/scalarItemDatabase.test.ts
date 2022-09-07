@@ -1,6 +1,6 @@
 import { lookupScalarItemClass } from "./scalarItemDatabase";
 
-describe("lookupScalarItemClass function", () => {
+describe("lookupScalarItemClass", () => {
   it("returns an existing scalar item class successfully", () => {
     const itemClass = lookupScalarItemClass(
       "org.esta.lib.intensity-color.1/intensity/dimmer"

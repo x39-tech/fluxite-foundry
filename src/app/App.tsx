@@ -1,5 +1,13 @@
 import React from "react";
-import { Alignment, Button, Classes, Divider, Navbar } from "@blueprintjs/core";
+import {
+  Alignment,
+  Button,
+  Callout,
+  Card,
+  Classes,
+  Divider,
+  Navbar,
+} from "@blueprintjs/core";
 import { EditorTitleTab } from "utils/components/EditorTitleTab/EditorTitleTab";
 import { FixtureEditor } from "features/fixtureEditor/FixtureEditor";
 import { SettingsMenu } from "features/appSettings/SettingsMenu";
@@ -10,11 +18,12 @@ import {
   setSelectedEditor,
 } from "features/fixtureEditor/fixtureEditorSlice";
 import { EditorTabState } from "utils/editorTabState";
-import "./App.css";
+import "./App.scss";
 import { useAppDispatch, useAppSelector } from "./hooks";
+import { Popover2 } from "@blueprintjs/popover2";
 
 function getEditorComponent(id: string, editor: EditorTabState) {
-  return <FixtureEditor key={id} {...editor} />;
+  return <FixtureEditor key={id} title={editor.name} />;
 }
 
 export const App: React.FC<{}> = () => {
@@ -53,19 +62,29 @@ export const App: React.FC<{}> = () => {
               />
             );
           })}
-          <Button
-            icon="add"
-            onClick={() => {
-              dispatch(createNewEditor());
-            }}
-          />
+          <Popover2
+            content={<Callout>Get started by adding a new editor!</Callout>}
+            isOpen={currentEditor === undefined}
+          >
+            <Button
+              icon="add"
+              aria-label="Add New Editor"
+              onClick={() => {
+                dispatch(createNewEditor());
+              }}
+            />
+          </Popover2>
         </Navbar.Group>
         <Navbar.Group align={Alignment.RIGHT}>
           <SettingsMenu />
         </Navbar.Group>
       </Navbar>
       <div className="display-area">
-        {getEditorComponent(editors.selectedEditor, currentEditor)}
+        {currentEditor ? (
+          getEditorComponent(editors.selectedEditor, currentEditor)
+        ) : (
+          <div />
+        )}
         {settings.threeDViewEnabled ? (
           <>
             <Divider />

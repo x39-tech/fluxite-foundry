@@ -1,5 +1,5 @@
 import { Callout, Colors } from "@blueprintjs/core";
-import { useAppDispatch } from "app/hooks";
+import { useAppDispatch, useAppSelector } from "app/hooks";
 import { AppDispatch } from "app/store";
 import produce from "immer";
 import { ScalarItem } from "udr/objects/item";
@@ -15,7 +15,8 @@ import { ItemEditor } from "utils/components/ItemEditor/ItemEditor";
 import { SimplePropsTable } from "utils/components/SimplePropsTable/SimplePropsTable";
 import { DispatchOnChangeFactory } from "utils/dispatchOnChangeFactory";
 import {
-  InputValidationResult,
+  validateNewScalarItemId,
+  validateStringIsNumberAndBetweenMinAndMaxOrEmpty,
   validateStringIsNumberOrEmpty,
 } from "utils/inputValidation";
 import { lookupScalarItemClass } from "utils/scalarItemDatabase";
@@ -26,28 +27,6 @@ enum ScalarItemInstantiationType {
   SINGLE = "Single",
   MULTIPLE = "Multiple",
   DYNAMIC = "Dynamic",
-}
-
-function stringIsNumberAndBetweenMinAndMax(
-  input: string,
-  udr: ScalarItem
-): InputValidationResult {
-  const defaultResult = validateStringIsNumberOrEmpty(input);
-  if (!defaultResult.isValid) {
-    return defaultResult;
-  }
-  // Gotten this far, we know this is a valid number
-  const inputAsNum = parseFloat(input);
-  if (
-    (udr.minimum !== undefined && inputAsNum < udr.minimum) ||
-    (udr.maximum !== undefined && inputAsNum > udr.maximum)
-  ) {
-    return {
-      isValid: false,
-      feedback: "Input must be between minimum and maximum value",
-    };
-  }
-  return { isValid: true };
 }
 
 function getInstantiationProperties(
@@ -137,36 +116,52 @@ function getInstantiationProperties(
 }
 
 function getMinMaxDefaultProperties(
-  id: string,
   udr: ScalarItem,
-  itemClass: ScalarItemClass,
   onChangeFactory: DispatchOnChangeFactory<ScalarItem>
 ): JSX.Element {
   return (
     <>
       <TextEditorTableRow
         label="Minimum Value"
-        defaultValue={`${udr.minimum}`}
+        defaultValue={udr.minimum !== undefined ? `${udr.minimum}` : ""}
         onValueChanged={onChangeFactory.getFn((draft, newValue) => {
-          draft.minimum = parseFloat(newValue);
+          if (newValue === "") {
+            delete draft.minimum;
+          } else {
+            draft.minimum = parseFloat(newValue);
+          }
         })}
         validator={validateStringIsNumberOrEmpty}
       />
       <TextEditorTableRow
         label="Maximum Value"
-        defaultValue={`${udr.maximum}`}
+        defaultValue={udr.maximum !== undefined ? `${udr.maximum}` : undefined}
         onValueChanged={onChangeFactory.getFn((draft, newValue) => {
-          draft.maximum = parseFloat(newValue);
+          if (newValue === "") {
+            delete draft.maximum;
+          } else {
+            draft.maximum = parseFloat(newValue);
+          }
         })}
         validator={validateStringIsNumberOrEmpty}
       />
       <TextEditorTableRow
         label="Default Value"
-        defaultValue={udr.default ? `${udr.default}` : undefined}
+        defaultValue={udr.default !== undefined ? `${udr.default}` : undefined}
         onValueChanged={onChangeFactory.getFn((draft, newValue) => {
-          draft.default = parseFloat(newValue);
+          if (newValue === "") {
+            delete draft.default;
+          } else {
+            draft.default = parseFloat(newValue);
+          }
         })}
-        validator={(input) => stringIsNumberAndBetweenMinAndMax(input, udr)}
+        validator={(input) =>
+          validateStringIsNumberAndBetweenMinAndMaxOrEmpty(
+            input,
+            udr.minimum,
+            udr.maximum
+          )
+        }
       />
     </>
   );
@@ -176,6 +171,7 @@ function getScalarItemPropsTable(
   id: string,
   udr: ScalarItem,
   itemClass: ScalarItemClass,
+  existingItemIds: string[],
   dispatch: AppDispatch
 ): JSX.Element {
   const onChangeFactory = new DispatchOnChangeFactory(
@@ -204,6 +200,12 @@ function getScalarItemPropsTable(
         onValueChanged={(newValue) => {
           dispatch(updateScalarItemId({ id, newId: newValue }));
         }}
+        validator={(input) =>
+          validateNewScalarItemId(
+            input,
+            existingItemIds.filter((value) => value !== id)
+          )
+        }
       />
       <TextEditorTableRow
         label="Display Name"
@@ -242,7 +244,7 @@ function getScalarItemPropsTable(
       />
       {getInstantiationProperties(udr, onChangeFactory)}
       {itemClass.dataType === DataType.NUMBER ? (
-        getMinMaxDefaultProperties(id, udr, itemClass, onChangeFactory)
+        getMinMaxDefaultProperties(udr, onChangeFactory)
       ) : (
         <></>
       )}
@@ -272,6 +274,13 @@ export const ScalarItemEditor: React.FC<ScalarItemEditorProps> = ({
 
   const itemClass = lookupScalarItemClass(udr.class);
 
+  const scalarItemIds = useAppSelector((state) =>
+    Object.keys(
+      state.fixtureEditor.openEditors[state.fixtureEditor.selectedEditor].udr
+        .scalarItems || {}
+    )
+  );
+
   return (
     <ItemEditor
       title={udr.friendlyName ? udr.friendlyName! : id}
@@ -279,7 +288,13 @@ export const ScalarItemEditor: React.FC<ScalarItemEditorProps> = ({
     >
       <div className="scalar-item-collapse-body">
         {itemClass
-          ? getScalarItemPropsTable(id, udr, itemClass!, dispatch)
+          ? getScalarItemPropsTable(
+              id,
+              udr,
+              itemClass!,
+              scalarItemIds,
+              dispatch
+            )
           : getClassNotFoundMessage(udr.class)}
       </div>
     </ItemEditor>

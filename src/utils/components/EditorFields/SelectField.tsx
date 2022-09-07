@@ -16,10 +16,11 @@ export const SelectField: React.FC<SelectFieldProps> = ({
       onChange={(event) => {
         onSelectionChanged(event.currentTarget.value);
       }}
+      defaultValue={selectedValue}
     >
-      {values.map((value) => {
+      {values.map((value, index) => {
         return (
-          <option value={value} selected={value === selectedValue}>
+          <option key={index} value={value}>
             {value}
           </option>
         );

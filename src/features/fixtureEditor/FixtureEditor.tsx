@@ -1,33 +1,25 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { BPSplit } from "utils/components/BPSplit/BPSplit";
 import { ScalarItemsEditor } from "./scalarItemsEditor/ScalarItemsEditor";
 import { StructuredItemsEditor } from "./structuredItemsEditor/StructuredItemsEditor";
 import "./FixtureEditor.scss";
-import { NewScalarItemDialog } from "./scalarItemsEditor/NewScalarItemDialog";
 
-export const FixtureEditor = () => {
-  const [newScalarItemDialogIsOpen, setNewScalarItemDialogIsOpen] =
-    useState(false);
+export interface FixtureEditorProps {
+  title: string;
+}
+
+export const FixtureEditor: React.FC<FixtureEditorProps> = ({ title }) => {
+  useEffect(() => {
+    document.title = `Editing: ${title} -- UDR Builder`;
+    return () => {
+      document.title = "UDR Builder";
+    };
+  });
 
   return (
-    <>
-      <NewScalarItemDialog
-        isOpen={newScalarItemDialogIsOpen}
-        onAccepted={() => {
-          setNewScalarItemDialogIsOpen(false);
-        }}
-        onCanceled={() => {
-          setNewScalarItemDialogIsOpen(false);
-        }}
-      />
-      <BPSplit className="fixture-editor" sizes={[50, 50]}>
-        <ScalarItemsEditor
-          onNewScalarItemClicked={() => {
-            setNewScalarItemDialogIsOpen(true);
-          }}
-        />
-        <StructuredItemsEditor />
-      </BPSplit>
-    </>
+    <BPSplit className="fixture-editor" sizes={[50, 50]}>
+      <ScalarItemsEditor />
+      <StructuredItemsEditor />
+    </BPSplit>
   );
 };

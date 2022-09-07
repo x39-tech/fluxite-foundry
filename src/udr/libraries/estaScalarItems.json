@@ -1,0 +1,885 @@
+{
+  "e173": {
+    "libraries": {
+      "org.esta.lib.intensity-color.1": {
+        "description": "Placeholder",
+        "publishDate": "Placeholder",
+        "author": "ESTA",
+        "scalarItemClasses": [
+          {
+            "identifier": "dimmer",
+            "name": "Dimmer",
+            "category": "intensity",
+            "dataType": "number",
+            "description": "The level of one or more emitters using a faded style. 0.0 = No output, 1.0 = Maximum output",
+            "unit": "percent",
+            "default": 0.0
+          },
+          {
+            "identifier": "shutter",
+            "name": "Shutter",
+            "category": "intensity",
+            "dataType": "number",
+            "description": "The level of one or more emitters using an open/closed style. 0 = Closed, 1 = Open",
+            "unit": "bool",
+            "default": 1.0
+          },
+          {
+            "identifier": "rate-fixed",
+            "name": "Rate Fixed",
+            "category": "intensity/strobe",
+            "dataType": "number",
+            "description": "The frequency of execution of the strobe waveform",
+            "unit": "hertz"
+          },
+          {
+            "identifier": "rate-random",
+            "name": "Rate Random",
+            "category": "intensity/strobe",
+            "dataType": "number",
+            "description": "The random frequency of execution of the strobe waveform. 0.0 = Slowest, 1.0 = Fastest",
+            "unit": "percent",
+            "default": 0.0
+          },
+          {
+            "identifier": "waveform",
+            "name": "Waveform",
+            "category": "intensity/strobe",
+            "dataType": "number",
+            "description": "The intensity profile over single period"
+          },
+          {
+            "identifier": "duty-cycle",
+            "name": "Duty Cycle",
+            "category": "intensity/strobe",
+            "dataType": "number",
+            "description": "The ratio of the high to low portion of the waveform",
+            "unit": "percent",
+            "default": 0.1
+          },
+          {
+            "identifier": "duration",
+            "name": "Duration",
+            "category": "intensity/strobe",
+            "dataType": "number",
+            "description": "The time period of the high portion of the waveform",
+            "unit": "milliseconds",
+            "default": 50.0
+          },
+          {
+            "identifier": "emitter",
+            "name": "Emitter",
+            "category": "color/additive",
+            "dataType": "number",
+            "description": "The brightness of a source of light. 0.0 = No brightness, 1.0 = Maximum brightness",
+            "unit": "percent",
+            "default": 1.0
+          },
+          {
+            "identifier": "filter",
+            "name": "Filter",
+            "category": "color/subtractive",
+            "dataType": "number",
+            "description": "The quantity of a variable subtractive color filter. 0.0 = No presence, 1.0 = Maximum presence",
+            "unit": "percent",
+            "default": 0.0
+          },
+          {
+            "identifier": "index",
+            "name": "Index",
+            "category": "color/select",
+            "dataType": "number",
+            "description": "The position within a series of colors",
+            "default": 0.0
+          },
+          {
+            "identifier": "cycle-fixed",
+            "name": "Cycle Fixed",
+            "category": "color/select",
+            "dataType": "number",
+            "description": "The rate of change from one full color to the next over a sequential selection",
+            "unit": "hertz"
+          },
+          {
+            "identifier": "cycle-random",
+            "name": "Cycle Random",
+            "category": "color/select",
+            "dataType": "number",
+            "description": "The rate of change from one full color to the next over a random selection",
+            "unit": "hertz"
+          },
+          {
+            "identifier": "shake-rate",
+            "name": "Shake Rate",
+            "category": "color/select",
+            "dataType": "number",
+            "description": "The rate of shake of a selected color",
+            "unit": "hertz"
+          },
+          {
+            "identifier": "bounce-rate",
+            "name": "Bounce Rate",
+            "category": "color/select",
+            "dataType": "number",
+            "description": "The rate of bounce between two colors",
+            "unit": "hertz"
+          },
+          {
+            "identifier": "path",
+            "name": "Path",
+            "category": "color/select",
+            "dataType": "number",
+            "description": "The direction taken when changing from one color to another"
+          },
+          {
+            "identifier": "style",
+            "name": "Style",
+            "category": "color/select",
+            "dataType": "number",
+            "description": "The style of movement when changing from one color to another"
+          },
+          {
+            "identifier": "hue",
+            "name": "Hue",
+            "category": "color/hsv",
+            "dataType": "number",
+            "description": "The hue of an [HSV Def]",
+            "unit": "degree",
+            "default": 0.0
+          },
+          {
+            "identifier": "saturation",
+            "name": "Saturation",
+            "category": "color/hsv",
+            "dataType": "number",
+            "description": "The saturation of an [HSV Def]",
+            "unit": "percent",
+            "default": 1.0
+          },
+          {
+            "identifier": "value",
+            "name": "Value",
+            "category": "color/hsv",
+            "dataType": "number",
+            "description": "The value of an [HSV Def]",
+            "unit": "percent",
+            "default": 1.0
+          },
+          {
+            "identifier": "ciexy-x",
+            "name": "X",
+            "category": "color/cie-1931",
+            "dataType": "number",
+            "description": "CIE 1931 x",
+            "default": 0.38
+          },
+          {
+            "identifier": "ciexy-y",
+            "name": "Y",
+            "category": "color/cie-1931",
+            "dataType": "number",
+            "description": "CIE 1931 y",
+            "default": 0.377
+          },
+          {
+            "identifier": "cieluv-u",
+            "name": "U",
+            "category": "color/cie-1976",
+            "dataType": "number",
+            "description": "CIE 1976 u'",
+            "default": 20.7345
+          },
+          {
+            "identifier": "cieluv-v",
+            "name": "V",
+            "category": "color/cie-1976",
+            "dataType": "number",
+            "description": "CIE 1976 v'",
+            "default": 17.5589
+          },
+          {
+            "identifier": "cct",
+            "name": "CCT",
+            "category": "color/white",
+            "dataType": "number",
+            "description": "The correlated color temperature",
+            "unit": "kelvin",
+            "default": 4000.0
+          },
+          {
+            "identifier": "tint",
+            "name": "Tint",
+            "category": "color/white",
+            "dataType": "number",
+            "description": "Magenta/green correction applied to the correlated color temperature. Negative values indicate magenta, positive indicate green",
+            "unit": "duv",
+            "default": 0.0
+          },
+          {
+            "identifier": "program",
+            "name": "Program",
+            "category": "color/macro",
+            "dataType": "number",
+            "description": "The selection of a pre-programed color sequence"
+          },
+          {
+            "identifier": "rate",
+            "name": "Rate",
+            "category": "color/macro",
+            "dataType": "number",
+            "description": "The frequency of execution of the color macro",
+            "unit": "hertz"
+          },
+          {
+            "identifier": "offset",
+            "name": "Offset",
+            "category": "color/macro",
+            "dataType": "number",
+            "description": "The phase offset between devices executing the color macro. 0 = All Together",
+            "unit": "degree",
+            "default": 0.0
+          }
+        ]
+      },
+      "org.esta.lib.motion.1": {
+        "description": "Placeholder",
+        "publishDate": "Placeholder",
+        "author": "ESTA",
+        "scalarItemClasses": [
+          {
+            "identifier": "offset",
+            "name": "Offset",
+            "category": "motion/rotate",
+            "dataType": "number",
+            "description": "The rotational offset around a single axis",
+            "unit": "degree",
+            "default": 0.0
+          },
+          {
+            "identifier": "spin",
+            "name": "Spin",
+            "category": "motion/rotate",
+            "dataType": "number",
+            "description": "The continous rotation around a single axis",
+            "unit": "rpm",
+            "default": 0.0
+          },
+          {
+            "identifier": "position",
+            "name": "Position",
+            "category": "motion/linear",
+            "dataType": "number",
+            "description": "The translational offset along a single axis",
+            "unit": "meter",
+            "default": 0.0
+          }
+        ]
+      },
+      "org.esta.lib.gobo.1": {
+        "description": "Placeholder",
+        "publishDate": "Placeholder",
+        "author": "ESTA",
+        "scalarItemClasses": [
+          {
+            "identifier": "index",
+            "name": "Index",
+            "category": "gobo/select",
+            "dataType": "number",
+            "description": "The position within a series of gobos",
+            "default": 0.0
+          },
+          {
+            "identifier": "cycle-fixed",
+            "name": "Cycle Fixed",
+            "category": "gobo/select",
+            "dataType": "number",
+            "description": "The rate of change from one full gobo to the next over a sequential selection",
+            "unit": "hertz"
+          },
+          {
+            "identifier": "cycle-random",
+            "name": "Cycle Random",
+            "category": "gobo/select",
+            "dataType": "number",
+            "description": "The rate of change from one full gobo to the next over a random selection",
+            "unit": "hertz"
+          },
+          {
+            "identifier": "shake-size",
+            "name": "Shake Size",
+            "category": "gobo/motion",
+            "dataType": "number",
+            "description": "The amplitude of shake of a selected gobo",
+            "unit": "percent",
+            "default": 0.0
+          },
+          {
+            "identifier": "shake-rate",
+            "name": "Shake Rate",
+            "category": "gobo/motion",
+            "dataType": "number",
+            "description": "The rate of shake of a selected gobo",
+            "unit": "hertz"
+          },
+          {
+            "identifier": "bounce-rate",
+            "name": "Bounce Rate",
+            "category": "gobo/motion",
+            "dataType": "number",
+            "description": "The rate of bounce between two gobos",
+            "unit": "hertz"
+          },
+          {
+            "identifier": "path",
+            "name": "Path",
+            "category": "gobo/select",
+            "dataType": "number",
+            "description": "The direction taken when changing from one gobo to another"
+          },
+          {
+            "identifier": "style",
+            "name": "Style",
+            "category": "gobo/select",
+            "dataType": "number",
+            "description": "The style of movement when changing from one gobo to another"
+          },
+          {
+            "identifier": "offset",
+            "name": "Offset",
+            "category": "gobo/rotate",
+            "dataType": "number",
+            "description": "The rotational offset of a gobo around a single axis",
+            "unit": "degree",
+            "default": 0.0
+          },
+          {
+            "identifier": "spin",
+            "name": "Spin",
+            "category": "gobo/rotate",
+            "dataType": "number",
+            "description": "The continous rotation of a gobo around a single axis",
+            "unit": "rpm",
+            "default": 0.0
+          },
+          {
+            "identifier": "shake-size",
+            "name": "Shake Size",
+            "category": "gobo/rotate",
+            "dataType": "number",
+            "description": "The amplitude of oscillation of a gobo around a single axis",
+            "unit": "percent",
+            "default": 0.0
+          },
+          {
+            "identifier": "shake-rate",
+            "name": "Shake Rate",
+            "category": "gobo/rotate",
+            "dataType": "number",
+            "description": "The rate of oscillation of a gobo around a single axis",
+            "unit": "hertz"
+          },
+          {
+            "identifier": "step-style",
+            "name": "Step Style",
+            "category": "gobo/rotate",
+            "dataType": "number",
+            "description": "The style of stepped movement for rotation of a gobo around a single axis"
+          }
+        ]
+      },
+      "org.esta.lib.shape.1": {
+        "description": "Placeholder",
+        "publishDate": "Placeholder",
+        "author": "ESTA",
+        "scalarItemClasses": [
+          {
+            "identifier": "beam-angle",
+            "name": "Beam Angle",
+            "category": "shape/zoom",
+            "dataType": "number",
+            "description": "The beam angle of a source of light",
+            "unit": "degree"
+          },
+          {
+            "identifier": "field-angle",
+            "name": "Field Angle",
+            "category": "shape/zoom",
+            "dataType": "number",
+            "description": "The field angle of a source of light",
+            "unit": "degree"
+          },
+          {
+            "identifier": "focus",
+            "name": "Focus",
+            "category": "shape/zoom",
+            "dataType": "number",
+            "description": "The focal distance of a source of light. 0.0 = Near, 1.0 = Far",
+            "unit": "percent"
+          },
+          {
+            "identifier": "focal-point",
+            "name": "Focal Point",
+            "category": "shape/zoom",
+            "dataType": "number",
+            "description": "The point of focus within the signal path of a source of light"
+          },
+          {
+            "identifier": "insert",
+            "name": "Insert",
+            "category": "shape/iris",
+            "dataType": "number",
+            "description": "The percentage of the radius of the beam which is covered by the iris. 0.0 = Open, 1.0 = Closed",
+            "unit": "percent",
+            "default": 0.0
+          },
+          {
+            "identifier": "rate-fixed",
+            "name": "Rate Fixed",
+            "category": "shape/iris",
+            "dataType": "number",
+            "description": "The frequency of execution of the iris waveform",
+            "unit": "hertz"
+          },
+          {
+            "identifier": "rate-random",
+            "name": "Rate Random",
+            "category": "shape/iris",
+            "dataType": "number",
+            "description": "The random frequency of execution of the iris waveform. 0.0 = Slowest, 1.0 = Fastest",
+            "unit": "percent",
+            "default": 0.0
+          },
+          {
+            "identifier": "waveform",
+            "name": "Waveform",
+            "category": "shape/iris",
+            "dataType": "number",
+            "description": "The iris movement profile over single period"
+          },
+          {
+            "identifier": "insert",
+            "name": "Insert",
+            "category": "shape/frame",
+            "dataType": "number",
+            "description": "The percentage of the diameter of the beam which is covered by the frame. 0.0 = Open, 1.0 = Full Frame Closed",
+            "unit": "percent",
+            "default": 0.0
+          },
+          {
+            "identifier": "angle",
+            "name": "Angle",
+            "category": "shape/frame",
+            "dataType": "number",
+            "description": "The angle of the frame relatively to default plane of insertion",
+            "unit": "degree",
+            "default": 0.0
+          },
+          {
+            "identifier": "a-frame",
+            "name": "A",
+            "category": "shape/frame",
+            "dataType": "number",
+            "description": "The percentage of the diameter of the beam which is covered by the first edge of the frame. 0.0 = Open, 1.0 = Full Frame Closed",
+            "unit": "percent",
+            "default": 0.0
+          },
+          {
+            "identifier": "b-frame",
+            "name": "B",
+            "category": "shape/frame",
+            "dataType": "number",
+            "description": "The percentage of the diameter of the beam which is covered by the second edge of the frame. 0.0 = Open, 1.0 = Full Frame Closed",
+            "unit": "percent",
+            "default": 0.0
+          },
+          {
+            "identifier": "offset",
+            "name": "Offset",
+            "category": "shape/frame/rotate",
+            "dataType": "number",
+            "description": "The rotational offset of a framing module around a single axis",
+            "unit": "degree",
+            "default": 0.0
+          },
+          {
+            "identifier": "x-keystone",
+            "name": "X",
+            "category": "shape/keystone",
+            "dataType": "number",
+            "description": "The translational offset of a corner of an image along the X axis. -1.0 = Stretching the same distance as the previous corner with a smaller X value and the same Y value in its unkeystoned position, 0.0 = No Keystone, 1.0 = Pinching the image to the previous corner with a smaller X value and the same Y value in its unkeystoned position",
+            "unit": "signed percent",
+            "default": 0.0
+          },
+          {
+            "identifier": "y-keystone",
+            "name": "Y",
+            "category": "shape/keystone",
+            "dataType": "number",
+            "description": "The translational offset of a corner of an image along the Y axis. -1.0 = Stretching the same distance as the previous corner with a smaller Y value and the same X value in its unkeystoned position, 0.0 = No Keystone, 1.0 = Pinching the image to the previous corner with a smaller Y value and the same X value in its unkeystoned position",
+            "unit": "signed percent",
+            "default": 0.0
+          }
+        ]
+      },
+      "org.esta.lib.effects.1": {
+        "description": "Placeholder",
+        "publishDate": "Placeholder",
+        "author": "ESTA",
+        "scalarItemClasses": [
+          {
+            "identifier": "insert",
+            "name": "Insert",
+            "category": "effects/frost",
+            "dataType": "number",
+            "description": "The percentage of the diameter of the beam which is covered by the frost. 0.0 = No Frost, 1.0 = Full Frost",
+            "unit": "percent",
+            "default": 0.0
+          },
+          {
+            "identifier": "rate-fixed",
+            "name": "Rate Fixed",
+            "category": "effects/frost",
+            "dataType": "number",
+            "description": "The frequency of execution of the frost waveform",
+            "unit": "hertz"
+          },
+          {
+            "identifier": "rate-random",
+            "name": "Rate Random",
+            "category": "effects/frost",
+            "dataType": "number",
+            "description": "The random frequency of execution of the frost waveform. 0.0 = Slowest, 1.0 = Fastest",
+            "unit": "percent",
+            "default": 0.0
+          },
+          {
+            "identifier": "waveform",
+            "name": "Waveform",
+            "category": "effects/frost",
+            "dataType": "number",
+            "description": "The frost movement profile over single period"
+          },
+          {
+            "identifier": "index",
+            "name": "Index",
+            "category": "effects/prism/select",
+            "dataType": "number",
+            "description": "The position within a series of prisms",
+            "default": 0.0
+          },
+          {
+            "identifier": "divergence",
+            "name": "Divergence",
+            "category": "effects/prism/select",
+            "dataType": "number",
+            "description": "The expansion and contraction of the effect of the prism on a source of light. 0.0 = The Center of Facets are at Center of Beam, 1.0 = The Center Facets are at the Edge of Beam (with current Zoom)",
+            "unit": "percent",
+            "default": 1.0
+          },
+          {
+            "identifier": "offset",
+            "name": "Offset",
+            "category": "effects/prism/rotate",
+            "dataType": "number",
+            "description": "The rotational offset of a prism around a single axis",
+            "unit": "degree",
+            "default": 0.0
+          },
+          {
+            "identifier": "spin",
+            "name": "Spin",
+            "category": "effects/prism/rotate",
+            "dataType": "number",
+            "description": "The continous rotation of a prism around a single axis",
+            "unit": "rpm",
+            "default": 0.0
+          },
+          {
+            "identifier": "index",
+            "name": "Index",
+            "category": "effects/animation/select",
+            "dataType": "number",
+            "description": "The position within a series of animation wheels",
+            "default": 0.0
+          },
+          {
+            "identifier": "offset",
+            "name": "Offset",
+            "category": "effects/animation/rotate",
+            "dataType": "number",
+            "description": "The rotational offset of an animation wheel around a single axis",
+            "unit": "degree",
+            "default": 0.0
+          },
+          {
+            "identifier": "spin",
+            "name": "Spin",
+            "category": "effects/animation/rotate",
+            "dataType": "number",
+            "description": "The continous rotation of an animation wheel around a single axis",
+            "unit": "rpm",
+            "default": 0.0
+          },
+          {
+            "identifier": "angle",
+            "name": "Angle",
+            "category": "effects/animation/incline",
+            "dataType": "number",
+            "description": "The angle at which the animation crosses a source of light. 0.0 = Horizontal Movement, 90.0 = Vertical Movement",
+            "unit": "degree",
+            "default": 0.0
+          },
+          {
+            "identifier": "scale",
+            "name": "Scale",
+            "category": "effects/transform",
+            "dataType": "number",
+            "description": "The relative size of an effect. 0.0 = No Size, 1.0 = Original Size, 2.0 = Twice Original Size",
+            "unit": "percent",
+            "default": 1.0
+          },
+          {
+            "identifier": "offset",
+            "name": "Offset",
+            "category": "effects/transform",
+            "dataType": "number",
+            "description": "The rotational offset of an effect around a single axis",
+            "unit": "degree",
+            "default": 0.0
+          },
+          {
+            "identifier": "spin",
+            "name": "Spin",
+            "category": "effects/transform",
+            "dataType": "number",
+            "description": "The continous rotation of an effect around a single axis",
+            "unit": "rpm",
+            "default": 0.0
+          },
+          {
+            "identifier": "translate",
+            "name": "Translate",
+            "category": "effects/transform",
+            "dataType": "number",
+            "description": "The relative linear offset",
+            "unit": "signed percent",
+            "default": 0.0
+          }
+        ]
+      },
+      "org.esta.lib.other.1": {
+        "description": "Placeholder",
+        "publishDate": "Placeholder",
+        "author": "ESTA",
+        "scalarItemClasses": [
+          {
+            "identifier": "state",
+            "name": "State",
+            "category": "lamp",
+            "dataType": "number",
+            "description": "The power state of a discharge lamp"
+          },
+          {
+            "identifier": "blink",
+            "name": "Blink",
+            "category": "lamp",
+            "dataType": "number",
+            "description": "Whether a source of light is turned off when moving any controllable element"
+          },
+          {
+            "identifier": "power",
+            "name": "Power",
+            "category": "lamp",
+            "dataType": "number",
+            "description": "The lamp power consumption of source of light"
+          },
+          {
+            "identifier": "dim-curve",
+            "name": "Dim Curve",
+            "category": "lamp",
+            "dataType": "number",
+            "description": "The mapping of input to power output"
+          },
+          {
+            "identifier": "dim-frequency",
+            "name": "Dim Frequency",
+            "category": "lamp",
+            "dataType": "number",
+            "description": "The frequency of dimming pulse",
+            "unit": "hertz"
+          },
+          {
+            "identifier": "dim-duty-cycle",
+            "name": "Dim Duty Cycle",
+            "category": "lamp",
+            "dataType": "number",
+            "description": "The ratio of the on to off portion of dimming power",
+            "unit": "percent"
+          },
+          {
+            "identifier": "quality",
+            "name": "Quality",
+            "category": "lamp",
+            "dataType": "number",
+            "description": "The quality of the source of light, for example color rendition"
+          },
+          {
+            "identifier": "emulation",
+            "name": "Emulation",
+            "category": "lamp",
+            "dataType": "number",
+            "description": "The mimicking of another type of light source"
+          },
+          {
+            "identifier": "program",
+            "name": "Program",
+            "category": "macro",
+            "dataType": "number",
+            "description": "The selection of a pre-programed sequence"
+          },
+          {
+            "identifier": "rate",
+            "name": "Rate",
+            "category": "macro",
+            "dataType": "number",
+            "description": "The frequency of execution of the macro",
+            "unit": "hertz"
+          },
+          {
+            "identifier": "offset",
+            "name": "Offset",
+            "category": "macro",
+            "dataType": "number",
+            "description": "The phase offset between devices executing the macro. 0 = All Together",
+            "unit": "degree",
+            "default": 0.0
+          },
+          {
+            "identifier": "reset",
+            "name": "Reset",
+            "category": "physical",
+            "dataType": "number",
+            "description": "The operating mode of a device"
+          },
+          {
+            "identifier": "fan-mode",
+            "name": "Fan Mode",
+            "category": "physical",
+            "dataType": "number",
+            "description": "The operating mode of a device fan"
+          },
+          {
+            "identifier": "brightness",
+            "name": "Brightness",
+            "category": "display",
+            "dataType": "number",
+            "description": "The brightness of an integrated configuration display of a device"
+          },
+          {
+            "identifier": "duration",
+            "name": "Duration",
+            "category": "timing",
+            "dataType": "number",
+            "description": "The time taken to change from the previous value to the current value",
+            "unit": "seconds"
+          },
+          {
+            "identifier": "speed",
+            "name": "Speed",
+            "category": "timing",
+            "dataType": "number",
+            "description": "The rate of change from the previous value to the current value. 0.0 = Stopped, 1.0 = Reference Speed",
+            "unit": "percent",
+            "default": 1.0
+          }
+        ]
+      },
+      "org.esta.lib.media.1": {
+        "description": "Placeholder",
+        "publishDate": "Placeholder",
+        "author": "ESTA",
+        "scalarItemClasses": [
+          {
+            "identifier": "folder",
+            "name": "Folder",
+            "category": "media/object",
+            "dataType": "string",
+            "description": ""
+          },
+          {
+            "identifier": "file",
+            "name": "File",
+            "category": "media/object",
+            "dataType": "string",
+            "description": ""
+          },
+          {
+            "identifier": "library",
+            "name": "Library",
+            "category": "media/content",
+            "dataType": "string",
+            "description": ""
+          },
+          {
+            "identifier": "folder",
+            "name": "Folder",
+            "category": "media/content",
+            "dataType": "string",
+            "description": ""
+          },
+          {
+            "identifier": "file",
+            "name": "File",
+            "category": "media/content",
+            "dataType": "string",
+            "description": ""
+          },
+          {
+            "identifier": "in-frame",
+            "name": "In Frame",
+            "category": "media/content",
+            "dataType": "number",
+            "description": "The frame from which content starts playback"
+          },
+          {
+            "identifier": "out-frame",
+            "name": "Out Frame",
+            "category": "media/content",
+            "dataType": "number",
+            "description": "The frame at which content stops playback"
+          },
+          {
+            "identifier": "loop-in-frame",
+            "name": "Loop In Frame",
+            "category": "media/content",
+            "dataType": "number",
+            "description": "The frame from which looping content starts playback"
+          },
+          {
+            "identifier": "loop-out-frame",
+            "name": "Loop Out Frame",
+            "category": "media/content",
+            "dataType": "number",
+            "description": "The frame at which looping content stops playback"
+          },
+          {
+            "identifier": "mode",
+            "name": "Mode",
+            "category": "media/transport",
+            "dataType": "number",
+            "description": "The content playback state"
+          },
+          {
+            "identifier": "speed",
+            "name": "Speed",
+            "category": "media/transport",
+            "dataType": "number",
+            "description": "The rate of playback of content. 0.0 = Stopped, 1.0 = Reference Speed",
+            "unit": "percent",
+            "default": 1.0
+          }
+        ]
+      }
+    }
+  }
+}

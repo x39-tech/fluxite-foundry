@@ -1,19 +1,18 @@
 import { Button, Divider } from "@blueprintjs/core";
 import { useAppSelector } from "app/hooks";
+import { useState } from "react";
+import { NewScalarItemDialog } from "./NewScalarItemDialog";
 import { ScalarItemEditor } from "./ScalarItemEditor";
 import "./ScalarItemsEditor.scss";
 
-export interface ScalarItemsEditorProps {
-  onNewScalarItemClicked: () => void;
-}
-
-export const ScalarItemsEditor: React.FC<ScalarItemsEditorProps> = ({
-  onNewScalarItemClicked,
-}) => {
+export const ScalarItemsEditor = () => {
   const editorState = useAppSelector(
     (state) =>
       state.fixtureEditor.openEditors[state.fixtureEditor.selectedEditor]
   );
+
+  const [newScalarItemDialogIsOpen, setNewScalarItemDialogIsOpen] =
+    useState(false);
 
   const scalarItemEditors: Array<JSX.Element> = [];
   if (editorState.udr.scalarItems) {
@@ -31,13 +30,28 @@ export const ScalarItemsEditor: React.FC<ScalarItemsEditorProps> = ({
   }
 
   return (
-    <div className="scalar-items-editor">
-      <h2 className="scalar-items-editor-title">Scalar Items</h2>
-      <Divider />
-      {scalarItemEditors}
-      <div className="add-scalar-item-section">
-        <Button icon="plus" minimal={true} onClick={onNewScalarItemClicked} />
+    <>
+      <div className="scalar-items-editor">
+        <h2 className="scalar-items-editor-title">Scalar Items</h2>
+        <Divider />
+        {scalarItemEditors}
+        <div className="add-scalar-item-section">
+          <Button
+            icon="plus"
+            minimal={true}
+            onClick={() => setNewScalarItemDialogIsOpen(true)}
+          />
+        </div>
       </div>
-    </div>
+      <NewScalarItemDialog
+        isOpen={newScalarItemDialogIsOpen}
+        onAccepted={() => {
+          setNewScalarItemDialogIsOpen(false);
+        }}
+        onCanceled={() => {
+          setNewScalarItemDialogIsOpen(false);
+        }}
+      />
+    </>
   );
 };

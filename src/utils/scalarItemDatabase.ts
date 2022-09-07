@@ -5,7 +5,7 @@ import { allScalarItems } from "udr/libraries/scalarItems";
 // Constants and data
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-const preferredLibraryOrder: (keyof typeof allScalarItems)[] = [
+const preferredLibraryOrder = [
   // "org.esta.lib.core.1",
   "org.esta.lib.intensity-color.1",
   // "org.esta.lib.motion.1",
@@ -93,10 +93,18 @@ export function getQualifiedIdFriendlyName(
 function generateAllScalarItemsWithIds(): ScalarItemClassWithId[] {
   let items: ScalarItemClassWithId[] = [];
 
+  doInPreferredLibraryOrder((library, scalarItems) => {
+    items = items.concat(addIdsToScalarItemClasses(library, scalarItems));
+  });
+
+  return items;
+}
+
+function doInPreferredLibraryOrder(
+  fn: (libQualifiedId: string, scalarItems: ScalarItemClass[]) => void
+) {
   for (const library of preferredLibraryOrder) {
-    items = items.concat(
-      addIdsToScalarItemClasses(library, allScalarItems[library])
-    );
+    fn(library, allScalarItems[library]);
   }
 
   for (const [remainingLibrary, classArray] of Object.entries(
@@ -106,11 +114,8 @@ function generateAllScalarItemsWithIds(): ScalarItemClassWithId[] {
       key as typeof preferredLibraryOrder[0]
     );
   })) {
-    items = items.concat(
-      addIdsToScalarItemClasses(remainingLibrary, classArray)
-    );
+    fn(remainingLibrary, classArray);
   }
-  return items;
 }
 
 function addIdsToScalarItemClasses(

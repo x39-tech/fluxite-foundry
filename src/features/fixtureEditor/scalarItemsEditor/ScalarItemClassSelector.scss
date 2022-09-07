@@ -1,0 +1,22 @@
+@import "@blueprintjs/core/lib/scss/variables";
+
+.scalar-item-class-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 300px;
+  overflow: auto;
+}
+
+.#{$ns}-button-text {
+  display: flex;
+  justify-content: space-between;
+  gap: 50px;
+}
+
+.scalar-item-class-selector-category {
+  color: $pt-text-color-muted;
+}
+
+.#{$ns}-dark .scalar-item-class-selector-category {
+  color: $pt-dark-text-color-muted;
+}

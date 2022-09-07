@@ -20,3 +20,50 @@ export function validateStringIsNumberOrEmpty(
     ? { isValid: true }
     : { isValid: false, feedback: "Input must be a valid number or empty" };
 }
+
+export function validateStringIsNumberAndBetweenMinAndMaxOrEmpty(
+  input: string,
+  minimum?: number,
+  maximum?: number
+): InputValidationResult {
+  if (input === "") {
+    return { isValid: true };
+  }
+
+  const defaultResult = validateStringIsNumber(input);
+  if (!defaultResult.isValid) {
+    return defaultResult;
+  }
+
+  // Gotten this far, we know this is a valid number
+  const inputAsNum = parseFloat(input);
+  if (
+    (minimum !== undefined && inputAsNum < minimum) ||
+    (maximum !== undefined && inputAsNum > maximum)
+  ) {
+    return {
+      isValid: false,
+      feedback: "Input must be between minimum and maximum value",
+    };
+  }
+
+  return { isValid: true };
+}
+
+export function validateNewScalarItemId(
+  input: string,
+  existingItemIds: string[]
+): InputValidationResult {
+  if (!input) {
+    return { isValid: false, feedback: "ID must not be empty" };
+  }
+
+  if (existingItemIds.includes(input)) {
+    return {
+      isValid: false,
+      feedback: "ID must be unique among all scalar items in the device",
+    };
+  }
+
+  return { isValid: true };
+}

@@ -1,9 +1,11 @@
 import { Button, Classes, H3 } from "@blueprintjs/core";
-import { useAppSelector } from "app/hooks";
+import { useAppDispatch, useAppSelector } from "app/hooks";
 import { useState } from "react";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
 import { TextEditorTableRow } from "utils/components/EditorFields/TextEditorField";
 import { SimplePropsTable } from "utils/components/SimplePropsTable/SimplePropsTable";
+import { validateNewScalarItemId } from "utils/inputValidation";
+import { createNewScalarItem } from "../fixtureEditorSlice";
 import "./NewScalarItemDialog.css";
 import {
   getDefaultSelectedClass,
@@ -29,8 +31,15 @@ export const NewScalarItemDialog: React.FC<NewScalarItemDialogProps> = ({
   );
 
   const [newItemClass, setNewItemClass] = useState(getDefaultSelectedClass());
-  const [newItemId, setNewItemId] = useState(getNewItemId(scalarItemIds));
-  // const [newItemFriendlyName, setNewItemFriendlyName] = useState("");
+  const [newItemId, setNewItemId] = useState("my-new-item");
+  const [newItemFriendlyName, setNewItemFriendlyName] = useState("My New Item");
+
+  const deDupedId = deDuplicateNewItemId(newItemId, scalarItemIds);
+  if (deDupedId !== newItemId) {
+    setNewItemId(deDupedId);
+  }
+
+  const dispatch = useAppDispatch();
 
   return (
     <DarkModeAwareDialog isOpen={isOpen} onClose={onCanceled}>
@@ -54,25 +63,32 @@ export const NewScalarItemDialog: React.FC<NewScalarItemDialogProps> = ({
             label="ID"
             defaultValue={newItemId}
             onValueChanged={setNewItemId}
-            validator={(input) => {
-              if (!input) {
-                return { isValid: false, feedback: "ID must not be empty" };
-              }
-              if (scalarItemIds.includes(input)) {
-                return {
-                  isValid: false,
-                  feedback:
-                    "ID must be unique among all scalar items in the device",
-                };
-              }
-              return { isValid: true };
-            }}
+            validator={(input) => validateNewScalarItemId(input, scalarItemIds)}
             validationErrorPlacement="right"
+          />
+          <TextEditorTableRow
+            label="Display Name"
+            defaultValue={newItemFriendlyName}
+            onValueChanged={setNewItemFriendlyName}
           />
         </SimplePropsTable>
       </div>
       <div className={Classes.DIALOG_FOOTER}>
-        <Button intent="success" icon="tick" onClick={onAccepted}>
+        <Button
+          intent="success"
+          icon="tick"
+          onClick={() => {
+            dispatch(
+              createNewScalarItem({
+                class: newItemClass,
+                id: newItemId,
+                friendlyName: newItemFriendlyName,
+              })
+            );
+
+            onAccepted();
+          }}
+        >
           Add
         </Button>
         <Button onClick={onCanceled}>Cancel</Button>
@@ -81,11 +97,14 @@ export const NewScalarItemDialog: React.FC<NewScalarItemDialogProps> = ({
   );
 };
 
-function getNewItemId(existingItemIds: string[]): string {
+function deDuplicateNewItemId(
+  newItemId: string,
+  existingItemIds: string[]
+): string {
   let deDupNumber = 1;
-  let newItemId = "my-new-item";
-  while (existingItemIds.includes(newItemId)) {
-    newItemId = `my-new-item-${deDupNumber++}`;
+  let deDupedNewItemId = newItemId;
+  while (existingItemIds.includes(deDupedNewItemId)) {
+    deDupedNewItemId = `${newItemId}-${deDupNumber++}`;
   }
-  return newItemId;
+  return deDupedNewItemId;
 }

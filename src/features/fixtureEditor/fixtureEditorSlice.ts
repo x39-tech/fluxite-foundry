@@ -77,14 +77,23 @@ export const fixtureEditorSlice = createSlice({
       state.selectedEditor = action.payload;
     },
     createNewScalarItem(state, action: PayloadAction<NewScalarItem>) {
-      state.openEditors[state.selectedEditor].udr.scalarItems![
-        action.payload.id
-      ] = {
+      const currentEditor = state.openEditors[state.selectedEditor];
+
+      if (action.payload.id in currentEditor.udr.scalarItems!) {
+        return;
+      }
+
+      currentEditor.udr.scalarItems![action.payload.id] = {
         class: action.payload.class,
         access: Access.READWRITE,
         lifetime: Lifetime.RUNTIME,
         friendlyName: action.payload.friendlyName,
       };
+
+      currentEditor.scalarItemEditors.push({
+        id: uuidv4(),
+        udrId: action.payload.id,
+      });
     },
     updateScalarItem(state, action: PayloadAction<ScalarItemUpdate>) {
       state.openEditors[state.selectedEditor].udr.scalarItems![
@@ -93,6 +102,10 @@ export const fixtureEditorSlice = createSlice({
     },
     updateScalarItemId(state, action: PayloadAction<ScalarItemIdUpdate>) {
       const currentEditor = state.openEditors[state.selectedEditor];
+
+      if (action.payload.newId in currentEditor.udr.scalarItems!) {
+        return;
+      }
 
       // Update UDR
       currentEditor.udr.scalarItems![action.payload.newId] =
@@ -118,6 +131,7 @@ export const {
   createNewEditor,
   deleteEditor,
   setSelectedEditor,
+  createNewScalarItem,
   updateScalarItem,
   updateScalarItemId,
   updateStructuredItem,
