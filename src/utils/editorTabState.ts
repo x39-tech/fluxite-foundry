@@ -2,7 +2,7 @@ import { DeviceClass } from "udr/objects/deviceClass";
 import { v4 as uuidv4 } from "uuid";
 import { getDefaultDeviceClass } from "udr/udr";
 
-interface ScalarItemEditor {
+interface ItemEditor {
   id: string;
   udrId: string;
 }
@@ -10,8 +10,8 @@ interface ScalarItemEditor {
 export interface EditorTabState {
   name: string;
   udr: DeviceClass;
-  scalarItemEditors: Array<ScalarItemEditor>;
-  structuredItemEditors: Array<string>;
+  scalarItemEditors: Array<ItemEditor>;
+  structuredItemEditors: Array<ItemEditor>;
 }
 
 export function newEditorTab(name: string): EditorTabState {
@@ -22,6 +22,8 @@ export function newEditorTab(name: string): EditorTabState {
     scalarItemEditors: Object.keys(udr.scalarItems!).map((id) => {
       return { id: uuidv4(), udrId: id };
     }),
-    structuredItemEditors: Object.keys(udr.structuredItems!),
+    structuredItemEditors: Object.keys(udr.structuredItems!).map((id) => {
+      return { id: uuidv4(), udrId: id };
+    }),
   };
 }

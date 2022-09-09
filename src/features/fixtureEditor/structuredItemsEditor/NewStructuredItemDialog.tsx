@@ -1,47 +1,44 @@
-import { useState } from "react";
 import { Button, Classes, H3 } from "@blueprintjs/core";
 import { useAppDispatch, useAppSelector } from "app/hooks";
+import { useState } from "react";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
 import { TextEditorTableRow } from "utils/components/EditorFields/TextEditorField";
-import { ScalarItemClassDisplay } from "utils/components/ScalarItemClassDisplay/ScalarItemClassDisplay";
-import { SimplePropsTable } from "utils/components/SimplePropsTable/SimplePropsTable";
-import { validateNewItemId } from "utils/inputValidation";
-import { getAllScalarItemsWithIds } from "utils/itemDatabase";
-import { createNewScalarItem } from "../fixtureEditorSlice";
 import { ItemClassSelector } from "utils/components/ItemClassSelector/ItemClassSelector";
+import { SimplePropsTable } from "utils/components/SimplePropsTable/SimplePropsTable";
+import { StructuredItemClassDisplay } from "utils/components/StructuredItemClassDisplay/StructuredItemClassDisplay";
+import { validateNewItemId } from "utils/inputValidation";
+import { getAllStructuredItemsWithIds } from "utils/itemDatabase";
 import { getUniqueItemId } from "utils/utils";
-import "./NewScalarItemDialog.css";
+import {
+  createNewStructuredItem,
+  getCurrentEditor,
+} from "../fixtureEditorSlice";
+import "./NewStructuredItemDialog.css";
 
-export interface NewScalarItemDialogProps {
+export interface NewStructuredItemDialogProps {
   isOpen: boolean;
-  onAccepted: () => void;
-  onCanceled: () => void;
+  onClose: () => void;
 }
 
-export const NewScalarItemDialog: React.FC<NewScalarItemDialogProps> = ({
-  isOpen,
-  onAccepted,
-  onCanceled,
-}) => {
-  const scalarItemIds = useAppSelector((state) =>
-    Object.keys(
-      state.fixtureEditor.openEditors[state.fixtureEditor.selectedEditor].udr
-        .scalarItems || {}
-    )
+export const NewStructuredItemDialog: React.FC<
+  NewStructuredItemDialogProps
+> = ({ isOpen, onClose }) => {
+  const structuredItemIds = useAppSelector((state) =>
+    Object.keys(getCurrentEditor(state.fixtureEditor).udr.structuredItems!)
   );
 
   const [newItemClass, setNewItemClass] = useState(
-    getAllScalarItemsWithIds()[0]
+    getAllStructuredItemsWithIds()[0]
   );
-  const [newItemId, setNewItemId] = useState(getUniqueItemId(scalarItemIds));
-  const [newItemFriendlyName, setNewItemFriendlyName] = useState("My New Item");
+  const [newItemId, setNewItemId] = useState(
+    getUniqueItemId(structuredItemIds)
+  );
 
   // Flush relevant parts of the state when the dialog was just opened
-  const [wasOpen, setWasOpen] = useState(true);
+  const [wasOpen, setWasOpen] = useState(false);
   if (isOpen !== wasOpen) {
     if (isOpen) {
-      setNewItemId(getUniqueItemId(scalarItemIds));
-      setNewItemFriendlyName("My New Item");
+      setNewItemId(getUniqueItemId(structuredItemIds));
     }
     setWasOpen(isOpen);
   }
@@ -49,21 +46,21 @@ export const NewScalarItemDialog: React.FC<NewScalarItemDialogProps> = ({
   const dispatch = useAppDispatch();
 
   return (
-    <DarkModeAwareDialog isOpen={isOpen} onClose={onCanceled}>
+    <DarkModeAwareDialog isOpen={isOpen} onClose={onClose}>
       <div className={Classes.DIALOG_HEADER}>
-        <H3>New Scalar Item</H3>
+        <H3>New Structured Item</H3>
       </div>
-      <div className={"new-scalar-item-body " + Classes.DIALOG_BODY}>
+      <div className={"new-structured-item-body " + Classes.DIALOG_BODY}>
         <SimplePropsTable>
           <tr>
             <td style={{ verticalAlign: "middle" }}>Class</td>
             <td>
               <ItemClassSelector
-                itemClasses={getAllScalarItemsWithIds()}
+                itemClasses={getAllStructuredItemsWithIds()}
                 selectedClass={newItemClass}
                 onSelectedClassChanged={setNewItemClass}
                 tooltipRenderer={(item) => (
-                  <ScalarItemClassDisplay udr={item} />
+                  <StructuredItemClassDisplay udr={item} />
                 )}
               />
             </td>
@@ -72,13 +69,8 @@ export const NewScalarItemDialog: React.FC<NewScalarItemDialogProps> = ({
             label="ID"
             defaultValue={newItemId}
             onValueChanged={setNewItemId}
-            validator={(input) => validateNewItemId(input, scalarItemIds)}
+            validator={(input) => validateNewItemId(input, structuredItemIds)}
             validationErrorPlacement="right"
-          />
-          <TextEditorTableRow
-            label="Display Name"
-            defaultValue={newItemFriendlyName}
-            onValueChanged={setNewItemFriendlyName}
           />
         </SimplePropsTable>
       </div>
@@ -88,19 +80,18 @@ export const NewScalarItemDialog: React.FC<NewScalarItemDialogProps> = ({
           icon="tick"
           onClick={() => {
             dispatch(
-              createNewScalarItem({
+              createNewStructuredItem({
                 class: newItemClass.fullyQualifiedId,
                 id: newItemId,
-                friendlyName: newItemFriendlyName,
               })
             );
 
-            onAccepted();
+            onClose();
           }}
         >
           Add
         </Button>
-        <Button onClick={onCanceled}>Cancel</Button>
+        <Button onClick={onClose}>Cancel</Button>
       </div>
     </DarkModeAwareDialog>
   );

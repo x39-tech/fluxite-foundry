@@ -1,6 +1,21 @@
+// TODO figure out how to load from file
+export const estaLibrariesJson = `
 {
   "e173": {
     "libraries": {
+      "org.esta.lib.core.1": {
+        "description": "Placeholder",
+        "publishDate": "Placeholder",
+        "author": "ESTA",
+        "structuredItemClasses": [
+          {
+            "identifier": "device-identification",
+            "name": "Device Identification",
+            "category": "",
+            "description": "Additional functional and informative details about a Device Class"
+          }
+        ]
+      },
       "org.esta.lib.intensity-color.1": {
         "description": "Placeholder",
         "publishDate": "Placeholder",
@@ -883,3 +898,4 @@
     }
   }
 }
+`;

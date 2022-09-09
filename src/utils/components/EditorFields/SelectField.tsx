@@ -2,12 +2,14 @@ import { HTMLSelect } from "@blueprintjs/core";
 
 export interface SelectFieldProps {
   values: string[];
+  displayValues?: string[];
   selectedValue: string;
   onSelectionChanged: (newValue: string) => void;
 }
 
 export const SelectField: React.FC<SelectFieldProps> = ({
   values,
+  displayValues,
   selectedValue,
   onSelectionChanged,
 }) => {
@@ -21,7 +23,9 @@ export const SelectField: React.FC<SelectFieldProps> = ({
       {values.map((value, index) => {
         return (
           <option key={index} value={value}>
-            {value}
+            {displayValues && index < displayValues.length
+              ? displayValues[index]
+              : value}
           </option>
         );
       })}

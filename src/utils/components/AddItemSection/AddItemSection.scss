@@ -1,0 +1,15 @@
+@import "@blueprintjs/core/lib/scss/variables";
+
+.add-new-item-section {
+  border-radius: 15px;
+  border: 1px solid $pt-divider-black;
+  margin: 10px 5px 10px 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow: hidden;
+
+  .#{$ns}-dark & {
+    border: 1px solid $pt-dark-divider-white;
+  }
+}

@@ -1,12 +1,22 @@
 import { Divider } from "@blueprintjs/core";
-import { DeviceIdentification } from "udr/libraries/core/structuredItems/deviceIdentification";
+import {
+  DeviceIdentification,
+  DEVICE_IDENTIFICATION_CLASS,
+} from "udr/libraries/core/structuredItems/deviceIdentification";
 import { DeviceIdentificationEditor } from "./structuredItems/DeviceIdentificationEditor";
 import "./StructuredItemsEditor.css";
 import { useAppSelector } from "app/hooks";
+import { AddItemSection } from "utils/components/AddItemSection/AddItemSection";
+import { useState } from "react";
+import { NewStructuredItemDialog } from "./NewStructuredItemDialog";
 
 const editorFactory = {
-  deviceIdentification: (udr: DeviceIdentification, key: number) => {
-    return <DeviceIdentificationEditor key={key} udr={udr} />;
+  [DEVICE_IDENTIFICATION_CLASS]: (
+    id: string,
+    udr: DeviceIdentification,
+    key: number
+  ) => {
+    return <DeviceIdentificationEditor id={id} key={key} udr={udr} />;
   },
 };
 
@@ -22,26 +32,35 @@ export const StructuredItemsEditor = () => {
   });
 
   const editors: Array<JSX.Element> = [];
-  for (const [index, structuredItemName] of structuredItemEditors.entries()) {
-    if (
-      structuredItemName in editorFactory &&
-      udr &&
-      structuredItemName in udr
-    ) {
+  for (const [index, { udrId }] of structuredItemEditors.entries()) {
+    if (udr && udrId in udr && udr[udrId].class in editorFactory) {
       editors.push(
-        editorFactory[structuredItemName as keyof typeof editorFactory](
-          udr[structuredItemName].default!,
+        editorFactory[udr[udrId].class as keyof typeof editorFactory](
+          udrId,
+          udr[udrId].default!,
           index
         )
       );
     }
   }
 
+  const [newStructuredItemDialogIsOpen, setNewStructuredItemDialogIsOpen] =
+    useState(false);
+
   return (
-    <div className="structured-items-editor">
-      <h2 className="structured-items-editor-title">Structured Items</h2>
-      <Divider />
-      <div className="structured-items-editor-container">{editors}</div>
-    </div>
+    <>
+      <div className="structured-items-editor">
+        <h2 className="structured-items-editor-title">Structured Items</h2>
+        <Divider />
+        {editors}
+        <AddItemSection
+          onClick={() => setNewStructuredItemDialogIsOpen(true)}
+        />
+      </div>
+      <NewStructuredItemDialog
+        isOpen={newStructuredItemDialogIsOpen}
+        onClose={() => setNewStructuredItemDialogIsOpen(false)}
+      />
+    </>
   );
 };

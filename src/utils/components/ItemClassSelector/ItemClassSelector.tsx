@@ -6,35 +6,37 @@ import {
   Select2,
 } from "@blueprintjs/select";
 import {
-  getAllScalarItemsWithIds,
   getQualifiedIdFriendlyName,
-  lookupScalarItemClass,
-  ScalarItemClassWithId,
-} from "utils/scalarItemDatabase";
+  ItemClassWithId,
+} from "utils/itemDatabase";
 import { Button, ButtonProps } from "@blueprintjs/core";
-import "./ScalarItemClassSelector.scss";
-import React from "react";
 import { Popover2 } from "@blueprintjs/popover2";
-import { ScalarItemClassDisplay } from "utils/components/ScalarItemClassDisplay/ScalarItemClassDisplay";
+import "./ItemClassSelector.scss";
+import { ItemClass } from "udr/objects/itemClass";
 
-const ScalarItemClassSelect = Select2.ofType<ScalarItemClassWithId>();
-
-export interface ScalarItemClassSelectorProps {
-  selectedClass: string;
-  onSelectedClassChanged: (newClass: string) => void;
+export interface ItemClassSelectorProps<T extends ItemClassWithId & ItemClass> {
+  itemClasses: T[];
+  selectedClass?: T;
+  onSelectedClassChanged: (newClass: T) => void;
+  tooltipRenderer: (item: T) => JSX.Element;
 }
 
-export const ScalarItemClassSelector: React.FC<
-  ScalarItemClassSelectorProps
-> = ({ selectedClass, onSelectedClassChanged }) => {
-  const itemRenderer: ItemRenderer<ScalarItemClassWithId> = (item, props) => {
+export const ItemClassSelector = <T extends ItemClassWithId & ItemClass>({
+  itemClasses,
+  selectedClass,
+  onSelectedClassChanged,
+  tooltipRenderer,
+}: ItemClassSelectorProps<T>) => {
+  const ItemClassSelect = Select2.ofType<T>();
+
+  const itemRenderer: ItemRenderer<T> = (item, props) => {
     if (!props.modifiers.matchesPredicate) {
       return null;
     }
 
     return (
       <Popover2
-        content={<ScalarItemClassDisplay udr={item} />}
+        content={tooltipRenderer(item)}
         usePortal={false}
         position="right"
         minimal={true}
@@ -47,17 +49,18 @@ export const ScalarItemClassSelector: React.FC<
           minimal={true}
           fill={true}
           alignText="left"
-          {...getScalarItemRenderProps(item, props)}
-          icon={selectedClass === item.fullyQualifiedId ? "tick" : "blank"}
+          {...getItemRenderProps(item, props)}
+          icon={
+            selectedClass?.fullyQualifiedId === item.fullyQualifiedId
+              ? "tick"
+              : "blank"
+          }
         />
       </Popover2>
     );
   };
 
-  const itemPredicate: ItemPredicate<ScalarItemClassWithId> = (
-    query,
-    itemClass
-  ) => {
+  const itemPredicate: ItemPredicate<T> = (query, itemClass) => {
     const lcQuery = query.toLowerCase();
     const matches = (str: string) => {
       return str.toLowerCase().indexOf(lcQuery) >= 0;
@@ -71,7 +74,7 @@ export const ScalarItemClassSelector: React.FC<
     );
   };
 
-  const renderMenu: ItemListRenderer<ScalarItemClassWithId> = ({
+  const renderMenu: ItemListRenderer<T> = ({
     items,
     itemsParentRef,
     query,
@@ -98,7 +101,7 @@ export const ScalarItemClassSelector: React.FC<
 
     return (
       <div
-        className="scalar-item-class-list"
+        className="item-class-list"
         {...(menuProps as React.HTMLAttributes<HTMLDivElement> | undefined)}
       >
         {renderedItems}
@@ -107,14 +110,12 @@ export const ScalarItemClassSelector: React.FC<
   };
 
   return (
-    <ScalarItemClassSelect
-      items={getAllScalarItemsWithIds()}
+    <ItemClassSelect
+      items={itemClasses}
       itemRenderer={itemRenderer}
       itemListRenderer={renderMenu}
       itemPredicate={itemPredicate}
-      onItemSelect={(newItemClass) =>
-        onSelectedClassChanged(newItemClass.fullyQualifiedId)
-      }
+      onItemSelect={onSelectedClassChanged}
       fill={true}
     >
       <Button
@@ -123,21 +124,16 @@ export const ScalarItemClassSelector: React.FC<
         fill={true}
         text={
           selectedClass
-            ? lookupScalarItemClass(selectedClass)?.name ||
-              "Select an item class..."
+            ? selectedClass.name || "Select an item class..."
             : "Select an item class..."
         }
       />
-    </ScalarItemClassSelect>
+    </ItemClassSelect>
   );
 };
 
-export function getDefaultSelectedClass(): string {
-  return getAllScalarItemsWithIds()[0].fullyQualifiedId;
-}
-
-function getScalarItemRenderProps(
-  item: ScalarItemClassWithId,
+function getItemRenderProps(
+  item: ItemClass,
   { handleClick, handleFocus, modifiers }: IItemRendererProps
 ): ButtonProps & React.Attributes {
   return {
@@ -148,9 +144,7 @@ function getScalarItemRenderProps(
     text: (
       <>
         <span>{item.name}</span>
-        <span className="scalar-item-class-selector-category">
-          {item.category}
-        </span>
+        <span className="item-class-selector-category">{item.category}</span>
       </>
     ),
   };

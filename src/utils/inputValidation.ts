@@ -50,7 +50,7 @@ export function validateStringIsNumberAndBetweenMinAndMaxOrEmpty(
   return { isValid: true };
 }
 
-export function validateNewScalarItemId(
+export function validateNewItemId(
   input: string,
   existingItemIds: string[]
 ): InputValidationResult {

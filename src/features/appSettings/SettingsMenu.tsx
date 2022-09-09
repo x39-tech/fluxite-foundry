@@ -1,16 +1,16 @@
 import React from "react";
 import { Button, Icon, Menu } from "@blueprintjs/core";
-import { darkModeToggled, threeDViewToggled } from "./appSettingsSlice";
+import { darkModeToggled } from "./appSettingsSlice";
 import { MenuItem2, Popover2 } from "@blueprintjs/popover2";
 import { useAppDispatch, useAppSelector } from "app/hooks";
+
+function checkedIf(condition: boolean): JSX.Element {
+  return condition ? <Icon icon="tick" /> : <></>;
+}
 
 export const SettingsMenu: React.FC<{}> = () => {
   const settings = useAppSelector((state) => state.appSettings);
   const dispatch = useAppDispatch();
-
-  const checkedIf = (condition: boolean) => {
-    return condition ? <Icon icon="tick" /> : <></>;
-  };
 
   const settingsMenu = (
     <Menu>
@@ -22,6 +22,7 @@ export const SettingsMenu: React.FC<{}> = () => {
           dispatch(darkModeToggled());
         }}
       />
+      {/*
       <MenuItem2
         text="Show 3D View"
         icon="cube"
@@ -30,6 +31,7 @@ export const SettingsMenu: React.FC<{}> = () => {
           dispatch(threeDViewToggled());
         }}
       />
+      */}
     </Menu>
   );
 

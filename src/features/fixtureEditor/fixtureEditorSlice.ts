@@ -1,8 +1,9 @@
-import { createSlice, current, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
 import { ScalarItem, StructuredItemValue } from "udr/objects/item";
 import { EditorTabState, newEditorTab } from "utils/editorTabState";
 import { Access, Lifetime } from "udr/util/enums";
+import { getDefaultStructuredItemFactory } from "utils/itemDatabase";
 
 interface FixtureEditorState {
   openEditors: {
@@ -13,23 +14,12 @@ interface FixtureEditorState {
 }
 
 const initialState: FixtureEditorState = {
-  openEditors: {
-    "1f1c3350-1a14-4a4c-b90f-d8b076b4ae02": newEditorTab("My Fixture"),
-    "1f1c3350-1a14-4a4c-b90f-d8b076b4ae03": newEditorTab("My Fixture 2"),
-  },
-  editorTabOrder: [
-    "1f1c3350-1a14-4a4c-b90f-d8b076b4ae02",
-    "1f1c3350-1a14-4a4c-b90f-d8b076b4ae03",
-  ],
-  selectedEditor: "1f1c3350-1a14-4a4c-b90f-d8b076b4ae02",
+  openEditors: {},
+  editorTabOrder: [],
+  selectedEditor: "",
 };
 
-interface StructuredItemUpdate {
-  name: string;
-  newValue: StructuredItemValue;
-}
-
-interface NewScalarItem {
+export interface NewScalarItem {
   class: string;
   id: string;
   friendlyName: string;
@@ -43,6 +33,20 @@ interface ScalarItemUpdate {
 interface ScalarItemIdUpdate {
   id: string;
   newId: string;
+}
+
+interface NewStructuredItem {
+  class: string;
+  id: string;
+}
+
+interface StructuredItemUpdate {
+  id: string;
+  newValue: StructuredItemValue;
+}
+
+export function getCurrentEditor(state: FixtureEditorState): EditorTabState {
+  return state.openEditors[state.selectedEditor];
 }
 
 export const fixtureEditorSlice = createSlice({
@@ -77,7 +81,7 @@ export const fixtureEditorSlice = createSlice({
       state.selectedEditor = action.payload;
     },
     createNewScalarItem(state, action: PayloadAction<NewScalarItem>) {
-      const currentEditor = state.openEditors[state.selectedEditor];
+      const currentEditor = getCurrentEditor(state);
 
       if (action.payload.id in currentEditor.udr.scalarItems!) {
         return;
@@ -96,12 +100,11 @@ export const fixtureEditorSlice = createSlice({
       });
     },
     updateScalarItem(state, action: PayloadAction<ScalarItemUpdate>) {
-      state.openEditors[state.selectedEditor].udr.scalarItems![
-        action.payload.id
-      ] = action.payload.newValue;
+      getCurrentEditor(state).udr.scalarItems![action.payload.id] =
+        action.payload.newValue;
     },
     updateScalarItemId(state, action: PayloadAction<ScalarItemIdUpdate>) {
-      const currentEditor = state.openEditors[state.selectedEditor];
+      const currentEditor = getCurrentEditor(state);
 
       if (action.payload.newId in currentEditor.udr.scalarItems!) {
         return;
@@ -120,23 +123,42 @@ export const fixtureEditorSlice = createSlice({
       });
     },
     deleteScalarItem(state, action: PayloadAction<string>) {
-      const currentEditor = state.openEditors[state.selectedEditor];
+      const currentEditor = getCurrentEditor(state);
       delete currentEditor.udr.scalarItems![action.payload];
       currentEditor.scalarItemEditors = currentEditor.scalarItemEditors.filter(
         (value) => value.udrId !== action.payload
       );
     },
+    createNewStructuredItem(state, action: PayloadAction<NewStructuredItem>) {
+      const currentEditor = getCurrentEditor(state);
+
+      if (action.payload.id in currentEditor.udr.structuredItems!) {
+        return;
+      }
+
+      const factory = getDefaultStructuredItemFactory();
+      if (!(action.payload.class in factory)) {
+        return;
+      }
+
+      currentEditor.udr.structuredItems![action.payload.id] =
+        factory[action.payload.class]();
+
+      currentEditor.structuredItemEditors.push({
+        id: uuidv4(),
+        udrId: action.payload.id,
+      });
+    },
     updateStructuredItem(state, action: PayloadAction<StructuredItemUpdate>) {
-      state.openEditors[state.selectedEditor].udr.structuredItems![
-        action.payload.name
-      ].default = action.payload.newValue;
+      getCurrentEditor(state).udr.structuredItems![action.payload.id].default =
+        action.payload.newValue;
     },
     deleteStructuredItem(state, action: PayloadAction<string>) {
-      const currentEditor = state.openEditors[state.selectedEditor];
+      const currentEditor = getCurrentEditor(state);
       delete currentEditor.udr.structuredItems![action.payload];
       currentEditor.structuredItemEditors =
         currentEditor.structuredItemEditors.filter(
-          (value) => value !== action.payload
+          (value) => value.udrId !== action.payload
         );
     },
   },
@@ -150,6 +172,7 @@ export const {
   updateScalarItem,
   updateScalarItemId,
   deleteScalarItem,
+  createNewStructuredItem,
   updateStructuredItem,
   deleteStructuredItem,
 } = fixtureEditorSlice.actions;

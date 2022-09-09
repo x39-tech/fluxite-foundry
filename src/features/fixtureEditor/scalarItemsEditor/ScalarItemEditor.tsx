@@ -5,7 +5,13 @@ import { AppDispatch } from "app/store";
 import produce from "immer";
 import { ScalarItem } from "udr/objects/item";
 import { ScalarItemClass } from "udr/objects/itemClass";
-import { Access, DataType, Lifetime } from "udr/util/enums";
+import {
+  Access,
+  accessFriendlyNames,
+  DataType,
+  Lifetime,
+  lifetimeFriendlyNames,
+} from "udr/util/enums";
 import {
   ClearableNumericInputTableRow,
   NumericInputTableRow,
@@ -17,11 +23,11 @@ import { ScalarItemClassDisplay } from "utils/components/ScalarItemClassDisplay/
 import { SimplePropsTable } from "utils/components/SimplePropsTable/SimplePropsTable";
 import { DispatchOnChangeFactory } from "utils/dispatchOnChangeFactory";
 import {
-  validateNewScalarItemId,
+  validateNewItemId,
   validateStringIsNumberAndBetweenMinAndMaxOrEmpty,
   validateStringIsNumberOrEmpty,
 } from "utils/inputValidation";
-import { lookupScalarItemClass } from "utils/scalarItemDatabase";
+import { lookupScalarItemClass } from "utils/itemDatabase";
 import {
   deleteScalarItem,
   updateScalarItem,
@@ -192,6 +198,11 @@ function getScalarItemPropsTable(
     }
   );
 
+  const accessValues =
+    udr.lifetime === Lifetime.STATIC
+      ? Object.values(Access).filter((value) => value !== Access.READWRITE)
+      : Object.values(Access);
+
   return (
     <SimplePropsTable>
       <tr>
@@ -213,7 +224,7 @@ function getScalarItemPropsTable(
           dispatch(updateScalarItemId({ id, newId: newValue }));
         }}
         validator={(input) =>
-          validateNewScalarItemId(
+          validateNewItemId(
             input,
             existingItemIds.filter((value) => value !== id)
           )
@@ -228,13 +239,8 @@ function getScalarItemPropsTable(
       />
       <SelectTableRow
         label="Access"
-        values={
-          udr.lifetime === Lifetime.STATIC
-            ? Object.values(Access).filter(
-                (value) => value !== Access.READWRITE
-              )
-            : Object.values(Access)
-        }
+        values={accessValues}
+        displayValues={accessValues.map((value) => accessFriendlyNames[value])}
         selectedValue={udr.access}
         onSelectionChanged={onChangeFactory.getFn((draft, newValue) => {
           draft.access = newValue as Access;
@@ -243,6 +249,9 @@ function getScalarItemPropsTable(
       <SelectTableRow
         label="Lifetime"
         values={Object.values(Lifetime)}
+        displayValues={Object.values(Lifetime).map(
+          (value) => lifetimeFriendlyNames[value]
+        )}
         selectedValue={udr.lifetime}
         onSelectionChanged={onChangeFactory.getFn((draft, newValue) => {
           draft.lifetime = newValue as Lifetime;

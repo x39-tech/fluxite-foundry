@@ -21,12 +21,13 @@ import { TagInputTableRow } from "utils/components/EditorFields/TagInputField";
 import { ItemEditor } from "utils/components/ItemEditor/ItemEditor";
 
 export interface DeviceIdentificationEditorProps {
+  id: string;
   udr: DeviceIdentification;
 }
 
 export const DeviceIdentificationEditor: React.FC<
   DeviceIdentificationEditorProps
-> = ({ udr }) => {
+> = ({ id, udr }) => {
   const dispatch = useAppDispatch();
 
   const onChangeFactory = new DispatchOnChangeFactory(
@@ -34,7 +35,7 @@ export const DeviceIdentificationEditor: React.FC<
     (newValue, changeRecipe) => {
       dispatch(
         updateStructuredItem({
-          name: "deviceIdentification",
+          id,
           newValue: produce(udr, (draft) => {
             changeRecipe(draft, newValue);
           }),
@@ -48,7 +49,7 @@ export const DeviceIdentificationEditor: React.FC<
       expanded
       title="Device Identification"
       backgroundColor={{ light: Colors.BLUE5, dark: Colors.BLUE1 }}
-      onDelete={() => dispatch(deleteStructuredItem("deviceIdentification"))}
+      onDelete={() => dispatch(deleteStructuredItem(id))}
     >
       <div className="structured-item-collapse-body">
         <SimplePropsTable name="Manufacturer Information">

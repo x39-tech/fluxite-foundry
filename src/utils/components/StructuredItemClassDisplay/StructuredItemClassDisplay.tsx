@@ -1,14 +1,13 @@
 import { HTMLTable } from "@blueprintjs/core";
-import { ScalarItemClass } from "udr/objects/itemClass";
-import { dataTypeFriendlyNames } from "udr/util/enums";
+import { StructuredItemClass } from "udr/objects/itemClass";
 
-export interface ScalarItemClassDisplayProps {
-  udr: ScalarItemClass;
+export interface StructuredItemClassDisplayProps {
+  udr: StructuredItemClass;
 }
 
-export const ScalarItemClassDisplay: React.FC<ScalarItemClassDisplayProps> = ({
-  udr,
-}) => {
+export const StructuredItemClassDisplay: React.FC<
+  StructuredItemClassDisplayProps
+> = ({ udr }) => {
   // TODO: Revisit this formatting, ideally tables should be sized reasonably to their contents
   return (
     <HTMLTable striped condensed style={{ width: "400px" }}>
@@ -34,22 +33,6 @@ export const ScalarItemClassDisplay: React.FC<ScalarItemClassDisplayProps> = ({
           <td>ID</td>
           <td>{udr.identifier}</td>
         </tr>
-        <tr>
-          <td>Data Type</td>
-          <td>{dataTypeFriendlyNames[udr.dataType] || udr.dataType}</td>
-        </tr>
-        <tr>
-          <td>Unit</td>
-          <td>{udr.unit || "N/A"}</td>
-        </tr>
-        {udr.default !== undefined ? (
-          <tr>
-            <td>Default Value</td>
-            <td>{udr.default}</td>
-          </tr>
-        ) : (
-          <></>
-        )}
       </tbody>
     </HTMLTable>
   );

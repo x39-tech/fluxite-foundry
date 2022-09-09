@@ -1,35 +1,24 @@
 import { DataType, FileType, Unit } from "../util/enums";
 
-export interface BulkItemClass {
+export interface ItemClass {
   identifier: string;
   name: string;
   category: string;
   description: string;
+}
+
+export interface BulkItemClass extends ItemClass {
   fileType: FileType;
   fileFormat: string;
 }
 
-export interface ScalarItemClass {
-  identifier: string;
-  name: string;
-  category: string;
-  description: string;
+export interface ScalarItemClass extends ItemClass {
   dataType: DataType;
   unit?: Unit;
   default?: number | string | boolean;
   inherits?: string;
 }
 
-export interface StreamingStructuredItemClass {
-  identifier: string;
-  name: string;
-  category: string;
-  description: string;
-}
+export interface StreamingStructuredItemClass extends ItemClass {}
 
-export interface StructuredItemClass {
-  identifier: string;
-  name: string;
-  category: string;
-  description: string;
-}
+export interface StructuredItemClass extends ItemClass {}

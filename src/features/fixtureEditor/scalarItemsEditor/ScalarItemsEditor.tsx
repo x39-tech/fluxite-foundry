@@ -1,6 +1,7 @@
 import { Button, Divider } from "@blueprintjs/core";
 import { useAppSelector } from "app/hooks";
 import { useState } from "react";
+import { AddItemSection } from "utils/components/AddItemSection/AddItemSection";
 import { NewScalarItemDialog } from "./NewScalarItemDialog";
 import { ScalarItemEditor } from "./ScalarItemEditor";
 import "./ScalarItemsEditor.scss";
@@ -35,13 +36,7 @@ export const ScalarItemsEditor = () => {
         <h2 className="scalar-items-editor-title">Scalar Items</h2>
         <Divider />
         {scalarItemEditors}
-        <div className="add-scalar-item-section">
-          <Button
-            icon="plus"
-            minimal={true}
-            onClick={() => setNewScalarItemDialogIsOpen(true)}
-          />
-        </div>
+        <AddItemSection onClick={() => setNewScalarItemDialogIsOpen(true)} />
       </div>
       <NewScalarItemDialog
         isOpen={newScalarItemDialogIsOpen}

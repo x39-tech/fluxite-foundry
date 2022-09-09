@@ -1,4 +1,4 @@
-import { lookupScalarItemClass } from "./scalarItemDatabase";
+import { lookupScalarItemClass } from "./itemDatabase";
 
 describe("lookupScalarItemClass", () => {
   it("returns an existing scalar item class successfully", () => {

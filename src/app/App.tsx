@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  Alignment,
-  Button,
-  Callout,
-  Classes,
-  Divider,
-  Navbar,
-} from "@blueprintjs/core";
+import { Alignment, Button, Classes, Divider, Navbar } from "@blueprintjs/core";
 import { EditorTitleTab } from "utils/components/EditorTitleTab/EditorTitleTab";
 import { FixtureEditor } from "features/fixtureEditor/FixtureEditor";
 import { SettingsMenu } from "features/appSettings/SettingsMenu";
@@ -26,6 +19,7 @@ function getEditorComponent(id: string, editor: EditorTabState) {
 }
 
 export const App: React.FC<{}> = () => {
+  const settings = useAppSelector((state) => state.appSettings);
   const editors = useAppSelector((state) => {
     return {
       openEditors: state.fixtureEditor.openEditors,
@@ -34,7 +28,6 @@ export const App: React.FC<{}> = () => {
     };
   });
   const currentEditor = editors.openEditors[editors.selectedEditor];
-  const settings = useAppSelector((state) => state.appSettings);
 
   const dispatch = useAppDispatch();
 
@@ -62,8 +55,16 @@ export const App: React.FC<{}> = () => {
             );
           })}
           <Popover2
-            content={<Callout>Get started by adding a new editor!</Callout>}
+            content={
+              <div className="get-started-callout">
+                <p>
+                  Get started by adding a new editor, or import an existing UDR
+                  document using File → Import.
+                </p>
+              </div>
+            }
             isOpen={currentEditor === undefined}
+            position="bottom"
           >
             <Button
               icon="add"

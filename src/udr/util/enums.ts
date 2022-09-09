@@ -1,13 +1,37 @@
+//////////////////////////////////////////////////////////////////////////////
+// Access
+//////////////////////////////////////////////////////////////////////////////
+
 export enum Access {
   READONLY = "readonly",
   READWRITE = "readwrite",
 }
+
+export const accessFriendlyNames = {
+  [Access.READONLY]: "Read-Only",
+  [Access.READWRITE]: "Read-Write",
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// Lifetime
+//////////////////////////////////////////////////////////////////////////////
 
 export enum Lifetime {
   STATIC = "static",
   PERSISTENT = "persistent",
   RUNTIME = "runtime",
 }
+
+export const lifetimeFriendlyNames = Object.values(Lifetime).reduce(
+  (previousValue, currentValue) => {
+    return { [currentValue]: toTitleCase(currentValue), ...previousValue };
+  },
+  {}
+) as FriendlyNameMap<Lifetime>;
+
+//////////////////////////////////////////////////////////////////////////////
+// Data Type
+//////////////////////////////////////////////////////////////////////////////
 
 export enum DataType {
   NUMBER = "number",
@@ -16,6 +40,21 @@ export enum DataType {
   BOOLEAN = "boolean",
   UUID = "uuid",
 }
+
+export const dataTypeFriendlyNames = Object.values(DataType).reduce(
+  (previousValue, currentValue) => {
+    if (currentValue === DataType.UUID) {
+      return { [currentValue]: currentValue.toUpperCase(), ...previousValue };
+    } else {
+      return { [currentValue]: toTitleCase(currentValue), ...previousValue };
+    }
+  },
+  {}
+) as FriendlyNameMap<DataType>;
+
+//////////////////////////////////////////////////////////////////////////////
+// Unit
+//////////////////////////////////////////////////////////////////////////////
 
 export enum Unit {
   DEGREE_CELSIUS = "degree-celsius",
@@ -54,6 +93,10 @@ export enum Unit {
   RPM = "rpm",
 }
 
+//////////////////////////////////////////////////////////////////////////////
+// File Type
+//////////////////////////////////////////////////////////////////////////////
+
 export enum FileType {
   MOVIE = "movie",
   VIDEO = "video",
@@ -63,6 +106,10 @@ export enum FileType {
   SYMBOL = "symbol",
   OTHER = "other",
 }
+
+//////////////////////////////////////////////////////////////////////////////
+// Device Categories and Subcategories
+//////////////////////////////////////////////////////////////////////////////
 
 export enum DeviceCategory {
   LIGHTING = "lighting",
@@ -180,3 +227,17 @@ export const deviceSubCategoryMap: {
   ),
   [DeviceCategory.OTHER]: Object.values(OtherDeviceSubcategory),
 };
+
+//////////////////////////////////////////////////////////////////////////////
+// Utils
+//////////////////////////////////////////////////////////////////////////////
+
+function toTitleCase(str: string): string {
+  return str
+    .toLowerCase()
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+type FriendlyNameMap<EnumType extends string> = Record<EnumType, string>;

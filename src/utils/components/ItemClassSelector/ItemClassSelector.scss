@@ -1,6 +1,6 @@
 @import "@blueprintjs/core/lib/scss/variables";
 
-.scalar-item-class-list {
+.item-class-list {
   display: flex;
   flex-direction: column;
   max-height: 300px;
@@ -13,10 +13,10 @@
   gap: 50px;
 }
 
-.scalar-item-class-selector-category {
+.item-class-selector-category {
   color: $pt-text-color-muted;
-}
 
-.#{$ns}-dark .scalar-item-class-selector-category {
-  color: $pt-dark-text-color-muted;
+  .#{$ns}-dark & {
+    color: $pt-dark-text-color-muted;
+  }
 }

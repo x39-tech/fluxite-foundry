@@ -13,9 +13,7 @@ export interface DeviceClass {
   history: Record<string, string>;
   deviceLibrary?: Library;
   scalarItems?: Record<string, ScalarItem>;
-  structuredItems?: {
-    [key: string]: StructuredItem;
-  };
+  structuredItems?: Record<string, StructuredItem>;
   streamingStructuredItems?: Record<string, StreamingStructuredItem>;
   bulkItems?: Record<string, BulkItem>;
   // localization
