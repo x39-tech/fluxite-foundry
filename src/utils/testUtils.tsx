@@ -8,7 +8,8 @@ import { Provider } from "react-redux";
 import appSettings from "features/appSettings/appSettingsSlice";
 import fixtureEditor from "features/fixtureEditor/fixtureEditorSlice";
 
-import type { AppStore, RootState } from "../app/store";
+import type { AppStore } from "app/store";
+import { RootState } from "app/rootState";
 
 // This type interface extends the default options for render from RTL, as well
 // as allows the user to specify other things such as initialState, store.

@@ -1,19 +1,15 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { loadAppSettings, saveAppSettings } from "./appSettings";
-
-const initialState = loadAppSettings();
+import { defaultAppSettings } from "./appSettingsState";
 
 export const appSettingsSlice = createSlice({
   name: "appSettings",
-  initialState,
+  initialState: defaultAppSettings(),
   reducers: {
     darkModeToggled(state) {
       state.darkMode = !state.darkMode;
-      saveAppSettings(state);
     },
     threeDViewToggled(state) {
       state.threeDViewEnabled = !state.threeDViewEnabled;
-      saveAppSettings(state);
     },
   },
 });

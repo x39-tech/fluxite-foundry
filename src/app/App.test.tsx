@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import App from "./App";
 import { renderWithProviders } from "utils/testUtils";
-import { newEditorTab } from "utils/editorTabState";
+import { newFixtureEditor } from "features/fixtureEditor/fixtureEditorState";
 
 test("Renders a tooltip and add fixture button when no fixture editor is open", async () => {
   renderWithProviders(<App />);
@@ -21,7 +21,8 @@ test("Renders a fixture editor when one is open", async () => {
       },
       fixtureEditor: {
         openEditors: {
-          "1f1c3350-1a14-4a4c-b90f-d8b076b4ae02": newEditorTab("My Fixture"),
+          "1f1c3350-1a14-4a4c-b90f-d8b076b4ae02":
+            newFixtureEditor("My Fixture"),
         },
         editorTabOrder: ["1f1c3350-1a14-4a4c-b90f-d8b076b4ae02"],
         selectedEditor: "1f1c3350-1a14-4a4c-b90f-d8b076b4ae02",

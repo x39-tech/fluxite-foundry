@@ -7,14 +7,14 @@ interface ItemEditor {
   udrId: string;
 }
 
-export interface EditorTabState {
+export interface FixtureEditorState {
   name: string;
   udr: DeviceClass;
   scalarItemEditors: Array<ItemEditor>;
   structuredItemEditors: Array<ItemEditor>;
 }
 
-export function newEditorTab(name: string): EditorTabState {
+export function newFixtureEditor(name: string): FixtureEditorState {
   const udr = getDefaultDeviceClass();
   return {
     name,

@@ -1,4 +1,4 @@
-import { Button, Divider } from "@blueprintjs/core";
+import { Divider } from "@blueprintjs/core";
 import { useAppSelector } from "app/hooks";
 import { useState } from "react";
 import { AddItemSection } from "utils/components/AddItemSection/AddItemSection";

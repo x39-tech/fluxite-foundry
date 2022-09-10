@@ -1,23 +1,16 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
 import { ScalarItem, StructuredItemValue } from "udr/objects/item";
-import { EditorTabState, newEditorTab } from "utils/editorTabState";
+import {
+  FixtureEditorState,
+  newFixtureEditor,
+} from "features/fixtureEditor/fixtureEditorState";
 import { Access, Lifetime } from "udr/util/enums";
 import { getDefaultStructuredItemFactory } from "utils/itemDatabase";
-
-interface FixtureEditorState {
-  openEditors: {
-    [id: string]: EditorTabState;
-  };
-  editorTabOrder: string[];
-  selectedEditor: string;
-}
-
-const initialState: FixtureEditorState = {
-  openEditors: {},
-  editorTabOrder: [],
-  selectedEditor: "",
-};
+import {
+  defaultFixtureEditorsState,
+  FixtureEditorsState,
+} from "./fixtureEditorsState";
 
 export interface NewScalarItem {
   class: string;
@@ -45,17 +38,19 @@ interface StructuredItemUpdate {
   newValue: StructuredItemValue;
 }
 
-export function getCurrentEditor(state: FixtureEditorState): EditorTabState {
+export function getCurrentEditor(
+  state: FixtureEditorsState
+): FixtureEditorState {
   return state.openEditors[state.selectedEditor];
 }
 
 export const fixtureEditorSlice = createSlice({
   name: "fixtureEditor",
-  initialState,
+  initialState: defaultFixtureEditorsState(),
   reducers: {
     createNewEditor(state) {
       const newId = uuidv4();
-      state.openEditors[newId] = newEditorTab("New Device");
+      state.openEditors[newId] = newFixtureEditor("New Device");
       state.editorTabOrder.push(newId);
       state.selectedEditor = newId;
     },

@@ -9,12 +9,12 @@ import {
   deleteEditor,
   setSelectedEditor,
 } from "features/fixtureEditor/fixtureEditorSlice";
-import { EditorTabState } from "utils/editorTabState";
+import { FixtureEditorState } from "features/fixtureEditor/fixtureEditorState";
 import "./App.scss";
 import { useAppDispatch, useAppSelector } from "./hooks";
 import { Popover2 } from "@blueprintjs/popover2";
 
-function getEditorComponent(id: string, editor: EditorTabState) {
+function getEditorComponent(id: string, editor: FixtureEditorState) {
   return <FixtureEditor key={id} title={editor.name} />;
 }
 
