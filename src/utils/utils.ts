@@ -1,9 +1,12 @@
-export function getUniqueItemId(existingItemIds: string[]): string {
-  let newItemId = "my-new-item";
+export function getUniqueItemId(
+  existingItemIds: string[],
+  defaultId: string = "my-new-item"
+): string {
+  let newItemId = defaultId;
   let deDupNumber = 1;
 
   while (existingItemIds.includes(newItemId)) {
-    newItemId = `my-new-item-${deDupNumber++}`;
+    newItemId = `${defaultId}-${deDupNumber++}`;
   }
 
   return newItemId;

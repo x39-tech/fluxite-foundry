@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { ScalarItem, StructuredItemValue } from "udr/objects/item";
 import {
   FixtureEditorState,
+  importFixtureEditor,
   newFixtureEditor,
 } from "features/fixtureEditor/fixtureEditorState";
 import { Access, Lifetime } from "udr/util/enums";
@@ -11,6 +12,12 @@ import {
   defaultFixtureEditorsState,
   FixtureEditorsState,
 } from "./fixtureEditorsState";
+import { DeviceClass } from "udr/objects/deviceClass";
+
+interface ImportedDeviceClass {
+  id: string;
+  udr: DeviceClass;
+}
 
 export interface NewScalarItem {
   class: string;
@@ -50,7 +57,18 @@ export const fixtureEditorSlice = createSlice({
   reducers: {
     createNewEditor(state) {
       const newId = uuidv4();
-      state.openEditors[newId] = newFixtureEditor("New Device");
+      state.openEditors[newId] = newFixtureEditor(
+        Object.values(state.openEditors).map((editor) => editor.deviceClassId)
+      );
+      state.editorTabOrder.push(newId);
+      state.selectedEditor = newId;
+    },
+    importEditor(state, action: PayloadAction<ImportedDeviceClass>) {
+      const newId = uuidv4();
+      state.openEditors[newId] = importFixtureEditor(
+        action.payload.id,
+        action.payload.udr
+      );
       state.editorTabOrder.push(newId);
       state.selectedEditor = newId;
     },
@@ -161,6 +179,7 @@ export const fixtureEditorSlice = createSlice({
 
 export const {
   createNewEditor,
+  importEditor,
   deleteEditor,
   setSelectedEditor,
   createNewScalarItem,

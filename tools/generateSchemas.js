@@ -28,6 +28,7 @@ function createSchema(file, type) {
 }
 
 const schemaHash = createSchema("src/app/rootState.ts", "RootState");
+createSchema("src/udr/objects/document.ts", "Document");
 
 fs.writeFile(
   outputDir + "/hash.ts",

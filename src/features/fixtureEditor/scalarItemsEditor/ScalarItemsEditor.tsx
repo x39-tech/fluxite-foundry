@@ -40,10 +40,7 @@ export const ScalarItemsEditor = () => {
       </div>
       <NewScalarItemDialog
         isOpen={newScalarItemDialogIsOpen}
-        onAccepted={() => {
-          setNewScalarItemDialogIsOpen(false);
-        }}
-        onCanceled={() => {
+        onClose={() => {
           setNewScalarItemDialogIsOpen(false);
         }}
       />

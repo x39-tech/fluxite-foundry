@@ -1,6 +1,7 @@
 import { DeviceClass } from "udr/objects/deviceClass";
 import { v4 as uuidv4 } from "uuid";
 import { getDefaultDeviceClass } from "udr/udr";
+import { getUniqueItemId } from "utils/utils";
 
 interface ItemEditor {
   id: string;
@@ -8,16 +9,27 @@ interface ItemEditor {
 }
 
 export interface FixtureEditorState {
-  name: string;
+  deviceClassId: string;
   udr: DeviceClass;
   scalarItemEditors: Array<ItemEditor>;
   structuredItemEditors: Array<ItemEditor>;
 }
 
-export function newFixtureEditor(name: string): FixtureEditorState {
-  const udr = getDefaultDeviceClass();
+export function newFixtureEditor(
+  existingEditorIds: string[]
+): FixtureEditorState {
+  return importFixtureEditor(
+    getUniqueItemId(existingEditorIds, "myDevice"),
+    getDefaultDeviceClass()
+  );
+}
+
+export function importFixtureEditor(
+  id: string,
+  udr: DeviceClass
+): FixtureEditorState {
   return {
-    name,
+    deviceClassId: id,
     udr,
     scalarItemEditors: Object.keys(udr.scalarItems!).map((id) => {
       return { id: uuidv4(), udrId: id };

@@ -1,21 +1,14 @@
 import React from "react";
-import { Alignment, Button, Classes, Divider, Navbar } from "@blueprintjs/core";
-import { EditorTitleTab } from "utils/components/EditorTitleTab/EditorTitleTab";
+import { Classes, Divider } from "@blueprintjs/core";
 import { FixtureEditor } from "features/fixtureEditor/FixtureEditor";
-import { SettingsMenu } from "features/appSettings/SettingsMenu";
 import { Fixture3DView } from "features/fixture3DView/Fixture3DView";
-import {
-  createNewEditor,
-  deleteEditor,
-  setSelectedEditor,
-} from "features/fixtureEditor/fixtureEditorSlice";
 import { FixtureEditorState } from "features/fixtureEditor/fixtureEditorState";
 import "./App.scss";
-import { useAppDispatch, useAppSelector } from "./hooks";
-import { Popover2 } from "@blueprintjs/popover2";
+import { useAppSelector } from "./hooks";
+import { TopNavBar } from "features/topNavBar/TopNavBar";
 
 function getEditorComponent(id: string, editor: FixtureEditorState) {
-  return <FixtureEditor key={id} title={editor.name} />;
+  return <FixtureEditor key={id} title={editor.deviceClassId} />;
 }
 
 export const App: React.FC<{}> = () => {
@@ -29,56 +22,9 @@ export const App: React.FC<{}> = () => {
   });
   const currentEditor = editors.openEditors[editors.selectedEditor];
 
-  const dispatch = useAppDispatch();
-
   return (
     <div className={settings.darkMode ? "app " + Classes.DARK : "app"}>
-      <Navbar>
-        <Navbar.Group align={Alignment.LEFT}>
-          <Navbar.Heading>UDR Builder</Navbar.Heading>
-          <Navbar.Divider />
-          {editors.editorTabOrder.map((id) => {
-            const editor = editors.openEditors[id];
-            return (
-              <EditorTitleTab
-                key={id}
-                name={editor.name}
-                id={id}
-                active={id === editors.selectedEditor}
-                onSelect={(id) => {
-                  dispatch(setSelectedEditor(id));
-                }}
-                onDelete={(id) => {
-                  dispatch(deleteEditor(id));
-                }}
-              />
-            );
-          })}
-          <Popover2
-            content={
-              <div className="get-started-callout">
-                <p>
-                  Get started by adding a new editor, or import an existing UDR
-                  document using File → Import.
-                </p>
-              </div>
-            }
-            isOpen={currentEditor === undefined}
-            position="bottom"
-          >
-            <Button
-              icon="add"
-              aria-label="Add New Editor"
-              onClick={() => {
-                dispatch(createNewEditor());
-              }}
-            />
-          </Popover2>
-        </Navbar.Group>
-        <Navbar.Group align={Alignment.RIGHT}>
-          <SettingsMenu />
-        </Navbar.Group>
-      </Navbar>
+      <TopNavBar />
       <div className="display-area">
         {currentEditor ? (
           getEditorComponent(editors.selectedEditor, currentEditor)

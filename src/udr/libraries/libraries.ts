@@ -3,7 +3,7 @@ import {
   ScalarItemClass,
   StructuredItemClass,
 } from "udr/objects/itemClass";
-import { estaLibrariesJson } from "./estaLibraries";
+import allEstaLibraries from "./estaLibraries.json";
 
 export interface ItemDatabase<ClassType extends ItemClass> {
   [key: string]: ClassType[];
@@ -12,7 +12,6 @@ export interface ItemDatabase<ClassType extends ItemClass> {
 type ScalarItemDatabase = ItemDatabase<ScalarItemClass>;
 type StructuredItemDatabase = ItemDatabase<StructuredItemClass>;
 
-export const allEstaLibraries = JSON.parse(estaLibrariesJson);
 export const allScalarItems = loadScalarItems();
 export const allStructuredItems = loadStructuredItems();
 

@@ -21,8 +21,7 @@ test("Renders a fixture editor when one is open", async () => {
       },
       fixtureEditor: {
         openEditors: {
-          "1f1c3350-1a14-4a4c-b90f-d8b076b4ae02":
-            newFixtureEditor("My Fixture"),
+          "1f1c3350-1a14-4a4c-b90f-d8b076b4ae02": newFixtureEditor([]),
         },
         editorTabOrder: ["1f1c3350-1a14-4a4c-b90f-d8b076b4ae02"],
         selectedEditor: "1f1c3350-1a14-4a4c-b90f-d8b076b4ae02",

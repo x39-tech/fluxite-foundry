@@ -15,9 +15,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
 }) => {
   return (
     <HTMLSelect
-      onChange={(event) => {
-        onSelectionChanged(event.currentTarget.value);
-      }}
+      onChange={(event) => onSelectionChanged(event.currentTarget.value)}
       defaultValue={selectedValue}
     >
       {values.map((value, index) => {

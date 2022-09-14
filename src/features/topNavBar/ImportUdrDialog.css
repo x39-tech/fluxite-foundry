@@ -1,0 +1,9 @@
+.import-udr-dialog-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.import-udr-dialog-body > * {
+  margin-bottom: 15px;
+}

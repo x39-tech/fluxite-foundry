@@ -14,14 +14,12 @@ import "./NewScalarItemDialog.css";
 
 export interface NewScalarItemDialogProps {
   isOpen: boolean;
-  onAccepted: () => void;
-  onCanceled: () => void;
+  onClose: () => void;
 }
 
 export const NewScalarItemDialog: React.FC<NewScalarItemDialogProps> = ({
   isOpen,
-  onAccepted,
-  onCanceled,
+  onClose,
 }) => {
   const scalarItemIds = useAppSelector((state) =>
     Object.keys(
@@ -49,7 +47,7 @@ export const NewScalarItemDialog: React.FC<NewScalarItemDialogProps> = ({
   const dispatch = useAppDispatch();
 
   return (
-    <DarkModeAwareDialog isOpen={isOpen} onClose={onCanceled}>
+    <DarkModeAwareDialog isOpen={isOpen} onClose={onClose}>
       <div className={Classes.DIALOG_HEADER}>
         <H3>New Scalar Item</H3>
       </div>
@@ -95,12 +93,12 @@ export const NewScalarItemDialog: React.FC<NewScalarItemDialogProps> = ({
               })
             );
 
-            onAccepted();
+            onClose();
           }}
         >
           Add
         </Button>
-        <Button onClick={onCanceled}>Cancel</Button>
+        <Button onClick={onClose}>Cancel</Button>
       </div>
     </DarkModeAwareDialog>
   );
