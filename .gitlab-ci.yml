@@ -1,31 +1,24 @@
-default:
+stages:
+  - build
+  - deploy
+
+build:
   image: node:latest
-
-#   before_script:
-#     - npm install
-#     - git config --global push.default simple
-#
-
-build-and-deploy:
+  stage: build
   script:
-    - echo "Hello, world!"
-# build and deploy:
-#   only:
-#     - develop
-#   script:
-#     - npm run build -- --prod
-#     - git clone https://${GITLAB_PUSH_TOKEN}@gitlab.com/skearney/udr-builder-site.git deploy
-#     - rm -rf deploy/*
-#     - cp -r dist/udr-builder/* deploy/
-#     - cd deploy
-#     - git config user.name "GitLab CI"
-#     - git config user.email "noreply@gitlab.com"
-#     - git add --all
-#     - |
-#       if ! git diff-index --quiet HEAD; then
-#         echo "Publishing site..."
-#         git commit -m "Deploy site from commit ${CI_COMMIT_SHA}"
-#         git push --force "https://${GITLAB_PUSH_TOKEN}@gitlab.com/skearney/udr-builder-site.git" > /dev/null 2>&1
-#       else
-#         echo "No changes - doing nothing"
-#       fi
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - build/
+
+pages:
+  image: alpine:latest
+  stage: deploy
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - mv build public
+  artifacts:
+    paths:
+      - public
