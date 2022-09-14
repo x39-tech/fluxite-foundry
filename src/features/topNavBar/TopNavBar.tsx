@@ -56,7 +56,7 @@ export const TopNavBar = () => {
               <div className="get-started-callout">
                 <p>
                   Get started by adding a new editor, or import an existing UDR
-                  document using File → Import.
+                  document using the import option to the right.
                 </p>
               </div>
             }
