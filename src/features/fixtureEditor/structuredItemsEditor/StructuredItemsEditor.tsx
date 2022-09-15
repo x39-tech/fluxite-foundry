@@ -1,4 +1,4 @@
-import { Divider } from "@blueprintjs/core";
+import { useState } from "react";
 import {
   DeviceIdentification,
   DEVICE_IDENTIFICATION_CLASS,
@@ -7,7 +7,6 @@ import { DeviceIdentificationEditor } from "./structuredItems/DeviceIdentificati
 import "./StructuredItemsEditor.css";
 import { useAppSelector } from "app/hooks";
 import { AddItemSection } from "utils/components/AddItemSection/AddItemSection";
-import { useState } from "react";
 import { NewStructuredItemDialog } from "./NewStructuredItemDialog";
 
 const editorFactory = {

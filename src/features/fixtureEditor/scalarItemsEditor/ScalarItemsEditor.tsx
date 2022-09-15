@@ -1,6 +1,5 @@
-import { Divider } from "@blueprintjs/core";
-import { useAppSelector } from "app/hooks";
 import { useState } from "react";
+import { useAppSelector } from "app/hooks";
 import { AddItemSection } from "utils/components/AddItemSection/AddItemSection";
 import { NewScalarItemDialog } from "./NewScalarItemDialog";
 import { ScalarItemEditor } from "./ScalarItemEditor";

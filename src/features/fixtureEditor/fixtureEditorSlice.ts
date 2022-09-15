@@ -13,6 +13,7 @@ import {
   FixtureEditorsState,
 } from "./fixtureEditorsState";
 import { DeviceClass } from "udr/objects/deviceClass";
+import { MosaicNode } from "react-mosaic-component";
 
 interface ImportedDeviceClass {
   id: string;
@@ -174,6 +175,12 @@ export const fixtureEditorSlice = createSlice({
           (value) => value.udrId !== action.payload
         );
     },
+    windowLayoutUpdated(
+      state,
+      action: PayloadAction<MosaicNode<string> | null>
+    ) {
+      getCurrentEditor(state).windowLayout = action.payload;
+    },
   },
 });
 
@@ -189,6 +196,7 @@ export const {
   createNewStructuredItem,
   updateStructuredItem,
   deleteStructuredItem,
+  windowLayoutUpdated,
 } = fixtureEditorSlice.actions;
 
 export default fixtureEditorSlice.reducer;

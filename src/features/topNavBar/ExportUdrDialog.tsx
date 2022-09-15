@@ -63,7 +63,7 @@ export const ExportUdrDialog: React.FC<ExportUdrDialogProps> = ({
         >
           {editorsArray.map(([id, editor]) => {
             return (
-              <option value={id} selected={id === selectedEditor}>
+              <option key={id} value={id} selected={id === selectedEditor}>
                 {editor.deviceClassId}
               </option>
             );
