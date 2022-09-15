@@ -48,19 +48,13 @@ export const StructuredItemsEditor = () => {
     useState(false);
 
   return (
-    <>
-      <div className="structured-items-editor">
-        <h2 className="structured-items-editor-title">Structured Items</h2>
-        <Divider />
-        {editors}
-        <AddItemSection
-          onClick={() => setNewStructuredItemDialogIsOpen(true)}
-        />
-      </div>
+    <div className="structured-items-editor-content">
+      {editors}
+      <AddItemSection onClick={() => setNewStructuredItemDialogIsOpen(true)} />
       <NewStructuredItemDialog
         isOpen={newStructuredItemDialogIsOpen}
         onClose={() => setNewStructuredItemDialogIsOpen(false)}
       />
-    </>
+    </div>
   );
 };

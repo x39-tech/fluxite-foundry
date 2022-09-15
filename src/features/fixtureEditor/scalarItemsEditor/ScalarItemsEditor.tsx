@@ -31,19 +31,15 @@ export const ScalarItemsEditor = () => {
   }
 
   return (
-    <>
-      <div className="scalar-items-editor">
-        <h2 className="scalar-items-editor-title">Scalar Items</h2>
-        <Divider />
-        {scalarItemEditors}
-        <AddItemSection onClick={() => setNewScalarItemDialogIsOpen(true)} />
-      </div>
+    <div className="scalar-items-editor-content">
+      {scalarItemEditors}
+      <AddItemSection onClick={() => setNewScalarItemDialogIsOpen(true)} />
       <NewScalarItemDialog
         isOpen={newScalarItemDialogIsOpen}
         onClose={() => {
           setNewScalarItemDialogIsOpen(false);
         }}
       />
-    </>
+    </div>
   );
 };

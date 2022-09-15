@@ -30,7 +30,7 @@ export const TopNavBar = () => {
 
   return (
     <>
-      <Navbar>
+      <Navbar fixedToTop={true}>
         <Navbar.Group align={Alignment.LEFT}>
           <Navbar.Heading>UDR Builder</Navbar.Heading>
           <Navbar.Divider />
