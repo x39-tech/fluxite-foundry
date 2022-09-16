@@ -21,29 +21,34 @@ export const ExportUdrDialog: React.FC<ExportUdrDialogProps> = ({
 }) => {
   const editors = useAppSelector((state) => state.fixtureEditor.openEditors);
   const editorsArray = Object.entries(editors);
-  const [selectedEditor, setSelectedEditor] = useState(
+  const [selectedEditorId, setSelectedEditorId] = useState(
     editorsArray.length !== 0 ? editorsArray.at(0)![0] : undefined
   );
 
   // Make sure state is up-to-date
   if (editorsArray.length === 0) {
-    if (selectedEditor !== undefined) {
-      setSelectedEditor(undefined);
+    if (selectedEditorId !== undefined) {
+      setSelectedEditorId(undefined);
       return <></>;
     }
   } else if (
-    editorsArray.filter(([id]) => id === selectedEditor).length === 0
+    editorsArray.filter(([id]) => id === selectedEditorId).length === 0
   ) {
-    setSelectedEditor(editorsArray.at(0)![0]);
+    setSelectedEditorId(editorsArray.at(0)![0]);
   }
 
   let fileDownloadUrl = "";
-  if (selectedEditor) {
-    const deviceClassId = editors[selectedEditor].deviceClassId;
+  if (selectedEditorId) {
+    const selectedEditor = editors[selectedEditorId];
+    const deviceClassId = selectedEditor.deviceClassId;
     const document: Document = {
       e173: {
         deviceClasses: {
-          [deviceClassId]: editors[selectedEditor].udr,
+          [deviceClassId]: {
+            scalarItems: selectedEditor.scalarItems.scalarItems,
+            structuredItems: selectedEditor.structuredItems.structuredItems,
+            ...selectedEditor.basicData,
+          },
         },
       },
     };
@@ -59,15 +64,13 @@ export const ExportUdrDialog: React.FC<ExportUdrDialogProps> = ({
       <div className={"export-udr-dialog-body " + Classes.DIALOG_BODY}>
         <p>Choose a device class to export:</p>
         <HTMLSelect
-          onChange={(event) => setSelectedEditor(event.currentTarget.value)}
+          onChange={(event) => setSelectedEditorId(event.currentTarget.value)}
         >
-          {editorsArray.map(([id, editor]) => {
-            return (
-              <option key={id} value={id} selected={id === selectedEditor}>
-                {editor.deviceClassId}
-              </option>
-            );
-          })}
+          {editorsArray.map(([id, editor]) => (
+            <option key={id} value={id} selected={id === selectedEditorId}>
+              {editor.deviceClassId}
+            </option>
+          ))}
         </HTMLSelect>
       </div>
       <div className={Classes.DIALOG_FOOTER}>
@@ -75,7 +78,7 @@ export const ExportUdrDialog: React.FC<ExportUdrDialogProps> = ({
           intent="success"
           icon="tick"
           disabled={editorsArray.length === 0}
-          download={`${editors[selectedEditor!]?.deviceClassId}.json`}
+          download={`${editors[selectedEditorId!]?.deviceClassId}.json`}
           href={fileDownloadUrl}
           onClick={onClose}
         >

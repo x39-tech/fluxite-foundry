@@ -1,5 +1,5 @@
 import { Button, Classes, H3 } from "@blueprintjs/core";
-import { useAppDispatch, useAppSelector } from "app/hooks";
+import { useAppDispatch } from "app/hooks";
 import { useState } from "react";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
 import { TextEditorTableRow } from "utils/components/EditorFields/TextEditorField";
@@ -9,10 +9,8 @@ import { StructuredItemClassDisplay } from "utils/components/StructuredItemClass
 import { validateNewItemId } from "utils/inputValidation";
 import { getAllStructuredItemsWithIds } from "utils/itemDatabase";
 import { getUniqueItemId } from "utils/utils";
-import {
-  createNewStructuredItem,
-  getCurrentEditor,
-} from "../fixtureEditorSlice";
+import { newStructuredItemCreated } from "./structuredItemsEditorSlice";
+import { useCurrentEditorSelector } from "../fixtureEditorsState";
 import "./NewStructuredItemDialog.css";
 
 export interface NewStructuredItemDialogProps {
@@ -23,8 +21,8 @@ export interface NewStructuredItemDialogProps {
 export const NewStructuredItemDialog: React.FC<
   NewStructuredItemDialogProps
 > = ({ isOpen, onClose }) => {
-  const structuredItemIds = useAppSelector((state) =>
-    Object.keys(getCurrentEditor(state.fixtureEditor).udr.structuredItems!)
+  const structuredItemIds = useCurrentEditorSelector((state) =>
+    Object.keys(state.structuredItems.structuredItems)
   );
 
   const [newItemClass, setNewItemClass] = useState(
@@ -80,7 +78,7 @@ export const NewStructuredItemDialog: React.FC<
           icon="tick"
           onClick={() => {
             dispatch(
-              createNewStructuredItem({
+              newStructuredItemCreated({
                 class: newItemClass.fullyQualifiedId,
                 id: newItemId,
               })

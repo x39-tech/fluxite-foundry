@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { Button, Classes, H3 } from "@blueprintjs/core";
-import { useAppDispatch, useAppSelector } from "app/hooks";
+import { useAppDispatch } from "app/hooks";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
 import { TextEditorTableRow } from "utils/components/EditorFields/TextEditorField";
 import { ScalarItemClassDisplay } from "utils/components/ScalarItemClassDisplay/ScalarItemClassDisplay";
 import { SimplePropsTable } from "utils/components/SimplePropsTable/SimplePropsTable";
 import { validateNewItemId } from "utils/inputValidation";
 import { getAllScalarItemsWithIds } from "utils/itemDatabase";
-import { createNewScalarItem } from "../fixtureEditorSlice";
+import { newScalarItemCreated } from "./scalarItemsEditorSlice";
 import { ItemClassSelector } from "utils/components/ItemClassSelector/ItemClassSelector";
 import { getUniqueItemId } from "utils/utils";
+import { useCurrentEditorSelector } from "../fixtureEditorsState";
 import "./NewScalarItemDialog.css";
 
 export interface NewScalarItemDialogProps {
@@ -21,11 +22,8 @@ export const NewScalarItemDialog: React.FC<NewScalarItemDialogProps> = ({
   isOpen,
   onClose,
 }) => {
-  const scalarItemIds = useAppSelector((state) =>
-    Object.keys(
-      state.fixtureEditor.openEditors[state.fixtureEditor.selectedEditor].udr
-        .scalarItems || {}
-    )
+  const scalarItemIds = useCurrentEditorSelector((state) =>
+    Object.keys(state.scalarItems.scalarItems)
   );
 
   const [newItemClass, setNewItemClass] = useState(
@@ -86,7 +84,7 @@ export const NewScalarItemDialog: React.FC<NewScalarItemDialogProps> = ({
           icon="tick"
           onClick={() => {
             dispatch(
-              createNewScalarItem({
+              newScalarItemCreated({
                 class: newItemClass.fullyQualifiedId,
                 id: newItemId,
                 friendlyName: newItemFriendlyName,

@@ -1,33 +1,28 @@
 import { useState } from "react";
-import { useAppSelector } from "app/hooks";
 import { AddItemSection } from "utils/components/AddItemSection/AddItemSection";
 import { NewScalarItemDialog } from "./NewScalarItemDialog";
 import { ScalarItemEditor } from "./ScalarItemEditor";
 import "./ScalarItemsEditor.scss";
+import { useCurrentEditorSelector } from "../fixtureEditorsState";
 
 export const ScalarItemsEditor = () => {
-  const editorState = useAppSelector(
-    (state) =>
-      state.fixtureEditor.openEditors[state.fixtureEditor.selectedEditor]
-  );
+  const editorState = useCurrentEditorSelector((state) => state.scalarItems);
 
   const [newScalarItemDialogIsOpen, setNewScalarItemDialogIsOpen] =
     useState(false);
 
   const scalarItemEditors: Array<JSX.Element> = [];
-  if (editorState.udr.scalarItems) {
-    editorState.scalarItemEditors.forEach((editor) => {
-      if (editor.udrId in editorState.udr.scalarItems!) {
-        scalarItemEditors.push(
-          <ScalarItemEditor
-            key={editor.id}
-            id={editor.udrId}
-            udr={editorState.udr.scalarItems![editor.udrId]}
-          />
-        );
-      }
-    });
-  }
+  editorState.itemEditorLayout.forEach((editor) => {
+    if (editor.udrId in editorState.scalarItems) {
+      scalarItemEditors.push(
+        <ScalarItemEditor
+          key={editor.id}
+          id={editor.udrId}
+          udr={editorState.scalarItems[editor.udrId]}
+        />
+      );
+    }
+  });
 
   return (
     <div className="scalar-items-editor-content">

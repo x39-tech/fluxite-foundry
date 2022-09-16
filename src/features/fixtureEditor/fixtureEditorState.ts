@@ -1,24 +1,28 @@
+import { nanoid } from "@reduxjs/toolkit";
+import { MosaicNode } from "react-mosaic-component";
 import { DeviceClass } from "udr/objects/deviceClass";
-import { v4 as uuidv4 } from "uuid";
 import { getDefaultDeviceClass } from "udr/udr";
 import { getUniqueItemId } from "utils/utils";
-import { MosaicNode } from "react-mosaic-component";
-
-interface ItemEditor {
-  id: string;
-  udrId: string;
-}
+import { ScalarItemsEditorState } from "./scalarItemsEditor/scalarItemsEditorState";
+import { StructuredItemsEditorState } from "./structuredItemsEditor/structuredItemsEditorState";
 
 export enum FixtureEditorWindowType {
   ScalarItemsEditor,
   StructuredItemsEditor,
 }
 
+interface BasicData {
+  description: string;
+  publishDate: string;
+  author: string;
+  history: Record<string, string>;
+}
+
 export interface FixtureEditorState {
   deviceClassId: string;
-  udr: DeviceClass;
-  scalarItemEditors: Array<ItemEditor>;
-  structuredItemEditors: Array<ItemEditor>;
+  basicData: BasicData;
+  scalarItems: ScalarItemsEditorState;
+  structuredItems: StructuredItemsEditorState;
   windowLayout: MosaicNode<string> | null;
   windowTypes: { [id: string]: FixtureEditorWindowType };
 }
@@ -38,13 +42,21 @@ export function importFixtureEditor(
 ): FixtureEditorState {
   return {
     deviceClassId: id,
-    udr,
-    scalarItemEditors: Object.keys(udr.scalarItems!).map((id) => {
-      return { id: uuidv4(), udrId: id };
-    }),
-    structuredItemEditors: Object.keys(udr.structuredItems!).map((id) => {
-      return { id: uuidv4(), udrId: id };
-    }),
+    basicData: {
+      ...udr,
+    },
+    scalarItems: {
+      scalarItems: udr.scalarItems || {},
+      itemEditorLayout: Object.keys(udr.scalarItems || {}).map((id) => {
+        return { id: nanoid(), udrId: id };
+      }),
+    },
+    structuredItems: {
+      structuredItems: udr.structuredItems || {},
+      itemEditorLayout: Object.keys(udr.structuredItems || {}).map((id) => {
+        return { id: nanoid(), udrId: id };
+      }),
+    },
     windowLayout: {
       direction: "row",
       first: "scalar",

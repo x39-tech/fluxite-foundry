@@ -3,11 +3,11 @@ import {
   DeviceIdentification,
   DEVICE_IDENTIFICATION_CLASS,
 } from "udr/libraries/core/structuredItems/deviceIdentification";
-import { DeviceIdentificationEditor } from "./structuredItems/DeviceIdentificationEditor";
-import "./StructuredItemsEditor.css";
-import { useAppSelector } from "app/hooks";
 import { AddItemSection } from "utils/components/AddItemSection/AddItemSection";
+import { DeviceIdentificationEditor } from "./structuredItems/DeviceIdentificationEditor";
 import { NewStructuredItemDialog } from "./NewStructuredItemDialog";
+import { useCurrentEditorSelector } from "../fixtureEditorsState";
+import "./StructuredItemsEditor.css";
 
 const editorFactory = {
   [DEVICE_IDENTIFICATION_CLASS]: (
@@ -20,25 +20,23 @@ const editorFactory = {
 };
 
 export const StructuredItemsEditor = () => {
-  const { udr, structuredItemEditors } = useAppSelector((state) => {
-    const activeEditor =
-      state.fixtureEditor.openEditors[state.fixtureEditor.selectedEditor];
-
-    return {
-      udr: activeEditor.udr.structuredItems,
-      structuredItemEditors: activeEditor.structuredItemEditors,
-    };
-  });
+  const [structuredItems, structuredItemEditors] = useCurrentEditorSelector(
+    (state) => [
+      state.structuredItems.structuredItems,
+      state.structuredItems.itemEditorLayout,
+    ]
+  );
 
   const editors: Array<JSX.Element> = [];
   for (const [index, { udrId }] of structuredItemEditors.entries()) {
-    if (udr && udrId in udr && udr[udrId].class in editorFactory) {
+    if (
+      udrId in structuredItems &&
+      structuredItems[udrId].class in editorFactory
+    ) {
       editors.push(
-        editorFactory[udr[udrId].class as keyof typeof editorFactory](
-          udrId,
-          udr[udrId].default!,
-          index
-        )
+        editorFactory[
+          structuredItems[udrId].class as keyof typeof editorFactory
+        ](udrId, structuredItems[udrId].default!, index)
       );
     }
   }

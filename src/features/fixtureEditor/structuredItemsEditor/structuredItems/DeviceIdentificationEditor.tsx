@@ -1,5 +1,4 @@
 import produce from "immer";
-// import { Select2 } from "@blueprintjs/select"; TODO figure out how to use in place of HTMLSelect for nicer styling
 import { Colors } from "@blueprintjs/core";
 import { DispatchOnChangeFactory } from "utils/dispatchOnChangeFactory";
 import { DeviceIdentification } from "udr/libraries/core/structuredItems/deviceIdentification";
@@ -10,15 +9,15 @@ import {
 } from "udr/util/enums";
 import { useAppDispatch } from "app/hooks";
 import { SimplePropsTable } from "utils/components/SimplePropsTable/SimplePropsTable";
-import "./StructuredItemEditor.css";
-import {
-  deleteStructuredItem,
-  updateStructuredItem,
-} from "features/fixtureEditor/fixtureEditorSlice";
 import { TextEditorTableRow } from "utils/components/EditorFields/TextEditorField";
 import { SelectTableRow } from "utils/components/EditorFields/SelectField";
 import { TagInputTableRow } from "utils/components/EditorFields/TagInputField";
 import { ItemEditor } from "utils/components/ItemEditor/ItemEditor";
+import {
+  structuredItemDeleted,
+  structuredItemUpdated,
+} from "../structuredItemsEditorSlice";
+import "./StructuredItemEditor.css";
 
 export interface DeviceIdentificationEditorProps {
   id: string;
@@ -34,7 +33,7 @@ export const DeviceIdentificationEditor: React.FC<
     udr,
     (newValue, changeRecipe) => {
       dispatch(
-        updateStructuredItem({
+        structuredItemUpdated({
           id,
           newValue: produce(udr, (draft) => {
             changeRecipe(draft, newValue);
@@ -49,7 +48,7 @@ export const DeviceIdentificationEditor: React.FC<
       expanded
       title="Device Identification"
       backgroundColor={{ light: Colors.BLUE5, dark: Colors.BLUE1 }}
-      onDelete={() => dispatch(deleteStructuredItem(id))}
+      onDelete={() => dispatch(structuredItemDeleted(id))}
     >
       <div className="structured-item-collapse-body">
         <SimplePropsTable name="Manufacturer Information">

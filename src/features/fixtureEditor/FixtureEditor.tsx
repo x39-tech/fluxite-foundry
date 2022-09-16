@@ -3,10 +3,11 @@ import { Mosaic, MosaicWindow } from "react-mosaic-component";
 import { Classes } from "@blueprintjs/core";
 import { ScalarItemsEditor } from "./scalarItemsEditor/ScalarItemsEditor";
 import { StructuredItemsEditor } from "./structuredItemsEditor/StructuredItemsEditor";
-import "./FixtureEditor.scss";
 import { useAppDispatch, useAppSelector } from "app/hooks";
-import { getCurrentEditor, windowLayoutUpdated } from "./fixtureEditorSlice";
+import { windowLayoutUpdated } from "./fixtureEditorSlice";
 import { FixtureEditorWindowType } from "./fixtureEditorState";
+import { useCurrentEditorSelector } from "./fixtureEditorsState";
+import "./FixtureEditor.scss";
 
 export interface FixtureEditorProps {
   title: string;
@@ -32,9 +33,9 @@ export const FixtureEditor: React.FC<FixtureEditorProps> = ({ title }) => {
 
   const darkMode = useAppSelector((state) => state.appSettings.darkMode);
 
-  const [windowLayout, windowTypes] = useAppSelector((state) => [
-    getCurrentEditor(state.fixtureEditor).windowLayout,
-    getCurrentEditor(state.fixtureEditor).windowTypes,
+  const [windowLayout, windowTypes] = useCurrentEditorSelector((state) => [
+    state.windowLayout,
+    state.windowTypes,
   ]);
 
   const dispatch = useAppDispatch();

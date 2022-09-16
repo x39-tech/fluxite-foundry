@@ -1,6 +1,6 @@
 import { Callout, Colors } from "@blueprintjs/core";
 import { Popover2 } from "@blueprintjs/popover2";
-import { useAppDispatch, useAppSelector } from "app/hooks";
+import { useAppDispatch } from "app/hooks";
 import { AppDispatch } from "app/store";
 import produce from "immer";
 import { ScalarItem } from "udr/objects/item";
@@ -29,11 +29,12 @@ import {
 } from "utils/inputValidation";
 import { lookupScalarItemClass } from "utils/itemDatabase";
 import {
-  deleteScalarItem,
-  updateScalarItem,
-  updateScalarItemId,
-} from "../fixtureEditorSlice";
+  scalarItemDeleted,
+  scalarItemUpdated,
+  scalarItemIdUpdated,
+} from "./scalarItemsEditorSlice";
 import "./ScalarItemEditor.css";
+import { useCurrentEditorSelector } from "../fixtureEditorsState";
 
 enum ScalarItemInstantiationType {
   SINGLE = "Single",
@@ -190,7 +191,7 @@ function getScalarItemPropsTable(
     udr,
     (newValue, changeRecipe) => {
       dispatch(
-        updateScalarItem({
+        scalarItemUpdated({
           id,
           newValue: produce(udr, (draft) => changeRecipe(draft, newValue)),
         })
@@ -221,7 +222,7 @@ function getScalarItemPropsTable(
         label="ID"
         defaultValue={id}
         onValueChanged={(newValue) => {
-          dispatch(updateScalarItemId({ id, newId: newValue }));
+          dispatch(scalarItemIdUpdated({ id, newId: newValue }));
         }}
         validator={(input) =>
           validateNewItemId(
@@ -295,11 +296,8 @@ export const ScalarItemEditor: React.FC<ScalarItemEditorProps> = ({
 
   const itemClass = lookupScalarItemClass(udr.class);
 
-  const scalarItemIds = useAppSelector((state) =>
-    Object.keys(
-      state.fixtureEditor.openEditors[state.fixtureEditor.selectedEditor].udr
-        .scalarItems || {}
-    )
+  const scalarItemIds = useCurrentEditorSelector((state) =>
+    Object.keys(state.scalarItems.scalarItems)
   );
 
   return (
@@ -307,7 +305,7 @@ export const ScalarItemEditor: React.FC<ScalarItemEditorProps> = ({
       title={udr.friendlyName ? udr.friendlyName! : id}
       backgroundColor={{ light: Colors.SEPIA5, dark: Colors.SEPIA1 }}
       onDelete={() => {
-        dispatch(deleteScalarItem(id));
+        dispatch(scalarItemDeleted(id));
       }}
     >
       <div className="scalar-item-collapse-body">
