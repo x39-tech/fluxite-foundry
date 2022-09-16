@@ -3,10 +3,13 @@ import { Mosaic, MosaicWindow } from "react-mosaic-component";
 import { Classes } from "@blueprintjs/core";
 import { ScalarItemsEditor } from "./scalarItemsEditor/ScalarItemsEditor";
 import { StructuredItemsEditor } from "./structuredItemsEditor/StructuredItemsEditor";
-import { useAppDispatch, useAppSelector } from "app/hooks";
+import {
+  useAppDispatch,
+  useAppSelector,
+  useCurrentEditorSelector,
+} from "app/hooks";
 import { windowLayoutUpdated } from "./deviceClassEditorSlice";
 import { DeviceClassEditorWindowType } from "./deviceClassEditorState";
-import { useCurrentEditorSelector } from "./deviceClassEditorsState";
 import "./DeviceClassEditor.scss";
 
 export interface DeviceClassEditorProps {

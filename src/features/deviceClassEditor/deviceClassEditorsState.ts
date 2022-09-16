@@ -1,4 +1,3 @@
-import { useAppSelector } from "app/hooks";
 import { DeviceClassEditorState } from "./deviceClassEditorState";
 
 export interface DeviceClassEditorsState {
@@ -15,12 +14,4 @@ export function defaultDeviceClassEditorsState(): DeviceClassEditorsState {
     editorTabOrder: [],
     selectedEditor: "",
   };
-}
-
-export function useCurrentEditorSelector<ReturnedValue>(
-  selector: (state: DeviceClassEditorState) => ReturnedValue
-) {
-  return useAppSelector((state) =>
-    selector(state.editors.openEditors[state.editors.selectedEditor])
-  );
 }

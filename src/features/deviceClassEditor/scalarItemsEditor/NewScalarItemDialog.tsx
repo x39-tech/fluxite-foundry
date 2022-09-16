@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button, Classes, H3 } from "@blueprintjs/core";
-import { useAppDispatch } from "app/hooks";
+import { useAppDispatch, useCurrentEditorSelector } from "app/hooks";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
 import { TextEditorTableRow } from "utils/components/EditorFields/TextEditorField";
 import { ScalarItemClassDisplay } from "utils/components/ScalarItemClassDisplay/ScalarItemClassDisplay";
@@ -10,7 +10,6 @@ import { getAllScalarItemsWithIds } from "utils/itemDatabase";
 import { newScalarItemCreated } from "./scalarItemsEditorSlice";
 import { ItemClassSelector } from "utils/components/ItemClassSelector/ItemClassSelector";
 import { getUniqueItemId } from "utils/utils";
-import { useCurrentEditorSelector } from "../deviceClassEditorsState";
 import "./NewScalarItemDialog.css";
 
 export interface NewScalarItemDialogProps {

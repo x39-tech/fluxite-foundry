@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useCurrentEditorSelector } from "app/hooks";
 import {
   DeviceIdentification,
   DEVICE_IDENTIFICATION_CLASS,
@@ -6,7 +7,6 @@ import {
 import { AddItemSection } from "utils/components/AddItemSection/AddItemSection";
 import { DeviceIdentificationEditor } from "./structuredItems/DeviceIdentificationEditor";
 import { NewStructuredItemDialog } from "./NewStructuredItemDialog";
-import { useCurrentEditorSelector } from "../deviceClassEditorsState";
 import "./StructuredItemsEditor.css";
 
 const editorFactory = {

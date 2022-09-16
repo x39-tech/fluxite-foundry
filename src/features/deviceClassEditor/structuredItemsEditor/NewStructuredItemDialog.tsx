@@ -1,6 +1,6 @@
 import { Button, Classes, H3 } from "@blueprintjs/core";
-import { useAppDispatch } from "app/hooks";
 import { useState } from "react";
+import { useAppDispatch, useCurrentEditorSelector } from "app/hooks";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
 import { TextEditorTableRow } from "utils/components/EditorFields/TextEditorField";
 import { ItemClassSelector } from "utils/components/ItemClassSelector/ItemClassSelector";
@@ -10,7 +10,6 @@ import { validateNewItemId } from "utils/inputValidation";
 import { getAllStructuredItemsWithIds } from "utils/itemDatabase";
 import { getUniqueItemId } from "utils/utils";
 import { newStructuredItemCreated } from "./structuredItemsEditorSlice";
-import { useCurrentEditorSelector } from "../deviceClassEditorsState";
 import "./NewStructuredItemDialog.css";
 
 export interface NewStructuredItemDialogProps {

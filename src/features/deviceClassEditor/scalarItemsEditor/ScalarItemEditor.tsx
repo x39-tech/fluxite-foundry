@@ -1,8 +1,8 @@
 import { Callout, Colors } from "@blueprintjs/core";
 import { Popover2 } from "@blueprintjs/popover2";
-import { useAppDispatch } from "app/hooks";
-import { AppDispatch } from "app/store";
 import produce from "immer";
+import { useAppDispatch, useCurrentEditorSelector } from "app/hooks";
+import { AppDispatch } from "app/store";
 import { ScalarItem } from "udr/objects/item";
 import { ScalarItemClass } from "udr/objects/itemClass";
 import {
@@ -34,7 +34,6 @@ import {
   scalarItemIdUpdated,
 } from "./scalarItemsEditorSlice";
 import "./ScalarItemEditor.css";
-import { useCurrentEditorSelector } from "../deviceClassEditorsState";
 
 enum ScalarItemInstantiationType {
   SINGLE = "Single",
