@@ -6,7 +6,7 @@ export interface SimplePropsTableProps {
 }
 
 // Provides a Blueprint HTMLTable with some options pre-set and optimized for display as part of
-// the fixture editor components.
+// the editor components.
 
 // If provided, 'name' will be rendered in a table header.
 

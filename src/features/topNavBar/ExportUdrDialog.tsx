@@ -5,8 +5,8 @@ import {
   H3,
   HTMLSelect,
 } from "@blueprintjs/core";
-import { useAppSelector } from "app/hooks";
 import { useState } from "react";
+import { useAppSelector } from "app/hooks";
 import { Document } from "udr/objects/document";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
 
@@ -19,7 +19,7 @@ export const ExportUdrDialog: React.FC<ExportUdrDialogProps> = ({
   isOpen,
   onClose,
 }) => {
-  const editors = useAppSelector((state) => state.fixtureEditor.openEditors);
+  const editors = useAppSelector((state) => state.editors.openEditors);
   const editorsArray = Object.entries(editors);
   const [selectedEditorId, setSelectedEditorId] = useState(
     editorsArray.length !== 0 ? editorsArray.at(0)![0] : undefined

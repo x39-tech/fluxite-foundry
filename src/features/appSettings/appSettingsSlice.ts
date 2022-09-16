@@ -8,12 +8,9 @@ export const appSettingsSlice = createSlice({
     darkModeToggled(state) {
       state.darkMode = !state.darkMode;
     },
-    threeDViewToggled(state) {
-      state.threeDViewEnabled = !state.threeDViewEnabled;
-    },
   },
 });
 
-export const { darkModeToggled, threeDViewToggled } = appSettingsSlice.actions;
+export const { darkModeToggled } = appSettingsSlice.actions;
 
 export default appSettingsSlice.reducer;

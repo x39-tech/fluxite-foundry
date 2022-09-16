@@ -1,7 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { throttle } from "lodash";
 import appSettings from "features/appSettings/appSettingsSlice";
-import fixtureEditor from "features/fixtureEditor/fixtureEditorSlice";
+import editors from "features/deviceClassEditor/deviceClassEditorSlice";
 import {
   loadStateFromLocalStorage,
   saveStateToLocalStorage,
@@ -11,7 +11,7 @@ import { RootState } from "./rootState";
 const store = configureStore<RootState>({
   reducer: {
     appSettings,
-    fixtureEditor,
+    editors,
   },
   preloadedState: loadStateFromLocalStorage(),
 });

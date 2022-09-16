@@ -3,13 +3,11 @@
 
 export interface AppSettings {
   darkMode: boolean;
-  threeDViewEnabled: boolean;
 }
 
 export function defaultAppSettings(): AppSettings {
   return {
     darkMode: getDefaultDarkModePreference(),
-    threeDViewEnabled: false,
   };
 }
 

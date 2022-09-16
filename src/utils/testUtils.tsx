@@ -6,7 +6,7 @@ import type { PreloadedState } from "@reduxjs/toolkit";
 import { Provider } from "react-redux";
 
 import appSettings from "features/appSettings/appSettingsSlice";
-import fixtureEditor from "features/fixtureEditor/fixtureEditorSlice";
+import editors from "features/deviceClassEditor/deviceClassEditorSlice";
 
 import type { AppStore } from "app/store";
 import { RootState } from "app/rootState";
@@ -22,8 +22,8 @@ export function renderWithProviders(
   ui: React.ReactElement,
   {
     preloadedState = {
-      appSettings: { darkMode: false, threeDViewEnabled: false },
-      fixtureEditor: {
+      appSettings: { darkMode: false },
+      editors: {
         openEditors: {},
         editorTabOrder: [],
         selectedEditor: "",
@@ -31,7 +31,7 @@ export function renderWithProviders(
     },
     // Automatically create a store instance if no store was passed in
     store = configureStore({
-      reducer: { appSettings, fixtureEditor },
+      reducer: { appSettings, editors },
       preloadedState,
     }),
     ...renderOptions

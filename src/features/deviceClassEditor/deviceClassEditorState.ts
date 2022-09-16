@@ -6,7 +6,7 @@ import { getUniqueItemId } from "utils/utils";
 import { ScalarItemsEditorState } from "./scalarItemsEditor/scalarItemsEditorState";
 import { StructuredItemsEditorState } from "./structuredItemsEditor/structuredItemsEditorState";
 
-export enum FixtureEditorWindowType {
+export enum DeviceClassEditorWindowType {
   ScalarItemsEditor,
   StructuredItemsEditor,
 }
@@ -18,28 +18,28 @@ interface BasicData {
   history: Record<string, string>;
 }
 
-export interface FixtureEditorState {
+export interface DeviceClassEditorState {
   deviceClassId: string;
   basicData: BasicData;
   scalarItems: ScalarItemsEditorState;
   structuredItems: StructuredItemsEditorState;
   windowLayout: MosaicNode<string> | null;
-  windowTypes: { [id: string]: FixtureEditorWindowType };
+  windowTypes: { [id: string]: DeviceClassEditorWindowType };
 }
 
-export function newFixtureEditor(
+export function newDeviceClassEditor(
   existingEditorIds: string[]
-): FixtureEditorState {
-  return importFixtureEditor(
+): DeviceClassEditorState {
+  return importDeviceClassEditor(
     getUniqueItemId(existingEditorIds, "myDevice"),
     getDefaultDeviceClass()
   );
 }
 
-export function importFixtureEditor(
+export function importDeviceClassEditor(
   id: string,
   udr: DeviceClass
-): FixtureEditorState {
+): DeviceClassEditorState {
   return {
     deviceClassId: id,
     basicData: {
@@ -64,8 +64,8 @@ export function importFixtureEditor(
       splitPercentage: 50,
     },
     windowTypes: {
-      scalar: FixtureEditorWindowType.ScalarItemsEditor,
-      structured: FixtureEditorWindowType.StructuredItemsEditor,
+      scalar: DeviceClassEditorWindowType.ScalarItemsEditor,
+      structured: DeviceClassEditorWindowType.StructuredItemsEditor,
     },
   };
 }

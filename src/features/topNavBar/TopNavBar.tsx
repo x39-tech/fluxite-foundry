@@ -4,10 +4,10 @@ import { Popover2 } from "@blueprintjs/popover2";
 import { useAppDispatch, useAppSelector } from "app/hooks";
 import { SettingsMenu } from "features/appSettings/SettingsMenu";
 import {
-  createNewEditor,
-  deleteEditor,
-  setSelectedEditor,
-} from "features/fixtureEditor/fixtureEditorSlice";
+  newEditorCreated,
+  editorDeleted,
+  selectedEditorChanged,
+} from "features/deviceClassEditor/deviceClassEditorSlice";
 import { EditorTitleTab } from "utils/components/EditorTitleTab/EditorTitleTab";
 import { ImportUdrDialog } from "./ImportUdrDialog";
 import "./TopNavBar.css";
@@ -16,9 +16,9 @@ import { ExportUdrDialog } from "./ExportUdrDialog";
 export const TopNavBar = () => {
   const editors = useAppSelector((state) => {
     return {
-      openEditors: state.fixtureEditor.openEditors,
-      editorTabOrder: state.fixtureEditor.editorTabOrder,
-      selectedEditor: state.fixtureEditor.selectedEditor,
+      openEditors: state.editors.openEditors,
+      editorTabOrder: state.editors.editorTabOrder,
+      selectedEditor: state.editors.selectedEditor,
     };
   });
   const currentEditor = editors.openEditors[editors.selectedEditor];
@@ -43,10 +43,10 @@ export const TopNavBar = () => {
                 id={id}
                 active={id === editors.selectedEditor}
                 onSelect={(id) => {
-                  dispatch(setSelectedEditor(id));
+                  dispatch(selectedEditorChanged(id));
                 }}
                 onDelete={(id) => {
-                  dispatch(deleteEditor(id));
+                  dispatch(editorDeleted(id));
                 }}
               />
             );
@@ -67,7 +67,7 @@ export const TopNavBar = () => {
               icon="add"
               aria-label="Add New Editor"
               onClick={() => {
-                dispatch(createNewEditor());
+                dispatch(newEditorCreated());
               }}
             />
           </Popover2>

@@ -1,15 +1,14 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, nanoid, PayloadAction } from "@reduxjs/toolkit";
 import { MosaicNode } from "react-mosaic-component";
-import { v4 as uuidv4 } from "uuid";
 import {
-  FixtureEditorState,
-  importFixtureEditor,
-  newFixtureEditor,
-} from "features/fixtureEditor/fixtureEditorState";
+  DeviceClassEditorState,
+  importDeviceClassEditor,
+  newDeviceClassEditor,
+} from "features/deviceClassEditor/deviceClassEditorState";
 import {
-  defaultFixtureEditorsState,
-  FixtureEditorsState,
-} from "./fixtureEditorsState";
+  defaultDeviceClassEditorsState,
+  DeviceClassEditorsState,
+} from "./deviceClassEditorsState";
 import { DeviceClass } from "udr/objects/deviceClass";
 import { isScalarItemsEditorAction } from "./scalarItemsEditor/scalarItemsEditorSlice";
 import scalarItemsEditorReducer from "./scalarItemsEditor/scalarItemsEditorSlice";
@@ -28,33 +27,33 @@ export interface NewScalarItem {
 }
 
 export function getCurrentEditor(
-  state: FixtureEditorsState
-): FixtureEditorState {
+  state: DeviceClassEditorsState
+): DeviceClassEditorState {
   return state.openEditors[state.selectedEditor];
 }
 
-export const fixtureEditorSlice = createSlice({
-  name: "fixtureEditor",
-  initialState: defaultFixtureEditorsState(),
+export const deviceClassEditorSlice = createSlice({
+  name: "deviceClassEditor",
+  initialState: defaultDeviceClassEditorsState(),
   reducers: {
-    createNewEditor(state) {
-      const newId = uuidv4();
-      state.openEditors[newId] = newFixtureEditor(
+    newEditorCreated(state) {
+      const newId = nanoid();
+      state.openEditors[newId] = newDeviceClassEditor(
         Object.values(state.openEditors).map((editor) => editor.deviceClassId)
       );
       state.editorTabOrder.push(newId);
       state.selectedEditor = newId;
     },
-    importEditor(state, action: PayloadAction<ImportedDeviceClass>) {
-      const newId = uuidv4();
-      state.openEditors[newId] = importFixtureEditor(
+    editorImported(state, action: PayloadAction<ImportedDeviceClass>) {
+      const newId = nanoid();
+      state.openEditors[newId] = importDeviceClassEditor(
         action.payload.id,
         action.payload.udr
       );
       state.editorTabOrder.push(newId);
       state.selectedEditor = newId;
     },
-    deleteEditor(state, action: PayloadAction<string>) {
+    editorDeleted(state, action: PayloadAction<string>) {
       if (action.payload in state.openEditors) {
         const index = state.editorTabOrder.findIndex((id) => {
           return id === action.payload;
@@ -72,7 +71,7 @@ export const fixtureEditorSlice = createSlice({
         state.editorTabOrder.splice(index, 1);
       }
     },
-    setSelectedEditor(state, action: PayloadAction<string>) {
+    selectedEditorChanged(state, action: PayloadAction<string>) {
       state.selectedEditor = action.payload;
     },
     windowLayoutUpdated(
@@ -101,11 +100,11 @@ export const fixtureEditorSlice = createSlice({
 });
 
 export const {
-  createNewEditor,
-  importEditor,
-  deleteEditor,
-  setSelectedEditor,
+  newEditorCreated,
+  editorImported,
+  editorDeleted,
+  selectedEditorChanged,
   windowLayoutUpdated,
-} = fixtureEditorSlice.actions;
+} = deviceClassEditorSlice.actions;
 
-export default fixtureEditorSlice.reducer;
+export default deviceClassEditorSlice.reducer;

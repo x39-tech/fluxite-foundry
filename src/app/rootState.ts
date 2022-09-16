@@ -1,7 +1,7 @@
 import { AppSettings } from "features/appSettings/appSettingsState";
-import { FixtureEditorsState } from "features/fixtureEditor/fixtureEditorsState";
+import { DeviceClassEditorsState } from "features/deviceClassEditor/deviceClassEditorsState";
 
 export interface RootState {
   appSettings: AppSettings;
-  fixtureEditor: FixtureEditorsState;
+  editors: DeviceClassEditorsState;
 }

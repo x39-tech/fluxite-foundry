@@ -3,7 +3,7 @@ import { AddItemSection } from "utils/components/AddItemSection/AddItemSection";
 import { NewScalarItemDialog } from "./NewScalarItemDialog";
 import { ScalarItemEditor } from "./ScalarItemEditor";
 import "./ScalarItemsEditor.scss";
-import { useCurrentEditorSelector } from "../fixtureEditorsState";
+import { useCurrentEditorSelector } from "../deviceClassEditorsState";
 
 export const ScalarItemsEditor = () => {
   const editorState = useCurrentEditorSelector((state) => state.scalarItems);

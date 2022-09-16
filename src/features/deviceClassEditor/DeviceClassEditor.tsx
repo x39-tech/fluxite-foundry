@@ -4,26 +4,30 @@ import { Classes } from "@blueprintjs/core";
 import { ScalarItemsEditor } from "./scalarItemsEditor/ScalarItemsEditor";
 import { StructuredItemsEditor } from "./structuredItemsEditor/StructuredItemsEditor";
 import { useAppDispatch, useAppSelector } from "app/hooks";
-import { windowLayoutUpdated } from "./fixtureEditorSlice";
-import { FixtureEditorWindowType } from "./fixtureEditorState";
-import { useCurrentEditorSelector } from "./fixtureEditorsState";
-import "./FixtureEditor.scss";
+import { windowLayoutUpdated } from "./deviceClassEditorSlice";
+import { DeviceClassEditorWindowType } from "./deviceClassEditorState";
+import { useCurrentEditorSelector } from "./deviceClassEditorsState";
+import "./DeviceClassEditor.scss";
 
-export interface FixtureEditorProps {
+export interface DeviceClassEditorProps {
   title: string;
 }
 
-const ELEMENT_MAP: { [type in FixtureEditorWindowType]: JSX.Element } = {
-  [FixtureEditorWindowType.ScalarItemsEditor]: <ScalarItemsEditor />,
-  [FixtureEditorWindowType.StructuredItemsEditor]: <StructuredItemsEditor />,
+const ELEMENT_MAP: { [type in DeviceClassEditorWindowType]: JSX.Element } = {
+  [DeviceClassEditorWindowType.ScalarItemsEditor]: <ScalarItemsEditor />,
+  [DeviceClassEditorWindowType.StructuredItemsEditor]: (
+    <StructuredItemsEditor />
+  ),
 };
 
-const TITLE_MAP: { [type in FixtureEditorWindowType]: string } = {
-  [FixtureEditorWindowType.ScalarItemsEditor]: "Scalar Items",
-  [FixtureEditorWindowType.StructuredItemsEditor]: "Structured Items",
+const TITLE_MAP: { [type in DeviceClassEditorWindowType]: string } = {
+  [DeviceClassEditorWindowType.ScalarItemsEditor]: "Scalar Items",
+  [DeviceClassEditorWindowType.StructuredItemsEditor]: "Structured Items",
 };
 
-export const FixtureEditor: React.FC<FixtureEditorProps> = ({ title }) => {
+export const DeviceClassEditor: React.FC<DeviceClassEditorProps> = ({
+  title,
+}) => {
   useEffect(() => {
     document.title = `Editing: ${title} -- UDR Builder`;
     return () => {

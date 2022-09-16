@@ -6,7 +6,7 @@ import {
 import { AddItemSection } from "utils/components/AddItemSection/AddItemSection";
 import { DeviceIdentificationEditor } from "./structuredItems/DeviceIdentificationEditor";
 import { NewStructuredItemDialog } from "./NewStructuredItemDialog";
-import { useCurrentEditorSelector } from "../fixtureEditorsState";
+import { useCurrentEditorSelector } from "../deviceClassEditorsState";
 import "./StructuredItemsEditor.css";
 
 const editorFactory = {

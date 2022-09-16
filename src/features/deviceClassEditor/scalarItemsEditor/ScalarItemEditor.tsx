@@ -34,7 +34,7 @@ import {
   scalarItemIdUpdated,
 } from "./scalarItemsEditorSlice";
 import "./ScalarItemEditor.css";
-import { useCurrentEditorSelector } from "../fixtureEditorsState";
+import { useCurrentEditorSelector } from "../deviceClassEditorsState";
 
 enum ScalarItemInstantiationType {
   SINGLE = "Single",

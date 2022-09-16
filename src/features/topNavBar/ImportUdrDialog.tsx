@@ -10,13 +10,13 @@ import {
   TextArea,
 } from "@blueprintjs/core";
 import { useState } from "react";
+import Ajv, { ErrorObject } from "ajv";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
 import udrDocumentSchema from "generated/DocumentSchema.json";
-import "./ImportUdrDialog.css";
 import { Document } from "udr/objects/document";
-import Ajv, { ErrorObject } from "ajv";
 import { useAppDispatch } from "app/hooks";
-import { importEditor } from "features/fixtureEditor/fixtureEditorSlice";
+import { editorImported } from "features/deviceClassEditor/deviceClassEditorSlice";
+import "./ImportUdrDialog.css";
 
 enum FeedbackKind {
   UnableToReadFile,
@@ -111,7 +111,7 @@ export const ImportUdrDialog: React.FC<ImportUdrDialogProps> = ({
           }
           onClick={() => {
             dispatch(
-              importEditor({
+              editorImported({
                 id: selectedDeviceClass!,
                 udr: inputValidation!.udr!.e173.deviceClasses![
                   selectedDeviceClass!
