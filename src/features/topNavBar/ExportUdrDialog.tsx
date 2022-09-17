@@ -1,9 +1,11 @@
 import {
   AnchorButton,
   Button,
+  Checkbox,
   Classes,
   H3,
   HTMLSelect,
+  HTMLTable,
 } from "@blueprintjs/core";
 import { useState } from "react";
 import { useAppSelector } from "app/hooks";
@@ -25,6 +27,8 @@ export const ExportUdrDialog: React.FC<ExportUdrDialogProps> = ({
     editorsArray.length !== 0 ? editorsArray.at(0)![0] : undefined
   );
 
+  const [prettyPrint, setPrettyPrint] = useState(true);
+
   // Make sure state is up-to-date
   if (editorsArray.length === 0) {
     if (selectedEditorId !== undefined) {
@@ -45,14 +49,20 @@ export const ExportUdrDialog: React.FC<ExportUdrDialogProps> = ({
       e173: {
         deviceClasses: {
           [deviceClassId]: {
-            scalarItems: selectedEditor.scalarItems.scalarItems,
-            structuredItems: selectedEditor.structuredItems.structuredItems,
             ...selectedEditor.basicData,
+            scalarItems: { ...selectedEditor.scalarItems.scalarItems },
+            structuredItems: {
+              ...selectedEditor.structuredItems.structuredItems,
+            },
           },
         },
       },
     };
-    const blob = new Blob([JSON.stringify(document)]);
+    const blob = new Blob([
+      prettyPrint
+        ? JSON.stringify(document, null, 2)
+        : JSON.stringify(document),
+    ]);
     fileDownloadUrl = URL.createObjectURL(blob);
   }
 
@@ -62,16 +72,36 @@ export const ExportUdrDialog: React.FC<ExportUdrDialogProps> = ({
         <H3>Export UDR Document</H3>
       </div>
       <div className={"export-udr-dialog-body " + Classes.DIALOG_BODY}>
-        <p>Choose a device class to export:</p>
-        <HTMLSelect
-          onChange={(event) => setSelectedEditorId(event.currentTarget.value)}
-        >
-          {editorsArray.map(([id, editor]) => (
-            <option key={id} value={id} selected={id === selectedEditorId}>
-              {editor.deviceClassId}
-            </option>
-          ))}
-        </HTMLSelect>
+        <HTMLTable striped condensed>
+          <tr>
+            <td style={{ verticalAlign: "middle" }}>
+              Choose a device class to export:
+            </td>
+            <td>
+              <HTMLSelect
+                value={selectedEditorId}
+                onChange={(event) =>
+                  setSelectedEditorId(event.currentTarget.value)
+                }
+              >
+                {editorsArray.map(([id, editor]) => (
+                  <option key={id} value={id}>
+                    {editor.deviceClassId}
+                  </option>
+                ))}
+              </HTMLSelect>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <Checkbox
+                label="Formatted"
+                checked={prettyPrint}
+                onChange={() => setPrettyPrint(!prettyPrint)}
+              />
+            </td>
+          </tr>
+        </HTMLTable>
       </div>
       <div className={Classes.DIALOG_FOOTER}>
         <AnchorButton
