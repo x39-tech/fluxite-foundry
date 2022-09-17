@@ -44,26 +44,28 @@ export const ExportUdrDialog: React.FC<ExportUdrDialogProps> = ({
   let fileDownloadUrl = "";
   if (selectedEditorId) {
     const selectedEditor = editors[selectedEditorId];
-    const deviceClassId = selectedEditor.deviceClassId;
-    const document: Document = {
-      e173: {
-        deviceClasses: {
-          [deviceClassId]: {
-            ...selectedEditor.basicData,
-            scalarItems: { ...selectedEditor.scalarItems.scalarItems },
-            structuredItems: {
-              ...selectedEditor.structuredItems.structuredItems,
+    if (selectedEditor) {
+      const deviceClassId = selectedEditor.deviceClassId;
+      const document: Document = {
+        e173: {
+          deviceClasses: {
+            [deviceClassId]: {
+              ...selectedEditor.basicData,
+              scalarItems: { ...selectedEditor.scalarItems.scalarItems },
+              structuredItems: {
+                ...selectedEditor.structuredItems.structuredItems,
+              },
             },
           },
         },
-      },
-    };
-    const blob = new Blob([
-      prettyPrint
-        ? JSON.stringify(document, null, 2)
-        : JSON.stringify(document),
-    ]);
-    fileDownloadUrl = URL.createObjectURL(blob);
+      };
+      const blob = new Blob([
+        prettyPrint
+          ? JSON.stringify(document, null, 2)
+          : JSON.stringify(document),
+      ]);
+      fileDownloadUrl = URL.createObjectURL(blob);
+    }
   }
 
   return (
