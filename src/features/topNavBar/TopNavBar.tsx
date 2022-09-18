@@ -1,17 +1,14 @@
-import { useState } from "react";
 import { Alignment, Button, Navbar } from "@blueprintjs/core";
 import { Popover2 } from "@blueprintjs/popover2";
 import { useAppDispatch, useAppSelector } from "app/hooks";
-import { SettingsMenu } from "features/appSettings/SettingsMenu";
 import {
   newEditorCreated,
   editorDeleted,
   selectedEditorChanged,
 } from "features/deviceClassEditor/deviceClassEditorSlice";
 import { EditorTitleTab } from "utils/components/EditorTitleTab/EditorTitleTab";
-import { ImportUdrDialog } from "./ImportUdrDialog";
+import { AppMainMenu } from "./AppMainMenu";
 import "./TopNavBar.css";
-import { ExportUdrDialog } from "./ExportUdrDialog";
 
 export const TopNavBar = () => {
   const editors = useAppSelector((state) => {
@@ -24,9 +21,6 @@ export const TopNavBar = () => {
   const currentEditor = editors.openEditors[editors.selectedEditor];
 
   const dispatch = useAppDispatch();
-
-  const [importUdrDialogIsOpen, setImportUdrDialogIsOpen] = useState(false);
-  const [exportUdrDialogIsOpen, setExportUdrDialogIsOpen] = useState(false);
 
   return (
     <>
@@ -76,25 +70,9 @@ export const TopNavBar = () => {
           align={Alignment.RIGHT}
           className="navbar-right-button-group"
         >
-          <Button
-            icon="import"
-            onClick={() => setImportUdrDialogIsOpen(true)}
-          />
-          <Button
-            icon="export"
-            onClick={() => setExportUdrDialogIsOpen(true)}
-          />
-          <SettingsMenu />
+          <AppMainMenu />
         </Navbar.Group>
       </Navbar>
-      <ImportUdrDialog
-        isOpen={importUdrDialogIsOpen}
-        onClose={() => setImportUdrDialogIsOpen(false)}
-      />
-      <ExportUdrDialog
-        isOpen={exportUdrDialogIsOpen}
-        onClose={() => setExportUdrDialogIsOpen(false)}
-      />
     </>
   );
 };

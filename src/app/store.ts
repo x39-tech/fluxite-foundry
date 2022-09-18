@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { throttle } from "lodash";
-import appSettings from "features/appSettings/appSettingsSlice";
+import appSettings from "features/topNavBar/appSettingsSlice";
 import editors from "features/deviceClassEditor/deviceClassEditorSlice";
 import {
   loadStateFromLocalStorage,

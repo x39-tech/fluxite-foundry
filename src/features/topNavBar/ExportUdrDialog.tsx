@@ -11,6 +11,7 @@ import { useState } from "react";
 import { useAppSelector } from "app/hooks";
 import { Document } from "udr/objects/document";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
+import { DeviceClassEditorState } from "features/deviceClassEditor/deviceClassEditorState";
 
 export interface ExportUdrDialogProps {
   isOpen: boolean;
@@ -41,32 +42,11 @@ export const ExportUdrDialog: React.FC<ExportUdrDialogProps> = ({
     setSelectedEditorId(editorsArray.at(0)![0]);
   }
 
-  let fileDownloadUrl = "";
-  if (selectedEditorId) {
-    const selectedEditor = editors[selectedEditorId];
-    if (selectedEditor) {
-      const deviceClassId = selectedEditor.deviceClassId;
-      const document: Document = {
-        e173: {
-          deviceClasses: {
-            [deviceClassId]: {
-              ...selectedEditor.basicData,
-              scalarItems: { ...selectedEditor.scalarItems.scalarItems },
-              structuredItems: {
-                ...selectedEditor.structuredItems.structuredItems,
-              },
-            },
-          },
-        },
-      };
-      const blob = new Blob([
-        prettyPrint
-          ? JSON.stringify(document, null, 2)
-          : JSON.stringify(document),
-      ]);
-      fileDownloadUrl = URL.createObjectURL(blob);
-    }
-  }
+  const fileDownloadUrl = getFileDownloadUrl(
+    selectedEditorId,
+    editors,
+    prettyPrint
+  );
 
   return (
     <DarkModeAwareDialog isOpen={isOpen} onClose={onClose}>
@@ -121,3 +101,34 @@ export const ExportUdrDialog: React.FC<ExportUdrDialogProps> = ({
     </DarkModeAwareDialog>
   );
 };
+
+function getFileDownloadUrl(
+  selectedEditorId: string | undefined,
+  editors: { [id: string]: DeviceClassEditorState },
+  prettyPrint: boolean
+) {
+  if (selectedEditorId) {
+    const selectedEditor = editors[selectedEditorId];
+    if (selectedEditor) {
+      const deviceClassId = selectedEditor.deviceClassId;
+      const document: Document = {
+        e173: {
+          deviceClasses: {
+            [deviceClassId]: {
+              ...selectedEditor.basicData,
+              scalarItems: selectedEditor.scalarItems.scalarItems,
+              structuredItems: selectedEditor.structuredItems.structuredItems,
+            },
+          },
+        },
+      };
+      const blob = new Blob([
+        prettyPrint
+          ? JSON.stringify(document, null, 2)
+          : JSON.stringify(document),
+      ]);
+      return URL.createObjectURL(blob);
+    }
+  }
+  return "";
+}

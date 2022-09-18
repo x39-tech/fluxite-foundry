@@ -5,7 +5,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import type { PreloadedState } from "@reduxjs/toolkit";
 import { Provider } from "react-redux";
 
-import appSettings from "features/appSettings/appSettingsSlice";
+import appSettings from "features/topNavBar/appSettingsSlice";
 import editors from "features/deviceClassEditor/deviceClassEditorSlice";
 
 import type { AppStore } from "app/store";
