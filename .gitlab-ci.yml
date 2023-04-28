@@ -10,7 +10,7 @@ build:
     - npm run build
   artifacts:
     paths:
-      - build/
+      - dist/
 
 pages:
   image: alpine:latest
@@ -18,7 +18,7 @@ pages:
   variables:
     GIT_STRATEGY: none
   script:
-    - mv build public
+    - mv dist public
   artifacts:
     paths:
       - public

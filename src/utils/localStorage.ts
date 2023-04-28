@@ -1,10 +1,10 @@
 import { RootState } from "app/rootState";
-import { ROOT_STATE_SCHEMA } from "generated/hash";
+import rootStateHash from "virtual:rootStateHash";
 
 export function loadStateFromLocalStorage(): RootState | undefined {
   try {
     const hash = localStorage.getItem("prelimStateHash");
-    if (!hash || hash !== ROOT_STATE_SCHEMA) {
+    if (!hash || hash !== rootStateHash) {
       return undefined;
     }
 
@@ -23,7 +23,7 @@ export function saveStateToLocalStorage(state: RootState) {
   try {
     localStorage.clear();
     localStorage.setItem("prelimRootState", JSON.stringify(state));
-    localStorage.setItem("prelimStateHash", ROOT_STATE_SCHEMA);
+    localStorage.setItem("prelimStateHash", rootStateHash);
   } catch (err) {
     console.log("State save error: " + err);
   }

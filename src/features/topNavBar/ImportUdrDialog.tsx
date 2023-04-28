@@ -12,7 +12,7 @@ import {
 import { useState } from "react";
 import Ajv, { ErrorObject } from "ajv";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
-import udrDocumentSchema from "generated/DocumentSchema.json";
+import udrDocumentSchema from "virtual:udrDocumentSchema";
 import { Document } from "udr/objects/document";
 import { useAppDispatch } from "app/hooks";
 import { editorImported } from "features/deviceClassEditor/deviceClassEditorSlice";
@@ -147,7 +147,7 @@ function validateInputFile(fileContent?: string): InputValidationResult {
         feedback: getHumanReadableErrors(ajv.errors ?? undefined),
       };
     }
-    return { valid: true, udr: fileJson };
+    return { valid: true, udr: fileJson as Document };
   } catch (err) {
     return {
       valid: false,
