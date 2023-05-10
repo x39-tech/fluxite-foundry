@@ -3,6 +3,9 @@ stages:
   - deploy
 
 build:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   image: node:latest
   stage: build
   script:
@@ -13,6 +16,8 @@ build:
       - dist/
 
 pages:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
   image: alpine:latest
   stage: deploy
   variables:

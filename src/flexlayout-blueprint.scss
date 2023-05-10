@@ -1,0 +1,174 @@
+@use "@blueprintjs/core/lib/scss/variables" as bp;
+
+.flexlayout-light.flexlayout {
+  &__layout {
+    --color-text: #{bp.$pt-text-color};
+    --color-background: #{bp.$pt-app-background-color};
+    --color-base: #{bp.$light-gray1};
+    --color-1: #{bp.$light-gray1};
+    --color-2: #{bp.$light-gray2};
+    --color-3: #{bp.$light-gray3};
+    --color-4: #{bp.$light-gray4};
+    --color-5: #{bp.$light-gray5};
+    --color-6: #{bp.$white};
+    --color-drag1: #{bp.$gray4};
+    --color-drag2: #{bp.$gray3};
+    --color-drag1-background: rgba(95, 134, 196, 0.1);
+    --color-drag2-background: rgba(119, 166, 119, 0.075);
+  }
+}
+
+.flexlayout-dark.flexlayout {
+  &__layout {
+    --color-text: #{bp.$pt-dark-text-color};
+    --color-background: #{bp.$dark-gray1};
+    --color-base: #{bp.$dark-gray1};
+    --color-1: #{bp.$dark-gray1};
+    --color-2: #{bp.$dark-gray2};
+    --color-3: #{bp.$dark-gray3};
+    --color-4: #{bp.$dark-gray4};
+    --color-5: #{bp.$dark-gray5};
+    --color-6: #{bp.$gray2};
+    --color-drag1: #{bp.$gray5};
+    --color-drag2: #{bp.$gray4};
+    --color-drag1-background: rgba(128, 128, 128, 0.15);
+    --color-drag2-background: rgba(128, 128, 128, 0.15);
+  }
+}
+
+.flexlayout {
+  &__layout {
+    --font-size: #{bp.$pt-font-size};
+    --font-family: #{bp.$pt-font-family};
+
+    --color-overflow: gray;
+    --color-icon: gray;
+
+    --color-tabset-background: var(--color-background);
+    --color-tabset-background-selected: var(--color-1);
+    --color-tabset-background-maximized: var(--color-6);
+    --color-tabset-divider-line: var(--color-4);
+
+    --color-tabset-header-background: var(--color-background);
+    --color-tabset-header: var(--color-text);
+
+    --color-border-background: var(--color-background);
+    --color-border-divider-line: var(--color-4);
+
+    --color-tab-selected: var(--color-text);
+    --color-tab-selected-background: var(--color-4);
+    --color-tab-unselected: gray;
+    --color-tab-unselected-background: transparent;
+    --color-tab-textbox: var(--color-text);
+    --color-tab-textbox-background: var(--color-3);
+
+    --color-border-tab-selected: var(--color-text);
+    --color-border-tab-selected-background: var(--color-4);
+    --color-border-tab-unselected: gray;
+    --color-border-tab-unselected-background: var(--color-2);
+
+    --color-splitter: var(--color-1);
+    --color-splitter-hover: var(--color-4);
+    --color-splitter-drag: var(--color-4);
+
+    --color-drag-rect-border: var(--color-6);
+    --color-drag-rect-background: var(--color-4);
+    --color-drag-rect: var(--color-text);
+
+    --color-popup-border: var(--color-6);
+    --color-popup-unselected: var(--color-text);
+    --color-popup-unselected-background: var(--color-background);
+    --color-popup-selected: var(--color-text);
+    --color-popup-selected-background: var(--color-3);
+
+    --color-edge-marker: gray;
+  }
+}
+
+@mixin tabset_mixin {
+}
+
+@mixin tabset_tabbar_mixin {
+}
+
+@mixin tabset_header_mixin {
+  box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
+}
+
+@mixin tabset_selected_mixin {
+}
+
+@mixin tabset_maximized_mixin {
+  background-image: linear-gradient(var(--color-6), var(--color-2));
+}
+
+@mixin tab_top_mixin {
+  box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+
+@mixin tab_bottom_mixin {
+  box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+
+@mixin tab_button_mixin {
+}
+
+@mixin tab_button_selected_mixin {
+}
+
+@mixin tab_button_unselected_mixin {
+}
+
+@mixin tab_button_hovered_mixin {
+}
+
+@mixin border_mixin {
+}
+
+@mixin close_button_hovered_mixin {
+  background-color: var(--color-6);
+}
+
+@mixin toolbar_button_hovered_mixin {
+  background-color: var(--color-4);
+}
+
+@mixin border_button_mixin {
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+@mixin border_button_selected_mixin {
+}
+
+@mixin border_button_unselected_mixin {
+}
+
+@mixin border_button_hovered_mixin {
+  background-color: var(--color-4);
+}
+
+@mixin splitter_mixin {
+}
+
+@mixin splitter_hover_mixin {
+}
+
+@mixin splitter_drag_mixin {
+  border-radius: 5px;
+}
+
+@mixin splitter_border_mixin {
+}
+
+@mixin tabset_tab_divider_mixin {
+}
+
+@mixin border_tab_divider_mixin {
+}
+
+@import "flexlayout-react/style/_base";

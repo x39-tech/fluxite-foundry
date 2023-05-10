@@ -1,5 +1,6 @@
 import { nanoid } from "@reduxjs/toolkit";
-import { MosaicNode } from "react-mosaic-component";
+import FlexLayout from "flexlayout-react";
+
 import { DeviceClass } from "udr/objects/deviceClass";
 import { getDefaultDeviceClass } from "udr/udr";
 import { getUniqueItemId } from "utils/utils";
@@ -23,8 +24,7 @@ export interface DeviceClassEditorState {
   basicData: BasicData;
   scalarItems: ScalarItemsEditorState;
   structuredItems: StructuredItemsEditorState;
-  windowLayout: MosaicNode<string> | null;
-  windowTypes: { [id: string]: DeviceClassEditorWindowType };
+  windowLayout: FlexLayout.IJsonRowNode;
 }
 
 export function newDeviceClassEditor(
@@ -58,14 +58,37 @@ export function importDeviceClassEditor(
       }),
     },
     windowLayout: {
-      direction: "row",
-      first: "scalar",
-      second: "structured",
-      splitPercentage: 50,
-    },
-    windowTypes: {
-      scalar: DeviceClassEditorWindowType.ScalarItemsEditor,
-      structured: DeviceClassEditorWindowType.StructuredItemsEditor,
+      type: "row",
+      weight: 100,
+      id: nanoid(),
+      children: [
+        {
+          type: "tabset",
+          weight: 50,
+          id: nanoid(),
+          children: [
+            {
+              type: "tab",
+              name: "Scalar Items Editor",
+              component: "scalarItemsEditor",
+              id: nanoid(),
+            },
+          ],
+        },
+        {
+          type: "tabset",
+          weight: 50,
+          id: nanoid(),
+          children: [
+            {
+              type: "tab",
+              name: "Structured Items Editor",
+              component: "structuredItemsEditor",
+              id: nanoid(),
+            },
+          ],
+        },
+      ],
     },
   };
 }

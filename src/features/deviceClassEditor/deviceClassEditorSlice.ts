@@ -1,5 +1,6 @@
 import { createSlice, nanoid, PayloadAction } from "@reduxjs/toolkit";
-import { MosaicNode } from "react-mosaic-component";
+import * as FlexLayout from "flexlayout-react";
+
 import {
   DeviceClassEditorState,
   importDeviceClassEditor,
@@ -74,11 +75,8 @@ export const deviceClassEditorSlice = createSlice({
     selectedEditorChanged(state, action: PayloadAction<string>) {
       state.selectedEditor = action.payload;
     },
-    windowLayoutUpdated(
-      state,
-      action: PayloadAction<MosaicNode<string> | null>
-    ) {
-      getCurrentEditor(state).windowLayout = action.payload;
+    windowLayoutUpdated(state, action: PayloadAction<FlexLayout.IJsonModel>) {
+      getCurrentEditor(state).windowLayout = action.payload.layout;
     },
   },
   extraReducers: (builder) => {
