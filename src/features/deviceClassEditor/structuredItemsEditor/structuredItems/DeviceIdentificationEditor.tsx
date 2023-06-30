@@ -1,5 +1,4 @@
 import produce from "immer";
-import { Colors } from "@blueprintjs/core";
 import { DispatchOnChangeFactory } from "utils/dispatchOnChangeFactory";
 import { DeviceIdentification } from "udr/libraries/core/structuredItems/deviceIdentification";
 import {
@@ -47,7 +46,6 @@ export const DeviceIdentificationEditor: React.FC<
     <ItemEditor
       expanded
       title="Device Identification"
-      backgroundColor={{ light: Colors.BLUE5, dark: Colors.BLUE1 }}
       onDelete={() => dispatch(structuredItemDeleted(id))}
     >
       <div className="structured-item-collapse-body">

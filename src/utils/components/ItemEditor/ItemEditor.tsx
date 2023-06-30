@@ -1,18 +1,14 @@
-import { Button, Collapse, H4 } from "@blueprintjs/core";
+import { Button, Collapse, Colors, H4 } from "@blueprintjs/core";
 import { useState } from "react";
-import { Property } from "csstype";
 import "./ItemEditor.css";
 import { useAppSelector } from "app/hooks";
 
-export interface BackgroundColor {
-  light: Property.BackgroundColor;
-  dark: Property.BackgroundColor;
-}
+const BACKGROUND_COLOR_DARK = Colors.DARK_GRAY2;
+const BACKGROUND_COLOR_LIGHT = Colors.LIGHT_GRAY3;
 
 export interface ItemEditorProps {
   title: string;
   expanded?: boolean;
-  backgroundColor: BackgroundColor;
   onDelete: () => void;
   children: React.ReactNode;
 }
@@ -20,7 +16,6 @@ export interface ItemEditorProps {
 export const ItemEditor: React.FC<ItemEditorProps> = ({
   title,
   expanded = false,
-  backgroundColor,
   onDelete,
   children,
 }) => {
@@ -33,8 +28,8 @@ export const ItemEditor: React.FC<ItemEditorProps> = ({
       className="item-editor"
       style={{
         backgroundColor: inDarkMode
-          ? backgroundColor.dark
-          : backgroundColor.light,
+          ? BACKGROUND_COLOR_DARK
+          : BACKGROUND_COLOR_LIGHT,
       }}
     >
       <div className="item-editor-title-section">

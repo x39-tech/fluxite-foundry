@@ -1,4 +1,4 @@
-import { Callout, Colors } from "@blueprintjs/core";
+import { Callout } from "@blueprintjs/core";
 import { Popover2 } from "@blueprintjs/popover2";
 import produce from "immer";
 import { useAppDispatch, useCurrentEditorSelector } from "app/hooks";
@@ -302,7 +302,6 @@ export const ScalarItemEditor: React.FC<ScalarItemEditorProps> = ({
   return (
     <ItemEditor
       title={udr.friendlyName ? udr.friendlyName! : id}
-      backgroundColor={{ light: Colors.SEPIA5, dark: Colors.SEPIA1 }}
       onDelete={() => {
         dispatch(scalarItemDeleted(id));
       }}
