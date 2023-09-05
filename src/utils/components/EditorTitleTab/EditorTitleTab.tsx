@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button, Icon, Navbar } from "@blueprintjs/core";
 import "./EditorTitleTab.css";
 
-export interface EditorTitleTabProps {
+interface Props {
   name: string;
   id: string;
   active: boolean;
@@ -10,13 +10,13 @@ export interface EditorTitleTabProps {
   onDelete: (id: string) => void;
 }
 
-export const EditorTitleTab: React.FC<EditorTitleTabProps> = ({
+export const EditorTitleTab = ({
   name,
   id,
   active,
   onSelect,
   onDelete,
-}) => {
+}: Props) => {
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -25,7 +25,9 @@ export const EditorTitleTab: React.FC<EditorTitleTabProps> = ({
         minimal
         active={active}
         className="editor-selector-button"
-        onClick={() => {onSelect(id)}}
+        onClick={() => {
+          onSelect(id);
+        }}
         onMouseEnter={() => {
           setHovered(true);
         }}
@@ -37,7 +39,7 @@ export const EditorTitleTab: React.FC<EditorTitleTabProps> = ({
         <Icon
           icon="delete"
           style={{ visibility: hovered ? "visible" : "hidden" }}
-          onClick={e => {
+          onClick={(e) => {
             e.stopPropagation();
             onDelete(id);
           }}

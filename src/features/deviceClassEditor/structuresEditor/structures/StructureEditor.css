@@ -1,0 +1,4 @@
+.structure-collapse-body {
+  display: flex;
+  flex-direction: column;
+}

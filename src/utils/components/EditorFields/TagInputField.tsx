@@ -1,14 +1,14 @@
 import { TagInput } from "@blueprintjs/core";
 
-export interface TagInputFieldProps {
+interface TagInputFieldProps {
   values: string[];
   onValuesChanged: (newValues: string[]) => void;
 }
 
-export const TagInputField: React.FC<TagInputFieldProps> = ({
+export const TagInputField = ({
   values,
   onValuesChanged,
-}) => {
+}: TagInputFieldProps) => {
   return (
     <TagInput
       values={values}
@@ -23,7 +23,7 @@ export interface TagInputTableRowProps extends TagInputFieldProps {
   label: string;
 }
 
-export const TagInputTableRow: React.FC<TagInputTableRowProps> = (props) => {
+export const TagInputTableRow = (props: TagInputTableRowProps) => {
   return (
     <tr>
       <td style={{ verticalAlign: "middle" }}>{props.label}</td>

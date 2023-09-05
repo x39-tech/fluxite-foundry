@@ -7,15 +7,12 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`;
 
-export interface AboutDialogProps {
+interface Props {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const AboutDialog: React.FC<AboutDialogProps> = ({
-  isOpen,
-  onClose,
-}) => {
+export const AboutDialog = ({ isOpen, onClose }: Props) => {
   return (
     <DarkModeAwareDialog isOpen={isOpen} onClose={onClose}>
       <div className={Classes.DIALOG_HEADER}>
@@ -35,7 +32,7 @@ export const AboutDialog: React.FC<AboutDialogProps> = ({
           </a>{" "}
           to participate in the development of UDR.
         </p>
-        <p>Copyright © 2022 Sam Kearney</p>
+        <p>Copyright © 2023 Sam Kearney</p>
         <p>License:</p>
         <TextArea fill>{MIT_LICENSE}</TextArea>
       </div>

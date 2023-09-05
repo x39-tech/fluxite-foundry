@@ -1,16 +1,18 @@
-import React from "react";
 import { Classes } from "@blueprintjs/core";
 import { DeviceClassEditor } from "features/deviceClassEditor/DeviceClassEditor";
 import { DeviceClassEditorState } from "features/deviceClassEditor/deviceClassEditorState";
 import "./App.scss";
 import { useAppSelector } from "./hooks";
 import { TopNavBar } from "features/topNavBar/TopNavBar";
+import { loadDefaultLibraries } from "udr/udrDatabase";
 
 function getEditorComponent(id: string, editor: DeviceClassEditorState) {
   return <DeviceClassEditor key={id} title={editor.deviceClassId} />;
 }
 
-export const App: React.FC<{}> = () => {
+export const App = () => {
+  loadDefaultLibraries();
+
   const settings = useAppSelector((state) => state.appSettings);
   const editors = useAppSelector((state) => {
     return {

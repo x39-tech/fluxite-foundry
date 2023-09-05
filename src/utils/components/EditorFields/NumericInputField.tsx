@@ -1,13 +1,13 @@
 import { Button, NumericInput, NumericInputProps } from "@blueprintjs/core";
 import { Tooltip2 } from "@blueprintjs/popover2";
 
-export interface NumericInputTableRowProps {
+interface NumericInputTableRowProps {
   label: string;
 }
 
-export const NumericInputTableRow: React.FC<
-  NumericInputTableRowProps & NumericInputProps
-> = (props) => {
+export const NumericInputTableRow = (
+  props: NumericInputTableRowProps & NumericInputProps,
+) => {
   return (
     <tr>
       <td style={{ verticalAlign: "middle" }}>{props.label}</td>
@@ -18,13 +18,11 @@ export const NumericInputTableRow: React.FC<
   );
 };
 
-export interface ClearableNumericInputProps extends NumericInputProps {
+interface ClearableNumericInputProps extends NumericInputProps {
   onValueChange: (value?: number) => void;
 }
 
-export const ClearableNumericInput: React.FC<ClearableNumericInputProps> = (
-  props
-) => {
+export const ClearableNumericInput = (props: ClearableNumericInputProps) => {
   return (
     <NumericInput
       leftElement={
@@ -48,9 +46,9 @@ export const ClearableNumericInput: React.FC<ClearableNumericInputProps> = (
   );
 };
 
-export const ClearableNumericInputTableRow: React.FC<
-  ClearableNumericInputProps & NumericInputTableRowProps
-> = (props) => {
+export const ClearableNumericInputTableRow = (
+  props: ClearableNumericInputProps & NumericInputTableRowProps,
+) => {
   return (
     <tr>
       <td style={{ verticalAlign: "middle" }}>{props.label}</td>

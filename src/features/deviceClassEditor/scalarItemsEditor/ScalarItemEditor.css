@@ -1,9 +1,0 @@
-pre {
-  display: inline;
-  margin: 0px;
-}
-
-.scalar-item-collapse-body {
-  display: flex;
-  flex-direction: column;
-}

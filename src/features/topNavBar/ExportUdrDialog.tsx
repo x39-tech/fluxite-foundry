@@ -9,23 +9,20 @@ import {
 } from "@blueprintjs/core";
 import { useState } from "react";
 import { useAppSelector } from "app/hooks";
-import { Document } from "udr/objects/document";
+import { E173UDRDocuments as UDRDocument } from "generated/draft-2023-1/udr-document";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
 import { DeviceClassEditorState } from "features/deviceClassEditor/deviceClassEditorState";
 
-export interface ExportUdrDialogProps {
+interface Props {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const ExportUdrDialog: React.FC<ExportUdrDialogProps> = ({
-  isOpen,
-  onClose,
-}) => {
+export const ExportUdrDialog = ({ isOpen, onClose }: Props) => {
   const editors = useAppSelector((state) => state.editors.openEditors);
   const editorsArray = Object.entries(editors);
   const [selectedEditorId, setSelectedEditorId] = useState(
-    editorsArray.length !== 0 ? editorsArray.at(0)![0] : undefined
+    editorsArray.length !== 0 ? editorsArray.at(0)![0] : undefined,
   );
 
   const [prettyPrint, setPrettyPrint] = useState(true);
@@ -45,7 +42,7 @@ export const ExportUdrDialog: React.FC<ExportUdrDialogProps> = ({
   const fileDownloadUrl = getFileDownloadUrl(
     selectedEditorId,
     editors,
-    prettyPrint
+    prettyPrint,
   );
 
   return (
@@ -105,22 +102,25 @@ export const ExportUdrDialog: React.FC<ExportUdrDialogProps> = ({
 function getFileDownloadUrl(
   selectedEditorId: string | undefined,
   editors: { [id: string]: DeviceClassEditorState },
-  prettyPrint: boolean
+  prettyPrint: boolean,
 ) {
   if (selectedEditorId) {
     const selectedEditor = editors[selectedEditorId];
     if (selectedEditor) {
       const deviceClassId = selectedEditor.deviceClassId;
-      const document: Document = {
+      const document: UDRDocument = {
         e173: {
           deviceClasses: {
             [deviceClassId]: {
+              libraries: {},
               ...selectedEditor.basicData,
-              scalarItems: selectedEditor.scalarItems.scalarItems,
-              structuredItems: selectedEditor.structuredItems.structuredItems,
+              parameters: selectedEditor.parameters.parameters,
+              structures: selectedEditor.structures.structures,
             },
           },
         },
+        $schema:
+          "https://gitlab.com/esta-cpwg/e173/-/raw/main/schemas/draft-2023-1/udr-document.json",
       };
       const blob = new Blob([
         prettyPrint

@@ -1,11 +1,11 @@
 type ChangeRecipe<ObjectType, NewValueType> = (
   draft: ObjectType,
-  newValue: NewValueType
+  newValue: NewValueType,
 ) => void;
 
 type DispatchFunction<ObjectType> = <NewValueType>(
   newValue: NewValueType,
-  changeRecipe: ChangeRecipe<ObjectType, NewValueType>
+  changeRecipe: ChangeRecipe<ObjectType, NewValueType>,
 ) => void;
 
 export class DispatchOnChangeFactory<ObjectType> {
@@ -14,7 +14,7 @@ export class DispatchOnChangeFactory<ObjectType> {
 
   constructor(
     objectValue: ObjectType,
-    dispatchFunction: DispatchFunction<ObjectType>
+    dispatchFunction: DispatchFunction<ObjectType>,
   ) {
     this.objectValue = objectValue;
     this.dispatchFunction = dispatchFunction;

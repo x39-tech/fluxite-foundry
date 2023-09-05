@@ -10,7 +10,7 @@ export function validateStringIsNumber(input: string): InputValidationResult {
 }
 
 export function validateStringIsNumberOrEmpty(
-  input: string
+  input: string,
 ): InputValidationResult {
   if (input === "") {
     return { isValid: true };
@@ -24,7 +24,7 @@ export function validateStringIsNumberOrEmpty(
 export function validateStringIsNumberAndBetweenMinAndMaxOrEmpty(
   input: string,
   minimum?: number,
-  maximum?: number
+  maximum?: number,
 ): InputValidationResult {
   if (input === "") {
     return { isValid: true };
@@ -52,7 +52,7 @@ export function validateStringIsNumberAndBetweenMinAndMaxOrEmpty(
 
 export function validateNewItemId(
   input: string,
-  existingItemIds: string[]
+  existingItemIds: string[],
 ): InputValidationResult {
   if (!input) {
     return { isValid: false, feedback: "ID must not be empty" };
@@ -61,7 +61,7 @@ export function validateNewItemId(
   if (existingItemIds.includes(input)) {
     return {
       isValid: false,
-      feedback: "ID must be unique among all scalar items in the device",
+      feedback: "ID must be unique among all parameters in the device",
     };
   }
 

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import * as THREE from "three";
 
 export default function FixtureWashHead(props: JSX.IntrinsicElements["mesh"]) {

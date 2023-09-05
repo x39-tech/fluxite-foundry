@@ -15,13 +15,11 @@ import { NewWidgetMenu } from "./newWidgetMenu";
 import { windowLayoutUpdated } from "./deviceClassEditorSlice";
 import "./DeviceClassEditor.scss";
 
-export interface DeviceClassEditorProps {
+interface Props {
   title: string;
 }
 
-export const DeviceClassEditor: React.FC<DeviceClassEditorProps> = ({
-  title,
-}) => {
+export const DeviceClassEditor = ({ title }: Props) => {
   useEffect(() => {
     document.title = `Editing: ${title} -- UDR Builder`;
     return () => {
@@ -48,10 +46,10 @@ export const DeviceClassEditor: React.FC<DeviceClassEditorProps> = ({
 
   const onModelChange = useMemo(
     () =>
-      throttle((model, _) => {
+      throttle((model) => {
         dispatch(windowLayoutUpdated(model.toJson()));
       }, 1000),
-    []
+    [],
   );
 
   const factory = (node: FlexLayout.TabNode) => {
@@ -77,6 +75,7 @@ export const DeviceClassEditor: React.FC<DeviceClassEditorProps> = ({
         const tabSetId = tabSetNode.getId();
         renderValues.stickyButtons = [
           <Popover2
+            key="1"
             content={
               <NewWidgetMenu
                 onNewWidgetSelected={(id, name) =>
@@ -88,6 +87,10 @@ export const DeviceClassEditor: React.FC<DeviceClassEditorProps> = ({
             <Button icon="add" minimal />
           </Popover2>,
         ];
+      }}
+      onRenderTab={(node, renderValues) => {
+        renderValues.content =
+          WIDGETS[node.getComponent() || ""]?.name || "Unknown Editor";
       }}
       realtimeResize
       icons={{
@@ -101,7 +104,7 @@ function addNewWidget(
   model: FlexLayout.Model,
   tabSetId: string,
   componentId: string,
-  componentName: string
+  componentName: string,
 ) {
   model.doAction(
     FlexLayout.Actions.addNode(
@@ -113,7 +116,7 @@ function addNewWidget(
       },
       tabSetId,
       FlexLayout.DockLocation.CENTER,
-      -1
-    )
+      -1,
+    ),
   );
 }

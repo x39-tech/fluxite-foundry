@@ -1,0 +1,9 @@
+pre {
+  display: inline;
+  margin: 0px;
+}
+
+.parameter-collapse-body {
+  display: flex;
+  flex-direction: column;
+}

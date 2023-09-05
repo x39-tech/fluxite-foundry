@@ -10,13 +10,13 @@ import {
   TextArea,
 } from "@blueprintjs/core";
 import { useState } from "react";
-import Ajv, { ErrorObject } from "ajv";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
-import udrDocumentSchema from "virtual:udrDocumentSchema";
-import { Document } from "udr/objects/document";
+import udrDocumentSchema from "e173/schemas/draft-2023-1/udr-document.json";
+import { E173UDRDocuments as UDRDocument } from "generated/draft-2023-1/udr-document";
 import { useAppDispatch } from "app/hooks";
 import { editorImported } from "features/deviceClassEditor/deviceClassEditorSlice";
 import "./ImportUdrDialog.css";
+import { validateWithSchema } from "utils/schemaValidation";
 
 enum FeedbackKind {
   UnableToReadFile,
@@ -28,18 +28,15 @@ interface InputValidationResult {
   valid: boolean;
   feedbackKind?: FeedbackKind;
   feedback?: string;
-  udr?: Document;
+  udr?: UDRDocument;
 }
 
-export interface ImportUdrDialogProps {
+interface Props {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const ImportUdrDialog: React.FC<ImportUdrDialogProps> = ({
-  isOpen,
-  onClose,
-}) => {
+export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
   const [inputFile, setInputFile] = useState<File | null>(null);
   const [inputValidation, setInputValidation] = useState<
     InputValidationResult | undefined
@@ -51,7 +48,7 @@ export const ImportUdrDialog: React.FC<ImportUdrDialogProps> = ({
   // Fix up state
   if (inputValidation?.valid && hasDeviceClasses(inputValidation.udr!)) {
     const deviceClassKeys = Object.keys(
-      inputValidation.udr!.e173.deviceClasses!
+      inputValidation.udr!.e173.deviceClasses!,
     );
     if (
       !selectedDeviceClass ||
@@ -80,12 +77,13 @@ export const ImportUdrDialog: React.FC<ImportUdrDialogProps> = ({
               const reader = new FileReader();
               reader.onload = (event) => {
                 setInputValidation(
-                  validateInputFile(event.target?.result as string | undefined)
+                  validateInputFile(event.target?.result as string | undefined),
                 );
               };
               reader.readAsText(file);
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (event.target as unknown as { value: any }).value = null;
           }}
           inputProps={{
@@ -96,7 +94,7 @@ export const ImportUdrDialog: React.FC<ImportUdrDialogProps> = ({
           inputFile,
           inputValidation,
           selectedDeviceClass,
-          setSelectedDeviceClass
+          setSelectedDeviceClass,
         )}
       </div>
       <div className={Classes.DIALOG_FOOTER}>
@@ -116,7 +114,7 @@ export const ImportUdrDialog: React.FC<ImportUdrDialogProps> = ({
                 udr: inputValidation!.udr!.e173.deviceClasses![
                   selectedDeviceClass!
                 ],
-              })
+              }),
             );
 
             onClose();
@@ -138,16 +136,15 @@ function validateInputFile(fileContent?: string): InputValidationResult {
   try {
     const fileJson = JSON.parse(fileContent);
 
-    const ajv = new Ajv();
-    const valid = ajv.validate(udrDocumentSchema, fileJson);
-    if (!valid) {
+    const validateResult = validateWithSchema(udrDocumentSchema, fileJson);
+    if (validateResult !== true) {
       return {
         valid: false,
         feedbackKind: FeedbackKind.SchemaValidationFailed,
-        feedback: getHumanReadableErrors(ajv.errors ?? undefined),
+        feedback: validateResult,
       };
     }
-    return { valid: true, udr: fileJson as Document };
+    return { valid: true, udr: fileJson as UDRDocument };
   } catch (err) {
     return {
       valid: false,
@@ -157,28 +154,13 @@ function validateInputFile(fileContent?: string): InputValidationResult {
   }
 }
 
-function getHumanReadableErrors(errors?: ErrorObject[]): string {
-  if (errors === undefined) {
-    return "No errors found";
-  }
-
-  return errors
-    .map(
-      (error) =>
-        `Path '${error.instancePath || "/"}': ${error.message} (${
-          error.keyword
-        })`
-    )
-    .join("\n");
-}
-
 function getAdditionalDialogElements(
   inputFile: File | null,
   inputValidation: InputValidationResult | undefined,
   selectedDeviceClass: string | undefined,
   setSelectedDeviceClass: React.Dispatch<
     React.SetStateAction<string | undefined>
-  >
+  >,
 ) {
   if (inputFile) {
     if (inputValidation === undefined) {
@@ -195,12 +177,12 @@ function getAdditionalDialogElements(
         return getDeviceClassSelectionElement(
           inputValidation.udr!,
           selectedDeviceClass,
-          setSelectedDeviceClass
+          setSelectedDeviceClass,
         );
       } else {
         return getValidationFailureElement(
           inputValidation.feedbackKind!,
-          inputValidation.feedback!
+          inputValidation.feedback!,
         );
       }
     }
@@ -210,11 +192,11 @@ function getAdditionalDialogElements(
 }
 
 function getDeviceClassSelectionElement(
-  udr: Document,
+  udr: UDRDocument,
   selectedDeviceClass: string | undefined,
   setSelectedDeviceClass: React.Dispatch<
     React.SetStateAction<string | undefined>
-  >
+  >,
 ) {
   if (
     !udr.e173.deviceClasses ||
@@ -243,7 +225,7 @@ function getDeviceClassSelectionElement(
 
 function getValidationFailureElement(
   feedbackKind: FeedbackKind,
-  feedback: string
+  feedback: string,
 ) {
   switch (feedbackKind) {
     case FeedbackKind.UnableToReadFile:
@@ -278,7 +260,7 @@ function getValidationFailureElement(
   }
 }
 
-function hasDeviceClasses(udr: Document): boolean {
+function hasDeviceClasses(udr: UDRDocument): boolean {
   return (
     udr.e173.deviceClasses !== undefined &&
     Object.keys(udr.e173.deviceClasses).length > 0

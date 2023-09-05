@@ -1,59 +1,63 @@
 import { nanoid } from "@reduxjs/toolkit";
 import FlexLayout from "flexlayout-react";
 
-import { DeviceClass } from "udr/objects/deviceClass";
+import {
+  DeviceClass,
+  DeviceClassInfo,
+} from "generated/draft-2023-1/udr-document";
 import { getDefaultDeviceClass } from "udr/udr";
 import { getUniqueItemId } from "utils/utils";
-import { ScalarItemsEditorState } from "./scalarItemsEditor/scalarItemsEditorState";
-import { StructuredItemsEditorState } from "./structuredItemsEditor/structuredItemsEditorState";
+import { ParametersEditorState } from "./parametersEditor/parametersEditorState";
+import { StructuresEditorState } from "./structuresEditor/structuresEditorState";
 
 export enum DeviceClassEditorWindowType {
-  ScalarItemsEditor,
-  StructuredItemsEditor,
+  ParametersEditor,
+  StructuresEditor,
 }
 
 interface BasicData {
-  description: string;
+  "@description": string;
   publishDate: string;
   author: string;
   history: Record<string, string>;
+  info: DeviceClassInfo;
 }
 
 export interface DeviceClassEditorState {
   deviceClassId: string;
   basicData: BasicData;
-  scalarItems: ScalarItemsEditorState;
-  structuredItems: StructuredItemsEditorState;
+  parameters: ParametersEditorState;
+  structures: StructuresEditorState;
   windowLayout: FlexLayout.IJsonRowNode;
 }
 
 export function newDeviceClassEditor(
-  existingEditorIds: string[]
+  existingEditorIds: string[],
 ): DeviceClassEditorState {
   return importDeviceClassEditor(
     getUniqueItemId(existingEditorIds, "myDevice"),
-    getDefaultDeviceClass()
+    getDefaultDeviceClass(),
   );
 }
 
 export function importDeviceClassEditor(
   id: string,
-  udr: DeviceClass
+  udr: DeviceClass,
 ): DeviceClassEditorState {
   return {
     deviceClassId: id,
     basicData: {
       ...udr,
     },
-    scalarItems: {
-      scalarItems: udr.scalarItems || {},
-      itemEditorLayout: Object.keys(udr.scalarItems || {}).map((id) => {
+    parameters: {
+      parameters: udr.parameters || {},
+      itemEditorLayout: Object.keys(udr.parameters || {}).map((id) => {
         return { id: nanoid(), udrId: id };
       }),
     },
-    structuredItems: {
-      structuredItems: udr.structuredItems || {},
-      itemEditorLayout: Object.keys(udr.structuredItems || {}).map((id) => {
+    structures: {
+      structures: udr.structures || {},
+      itemEditorLayout: Object.keys(udr.structures || {}).map((id) => {
         return { id: nanoid(), udrId: id };
       }),
     },
@@ -69,8 +73,8 @@ export function importDeviceClassEditor(
           children: [
             {
               type: "tab",
-              name: "Scalar Items Editor",
-              component: "scalarItemsEditor",
+              name: "Parameters Editor",
+              component: "parametersEditor",
               id: nanoid(),
             },
           ],
@@ -82,8 +86,8 @@ export function importDeviceClassEditor(
           children: [
             {
               type: "tab",
-              name: "Structured Items Editor",
-              component: "structuredItemsEditor",
+              name: "Structures Editor",
+              component: "structuresEditor",
               id: nanoid(),
             },
           ],

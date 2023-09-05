@@ -1,0 +1,5 @@
+dist/
+node-modules/
+
+src/generated/
+src/e173/

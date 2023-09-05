@@ -10,25 +10,25 @@ import {
   defaultDeviceClassEditorsState,
   DeviceClassEditorsState,
 } from "./deviceClassEditorsState";
-import { DeviceClass } from "udr/objects/deviceClass";
-import { isScalarItemsEditorAction } from "./scalarItemsEditor/scalarItemsEditorSlice";
-import scalarItemsEditorReducer from "./scalarItemsEditor/scalarItemsEditorSlice";
-import { isStructuredItemsEditorAction } from "./structuredItemsEditor/structuredItemsEditorSlice";
-import structuredItemsEditorReducer from "./structuredItemsEditor/structuredItemsEditorSlice";
+import { DeviceClass } from "generated/draft-2023-1/udr-document";
+import { isParametersEditorAction } from "./parametersEditor/parametersEditorSlice";
+import parametersEditorReducer from "./parametersEditor/parametersEditorSlice";
+import { isStructuresEditorAction } from "./structuresEditor/structuresEditorSlice";
+import structuresEditorReducer from "./structuresEditor/structuresEditorSlice";
 
 interface ImportedDeviceClass {
   id: string;
   udr: DeviceClass;
 }
 
-export interface NewScalarItem {
+export interface NewParameter {
   class: string;
   id: string;
   friendlyName: string;
 }
 
 export function getCurrentEditor(
-  state: DeviceClassEditorsState
+  state: DeviceClassEditorsState,
 ): DeviceClassEditorState {
   return state.openEditors[state.selectedEditor];
 }
@@ -40,7 +40,7 @@ export const deviceClassEditorSlice = createSlice({
     newEditorCreated(state) {
       const newId = nanoid();
       state.openEditors[newId] = newDeviceClassEditor(
-        Object.values(state.openEditors).map((editor) => editor.deviceClassId)
+        Object.values(state.openEditors).map((editor) => editor.deviceClassId),
       );
       state.editorTabOrder.push(newId);
       state.selectedEditor = newId;
@@ -49,7 +49,7 @@ export const deviceClassEditorSlice = createSlice({
       const newId = nanoid();
       state.openEditors[newId] = importDeviceClassEditor(
         action.payload.id,
-        action.payload.udr
+        action.payload.udr,
       );
       state.editorTabOrder.push(newId);
       state.selectedEditor = newId;
@@ -80,18 +80,18 @@ export const deviceClassEditorSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addMatcher(isScalarItemsEditorAction, (state, action) => {
+    builder.addMatcher(isParametersEditorAction, (state, action) => {
       const currentEditor = state.openEditors[state.selectedEditor];
-      currentEditor.scalarItems = scalarItemsEditorReducer(
-        currentEditor.scalarItems,
-        action
+      currentEditor.parameters = parametersEditorReducer(
+        currentEditor.parameters,
+        action,
       );
     });
-    builder.addMatcher(isStructuredItemsEditorAction, (state, action) => {
+    builder.addMatcher(isStructuresEditorAction, (state, action) => {
       const currentEditor = state.openEditors[state.selectedEditor];
-      currentEditor.structuredItems = structuredItemsEditorReducer(
-        currentEditor.structuredItems,
-        action
+      currentEditor.structures = structuresEditorReducer(
+        currentEditor.structures,
+        action,
       );
     });
   },

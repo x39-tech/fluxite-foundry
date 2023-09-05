@@ -1,18 +1,18 @@
 import { HTMLSelect } from "@blueprintjs/core";
 
-export interface SelectFieldProps {
+interface SelectFieldProps {
   values: string[];
   displayValues?: string[];
   selectedValue: string;
   onSelectionChanged: (newValue: string) => void;
 }
 
-export const SelectField: React.FC<SelectFieldProps> = ({
+export const SelectField = ({
   values,
   displayValues,
   selectedValue,
   onSelectionChanged,
-}) => {
+}: SelectFieldProps) => {
   return (
     <HTMLSelect
       onChange={(event) => onSelectionChanged(event.currentTarget.value)}
@@ -35,7 +35,7 @@ export interface SelectTableRowProps extends SelectFieldProps {
   label: string;
 }
 
-export const SelectTableRow: React.FC<SelectTableRowProps> = (props) => {
+export const SelectTableRow = (props: SelectTableRowProps) => {
   return (
     <tr>
       <td style={{ verticalAlign: "middle" }}>{props.label}</td>

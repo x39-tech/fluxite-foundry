@@ -1,11 +1,11 @@
 import { Button } from "@blueprintjs/core";
 import "./AddItemSection.scss";
 
-export interface AddItemSectionProps {
+interface Props {
   onClick: () => void;
 }
 
-export const AddItemSection: React.FC<AddItemSectionProps> = ({ onClick }) => {
+export const AddItemSection = ({ onClick }: Props) => {
   return (
     <div className="add-new-item-section">
       <Button icon="plus" minimal={true} onClick={onClick} />

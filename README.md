@@ -12,6 +12,10 @@ The application is currently in an **extremely preliminary state**, even more so
 
 UDR Builder is a [React](https://reactjs.org/) single-page application which uses [Vite](https://vitejs.dev/) for building.
 
+VS Code is recommended as a development environment, with the [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) and [eslint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) extensions installed for formatting and linting.
+
+Please run the `npm run lint` and `npm run format` scripts before opening a merge request.
+
 ### Available Scripts
 
 In the project directory, you can run:
@@ -27,3 +31,23 @@ Builds the app for production to the `dist` folder.
 #### `npm run preview`
 
 Locally previews the production build in a server. View the page in the browser at `http://localhost:4173` by default.
+
+#### `npm run test`
+
+Runs the tests (currently broken, pending #8)
+
+#### `npm run coverage`
+
+Generates a coverage report. (currently broken, pending #8)
+
+#### `npm run lint`
+
+Runs eslint.
+
+#### `npm run formatcheck`
+
+Runs prettier in 'check' mode, typically used in CI.
+
+#### `npm run format`
+
+Runs prettier to reformat all code.

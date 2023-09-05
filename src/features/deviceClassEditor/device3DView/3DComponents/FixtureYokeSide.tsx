@@ -1,3 +1,4 @@
+/* eslint-disable */
 export default function FixtureYokeSide(props: JSX.IntrinsicElements["mesh"]) {
   return (
     <mesh {...props}>

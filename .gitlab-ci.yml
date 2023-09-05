@@ -2,22 +2,48 @@ stages:
   - build
   - deploy
 
-build:
+variables:
+  GIT_SUBMODULE_STRATEGY: normal
+
+workflow:
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+default:
   image: node:latest
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - .npm/
+  before_script:
+    - npm ci --cache .npm --prefer-offline
+
+build:
   stage: build
   script:
-    - npm install
     - npm run build
   artifacts:
     paths:
       - dist/
 
+lint:
+  stage: build
+  script:
+    - npm run lint
+
+format:
+  stage: build
+  script:
+    - npm run formatcheck
+
 pages:
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
+  inherit:
+    default: false
   image: alpine:latest
   stage: deploy
   variables:

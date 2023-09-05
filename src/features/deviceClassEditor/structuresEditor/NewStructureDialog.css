@@ -1,0 +1,4 @@
+.new-structure-body {
+  display: flex;
+  flex-direction: column;
+}

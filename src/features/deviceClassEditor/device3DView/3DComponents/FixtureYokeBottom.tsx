@@ -1,5 +1,6 @@
+/* eslint-disable */
 export default function FixtureYokeBottom(
-  props: JSX.IntrinsicElements["mesh"]
+  props: JSX.IntrinsicElements["mesh"],
 ) {
   return (
     <mesh {...props}>

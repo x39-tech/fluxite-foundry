@@ -8,9 +8,9 @@ export const useAppDispatch: () => AppDispatch = useDispatch;
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
 export function useCurrentEditorSelector<ReturnedValue>(
-  selector: (state: DeviceClassEditorState) => ReturnedValue
+  selector: (state: DeviceClassEditorState) => ReturnedValue,
 ) {
   return useAppSelector((state) =>
-    selector(state.editors.openEditors[state.editors.selectedEditor])
+    selector(state.editors.openEditors[state.editors.selectedEditor]),
   );
 }

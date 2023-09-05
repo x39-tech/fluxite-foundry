@@ -1,6 +1,6 @@
 export function getUniqueItemId(
   existingItemIds: string[],
-  defaultId: string = "my-new-item"
+  defaultId: string = "my-new-item",
 ): string {
   let newItemId = defaultId;
   let deDupNumber = 1;

@@ -1,5 +1,5 @@
-import { ScalarItemsEditor } from "./scalarItemsEditor/ScalarItemsEditor";
-import { StructuredItemsEditor } from "./structuredItemsEditor/StructuredItemsEditor";
+import { ParametersEditor } from "./parametersEditor/ParametersEditor";
+import { StructuresEditor } from "./structuresEditor/StructuresEditor";
 
 interface EditorWidget {
   name: string;
@@ -8,15 +8,15 @@ interface EditorWidget {
 }
 
 export const WIDGETS: Record<string, EditorWidget> = {
-  scalarItemsEditor: {
-    name: "Scalar Items Editor",
-    description: "Create and edit scalar items for the device class",
-    factory: () => <ScalarItemsEditor />,
+  parametersEditor: {
+    name: "Parameters Editor",
+    description: "Create and edit parameters for the device class",
+    factory: () => <ParametersEditor />,
   },
-  structuredItemsEditor: {
-    name: "Structured Items Editor",
-    description: "Create and edit structured items for the device class",
-    factory: () => <StructuredItemsEditor />,
+  structuresEditor: {
+    name: "Structures Editor",
+    description: "Create and edit structures for the device class",
+    factory: () => <StructuresEditor />,
   },
 };
 

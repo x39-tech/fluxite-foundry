@@ -1,6 +1,6 @@
 import { HTMLTable } from "@blueprintjs/core";
 
-export interface SimplePropsTableProps {
+interface Props {
   name?: string;
   children: React.ReactNode;
 }
@@ -10,10 +10,7 @@ export interface SimplePropsTableProps {
 
 // If provided, 'name' will be rendered in a table header.
 
-export const SimplePropsTable: React.FC<SimplePropsTableProps> = ({
-  name,
-  children,
-}) => {
+export const SimplePropsTable = ({ name, children }: Props) => {
   return (
     <HTMLTable striped condensed style={{ marginBottom: "10px" }}>
       <colgroup>

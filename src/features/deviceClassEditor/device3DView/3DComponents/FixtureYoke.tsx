@@ -7,7 +7,7 @@ type ThreeNumbers = [number, number, number];
 
 function getSidePosition(
   position: ReactThreeFiber.Vector3,
-  xOffset: number
+  xOffset: number,
 ): ThreeNumbers {
   const sidePosition = (position as ThreeNumbers).slice() as ThreeNumbers;
   sidePosition[0] += xOffset;

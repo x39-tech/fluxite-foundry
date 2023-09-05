@@ -19,7 +19,7 @@ const store = configureStore<RootState>({
 store.subscribe(
   throttle(() => {
     saveStateToLocalStorage(store.getState());
-  }, 1000)
+  }, 1000),
 );
 
 export default store;

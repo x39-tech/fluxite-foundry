@@ -6,19 +6,19 @@ import { useAppSelector } from "app/hooks";
 const BACKGROUND_COLOR_DARK = Colors.DARK_GRAY2;
 const BACKGROUND_COLOR_LIGHT = Colors.LIGHT_GRAY3;
 
-export interface ItemEditorProps {
+interface Props {
   title: string;
   expanded?: boolean;
   onDelete: () => void;
   children: React.ReactNode;
 }
 
-export const ItemEditor: React.FC<ItemEditorProps> = ({
+export const ItemEditor = ({
   title,
   expanded = false,
   onDelete,
   children,
-}) => {
+}: Props) => {
   const inDarkMode = useAppSelector((state) => state.appSettings.darkMode);
 
   const [isExpanded, setExpanded] = useState(expanded || false);
