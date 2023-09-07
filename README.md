@@ -8,9 +8,27 @@ The application is published to GitLab Pages, available [here](https://udr-build
 
 The application is currently in an **extremely preliminary state**, even more so than the UDR standard itself. It essentially amounts to a proof-of-concept. There is a long TODO list which will be addressed going forward, and progress will be reported at each quarterly ESTA technical standards program meeting.
 
-## Developing
+## Contributing
 
 UDR Builder is a [React](https://reactjs.org/) single-page application which uses [Vite](https://vitejs.dev/) for building.
+
+### Cloning
+
+⚠ This project uses Git Submodules ⚠
+
+Make sure the submodules are initialized by providing the proper argument to `git clone`:
+
+```
+$ git clone --recurse-submodules [repo URL]
+```
+
+Or, after a normal clone, make sure to initialize the submodules:
+
+```
+$ git submodule update --init --recursive
+```
+
+### Developing
 
 VS Code is recommended as a development environment, with the [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) and [eslint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) extensions installed for formatting and linting.
 
