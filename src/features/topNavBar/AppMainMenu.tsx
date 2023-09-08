@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button, Icon, Menu, MenuDivider } from "@blueprintjs/core";
 import { MenuItem2, Popover2 } from "@blueprintjs/popover2";
+import { APP_NAME } from "appInfo";
 import { useAppDispatch, useAppSelector } from "app/hooks";
 import { darkModeToggled } from "features/topNavBar/appSettingsSlice";
 import { AboutDialog } from "./AboutDialog";
@@ -38,7 +39,7 @@ export const AppMainMenu = () => {
         />
       </MenuItem2>
       <MenuItem2
-        text="About UDR Builder"
+        text={`About ${APP_NAME}`}
         icon="help"
         onClick={() => setAboutDialogIsOpen(true)}
       />

@@ -1,5 +1,6 @@
 import { Alignment, Button, Navbar } from "@blueprintjs/core";
 import { Popover2 } from "@blueprintjs/popover2";
+import { APP_NAME } from "appInfo";
 import { useAppDispatch, useAppSelector } from "app/hooks";
 import {
   newEditorCreated,
@@ -26,7 +27,7 @@ export const TopNavBar = () => {
     <>
       <Navbar fixedToTop={true}>
         <Navbar.Group align={Alignment.LEFT}>
-          <Navbar.Heading>UDR Builder</Navbar.Heading>
+          <Navbar.Heading>{APP_NAME}</Navbar.Heading>
           <Navbar.Divider />
           {editors.editorTabOrder.map((id) => {
             const editor = editors.openEditors[id];

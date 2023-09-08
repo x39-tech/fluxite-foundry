@@ -6,7 +6,11 @@ import { TextEditorTableRow } from "utils/components/EditorFields/TextEditorFiel
 import { ParameterClassDisplay } from "utils/components/ParameterClassDisplay/ParameterClassDisplay";
 import { SimplePropsTable } from "utils/components/SimplePropsTable/SimplePropsTable";
 import { validateNewItemId } from "utils/inputValidation";
-import { getAllParametersWithIds, getFullyQualifiedId } from "udr/udrDatabase";
+import {
+  UdrDatabase,
+  getAllParametersWithIds,
+  getFullyQualifiedId,
+} from "udr/udrDatabase";
 import { newParameterCreated } from "./parametersEditorSlice";
 import { ItemClassSelector } from "utils/components/ItemClassSelector/ItemClassSelector";
 import { getUniqueItemId } from "utils/utils";
@@ -15,15 +19,16 @@ import "./NewParameterDialog.css";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  database: UdrDatabase;
 }
 
-export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
+export const NewParameterDialog = ({ isOpen, onClose, database }: Props) => {
   const parameterIds = useCurrentEditorSelector((state) =>
     Object.keys(state.parameters.parameters),
   );
 
   const [newItemClass, setNewItemClass] = useState(
-    getAllParametersWithIds()[0],
+    getAllParametersWithIds(database)[0],
   );
   const [newItemId, setNewItemId] = useState(getUniqueItemId(parameterIds));
   const [newItemFriendlyName, setNewItemFriendlyName] = useState("My New Item");
@@ -51,10 +56,13 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
             <td style={{ verticalAlign: "middle" }}>Class</td>
             <td>
               <ItemClassSelector
-                itemClasses={getAllParametersWithIds()}
+                itemClasses={getAllParametersWithIds(database)}
                 selectedClass={newItemClass}
                 onSelectedClassChanged={setNewItemClass}
-                tooltipRenderer={(item) => <ParameterClassDisplay udr={item} />}
+                tooltipRenderer={(item) => (
+                  <ParameterClassDisplay udr={item} database={database} />
+                )}
+                database={database}
               />
             </td>
           </tr>

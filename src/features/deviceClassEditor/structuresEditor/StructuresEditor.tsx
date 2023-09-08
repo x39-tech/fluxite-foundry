@@ -4,12 +4,17 @@ import { AddItemSection } from "utils/components/AddItemSection/AddItemSection";
 import { NewStructureDialog } from "./NewStructureDialog";
 import "./StructuresEditor.css";
 import { StructureValue } from "./structuresEditorSlice";
+import { UdrDatabase } from "udr/udrDatabase";
 
 const editorFactory: {
   [k: string]: (id: string, udr: StructureValue, key: number) => JSX.Element;
 } = {};
 
-export const StructuresEditor = () => {
+interface Props {
+  database: UdrDatabase;
+}
+
+export const StructuresEditor = ({ database }: Props) => {
   const [structures, structureEditors] = useCurrentEditorSelector((state) => [
     state.structures.structures,
     state.structures.itemEditorLayout,
@@ -38,6 +43,7 @@ export const StructuresEditor = () => {
       <NewStructureDialog
         isOpen={newStructureDialogIsOpen}
         onClose={() => setNewStructureDialogIsOpen(false)}
+        database={database}
       />
     </div>
   );

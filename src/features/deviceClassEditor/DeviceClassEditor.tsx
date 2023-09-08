@@ -1,15 +1,17 @@
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect } from "react";
 import * as FlexLayout from "flexlayout-react";
 import { nanoid } from "@reduxjs/toolkit";
 import { Button } from "@blueprintjs/core";
 import { Popover2 } from "@blueprintjs/popover2";
 import { throttle } from "lodash";
 
+import { APP_NAME } from "appInfo";
 import {
   useAppDispatch,
   useAppSelector,
   useCurrentEditorSelector,
 } from "app/hooks";
+import { UdrDatabase } from "udr/udrDatabase";
 import { WIDGETS, isValidWidget } from "./widgets";
 import { NewWidgetMenu } from "./newWidgetMenu";
 import { windowLayoutUpdated } from "./deviceClassEditorSlice";
@@ -17,13 +19,14 @@ import "./DeviceClassEditor.scss";
 
 interface Props {
   title: string;
+  database: Readonly<UdrDatabase>;
 }
 
-export const DeviceClassEditor = ({ title }: Props) => {
+export const DeviceClassEditor = ({ title, database }: Props) => {
   useEffect(() => {
-    document.title = `Editing: ${title} -- UDR Builder`;
+    document.title = `Editing: ${title} -- ${APP_NAME}`;
     return () => {
-      document.title = "UDR Builder";
+      document.title = APP_NAME;
     };
   });
 
@@ -44,11 +47,10 @@ export const DeviceClassEditor = ({ title }: Props) => {
   };
   const model = FlexLayout.Model.fromJson(modelJson);
 
-  const onModelChange = useMemo(
-    () =>
-      throttle((model) => {
-        dispatch(windowLayoutUpdated(model.toJson()));
-      }, 1000),
+  const onModelChange = useCallback(
+    throttle((model) => {
+      dispatch(windowLayoutUpdated(model.toJson()));
+    }, 1000),
     [],
   );
 
@@ -56,7 +58,7 @@ export const DeviceClassEditor = ({ title }: Props) => {
     const componentName = node.getComponent();
 
     if (componentName && isValidWidget(componentName)) {
-      return WIDGETS[componentName].factory();
+      return WIDGETS[componentName].factory(database);
     }
     return <></>;
   };

@@ -3,7 +3,11 @@ import {
   E173UDRDocuments,
   Unit,
 } from "generated/draft-2023-1/udr-document";
-import { loadLibrariesFromDocument, lookupParameterClass } from "./udrDatabase";
+import {
+  getEmptyUdrDatabase,
+  loadLibrariesFromDocument,
+  lookupParameterClass,
+} from "./udrDatabase";
 import { beforeEach, describe, expect, test } from "vitest";
 
 const testDoc: E173UDRDocuments = {
@@ -39,23 +43,29 @@ const testDoc: E173UDRDocuments = {
 };
 
 describe("class lookup", () => {
+  let database = getEmptyUdrDatabase();
+
   beforeEach(() => {
-    expect(loadLibrariesFromDocument(testDoc)).toBe(true);
+    database = getEmptyUdrDatabase();
+    expect(loadLibrariesFromDocument(testDoc, database)).toBe(true);
   });
 
   test("parameter class lookup is successful", () => {
     const expectedItem =
       testDoc.e173.libraries!.test_lib.parameterClasses!.parameter1;
 
-    expect(lookupParameterClass("test_lib/parameter1")).toStrictEqual({
-      id: "parameter1",
-      libraryId: "test_lib",
-      ...expectedItem,
-    });
+    expect(lookupParameterClass(database, "test_lib/parameter1")).toStrictEqual(
+      {
+        id: "parameter1",
+        libraryId: "test_lib",
+        ...expectedItem,
+      },
+    );
   });
 
   test("parameter class lookup is successful with an identifier containing slashes", () => {
     const itemClass = lookupParameterClass(
+      database,
       "org.esta.lib.gobo.1/gobo/select/index",
     );
     expect(itemClass).toBeTruthy();

@@ -2,15 +2,17 @@ import { HTMLTable } from "@blueprintjs/core";
 import { getDataTypeFriendlyName } from "udr/util/enums";
 import {
   ParameterClassWithId,
+  UdrDatabase,
   getItemClassDescription,
   getItemClassName,
 } from "udr/udrDatabase";
 
 interface Props {
   udr: ParameterClassWithId;
+  database: UdrDatabase;
 }
 
-export const ParameterClassDisplay = ({ udr }: Props) => {
+export const ParameterClassDisplay = ({ udr, database }: Props) => {
   // TODO: Revisit this formatting, ideally tables should be sized reasonably to their contents
   return (
     <HTMLTable striped compact style={{ width: "400px" }}>
@@ -20,13 +22,13 @@ export const ParameterClassDisplay = ({ udr }: Props) => {
       </colgroup>
       <thead>
         <tr>
-          <th colSpan={2}>{getItemClassName(udr)}</th>
+          <th colSpan={2}>{getItemClassName(database, udr)}</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td>Description</td>
-          <td>{getItemClassDescription(udr)}</td>
+          <td>{getItemClassDescription(database, udr)}</td>
         </tr>
         <tr>
           <td>ID</td>

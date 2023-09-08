@@ -4,8 +4,13 @@ import { AddItemSection } from "utils/components/AddItemSection/AddItemSection";
 import { NewParameterDialog } from "./NewParameterDialog";
 import { ParameterEditor } from "./ParameterEditor";
 import "./ParametersEditor.scss";
+import { UdrDatabase } from "udr/udrDatabase";
 
-export const ParametersEditor = () => {
+interface Props {
+  database: UdrDatabase;
+}
+
+export const ParametersEditor = ({ database }: Props) => {
   const editorState = useCurrentEditorSelector((state) => state.parameters);
 
   const [newParameterDialogIsOpen, setNewParameterDialogIsOpen] =
@@ -19,6 +24,7 @@ export const ParametersEditor = () => {
           key={editor.id}
           id={editor.udrId}
           udr={editorState.parameters[editor.udrId]}
+          database={database}
         />,
       );
     }
@@ -33,6 +39,7 @@ export const ParametersEditor = () => {
         onClose={() => {
           setNewParameterDialogIsOpen(false);
         }}
+        database={database}
       />
     </div>
   );

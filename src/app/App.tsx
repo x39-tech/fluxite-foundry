@@ -1,17 +1,33 @@
+import { useMemo } from "react";
 import { Classes } from "@blueprintjs/core";
 import { DeviceClassEditor } from "features/deviceClassEditor/DeviceClassEditor";
 import { DeviceClassEditorState } from "features/deviceClassEditor/deviceClassEditorState";
-import "./App.scss";
 import { useAppSelector } from "./hooks";
 import { TopNavBar } from "features/topNavBar/TopNavBar";
-import { loadDefaultLibraries } from "udr/udrDatabase";
+import {
+  UdrDatabase,
+  loadDefaultLibraries,
+  udrDatabaseIsEmpty,
+} from "udr/udrDatabase";
+import { LibraryErrorDialog } from "./libraryErrorDialog";
+import "./App.scss";
 
-function getEditorComponent(id: string, editor: DeviceClassEditorState) {
-  return <DeviceClassEditor key={id} title={editor.deviceClassId} />;
+function getEditorComponent(
+  id: string,
+  editor: DeviceClassEditorState,
+  database: Readonly<UdrDatabase>,
+) {
+  return (
+    <DeviceClassEditor
+      key={id}
+      title={editor.deviceClassId}
+      database={database}
+    />
+  );
 }
 
 export const App = () => {
-  loadDefaultLibraries();
+  const defaultLibs = useMemo(loadDefaultLibraries, []);
 
   const settings = useAppSelector((state) => state.appSettings);
   const editors = useAppSelector((state) => {
@@ -28,10 +44,11 @@ export const App = () => {
       <TopNavBar />
       <div className="display-area">
         {currentEditor ? (
-          getEditorComponent(editors.selectedEditor, currentEditor)
+          getEditorComponent(editors.selectedEditor, currentEditor, defaultLibs)
         ) : (
           <div />
         )}
+        <LibraryErrorDialog show={udrDatabaseIsEmpty(defaultLibs)} />
       </div>
     </div>
   );

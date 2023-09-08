@@ -25,7 +25,11 @@ import {
   validateStringIsNumberAndBetweenMinAndMaxOrEmpty,
   validateStringIsNumberOrEmpty,
 } from "utils/inputValidation";
-import { ParameterClassWithId, lookupParameterClass } from "udr/udrDatabase";
+import {
+  ParameterClassWithId,
+  UdrDatabase,
+  lookupParameterClass,
+} from "udr/udrDatabase";
 import {
   parameterDeleted,
   parameterUpdated,
@@ -183,6 +187,7 @@ function getParameterPropsTable(
   itemClass: ParameterClassWithId,
   existingItemIds: string[],
   dispatch: AppDispatch,
+  database: UdrDatabase,
 ): JSX.Element {
   const onChangeFactory = new DispatchOnChangeFactory(
     udr,
@@ -207,7 +212,9 @@ function getParameterPropsTable(
         <td>Class</td>
         <td>
           <Popover2
-            content={<ParameterClassDisplay udr={itemClass} />}
+            content={
+              <ParameterClassDisplay udr={itemClass} database={database} />
+            }
             position="right"
             interactionKind="hover"
           >
@@ -281,12 +288,13 @@ function getClassNotFoundMessage(className: string): JSX.Element {
 interface Props {
   id: string;
   udr: Parameter;
+  database: UdrDatabase;
 }
 
-export const ParameterEditor = ({ id, udr }: Props) => {
+export const ParameterEditor = ({ id, udr, database }: Props) => {
   const dispatch = useAppDispatch();
 
-  const itemClass = lookupParameterClass(udr.class);
+  const itemClass = lookupParameterClass(database, udr.class);
 
   const parameterIds = useCurrentEditorSelector((state) =>
     Object.keys(state.parameters.parameters),
@@ -301,7 +309,14 @@ export const ParameterEditor = ({ id, udr }: Props) => {
     >
       <div className="parameter-collapse-body">
         {itemClass
-          ? getParameterPropsTable(id, udr, itemClass!, parameterIds, dispatch)
+          ? getParameterPropsTable(
+              id,
+              udr,
+              itemClass!,
+              parameterIds,
+              dispatch,
+              database,
+            )
           : getClassNotFoundMessage(udr.class)}
       </div>
     </ItemEditor>

@@ -7,7 +7,11 @@ import { ItemClassSelector } from "utils/components/ItemClassSelector/ItemClassS
 import { SimplePropsTable } from "utils/components/SimplePropsTable/SimplePropsTable";
 import { StructureClassDisplay } from "utils/components/StructureClassDisplay/StructureClassDisplay";
 import { validateNewItemId } from "utils/inputValidation";
-import { getAllStructuresWithIds, getFullyQualifiedId } from "udr/udrDatabase";
+import {
+  UdrDatabase,
+  getAllStructuresWithIds,
+  getFullyQualifiedId,
+} from "udr/udrDatabase";
 import { getUniqueItemId } from "utils/utils";
 import { newStructureCreated } from "./structuresEditorSlice";
 import "./NewStructureDialog.css";
@@ -15,15 +19,16 @@ import "./NewStructureDialog.css";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  database: UdrDatabase;
 }
 
-export const NewStructureDialog = ({ isOpen, onClose }: Props) => {
+export const NewStructureDialog = ({ isOpen, onClose, database }: Props) => {
   const structureIds = useCurrentEditorSelector((state) =>
     Object.keys(state.structures.structures),
   );
 
   const [newItemClass, setNewItemClass] = useState(
-    getAllStructuresWithIds()[0],
+    getAllStructuresWithIds(database)[0],
   );
   const [newItemId, setNewItemId] = useState(getUniqueItemId(structureIds));
 
@@ -49,10 +54,13 @@ export const NewStructureDialog = ({ isOpen, onClose }: Props) => {
             <td style={{ verticalAlign: "middle" }}>Class</td>
             <td>
               <ItemClassSelector
-                itemClasses={getAllStructuresWithIds()}
+                itemClasses={getAllStructuresWithIds(database)}
                 selectedClass={newItemClass}
                 onSelectedClassChanged={setNewItemClass}
-                tooltipRenderer={(item) => <StructureClassDisplay udr={item} />}
+                tooltipRenderer={(item) => (
+                  <StructureClassDisplay udr={item} database={database} />
+                )}
+                database={database}
               />
             </td>
           </tr>

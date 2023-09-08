@@ -37,31 +37,47 @@ interface LibraryDatabase {
   [key: string]: Library;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// Constants and data
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-const database = {
-  libraries: {} as LibraryDatabase,
-  itemClasses: {
-    parameters: [],
-    structures: [],
-  } as ItemClassDatabase,
-};
+export interface UdrDatabase {
+  libraries: LibraryDatabase;
+  itemClasses: ItemClassDatabase;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Public Functions
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-export function getAllParametersWithIds(): ParameterClassWithId[] {
+export function getEmptyUdrDatabase(): UdrDatabase {
+  return {
+    libraries: {},
+    itemClasses: {
+      parameters: [],
+      structures: [],
+    },
+  };
+}
+
+export function udrDatabaseIsEmpty(database: Readonly<UdrDatabase>): boolean {
+  return (
+    !database.libraries &&
+    !database.itemClasses.parameters &&
+    !database.itemClasses.structures
+  );
+}
+
+export function getAllParametersWithIds(
+  database: Readonly<UdrDatabase>,
+): ParameterClassWithId[] {
   return database.itemClasses.parameters;
 }
 
-export function getAllStructuresWithIds(): StructureClassWithId[] {
+export function getAllStructuresWithIds(
+  database: Readonly<UdrDatabase>,
+): StructureClassWithId[] {
   return database.itemClasses.structures;
 }
 
 export function getItemClassName(
+  database: Readonly<UdrDatabase>,
   itemClass: ItemClassWithId,
 ): string | undefined {
   if (!(itemClass.libraryId in database.libraries)) {
@@ -75,6 +91,7 @@ export function getItemClassName(
 }
 
 export function getItemClassDescription(
+  database: Readonly<UdrDatabase>,
   itemClass: ItemClassWithId,
 ): string | undefined {
   if (
@@ -91,6 +108,7 @@ export function getItemClassDescription(
 }
 
 export function lookupParameterClass(
+  database: Readonly<UdrDatabase>,
   className: string,
 ): ParameterClassWithId | undefined {
   const classInfo = getClassInfo(className, database.libraries);
@@ -109,6 +127,7 @@ export function lookupParameterClass(
 }
 
 export function lookupStructureClass(
+  database: Readonly<UdrDatabase>,
   className: string,
 ): StructureClassWithId | undefined {
   const classInfo = getClassInfo(className, database.libraries);
@@ -126,7 +145,10 @@ export function lookupStructureClass(
     : undefined;
 }
 
-export function getLibraryFriendlyName(libraryId: string): string | undefined {
+export function getLibraryFriendlyName(
+  database: Readonly<UdrDatabase>,
+  libraryId: string,
+): string | undefined {
   if (!(libraryId in database.libraries)) {
     return undefined;
   }
@@ -141,6 +163,7 @@ export type LoadLibrariesResult = true | string;
 
 export function loadLibrariesFromDocument(
   document: object,
+  database: UdrDatabase,
 ): LoadLibrariesResult {
   const validateResult = validateWithSchema(udrDocumentSchema, document);
   if (validateResult !== true) {
@@ -184,13 +207,14 @@ export function loadLibrariesFromDocument(
 
 const DEFAULT_LIBRARY_DOCUMENTS = [core, intensityColor, motion];
 
-export function loadDefaultLibraries(): boolean {
+export function loadDefaultLibraries(): UdrDatabase {
+  const database = getEmptyUdrDatabase();
+
   for (const document of DEFAULT_LIBRARY_DOCUMENTS) {
-    if (!loadLibrariesFromDocument(document)) {
-      return false;
-    }
+    loadLibrariesFromDocument(document, database);
   }
-  return true;
+
+  return database;
 }
 
 export function getFullyQualifiedId(itemClass: ItemClassWithId): string {

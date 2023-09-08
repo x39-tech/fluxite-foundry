@@ -7,6 +7,7 @@ import {
 } from "@blueprintjs/select";
 import {
   ItemClassWithId,
+  UdrDatabase,
   getFullyQualifiedId,
   getItemClassName,
   getLibraryFriendlyName,
@@ -20,6 +21,7 @@ interface ItemClassSelectorProps<T extends ItemClassWithId> {
   selectedClass?: T;
   onSelectedClassChanged: (newClass: T) => void;
   tooltipRenderer: (item: T) => JSX.Element;
+  database: UdrDatabase;
 }
 
 export const ItemClassSelector = <T extends ItemClassWithId>({
@@ -27,6 +29,7 @@ export const ItemClassSelector = <T extends ItemClassWithId>({
   selectedClass,
   onSelectedClassChanged,
   tooltipRenderer,
+  database,
 }: ItemClassSelectorProps<T>) => {
   const ItemClassSelect = Select2<T>;
 
@@ -54,7 +57,7 @@ export const ItemClassSelector = <T extends ItemClassWithId>({
           minimal={true}
           fill={true}
           alignText="left"
-          {...getItemRenderProps(item, handleClick, modifiers)}
+          {...getItemRenderProps(item, handleClick, modifiers, database)}
           icon={selectedFQID === itemFQID ? "tick" : "blank"}
         />
       </Popover2>
@@ -70,7 +73,7 @@ export const ItemClassSelector = <T extends ItemClassWithId>({
     return (
       matches(itemClass.id) ||
       matches(itemClass.libraryId) ||
-      matches(getItemClassName(itemClass))
+      matches(getItemClassName(database, itemClass))
     );
   };
 
@@ -89,7 +92,7 @@ export const ItemClassSelector = <T extends ItemClassWithId>({
           currentLibrary = item.libraryId;
           renderedItems.push(
             <Button key={currentLibrary} disabled={true} alignText="left">
-              {getLibraryFriendlyName(currentLibrary)}
+              {getLibraryFriendlyName(database, currentLibrary)}
             </Button>,
           );
         }
@@ -122,7 +125,8 @@ export const ItemClassSelector = <T extends ItemClassWithId>({
         fill={true}
         text={
           selectedClass
-            ? getItemClassName(selectedClass) || "Select an item class..."
+            ? getItemClassName(database, selectedClass) ||
+              "Select an item class..."
             : "Select an item class..."
         }
       />
@@ -134,6 +138,7 @@ function getItemRenderProps(
   item: ItemClassWithId,
   handleClick: React.MouseEventHandler,
   modifiers: ItemModifiers,
+  database: UdrDatabase,
 ): ButtonProps & React.Attributes {
   return {
     active: modifiers.active,
@@ -142,7 +147,7 @@ function getItemRenderProps(
     // onFocus: handleFocus,
     text: (
       <>
-        <span>{getItemClassName(item)}</span>
+        <span>{getItemClassName(database, item)}</span>
         <span className="item-class-selector-id">{item.id}</span>
       </>
     ),
