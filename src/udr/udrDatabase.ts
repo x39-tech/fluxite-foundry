@@ -170,7 +170,7 @@ export function loadLibrariesFromDocument(
     return validateResult;
   }
 
-  const libraries = (document as E173UDRDocuments).e173.libraries;
+  const libraries = (document as E173UDRDocuments).e173doc.libraries;
   if (!libraries) {
     // Nothing to load
     return true;

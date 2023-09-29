@@ -109,7 +109,7 @@ function getFileDownloadUrl(
     if (selectedEditor) {
       const deviceClassId = selectedEditor.deviceClassId;
       const document: UDRDocument = {
-        e173: {
+        e173doc: {
           deviceClasses: {
             [deviceClassId]: {
               libraries: {},

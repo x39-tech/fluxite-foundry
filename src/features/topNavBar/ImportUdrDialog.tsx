@@ -48,7 +48,7 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
   // Fix up state
   if (inputValidation?.valid && hasDeviceClasses(inputValidation.udr!)) {
     const deviceClassKeys = Object.keys(
-      inputValidation.udr!.e173.deviceClasses!,
+      inputValidation.udr!.e173doc.deviceClasses!,
     );
     if (
       !selectedDeviceClass ||
@@ -111,7 +111,7 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
             dispatch(
               editorImported({
                 id: selectedDeviceClass!,
-                udr: inputValidation!.udr!.e173.deviceClasses![
+                udr: inputValidation!.udr!.e173doc.deviceClasses![
                   selectedDeviceClass!
                 ],
               }),
@@ -199,8 +199,8 @@ function getDeviceClassSelectionElement(
   >,
 ) {
   if (
-    !udr.e173.deviceClasses ||
-    Object.keys(udr.e173.deviceClasses!).length === 0
+    !udr.e173doc.deviceClasses ||
+    Object.keys(udr.e173doc.deviceClasses!).length === 0
   ) {
     return (
       <Callout intent="danger">
@@ -212,7 +212,7 @@ function getDeviceClassSelectionElement(
       <>
         <p>Select Device Class to import:</p>
         <HTMLSelect
-          options={Object.keys(udr.e173.deviceClasses)}
+          options={Object.keys(udr.e173doc.deviceClasses)}
           value={selectedDeviceClass}
           onChange={(event) =>
             setSelectedDeviceClass(event.currentTarget.value)
@@ -262,7 +262,7 @@ function getValidationFailureElement(
 
 function hasDeviceClasses(udr: UDRDocument): boolean {
   return (
-    udr.e173.deviceClasses !== undefined &&
-    Object.keys(udr.e173.deviceClasses).length > 0
+    udr.e173doc.deviceClasses !== undefined &&
+    Object.keys(udr.e173doc.deviceClasses).length > 0
   );
 }

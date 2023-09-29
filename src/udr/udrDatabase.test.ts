@@ -11,7 +11,7 @@ import {
 import { beforeEach, describe, expect, test } from "vitest";
 
 const testDoc: E173UDRDocuments = {
-  e173: {
+  e173doc: {
     libraries: {
       test_lib: {
         "@description": "Test Description",
@@ -52,7 +52,7 @@ describe("class lookup", () => {
 
   test("parameter class lookup is successful", () => {
     const expectedItem =
-      testDoc.e173.libraries!.test_lib.parameterClasses!.parameter1;
+      testDoc.e173doc.libraries!.test_lib.parameterClasses!.parameter1;
 
     expect(lookupParameterClass(database, "test_lib/parameter1")).toStrictEqual(
       {
