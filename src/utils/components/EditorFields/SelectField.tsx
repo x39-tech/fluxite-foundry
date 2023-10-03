@@ -16,7 +16,7 @@ export const SelectField = ({
   return (
     <HTMLSelect
       onChange={(event) => onSelectionChanged(event.currentTarget.value)}
-      defaultValue={selectedValue}
+      value={selectedValue}
     >
       {values.map((value, index) => {
         return (

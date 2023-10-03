@@ -1,6 +1,7 @@
 import { UdrDatabase } from "udr/udrDatabase";
 import { ParametersEditor } from "./parametersEditor/ParametersEditor";
 import { StructuresEditor } from "./structuresEditor/StructuresEditor";
+import { DeviceInfoEditor } from "./deviceInfoEditor/DeviceInfoEditor";
 
 interface EditorWidget {
   name: string;
@@ -18,6 +19,11 @@ export const WIDGETS: Record<string, EditorWidget> = {
     name: "Structures Editor",
     description: "Create and edit structures for the device class",
     factory: (database) => <StructuresEditor database={database} />,
+  },
+  deviceInfoEditor: {
+    name: "Device Info Editor",
+    description: "Edit basic device information",
+    factory: () => <DeviceInfoEditor />,
   },
 };
 

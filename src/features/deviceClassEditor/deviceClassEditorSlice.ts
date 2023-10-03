@@ -5,16 +5,19 @@ import {
   DeviceClassEditorState,
   importDeviceClassEditor,
   newDeviceClassEditor,
+  BasicData,
 } from "features/deviceClassEditor/deviceClassEditorState";
 import {
   defaultDeviceClassEditorsState,
   DeviceClassEditorsState,
 } from "./deviceClassEditorsState";
 import { DeviceClass } from "generated/draft-2023-1/udr-document";
-import { isParametersEditorAction } from "./parametersEditor/parametersEditorSlice";
-import parametersEditorReducer from "./parametersEditor/parametersEditorSlice";
-import { isStructuresEditorAction } from "./structuresEditor/structuresEditorSlice";
-import structuresEditorReducer from "./structuresEditor/structuresEditorSlice";
+import parametersEditorReducer, {
+  isParametersEditorAction,
+} from "./parametersEditor/parametersEditorSlice";
+import structuresEditorReducer, {
+  isStructuresEditorAction,
+} from "./structuresEditor/structuresEditorSlice";
 
 interface ImportedDeviceClass {
   id: string;
@@ -78,6 +81,9 @@ export const deviceClassEditorSlice = createSlice({
     windowLayoutUpdated(state, action: PayloadAction<FlexLayout.IJsonModel>) {
       getCurrentEditor(state).windowLayout = action.payload.layout;
     },
+    basicDataUpdated(state, action: PayloadAction<BasicData>) {
+      getCurrentEditor(state).basicData = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addMatcher(isParametersEditorAction, (state, action) => {
@@ -103,6 +109,7 @@ export const {
   editorDeleted,
   selectedEditorChanged,
   windowLayoutUpdated,
+  basicDataUpdated,
 } = deviceClassEditorSlice.actions;
 
 export default deviceClassEditorSlice.reducer;

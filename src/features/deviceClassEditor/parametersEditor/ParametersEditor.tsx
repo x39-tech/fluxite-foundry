@@ -3,8 +3,8 @@ import { useCurrentEditorSelector } from "app/hooks";
 import { AddItemSection } from "utils/components/AddItemSection/AddItemSection";
 import { NewParameterDialog } from "./NewParameterDialog";
 import { ParameterEditor } from "./ParameterEditor";
-import "./ParametersEditor.scss";
 import { UdrDatabase } from "udr/udrDatabase";
+import "./ParametersEditor.scss";
 
 interface Props {
   database: UdrDatabase;
@@ -16,19 +16,16 @@ export const ParametersEditor = ({ database }: Props) => {
   const [newParameterDialogIsOpen, setNewParameterDialogIsOpen] =
     useState(false);
 
-  const parameterEditors: Array<JSX.Element> = [];
-  editorState.itemEditorLayout.forEach((editor) => {
-    if (editor.udrId in editorState.parameters) {
-      parameterEditors.push(
-        <ParameterEditor
-          key={editor.id}
-          id={editor.udrId}
-          udr={editorState.parameters[editor.udrId]}
-          database={database}
-        />,
-      );
-    }
-  });
+  const parameterEditors = editorState.itemEditorLayout
+    .filter((editor) => editor.udrId in editorState.parameters)
+    .map((editor) => (
+      <ParameterEditor
+        key={editor.id}
+        id={editor.udrId}
+        udr={editorState.parameters[editor.udrId]}
+        database={database}
+      />
+    ));
 
   return (
     <div className="parameters-editor-content">

@@ -20,7 +20,7 @@ function getEditorComponent(
   return (
     <DeviceClassEditor
       key={id}
-      title={editor.deviceClassId}
+      title={editor.basicData.info.model.name}
       database={database}
     />
   );

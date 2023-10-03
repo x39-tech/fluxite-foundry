@@ -5,13 +5,17 @@ import { InputValidationResult } from "utils/inputValidation";
 
 // A component that renders a Blueprint EditableText inline text editor with optional validation.
 
-interface TextEditorFieldProps {
+interface CommonTextEditorFieldProps {
   defaultValue?: string;
-  onValueChanged: (value: string) => void;
   validator?: (value: string) => InputValidationResult;
   validationErrorPlacement?: Placement;
 }
 
+interface TextEditorFieldProps extends CommonTextEditorFieldProps {
+  onValueChanged: (newValue: string) => void;
+}
+
+// A field with editable text.
 export const TextEditorField = ({
   defaultValue,
   onValueChanged,
@@ -64,7 +68,27 @@ export const TextEditorField = ({
   );
 };
 
-// TextEditor component rendered inside a table row with an accompanying label.
+interface OptionalTextEditorFieldProps extends CommonTextEditorFieldProps {
+  onValueChanged: (value?: string) => void;
+}
+
+// Similar to TextEditorField, but the onValueChanged callback passes 'undefined' if the new value
+// is an empty string. This is useful in the case where you want to delete the property from an
+// encompassing object completely if the field is cleared.
+export const OptionalTextEditorField = (
+  props: OptionalTextEditorFieldProps,
+) => {
+  return (
+    <TextEditorField
+      {...props}
+      onValueChanged={(newValue) =>
+        props.onValueChanged(newValue === "" ? undefined : newValue)
+      }
+    />
+  );
+};
+
+// TextEditor/OptionalTextEditor component rendered inside a table row with an accompanying label.
 
 export interface TextEditorTableRowProps extends TextEditorFieldProps {
   label: string;
@@ -76,6 +100,24 @@ export const TextEditorTableRow = (props: TextEditorTableRowProps) => {
       <td style={{ verticalAlign: "middle" }}>{props.label}</td>
       <td>
         <TextEditorField {...props} />
+      </td>
+    </tr>
+  );
+};
+
+export interface OptionalTextEditorTableRowProps
+  extends OptionalTextEditorFieldProps {
+  label: string;
+}
+
+export const OptionalTextEditorTableRow = (
+  props: OptionalTextEditorTableRowProps,
+) => {
+  return (
+    <tr>
+      <td style={{ verticalAlign: "middle" }}>{props.label}</td>
+      <td>
+        <OptionalTextEditorField {...props} />
       </td>
     </tr>
   );

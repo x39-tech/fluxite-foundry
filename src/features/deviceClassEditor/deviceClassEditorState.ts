@@ -15,7 +15,7 @@ export enum DeviceClassEditorWindowType {
   StructuresEditor,
 }
 
-interface BasicData {
+export interface BasicData {
   "@description": string;
   publishDate: string;
   author: string;
@@ -86,8 +86,8 @@ export function importDeviceClassEditor(
           children: [
             {
               type: "tab",
-              name: "Structures Editor",
-              component: "structuresEditor",
+              name: "Device Info Editor",
+              component: "deviceInfoEditor",
               id: nanoid(),
             },
           ],

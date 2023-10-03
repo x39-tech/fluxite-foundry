@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import {
   DeviceClass,
   Access,
@@ -7,11 +8,9 @@ import {
 } from "generated/draft-2023-1/udr-document";
 
 export function getDefaultDeviceClass(): DeviceClass {
-  const date = new Date();
-
   return {
-    "@description": "device_description",
-    publishDate: `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}`,
+    "@description": "A really cool device from ACME Inc.",
+    publishDate: dayjs().format("YYYY-MM-DD"),
     author: "Firstname Lastname",
     history: {},
     info: {
@@ -36,13 +35,6 @@ export function getDefaultDeviceClass(): DeviceClass {
         lifetime: Lifetime.RUNTIME,
         minimum: 0,
         maximum: 1,
-      },
-    },
-    localizations: {
-      "en-US": {
-        strings: {
-          device_description: "Placeholder for Device Description",
-        },
       },
     },
   };

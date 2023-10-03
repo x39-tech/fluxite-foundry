@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useCurrentEditorSelector } from "app/hooks";
 import { AddItemSection } from "utils/components/AddItemSection/AddItemSection";
 import { NewStructureDialog } from "./NewStructureDialog";
-import "./StructuresEditor.css";
 import { StructureValue } from "./structuresEditorSlice";
 import { UdrDatabase } from "udr/udrDatabase";
+import "./StructuresEditor.css";
 
 const editorFactory: {
   [k: string]: (id: string, udr: StructureValue, key: number) => JSX.Element;

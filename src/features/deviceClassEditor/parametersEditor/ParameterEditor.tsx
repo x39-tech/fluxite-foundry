@@ -15,7 +15,10 @@ import {
   NumericInputTableRow,
 } from "utils/components/EditorFields/NumericInputField";
 import { SelectTableRow } from "utils/components/EditorFields/SelectField";
-import { TextEditorTableRow } from "utils/components/EditorFields/TextEditorField";
+import {
+  OptionalTextEditorTableRow,
+  TextEditorTableRow,
+} from "utils/components/EditorFields/TextEditorField";
 import { ItemEditor } from "utils/components/ItemEditor/ItemEditor";
 import { ParameterClassDisplay } from "utils/components/ParameterClassDisplay/ParameterClassDisplay";
 import { SimplePropsTable } from "utils/components/SimplePropsTable/SimplePropsTable";
@@ -36,6 +39,44 @@ import {
   parameterIdUpdated,
 } from "./parametersEditorSlice";
 import "./ParameterEditor.css";
+
+interface Props {
+  id: string;
+  udr: Parameter;
+  database: UdrDatabase;
+}
+
+export const ParameterEditor = ({ id, udr, database }: Props) => {
+  const dispatch = useAppDispatch();
+
+  const itemClass = lookupParameterClass(database, udr.class);
+
+  const parameterIds = useCurrentEditorSelector((state) =>
+    Object.keys(state.parameters.parameters),
+  );
+
+  return (
+    <ItemEditor
+      title={udr["@friendlyName"] ? udr["@friendlyName"]! : id}
+      onDelete={() => {
+        dispatch(parameterDeleted(id));
+      }}
+    >
+      <div className="parameter-collapse-body">
+        {itemClass
+          ? getParameterPropsTable(
+              id,
+              udr,
+              itemClass!,
+              parameterIds,
+              dispatch,
+              database,
+            )
+          : getClassNotFoundMessage(udr.class)}
+      </div>
+    </ItemEditor>
+  );
+};
 
 enum ParameterInstantiationType {
   SINGLE = "Single",
@@ -135,39 +176,27 @@ function getMinMaxDefaultProperties(
 ): JSX.Element {
   return (
     <>
-      <TextEditorTableRow
+      <OptionalTextEditorTableRow
         label="Minimum Value"
         defaultValue={udr.minimum !== undefined ? `${udr.minimum}` : ""}
         onValueChanged={onChangeFactory.getFn((draft, newValue) => {
-          if (newValue === "") {
-            delete draft.minimum;
-          } else {
-            draft.minimum = parseFloat(newValue);
-          }
+          draft.minimum = parseIfNotUndefined(newValue);
         })}
         validator={validateStringIsNumberOrEmpty}
       />
-      <TextEditorTableRow
+      <OptionalTextEditorTableRow
         label="Maximum Value"
         defaultValue={udr.maximum !== undefined ? `${udr.maximum}` : undefined}
         onValueChanged={onChangeFactory.getFn((draft, newValue) => {
-          if (newValue === "") {
-            delete draft.maximum;
-          } else {
-            draft.maximum = parseFloat(newValue);
-          }
+          draft.maximum = parseIfNotUndefined(newValue);
         })}
         validator={validateStringIsNumberOrEmpty}
       />
-      <TextEditorTableRow
+      <OptionalTextEditorTableRow
         label="Default Value"
         defaultValue={udr.default !== undefined ? `${udr.default}` : undefined}
         onValueChanged={onChangeFactory.getFn((draft, newValue) => {
-          if (newValue === "") {
-            delete draft.default;
-          } else {
-            draft.default = parseFloat(newValue);
-          }
+          draft.default = parseIfNotUndefined(newValue);
         })}
         validator={(input) =>
           validateStringIsNumberAndBetweenMinAndMaxOrEmpty(
@@ -239,7 +268,7 @@ function getParameterPropsTable(
         label="Display Name"
         defaultValue={udr["@friendlyName"]}
         onValueChanged={onChangeFactory.getFn((draft, newValue) => {
-          draft.friendlyName = newValue;
+          draft["@friendlyName"] = newValue;
         })}
       />
       <SelectTableRow
@@ -285,40 +314,6 @@ function getClassNotFoundMessage(className: string): JSX.Element {
   );
 }
 
-interface Props {
-  id: string;
-  udr: Parameter;
-  database: UdrDatabase;
+function parseIfNotUndefined(value?: string): number | undefined {
+  return value === undefined ? value : parseFloat(value);
 }
-
-export const ParameterEditor = ({ id, udr, database }: Props) => {
-  const dispatch = useAppDispatch();
-
-  const itemClass = lookupParameterClass(database, udr.class);
-
-  const parameterIds = useCurrentEditorSelector((state) =>
-    Object.keys(state.parameters.parameters),
-  );
-
-  return (
-    <ItemEditor
-      title={udr["@friendlyName"] ? udr["@friendlyName"]! : id}
-      onDelete={() => {
-        dispatch(parameterDeleted(id));
-      }}
-    >
-      <div className="parameter-collapse-body">
-        {itemClass
-          ? getParameterPropsTable(
-              id,
-              udr,
-              itemClass!,
-              parameterIds,
-              dispatch,
-              database,
-            )
-          : getClassNotFoundMessage(udr.class)}
-      </div>
-    </ItemEditor>
-  );
-};

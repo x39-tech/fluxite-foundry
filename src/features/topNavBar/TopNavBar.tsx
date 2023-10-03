@@ -34,7 +34,7 @@ export const TopNavBar = () => {
             return (
               <EditorTitleTab
                 key={id}
-                name={editor.deviceClassId}
+                name={editor.basicData.info.model.name}
                 id={id}
                 active={id === editors.selectedEditor}
                 onSelect={(id) => {
