@@ -66,33 +66,19 @@ describe("class lookup", () => {
   test("parameter class lookup is successful with an identifier containing slashes", () => {
     const itemClass = lookupParameterClass(
       database,
-      "org.esta.lib.gobo.1/gobo/select/index",
+      "test_lib/category/parameter2",
     );
     expect(itemClass).toBeTruthy();
-    expect(itemClass!.identifier).toBe("index");
+    expect(itemClass!.id).toBe("category/parameter2");
+  });
+
+  test("parameter class lookup returns undefined when given a parameter ID that doesn't exist", () => {
+    expect(lookupParameterClass(database, "test_lib/undefined-parameter")).toBe(
+      undefined,
+    );
+  });
+
+  test("parameter class lookup returns undefined when the category identifier is missing", () => {
+    expect(lookupParameterClass(database, "test_lib")).toBe(undefined);
   });
 });
-
-// describe("lookupParameterClass", () => {
-//   it("returns undefined when a parameter ID doesn't exist within a valid category", () => {
-//     expect(
-//       lookupParameterClass("org.esta.lib.intensity-color.1/intensity/foo")
-//     ).toBe(undefined);
-//   });
-//
-//   it("returns undefined when the parameter identifier is missing", () => {
-//     expect(
-//       lookupParameterClass("org.esta.lib.intensity-color.1/intensity")
-//     ).toBe(undefined);
-//   });
-//
-//   it("returns undefined when the category identifier is missing", () => {
-//     expect(lookupParameterClass("org.esta.lib.intensity-color.1")).toBe(
-//       undefined
-//     );
-//   });
-//
-//   it("returns undefined when given an arbitrary string", () => {
-//     expect(lookupParameterClass("foo")).toBe(undefined);
-//   });
-// });

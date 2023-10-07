@@ -29,6 +29,11 @@ build:
     paths:
       - dist/
 
+test:
+  stage: build
+  script:
+    - npm run testrun
+
 lint:
   stage: build
   script:

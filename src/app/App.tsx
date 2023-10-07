@@ -30,13 +30,7 @@ export const App = () => {
   const defaultLibs = useMemo(loadDefaultLibraries, []);
 
   const settings = useAppSelector((state) => state.appSettings);
-  const editors = useAppSelector((state) => {
-    return {
-      openEditors: state.editors.openEditors,
-      editorTabOrder: state.editors.editorTabOrder,
-      selectedEditor: state.editors.selectedEditor,
-    };
-  });
+  const editors = useAppSelector((state) => state.editors);
   const currentEditor = editors.openEditors[editors.selectedEditor];
 
   return (

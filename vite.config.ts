@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import fs from "fs/promises";
 import { constants as fsconstants } from "fs";
 import { Plugin, defineConfig } from "vite";
@@ -18,6 +19,11 @@ export default defineConfig({
     projectCustomImports(),
     checker({ typescript: true }),
   ],
+  test: {
+    globals: true,
+    setupFiles: "src/test/setup.ts",
+    environment: "happy-dom",
+  },
 });
 
 const ROOT_STATE_HASH_ID = "virtual:rootStateHash";

@@ -52,11 +52,11 @@ Locally previews the production build in a server. View the page in the browser 
 
 #### `npm run test`
 
-Runs the tests (currently broken, pending #8)
+Runs the tests.
 
 #### `npm run coverage`
 
-Generates a coverage report. (currently broken, pending #8)
+Generates a coverage report.
 
 #### `npm run lint`
 

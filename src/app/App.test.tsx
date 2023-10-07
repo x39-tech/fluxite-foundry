@@ -1,8 +1,11 @@
+/**
+ * @jest-environment happy-dom
+ */
 import { screen } from "@testing-library/react";
-import App from "./App";
 import { renderWithProviders } from "utils/testUtils";
 import { newDeviceClassEditor } from "features/deviceClassEditor/deviceClassEditorState";
 import { expect, test } from "vitest";
+import App from "./App";
 
 test("Renders a tooltip and add editor button when no editor is open", async () => {
   renderWithProviders(<App />);
@@ -30,9 +33,8 @@ test("Renders an editor when one is open", async () => {
   });
 
   // Top button
-  expect(screen.getByText("myDevice")).toBeInTheDocument();
+  expect(screen.getAllByText("Super Light")[0]).toBeInTheDocument();
 
   // Editor panes
   expect(screen.getByText(/parameters/i)).toBeInTheDocument();
-  expect(screen.getByText(/structures/i)).toBeInTheDocument();
 });

@@ -1,6 +1,7 @@
 import { Callout } from "@blueprintjs/core";
 import { Popover2 } from "@blueprintjs/popover2";
 import produce from "immer";
+import { createSelector } from "@reduxjs/toolkit";
 import { useAppDispatch, useCurrentEditorSelector } from "app/hooks";
 import { AppDispatch } from "app/store";
 import {
@@ -9,6 +10,7 @@ import {
   Lifetime,
   DataType,
 } from "generated/draft-2023-1/udr-document";
+import { DeviceClassEditorState } from "features/deviceClassEditor/deviceClassEditorState";
 import { getAccessFriendlyName, getLifetimeFriendlyName } from "udr/util/enums";
 import {
   ClearableNumericInputTableRow,
@@ -51,8 +53,11 @@ export const ParameterEditor = ({ id, udr, database }: Props) => {
 
   const itemClass = lookupParameterClass(database, udr.class);
 
-  const parameterIds = useCurrentEditorSelector((state) =>
-    Object.keys(state.parameters.parameters),
+  const parameterIds = useCurrentEditorSelector(
+    createSelector(
+      (state: DeviceClassEditorState) => state.parameters.parameters,
+      (parameters) => Object.keys(parameters),
+    ),
   );
 
   return (

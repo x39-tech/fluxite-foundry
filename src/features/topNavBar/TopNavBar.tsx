@@ -12,13 +12,7 @@ import { AppMainMenu } from "./AppMainMenu";
 import "./TopNavBar.css";
 
 export const TopNavBar = () => {
-  const editors = useAppSelector((state) => {
-    return {
-      openEditors: state.editors.openEditors,
-      editorTabOrder: state.editors.editorTabOrder,
-      selectedEditor: state.editors.selectedEditor,
-    };
-  });
+  const editors = useAppSelector((state) => state.editors);
   const currentEditor = editors.openEditors[editors.selectedEditor];
 
   const dispatch = useAppDispatch();

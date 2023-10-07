@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Button, Classes, H3 } from "@blueprintjs/core";
+import { createSelector } from "@reduxjs/toolkit";
 import { useAppDispatch, useCurrentEditorSelector } from "app/hooks";
+import { DeviceClassEditorState } from "features/deviceClassEditor/deviceClassEditorState";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
 import { TextEditorTableRow } from "utils/components/EditorFields/TextEditorField";
 import { ParameterClassDisplay } from "utils/components/ParameterClassDisplay/ParameterClassDisplay";
@@ -23,8 +25,11 @@ interface Props {
 }
 
 export const NewParameterDialog = ({ isOpen, onClose, database }: Props) => {
-  const parameterIds = useCurrentEditorSelector((state) =>
-    Object.keys(state.parameters.parameters),
+  const parameterIds = useCurrentEditorSelector(
+    createSelector(
+      (state: DeviceClassEditorState) => state.parameters.parameters,
+      (parameters) => Object.keys(parameters),
+    ),
   );
 
   const [newItemClass, setNewItemClass] = useState(

@@ -1,7 +1,7 @@
 import { Button, Collapse, Colors, H4 } from "@blueprintjs/core";
 import { useState } from "react";
-import "./ItemEditor.css";
 import { useAppSelector } from "app/hooks";
+import "./ItemEditor.css";
 
 const BACKGROUND_COLOR_DARK = Colors.DARK_GRAY2;
 const BACKGROUND_COLOR_LIGHT = Colors.LIGHT_GRAY3;

@@ -1,6 +1,8 @@
 import { Button, Classes, H3 } from "@blueprintjs/core";
 import { useState } from "react";
+import { createSelector } from "@reduxjs/toolkit";
 import { useAppDispatch, useCurrentEditorSelector } from "app/hooks";
+import { DeviceClassEditorState } from "features/deviceClassEditor/deviceClassEditorState";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
 import { TextEditorTableRow } from "utils/components/EditorFields/TextEditorField";
 import { ItemClassSelector } from "utils/components/ItemClassSelector/ItemClassSelector";
@@ -23,8 +25,11 @@ interface Props {
 }
 
 export const NewStructureDialog = ({ isOpen, onClose, database }: Props) => {
-  const structureIds = useCurrentEditorSelector((state) =>
-    Object.keys(state.structures.structures),
+  const structureIds = useCurrentEditorSelector(
+    createSelector(
+      (state: DeviceClassEditorState) => state.structures.structures,
+      (structures) => Object.keys(structures),
+    ),
   );
 
   const [newItemClass, setNewItemClass] = useState(

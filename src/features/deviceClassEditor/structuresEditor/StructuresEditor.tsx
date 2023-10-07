@@ -15,10 +15,12 @@ interface Props {
 }
 
 export const StructuresEditor = ({ database }: Props) => {
-  const [structures, structureEditors] = useCurrentEditorSelector((state) => [
-    state.structures.structures,
-    state.structures.itemEditorLayout,
-  ]);
+  const structures = useCurrentEditorSelector(
+    (state) => state.structures.structures,
+  );
+  const structureEditors = useCurrentEditorSelector(
+    (state) => state.structures.itemEditorLayout,
+  );
 
   const editors: Array<JSX.Element> = [];
   for (const [index, { udrId }] of structureEditors.entries()) {
