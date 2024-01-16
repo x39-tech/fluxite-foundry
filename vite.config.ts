@@ -2,12 +2,10 @@
 import fs from "fs/promises";
 import { constants as fsconstants } from "fs";
 import { Plugin, defineConfig } from "vite";
-import { createHash } from "crypto";
 import react from "@vitejs/plugin-react-swc";
 import eslint from "vite-plugin-eslint";
 import checker from "vite-plugin-checker";
 import tsconfigPaths from "vite-tsconfig-paths";
-import { createGenerator } from "ts-json-schema-generator";
 import { compile as compileToTS } from "json-schema-to-typescript";
 
 // https://vitejs.dev/config/
@@ -26,36 +24,12 @@ export default defineConfig({
   },
 });
 
-const ROOT_STATE_HASH_ID = "virtual:rootStateHash";
-
 function projectCustomImports(): Plugin {
   return {
     name: "udr-builder-custom-imports",
     enforce: "pre",
     async buildStart() {
       await generateUdrDocumentTypes();
-    },
-    async resolveId(source: string) {
-      if (source.startsWith("virtual:")) {
-        return source;
-      }
-      return null;
-    },
-    load(id: string) {
-      if (id == ROOT_STATE_HASH_ID) {
-        const config = {
-          path: "src/app/rootState.ts",
-          tsconfig: "tsconfig.json",
-          type: "RootState",
-        };
-        const schemaHash = createHash("sha256")
-          .update(
-            JSON.stringify(createGenerator(config).createSchema(config.type)),
-          )
-          .digest("hex");
-        return `export default "${schemaHash}";`;
-      }
-      return null;
     },
   };
 }

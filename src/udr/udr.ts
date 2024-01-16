@@ -7,19 +7,24 @@ import {
   Subcategory,
 } from "generated/draft-2023-1/udr-document";
 
-export function getDefaultDeviceClass(): DeviceClass {
+const DEFAULT_AUTHOR = "Firstname Lastname";
+const DEFAULT_COMPANY = "ACME Inc.";
+
+export function getDefaultDeviceClass(deviceClassId: string): DeviceClass {
+  const modelName = toTitleCase(deviceClassId.replaceAll("-", " "));
+
   return {
-    "@description": "A really cool device from ACME Inc.",
+    "@description": `A really cool device from ${DEFAULT_COMPANY}`,
     publishDate: dayjs().format("YYYY-MM-DD"),
-    author: "Firstname Lastname",
+    author: DEFAULT_AUTHOR,
     history: {},
     info: {
       manufacturer: {
-        name: "ACME Inc.",
+        name: DEFAULT_COMPANY,
       },
       model: {
-        name: "Super Light",
-        productIdentifier: "superlight",
+        name: modelName,
+        productIdentifier: deviceClassId,
         category: Category.LIGHTING,
         subcategory: Subcategory.MOVING_PROFILE,
       },
@@ -38,4 +43,11 @@ export function getDefaultDeviceClass(): DeviceClass {
       },
     },
   };
+}
+
+function toTitleCase(str: string): string {
+  return str
+    .split(" ")
+    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
+    .join(" ");
 }

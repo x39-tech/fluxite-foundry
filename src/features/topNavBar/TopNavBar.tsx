@@ -1,21 +1,16 @@
 import { Alignment, Button, Navbar } from "@blueprintjs/core";
 import { Popover2 } from "@blueprintjs/popover2";
 import { APP_NAME } from "appInfo";
-import { useAppDispatch, useAppSelector } from "app/hooks";
-import {
-  newEditorCreated,
-  editorDeleted,
-  selectedEditorChanged,
-} from "features/deviceClassEditor/deviceClassEditorSlice";
 import { EditorTitleTab } from "utils/components/EditorTitleTab/EditorTitleTab";
 import { AppMainMenu } from "./AppMainMenu";
+import { createDeviceClassEditor, useEditorNames } from "./state";
+import { setSelectedEditor, useOpenEditors, deleteEditor } from "./state";
 import "./TopNavBar.css";
 
 export const TopNavBar = () => {
-  const editors = useAppSelector((state) => state.editors);
-  const currentEditor = editors.openEditors[editors.selectedEditor];
-
-  const dispatch = useAppDispatch();
+  const editors = useOpenEditors();
+  const editorNames = useEditorNames();
+  const currentEditor = editors.editors[editors.selectedEditor];
 
   return (
     <>
@@ -23,20 +18,16 @@ export const TopNavBar = () => {
         <Navbar.Group align={Alignment.LEFT}>
           <Navbar.Heading>{APP_NAME}</Navbar.Heading>
           <Navbar.Divider />
-          {editors.editorTabOrder.map((id) => {
-            const editor = editors.openEditors[id];
+          {editors.editors.map((editor, index) => {
+            const name = editorNames[index] ?? "unknown";
             return (
               <EditorTitleTab
-                key={id}
-                name={editor.basicData.info.model.name}
-                id={id}
-                active={id === editors.selectedEditor}
-                onSelect={(id) => {
-                  dispatch(selectedEditorChanged(id));
-                }}
-                onDelete={(id) => {
-                  dispatch(editorDeleted(id));
-                }}
+                key={editor.id}
+                name={name}
+                id={editor.id}
+                active={index === editors.selectedEditor}
+                onSelect={() => setSelectedEditor(index)}
+                onDelete={() => deleteEditor(index)}
               />
             );
           })}
@@ -55,9 +46,7 @@ export const TopNavBar = () => {
             <Button
               icon="add"
               aria-label="Add New Editor"
-              onClick={() => {
-                dispatch(newEditorCreated());
-              }}
+              onClick={createDeviceClassEditor}
             />
           </Popover2>
         </Navbar.Group>

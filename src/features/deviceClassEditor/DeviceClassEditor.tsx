@@ -1,36 +1,31 @@
 import { useCallback, useEffect } from "react";
 import * as FlexLayout from "flexlayout-react";
-import { nanoid } from "@reduxjs/toolkit";
 import { Button } from "@blueprintjs/core";
 import { Popover2 } from "@blueprintjs/popover2";
 import { throttle } from "lodash";
-
+import { nanoid } from "nanoid";
 import { APP_NAME } from "appInfo";
-import {
-  useAppDispatch,
-  useAppSelector,
-  useCurrentEditorSelector,
-} from "app/hooks";
-import { UdrDatabase } from "udr/udrDatabase";
 import { WIDGETS, isValidWidget } from "./widgets";
 import { NewWidgetMenu } from "./newWidgetMenu";
-import { windowLayoutUpdated } from "./deviceClassEditorSlice";
+import { setWindowLayout, useCurrentEditor } from "./state";
+import { useAppStore } from "app/store";
+import { RenderError } from "utils/components/RenderError";
 import "./DeviceClassEditor.scss";
 
-interface Props {
-  title: string;
-  database: Readonly<UdrDatabase>;
-}
+export const DeviceClassEditor = () => {
+  const currentEditor = useCurrentEditor();
+  if (!currentEditor) {
+    return <RenderError />;
+  }
 
-export const DeviceClassEditor = ({ title, database }: Props) => {
   useEffect(() => {
-    document.title = `Editing: ${title} -- ${APP_NAME}`;
+    document.title = `Editing: ${currentEditor.basicData.info.model.name} -- ${APP_NAME}`;
     return () => {
       document.title = APP_NAME;
     };
   });
 
-  const darkMode = useAppSelector((state) => state.appSettings.darkMode);
+  const darkMode = useAppStore((state) => state.appSettings.darkMode);
   const flexlayoutClassPrefix = darkMode
     ? "flexlayout-dark "
     : "flexlayout-light ";
@@ -43,13 +38,13 @@ export const DeviceClassEditor = ({ title, database }: Props) => {
       splitterSize: 2,
     },
     borders: [],
-    layout: useCurrentEditorSelector((state) => state.windowLayout),
+    layout: currentEditor.windowLayout,
   };
   const model = FlexLayout.Model.fromJson(modelJson);
 
   const onModelChange = useCallback(
     throttle((model) => {
-      dispatch(windowLayoutUpdated(model.toJson()));
+      setWindowLayout(model.toJson());
     }, 1000),
     [],
   );
@@ -58,12 +53,10 @@ export const DeviceClassEditor = ({ title, database }: Props) => {
     const componentName = node.getComponent();
 
     if (componentName && isValidWidget(componentName)) {
-      return WIDGETS[componentName].factory(database);
+      return WIDGETS[componentName].factory();
     }
     return <></>;
   };
-
-  const dispatch = useAppDispatch();
 
   return (
     <FlexLayout.Layout

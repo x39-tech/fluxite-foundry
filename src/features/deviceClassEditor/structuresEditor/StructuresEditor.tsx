@@ -1,26 +1,23 @@
 import { useState } from "react";
-import { useCurrentEditorSelector } from "app/hooks";
+import { useUdrDatabase } from "app/state";
 import { AddItemSection } from "utils/components/AddItemSection/AddItemSection";
 import { NewStructureDialog } from "./NewStructureDialog";
-import { StructureValue } from "./structuresEditorSlice";
-import { UdrDatabase } from "udr/udrDatabase";
+import { StructureValue, useStructures } from "./state";
+import { RenderError } from "utils/components/RenderError";
 import "./StructuresEditor.css";
 
 const editorFactory: {
   [k: string]: (id: string, udr: StructureValue, key: number) => JSX.Element;
 } = {};
 
-interface Props {
-  database: UdrDatabase;
-}
+export const StructuresEditor = () => {
+  const database = useUdrDatabase();
+  const structuresState = useStructures();
+  if (!structuresState) {
+    return <RenderError />;
+  }
 
-export const StructuresEditor = ({ database }: Props) => {
-  const structures = useCurrentEditorSelector(
-    (state) => state.structures.structures,
-  );
-  const structureEditors = useCurrentEditorSelector(
-    (state) => state.structures.itemEditorLayout,
-  );
+  const { structures, itemEditorLayout: structureEditors } = structuresState;
 
   const editors: Array<JSX.Element> = [];
   for (const [index, { udrId }] of structureEditors.entries()) {

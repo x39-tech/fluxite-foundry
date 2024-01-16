@@ -1,4 +1,3 @@
-import { UdrDatabase } from "udr/udrDatabase";
 import { ParametersEditor } from "./parametersEditor/ParametersEditor";
 import { StructuresEditor } from "./structuresEditor/StructuresEditor";
 import { DeviceInfoEditor } from "./deviceInfoEditor/DeviceInfoEditor";
@@ -6,19 +5,19 @@ import { DeviceInfoEditor } from "./deviceInfoEditor/DeviceInfoEditor";
 interface EditorWidget {
   name: string;
   description: string;
-  factory: (database: UdrDatabase) => JSX.Element;
+  factory: () => JSX.Element;
 }
 
 export const WIDGETS: Record<string, EditorWidget> = {
   parametersEditor: {
     name: "Parameters Editor",
     description: "Create and edit parameters for the device class",
-    factory: (database) => <ParametersEditor database={database} />,
+    factory: () => <ParametersEditor />,
   },
   structuresEditor: {
     name: "Structures Editor",
     description: "Create and edit structures for the device class",
-    factory: (database) => <StructuresEditor database={database} />,
+    factory: () => <StructuresEditor />,
   },
   deviceInfoEditor: {
     name: "Device Info Editor",

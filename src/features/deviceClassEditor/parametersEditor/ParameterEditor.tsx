@@ -1,16 +1,12 @@
 import { Callout } from "@blueprintjs/core";
 import { Popover2 } from "@blueprintjs/popover2";
-import produce from "immer";
-import { createSelector } from "@reduxjs/toolkit";
-import { useAppDispatch, useCurrentEditorSelector } from "app/hooks";
-import { AppDispatch } from "app/store";
+import { Draft } from "immer";
 import {
   Parameter,
   Access,
   Lifetime,
   DataType,
 } from "generated/draft-2023-1/udr-document";
-import { DeviceClassEditorState } from "features/deviceClassEditor/deviceClassEditorState";
 import { getAccessFriendlyName, getLifetimeFriendlyName } from "udr/util/enums";
 import {
   ClearableNumericInputTableRow,
@@ -24,60 +20,54 @@ import {
 import { ItemEditor } from "utils/components/ItemEditor/ItemEditor";
 import { ParameterClassDisplay } from "utils/components/ParameterClassDisplay/ParameterClassDisplay";
 import { SimplePropsTable } from "utils/components/SimplePropsTable/SimplePropsTable";
-import { DispatchOnChangeFactory } from "utils/dispatchOnChangeFactory";
 import {
   validateNewItemId,
   validateStringIsNumberAndBetweenMinAndMaxOrEmpty,
   validateStringIsNumberOrEmpty,
 } from "utils/inputValidation";
+import { ParameterClassWithId, lookupParameterClass } from "udr/udrDatabase";
 import {
-  ParameterClassWithId,
-  UdrDatabase,
-  lookupParameterClass,
-} from "udr/udrDatabase";
-import {
-  parameterDeleted,
-  parameterUpdated,
-  parameterIdUpdated,
-} from "./parametersEditorSlice";
+  changeParameterId,
+  deleteParameter,
+  modifyParameter,
+  useParameter,
+  useParameterIds,
+} from "./state";
+import { useUdrDatabase } from "app/state";
+import { RenderError } from "utils/components/RenderError";
 import "./ParameterEditor.css";
 
 interface Props {
   id: string;
-  udr: Parameter;
-  database: UdrDatabase;
 }
 
-export const ParameterEditor = ({ id, udr, database }: Props) => {
-  const dispatch = useAppDispatch();
+type ParameterModifier = (fn: (draft: Draft<Parameter>) => void) => void;
 
-  const itemClass = lookupParameterClass(database, udr.class);
+export const ParameterEditor = ({ id }: Props) => {
+  const database = useUdrDatabase();
+  const parameterIds = useParameterIds();
+  const param = useParameter(id);
+  if (!param) {
+    return <RenderError />;
+  }
 
-  const parameterIds = useCurrentEditorSelector(
-    createSelector(
-      (state: DeviceClassEditorState) => state.parameters.parameters,
-      (parameters) => Object.keys(parameters),
-    ),
-  );
+  const paramClass = lookupParameterClass(database, param.class);
 
   return (
     <ItemEditor
-      title={udr["@friendlyName"] ? udr["@friendlyName"]! : id}
-      onDelete={() => {
-        dispatch(parameterDeleted(id));
-      }}
+      title={param["@friendlyName"] ? param["@friendlyName"]! : id}
+      onDelete={() => deleteParameter(id)}
     >
       <div className="parameter-collapse-body">
-        {itemClass
+        {paramClass
           ? getParameterPropsTable(
               id,
-              udr,
-              itemClass!,
+              param,
+              (recipe) => modifyParameter(id, recipe),
+              paramClass!,
               parameterIds,
-              dispatch,
-              database,
             )
-          : getClassNotFoundMessage(udr.class)}
+          : getClassNotFoundMessage(param.class)}
       </div>
     </ItemEditor>
   );
@@ -91,7 +81,7 @@ enum ParameterInstantiationType {
 
 function getInstantiationProperties(
   udr: Parameter,
-  onChangeFactory: DispatchOnChangeFactory<Parameter>,
+  modifyParam: ParameterModifier,
 ): JSX.Element {
   return (
     <>
@@ -105,24 +95,14 @@ function getInstantiationProperties(
             ? ParameterInstantiationType.MULTIPLE
             : ParameterInstantiationType.SINGLE
         }
-        onSelectionChanged={onChangeFactory.getFn((draft, newValue) => {
-          switch (newValue as ParameterInstantiationType) {
-            case ParameterInstantiationType.SINGLE:
-              delete draft.dynamicMinimum;
-              delete draft.dynamicMaximum;
-              delete draft.count;
-              break;
-            case ParameterInstantiationType.MULTIPLE:
-              delete draft.dynamicMinimum;
-              delete draft.dynamicMaximum;
-              draft.count = 1;
-              break;
-            case ParameterInstantiationType.DYNAMIC:
-              delete draft.count;
-              draft.dynamicMinimum = 1;
-              break;
-          }
-        })}
+        onSelectionChanged={(newValue) =>
+          modifyParam((draft) =>
+            changeInstantiationType(
+              draft,
+              newValue as ParameterInstantiationType,
+            ),
+          )
+        }
       />
       {udr.count ? (
         <NumericInputTableRow
@@ -130,9 +110,11 @@ function getInstantiationProperties(
           value={udr.count || ""}
           min={1}
           minorStepSize={null}
-          onValueChange={onChangeFactory.getFn((draft, newValue) => {
-            draft.count = newValue;
-          })}
+          onValueChange={(newValue) =>
+            modifyParam((draft) => {
+              draft.count = newValue;
+            })
+          }
         />
       ) : (
         <></>
@@ -144,15 +126,17 @@ function getInstantiationProperties(
             value={udr.dynamicMinimum || ""}
             min={1}
             minorStepSize={null}
-            onValueChange={onChangeFactory.getFn((draft, newValue) => {
-              draft.dynamicMinimum = newValue;
-              if (
-                draft.dynamicMaximum !== undefined &&
-                draft.dynamicMaximum < newValue
-              ) {
-                draft.dynamicMaximum = newValue;
-              }
-            })}
+            onValueChange={(newValue) =>
+              modifyParam((draft) => {
+                draft.dynamicMinimum = newValue;
+                if (
+                  draft.dynamicMaximum !== undefined &&
+                  draft.dynamicMaximum < newValue
+                ) {
+                  draft.dynamicMaximum = newValue;
+                }
+              })
+            }
           />
           <ClearableNumericInputTableRow
             label="Maximum Instance Count"
@@ -160,12 +144,17 @@ function getInstantiationProperties(
             placeholder="(no maximum)"
             min={1}
             minorStepSize={null}
-            onValueChange={onChangeFactory.getFn((draft, newValue) => {
-              draft.dynamicMaximum = newValue;
-              if (newValue !== undefined && draft.dynamicMinimum! > newValue) {
-                draft.dynamicMinimum = newValue;
-              }
-            })}
+            onValueChange={(newValue) =>
+              modifyParam((draft) => {
+                draft.dynamicMaximum = newValue;
+                if (
+                  newValue !== undefined &&
+                  draft.dynamicMinimum! > newValue
+                ) {
+                  draft.dynamicMinimum = newValue;
+                }
+              })
+            }
           />
         </>
       ) : (
@@ -177,32 +166,38 @@ function getInstantiationProperties(
 
 function getMinMaxDefaultProperties(
   udr: Parameter,
-  onChangeFactory: DispatchOnChangeFactory<Parameter>,
+  modifyParam: ParameterModifier,
 ): JSX.Element {
   return (
     <>
       <OptionalTextEditorTableRow
         label="Minimum Value"
         defaultValue={udr.minimum !== undefined ? `${udr.minimum}` : ""}
-        onValueChanged={onChangeFactory.getFn((draft, newValue) => {
-          draft.minimum = parseIfNotUndefined(newValue);
-        })}
+        onValueChanged={(newValue) =>
+          modifyParam((draft) => {
+            draft.minimum = parseIfNotUndefined(newValue);
+          })
+        }
         validator={validateStringIsNumberOrEmpty}
       />
       <OptionalTextEditorTableRow
         label="Maximum Value"
         defaultValue={udr.maximum !== undefined ? `${udr.maximum}` : undefined}
-        onValueChanged={onChangeFactory.getFn((draft, newValue) => {
-          draft.maximum = parseIfNotUndefined(newValue);
-        })}
+        onValueChanged={(newValue) =>
+          modifyParam((draft) => {
+            draft.maximum = parseIfNotUndefined(newValue);
+          })
+        }
         validator={validateStringIsNumberOrEmpty}
       />
       <OptionalTextEditorTableRow
         label="Default Value"
         defaultValue={udr.default !== undefined ? `${udr.default}` : undefined}
-        onValueChanged={onChangeFactory.getFn((draft, newValue) => {
-          draft.default = parseIfNotUndefined(newValue);
-        })}
+        onValueChanged={(newValue) =>
+          modifyParam((draft) => {
+            draft.default = parseIfNotUndefined(newValue);
+          })
+        }
         validator={(input) =>
           validateStringIsNumberAndBetweenMinAndMaxOrEmpty(
             input,
@@ -217,26 +212,13 @@ function getMinMaxDefaultProperties(
 
 function getParameterPropsTable(
   id: string,
-  udr: Parameter,
-  itemClass: ParameterClassWithId,
+  param: Parameter,
+  modifyParam: ParameterModifier,
+  paramClass: ParameterClassWithId,
   existingItemIds: string[],
-  dispatch: AppDispatch,
-  database: UdrDatabase,
 ): JSX.Element {
-  const onChangeFactory = new DispatchOnChangeFactory(
-    udr,
-    (newValue, changeRecipe) => {
-      dispatch(
-        parameterUpdated({
-          id,
-          newValue: produce(udr, (draft) => changeRecipe(draft, newValue)),
-        }),
-      );
-    },
-  );
-
   const accessValues =
-    udr.lifetime === Lifetime.STATIC
+    param.lifetime === Lifetime.STATIC
       ? Object.values(Access).filter((value) => value !== Access.READWRITE)
       : Object.values(Access);
 
@@ -246,22 +228,18 @@ function getParameterPropsTable(
         <td>Class</td>
         <td>
           <Popover2
-            content={
-              <ParameterClassDisplay udr={itemClass} database={database} />
-            }
+            content={<ParameterClassDisplay paramClass={paramClass} />}
             position="right"
             interactionKind="hover"
           >
-            <pre>{udr.class}</pre>
+            <pre>{param.class}</pre>
           </Popover2>
         </td>
       </tr>
       <TextEditorTableRow
         label="ID"
         defaultValue={id}
-        onValueChanged={(newValue) => {
-          dispatch(parameterIdUpdated({ id, newId: newValue }));
-        }}
+        onValueChanged={(newValue) => changeParameterId(id, newValue)}
         validator={(input) =>
           validateNewItemId(
             input,
@@ -271,43 +249,67 @@ function getParameterPropsTable(
       />
       <TextEditorTableRow
         label="Display Name"
-        defaultValue={udr["@friendlyName"]}
-        onValueChanged={onChangeFactory.getFn((draft, newValue) => {
-          draft["@friendlyName"] = newValue;
-        })}
+        defaultValue={param["@friendlyName"]}
+        onValueChanged={(newValue) =>
+          modifyParam((draft) => (draft["@friendlyName"] = newValue))
+        }
       />
       <SelectTableRow
         label="Access"
         values={accessValues}
         displayValues={accessValues.map(getAccessFriendlyName)}
-        selectedValue={udr.access}
-        onSelectionChanged={onChangeFactory.getFn((draft, newValue) => {
-          draft.access = newValue as Access;
-        })}
+        selectedValue={param.access}
+        onSelectionChanged={(newValue) =>
+          modifyParam((draft) => (draft.access = newValue as Access))
+        }
       />
       <SelectTableRow
         label="Lifetime"
         values={Object.values(Lifetime)}
         displayValues={Object.values(Lifetime).map(getLifetimeFriendlyName)}
-        selectedValue={udr.lifetime}
-        onSelectionChanged={onChangeFactory.getFn((draft, newValue) => {
-          draft.lifetime = newValue as Lifetime;
-          if (
-            newValue === Lifetime.STATIC &&
-            draft.access === Access.READWRITE
-          ) {
-            draft.access = Access.READONLY;
-          }
-        })}
+        selectedValue={param.lifetime}
+        onSelectionChanged={(newValue) =>
+          modifyParam((draft) => {
+            draft.lifetime = newValue as Lifetime;
+            if (
+              newValue === Lifetime.STATIC &&
+              draft.access === Access.READWRITE
+            ) {
+              draft.access = Access.READONLY;
+            }
+          })
+        }
       />
-      {getInstantiationProperties(udr, onChangeFactory)}
-      {itemClass.dataType === DataType.NUMBER ? (
-        getMinMaxDefaultProperties(udr, onChangeFactory)
+      {getInstantiationProperties(param, modifyParam)}
+      {paramClass.dataType === DataType.NUMBER ? (
+        getMinMaxDefaultProperties(param, modifyParam)
       ) : (
         <></>
       )}
     </SimplePropsTable>
   );
+}
+
+function changeInstantiationType(
+  draft: Draft<Parameter>,
+  newType: ParameterInstantiationType,
+) {
+  switch (newType) {
+    case ParameterInstantiationType.SINGLE:
+      delete draft.dynamicMinimum;
+      delete draft.dynamicMaximum;
+      delete draft.count;
+      break;
+    case ParameterInstantiationType.MULTIPLE:
+      delete draft.dynamicMinimum;
+      delete draft.dynamicMaximum;
+      draft.count = 1;
+      break;
+    case ParameterInstantiationType.DYNAMIC:
+      delete draft.count;
+      draft.dynamicMinimum = 1;
+      break;
+  }
 }
 
 function getClassNotFoundMessage(className: string): JSX.Element {

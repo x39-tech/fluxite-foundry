@@ -1,11 +1,13 @@
+// A component that renders a Blueprint EditableText inline text editor with optional validation.
+// Can either be controlled (value) or uncontrolled (defaultValue).
+
 import { useState } from "react";
 import { Callout, EditableText } from "@blueprintjs/core";
 import { Placement, Popover2 } from "@blueprintjs/popover2";
 import { InputValidationResult } from "utils/inputValidation";
 
-// A component that renders a Blueprint EditableText inline text editor with optional validation.
-
 interface CommonTextEditorFieldProps {
+  value?: string;
   defaultValue?: string;
   validator?: (value: string) => InputValidationResult;
   validationErrorPlacement?: Placement;
@@ -17,26 +19,27 @@ interface TextEditorFieldProps extends CommonTextEditorFieldProps {
 
 // A field with editable text.
 export const TextEditorField = ({
+  value,
   defaultValue,
   onValueChanged,
   validator,
   validationErrorPlacement,
 }: TextEditorFieldProps) => {
-  const defaultText = defaultValue || "";
+  const defaultText = value ?? (defaultValue || "");
 
   const [validationResult, setValidationResult] = useState(
     validator ? validator(defaultText) : { isValid: true },
   );
   const [stagedText, setStagedText] = useState(defaultText);
-  const [resetToDefault, setResetToDefault] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
-  if (resetToDefault) {
-    setStagedText(defaultText);
-    if (validator) {
-      setValidationResult(validator(defaultText));
+  const textToDisplay = (() => {
+    if (!isEditing && value && value != stagedText) {
+      return value;
+    } else {
+      return stagedText;
     }
-    setResetToDefault(false);
-  }
+  })();
 
   return (
     <Popover2
@@ -49,18 +52,24 @@ export const TextEditorField = ({
       placement={validationErrorPlacement}
     >
       <EditableText
-        value={stagedText}
+        value={textToDisplay}
         onChange={(newValue) => {
           if (validator) {
             setValidationResult(validator(newValue));
           }
+          setIsEditing(true);
           setStagedText(newValue);
         }}
         onConfirm={(newValue) => {
           if (validationResult.isValid) {
             onValueChanged(newValue);
+          } else {
+            if (validator) {
+              setValidationResult(validator(defaultText));
+            }
+            setStagedText(defaultText);
           }
-          setResetToDefault(true);
+          setIsEditing(false);
         }}
         intent={validationResult.isValid ? "none" : "danger"}
       />

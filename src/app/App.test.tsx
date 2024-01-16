@@ -1,14 +1,13 @@
 /**
  * @jest-environment happy-dom
  */
-import { screen } from "@testing-library/react";
-import { renderWithProviders } from "utils/testUtils";
-import { newDeviceClassEditor } from "features/deviceClassEditor/deviceClassEditorState";
+import { render, screen } from "@testing-library/react";
+import { userEvent } from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import App from "./App";
 
 test("Renders a tooltip and add editor button when no editor is open", async () => {
-  renderWithProviders(<App />);
+  render(<App />);
 
   expect(
     screen.getByRole("button", { name: "Add New Editor" }),
@@ -17,20 +16,9 @@ test("Renders a tooltip and add editor button when no editor is open", async () 
 });
 
 test("Renders an editor when one is open", async () => {
-  renderWithProviders(<App />, {
-    preloadedState: {
-      appSettings: {
-        darkMode: false,
-      },
-      editors: {
-        openEditors: {
-          "1f1c3350-1a14-4a4c-b90f-d8b076b4ae02": newDeviceClassEditor([]),
-        },
-        editorTabOrder: ["1f1c3350-1a14-4a4c-b90f-d8b076b4ae02"],
-        selectedEditor: "1f1c3350-1a14-4a4c-b90f-d8b076b4ae02",
-      },
-    },
-  });
+  render(<App />);
+
+  await userEvent.click(screen.getByRole("button", { name: "Add New Editor" }));
 
   // Top button
   expect(screen.getAllByText("Super Light")[0]).toBeInTheDocument();

@@ -8,10 +8,14 @@ import {
   HTMLTable,
 } from "@blueprintjs/core";
 import { useState } from "react";
-import { useAppSelector } from "app/hooks";
 import { E173UDRDocuments as UDRDocument } from "generated/draft-2023-1/udr-document";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
-import { DeviceClassEditorState } from "features/deviceClassEditor/deviceClassEditorState";
+import {
+  useDeviceClassEditors,
+  useOpenDeviceClassEditorsWithNames,
+} from "./state";
+import { DeviceClassEditorState } from "app/state";
+import { TextEditorField } from "utils/components/EditorFields/TextEditorField";
 
 interface Props {
   isOpen: boolean;
@@ -19,29 +23,26 @@ interface Props {
 }
 
 export const ExportUdrDialog = ({ isOpen, onClose }: Props) => {
-  const editors = useAppSelector((state) => state.editors.openEditors);
-  const editorsArray = Object.entries(editors);
+  // TODO: generic over editor type
+  const editors = useOpenDeviceClassEditorsWithNames();
+  const deviceClassEditors = useDeviceClassEditors();
+
   const [selectedEditorId, setSelectedEditorId] = useState(
-    editorsArray.length !== 0 ? editorsArray.at(0)![0] : undefined,
+    editors.length !== 0 ? editors[0].id : undefined,
+  );
+  const selectedEditor = editors.find(
+    (editor) => editor.id == selectedEditorId,
+  );
+  const [deviceClassId, setDeviceClassId] = useState(
+    deviceClassEditors[selectedEditor?.id ?? ""]?.deviceClassId ?? "",
   );
 
   const [prettyPrint, setPrettyPrint] = useState(true);
 
-  // Make sure state is up-to-date
-  if (editorsArray.length === 0) {
-    if (selectedEditorId !== undefined) {
-      setSelectedEditorId(undefined);
-      return <></>;
-    }
-  } else if (
-    editorsArray.filter(([id]) => id === selectedEditorId).length === 0
-  ) {
-    setSelectedEditorId(editorsArray.at(0)![0]);
-  }
-
   const fileDownloadUrl = getFileDownloadUrl(
     selectedEditorId,
-    editors,
+    deviceClassEditors,
+    deviceClassId,
     prettyPrint,
   );
 
@@ -51,43 +52,60 @@ export const ExportUdrDialog = ({ isOpen, onClose }: Props) => {
         <H3>Export UDR Document</H3>
       </div>
       <div className={"export-udr-dialog-body " + Classes.DIALOG_BODY}>
-        <HTMLTable striped condensed>
-          <tr>
-            <td style={{ verticalAlign: "middle" }}>
-              Choose a device class to export:
-            </td>
-            <td>
-              <HTMLSelect
-                value={selectedEditorId}
-                onChange={(event) =>
-                  setSelectedEditorId(event.currentTarget.value)
-                }
-              >
-                {editorsArray.map(([id, editor]) => (
-                  <option key={id} value={id}>
-                    {editor.deviceClassId}
-                  </option>
-                ))}
-              </HTMLSelect>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <Checkbox
-                label="Formatted"
-                checked={prettyPrint}
-                onChange={() => setPrettyPrint(!prettyPrint)}
-              />
-            </td>
-          </tr>
+        <HTMLTable compact>
+          <tbody>
+            <tr>
+              <td style={{ verticalAlign: "middle" }}>
+                Choose a device class to export:
+              </td>
+              <td>
+                <HTMLSelect
+                  value={selectedEditorId}
+                  onChange={(event) => {
+                    setSelectedEditorId(event.currentTarget.value);
+                    setDeviceClassId(
+                      deviceClassEditors[event.currentTarget.value]
+                        ?.deviceClassId ?? "",
+                    );
+                  }}
+                >
+                  {editors.map(({ id, name }, index) => (
+                    <option key={id} value={id}>
+                      {`${index + 1}: ${name}`}
+                    </option>
+                  ))}
+                </HTMLSelect>
+              </td>
+            </tr>
+            <tr>
+              <td style={{ verticalAlign: "middle " }}>
+                Select a device class ID:
+              </td>
+              <td>
+                <TextEditorField
+                  value={deviceClassId}
+                  onValueChanged={(newValue) => setDeviceClassId(newValue)}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <Checkbox
+                  label="Formatted"
+                  checked={prettyPrint}
+                  onChange={() => setPrettyPrint(!prettyPrint)}
+                />
+              </td>
+            </tr>
+          </tbody>
         </HTMLTable>
       </div>
       <div className={Classes.DIALOG_FOOTER}>
         <AnchorButton
           intent="success"
           icon="tick"
-          disabled={editorsArray.length === 0}
-          download={`${editors[selectedEditorId!]?.deviceClassId}.json`}
+          disabled={editors.length === 0}
+          download={`${deviceClassId || "my-device"}.json`}
           href={fileDownloadUrl}
           onClick={onClose}
         >
@@ -102,16 +120,16 @@ export const ExportUdrDialog = ({ isOpen, onClose }: Props) => {
 function getFileDownloadUrl(
   selectedEditorId: string | undefined,
   editors: { [id: string]: DeviceClassEditorState },
+  deviceClassId: string,
   prettyPrint: boolean,
 ) {
   if (selectedEditorId) {
     const selectedEditor = editors[selectedEditorId];
     if (selectedEditor) {
-      const deviceClassId = selectedEditor.deviceClassId;
       const document: UDRDocument = {
         e173doc: {
           deviceClasses: {
-            [deviceClassId]: {
+            [deviceClassId || "my-device"]: {
               libraries: {},
               ...selectedEditor.basicData,
               parameters: selectedEditor.parameters.parameters,
@@ -119,8 +137,9 @@ function getFileDownloadUrl(
             },
           },
         },
+        // TODO fix in e173 repo
         $schema:
-          "https://gitlab.com/esta-cpwg/e173/-/raw/main/schemas/draft-2023-1/udr-document.json",
+          "https://gitlab.com/esta-cpwg/e173/-/raw/main/schemas/draft-2023-1/full/udr-document.json" as any, // eslint-disable-line
       };
       const blob = new Blob([
         prettyPrint

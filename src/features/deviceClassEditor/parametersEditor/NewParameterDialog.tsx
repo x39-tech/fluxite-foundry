@@ -1,36 +1,25 @@
 import { useState } from "react";
 import { Button, Classes, H3 } from "@blueprintjs/core";
-import { createSelector } from "@reduxjs/toolkit";
-import { useAppDispatch, useCurrentEditorSelector } from "app/hooks";
-import { DeviceClassEditorState } from "features/deviceClassEditor/deviceClassEditorState";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
 import { TextEditorTableRow } from "utils/components/EditorFields/TextEditorField";
 import { ParameterClassDisplay } from "utils/components/ParameterClassDisplay/ParameterClassDisplay";
 import { SimplePropsTable } from "utils/components/SimplePropsTable/SimplePropsTable";
 import { validateNewItemId } from "utils/inputValidation";
-import {
-  UdrDatabase,
-  getAllParametersWithIds,
-  getFullyQualifiedId,
-} from "udr/udrDatabase";
-import { newParameterCreated } from "./parametersEditorSlice";
+import { getAllParametersWithIds, getFullyQualifiedId } from "udr/udrDatabase";
 import { ItemClassSelector } from "utils/components/ItemClassSelector/ItemClassSelector";
 import { getUniqueItemId } from "utils/utils";
+import { createNewParameter, useParameterIds } from "./state";
+import { useUdrDatabase } from "app/state";
 import "./NewParameterDialog.css";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  database: UdrDatabase;
 }
 
-export const NewParameterDialog = ({ isOpen, onClose, database }: Props) => {
-  const parameterIds = useCurrentEditorSelector(
-    createSelector(
-      (state: DeviceClassEditorState) => state.parameters.parameters,
-      (parameters) => Object.keys(parameters),
-    ),
-  );
+export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
+  const database = useUdrDatabase();
+  const parameterIds = useParameterIds();
 
   const [newItemClass, setNewItemClass] = useState(
     getAllParametersWithIds(database)[0],
@@ -48,8 +37,6 @@ export const NewParameterDialog = ({ isOpen, onClose, database }: Props) => {
     setWasOpen(isOpen);
   }
 
-  const dispatch = useAppDispatch();
-
   return (
     <DarkModeAwareDialog isOpen={isOpen} onClose={onClose}>
       <div className={Classes.DIALOG_HEADER}>
@@ -58,14 +45,17 @@ export const NewParameterDialog = ({ isOpen, onClose, database }: Props) => {
       <div className={"new-parameter-body " + Classes.DIALOG_BODY}>
         <SimplePropsTable>
           <tr>
-            <td style={{ verticalAlign: "middle" }}>Class</td>
+            <td id="class-label" style={{ verticalAlign: "middle" }}>
+              Class
+            </td>
             <td>
               <ItemClassSelector
                 itemClasses={getAllParametersWithIds(database)}
                 selectedClass={newItemClass}
+                aria-labelledby="class-label"
                 onSelectedClassChanged={setNewItemClass}
                 tooltipRenderer={(item) => (
-                  <ParameterClassDisplay udr={item} database={database} />
+                  <ParameterClassDisplay paramClass={item} />
                 )}
                 database={database}
               />
@@ -87,15 +77,14 @@ export const NewParameterDialog = ({ isOpen, onClose, database }: Props) => {
       </div>
       <div className={Classes.DIALOG_FOOTER}>
         <Button
+          aria-label="Add"
           intent="success"
           icon="tick"
           onClick={() => {
-            dispatch(
-              newParameterCreated({
-                class: getFullyQualifiedId(newItemClass),
-                id: newItemId,
-                friendlyName: newItemFriendlyName,
-              }),
+            createNewParameter(
+              getFullyQualifiedId(newItemClass),
+              newItemId,
+              newItemFriendlyName,
             );
 
             onClose();
@@ -103,7 +92,9 @@ export const NewParameterDialog = ({ isOpen, onClose, database }: Props) => {
         >
           Add
         </Button>
-        <Button onClick={onClose}>Cancel</Button>
+        <Button aria-label="Cancel" onClick={onClose}>
+          Cancel
+        </Button>
       </div>
     </DarkModeAwareDialog>
   );

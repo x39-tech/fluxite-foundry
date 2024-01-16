@@ -2,16 +2,13 @@ import { useState } from "react";
 import { Button, Icon, Menu, MenuDivider } from "@blueprintjs/core";
 import { MenuItem2, Popover2 } from "@blueprintjs/popover2";
 import { APP_NAME } from "appInfo";
-import { useAppDispatch, useAppSelector } from "app/hooks";
-import { darkModeToggled } from "features/topNavBar/appSettingsSlice";
 import { AboutDialog } from "./AboutDialog";
 import { ImportUdrDialog } from "./ImportUdrDialog";
 import { ExportUdrDialog } from "./ExportUdrDialog";
+import { setDarkMode, useDarkMode } from "app/state";
 
 export const AppMainMenu = () => {
-  const settings = useAppSelector((state) => state.appSettings);
-
-  const dispatch = useAppDispatch();
+  const darkMode = useDarkMode();
 
   const [importUdrDialogIsOpen, setImportUdrDialogIsOpen] = useState(false);
   const [exportUdrDialogIsOpen, setExportUdrDialogIsOpen] = useState(false);
@@ -34,8 +31,8 @@ export const AppMainMenu = () => {
         <MenuItem2
           text="Dark Mode"
           icon="moon"
-          labelElement={checkedIf(settings.darkMode)}
-          onClick={() => dispatch(darkModeToggled())}
+          labelElement={checkedIf(darkMode)}
+          onClick={() => setDarkMode(!darkMode)}
         />
       </MenuItem2>
       <MenuItem2
@@ -51,18 +48,24 @@ export const AppMainMenu = () => {
       <Popover2 content={mainMenu}>
         <Button icon="more" />
       </Popover2>
-      <ImportUdrDialog
-        isOpen={importUdrDialogIsOpen}
-        onClose={() => setImportUdrDialogIsOpen(false)}
-      />
-      <ExportUdrDialog
-        isOpen={exportUdrDialogIsOpen}
-        onClose={() => setExportUdrDialogIsOpen(false)}
-      />
-      <AboutDialog
-        isOpen={aboutDialogIsOpen}
-        onClose={() => setAboutDialogIsOpen(false)}
-      />
+      {importUdrDialogIsOpen && (
+        <ImportUdrDialog
+          isOpen={true}
+          onClose={() => setImportUdrDialogIsOpen(false)}
+        />
+      )}
+      {exportUdrDialogIsOpen && (
+        <ExportUdrDialog
+          isOpen={true}
+          onClose={() => setExportUdrDialogIsOpen(false)}
+        />
+      )}
+      {aboutDialogIsOpen && (
+        <AboutDialog
+          isOpen={aboutDialogIsOpen}
+          onClose={() => setAboutDialogIsOpen(false)}
+        />
+      )}
     </>
   );
 };

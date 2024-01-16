@@ -1,8 +1,5 @@
 import { Button, Classes, H3 } from "@blueprintjs/core";
 import { useState } from "react";
-import { createSelector } from "@reduxjs/toolkit";
-import { useAppDispatch, useCurrentEditorSelector } from "app/hooks";
-import { DeviceClassEditorState } from "features/deviceClassEditor/deviceClassEditorState";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
 import { TextEditorTableRow } from "utils/components/EditorFields/TextEditorField";
 import { ItemClassSelector } from "utils/components/ItemClassSelector/ItemClassSelector";
@@ -15,7 +12,7 @@ import {
   getFullyQualifiedId,
 } from "udr/udrDatabase";
 import { getUniqueItemId } from "utils/utils";
-import { newStructureCreated } from "./structuresEditorSlice";
+import { createNewStructure, useStructureIds } from "./state";
 import "./NewStructureDialog.css";
 
 interface Props {
@@ -25,12 +22,7 @@ interface Props {
 }
 
 export const NewStructureDialog = ({ isOpen, onClose, database }: Props) => {
-  const structureIds = useCurrentEditorSelector(
-    createSelector(
-      (state: DeviceClassEditorState) => state.structures.structures,
-      (structures) => Object.keys(structures),
-    ),
-  );
+  const structureIds = useStructureIds();
 
   const [newItemClass, setNewItemClass] = useState(
     getAllStructuresWithIds(database)[0],
@@ -45,8 +37,6 @@ export const NewStructureDialog = ({ isOpen, onClose, database }: Props) => {
     }
     setWasOpen(isOpen);
   }
-
-  const dispatch = useAppDispatch();
 
   return (
     <DarkModeAwareDialog isOpen={isOpen} onClose={onClose}>
@@ -83,13 +73,7 @@ export const NewStructureDialog = ({ isOpen, onClose, database }: Props) => {
           intent="success"
           icon="tick"
           onClick={() => {
-            dispatch(
-              newStructureCreated({
-                class: getFullyQualifiedId(newItemClass),
-                id: newItemId,
-              }),
-            );
-
+            createNewStructure(getFullyQualifiedId(newItemClass), newItemId);
             onClose();
           }}
         >

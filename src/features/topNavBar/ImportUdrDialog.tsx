@@ -11,12 +11,11 @@ import {
 } from "@blueprintjs/core";
 import { useState } from "react";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
-import udrDocumentSchema from "e173/schemas/draft-2023-1/udr-document.json";
+import udrDocumentSchema from "e173/schemas/draft-2023-1/full/udr-document.json";
 import { E173UDRDocuments as UDRDocument } from "generated/draft-2023-1/udr-document";
-import { useAppDispatch } from "app/hooks";
-import { editorImported } from "features/deviceClassEditor/deviceClassEditorSlice";
-import "./ImportUdrDialog.css";
 import { validateWithSchema } from "utils/schemaValidation";
+import { importDeviceClassEditor } from "./state";
+import "./ImportUdrDialog.css";
 
 enum FeedbackKind {
   UnableToReadFile,
@@ -57,8 +56,6 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
       setSelectedDeviceClass(deviceClassKeys[0]);
     }
   }
-
-  const dispatch = useAppDispatch();
 
   return (
     <DarkModeAwareDialog isOpen={isOpen} onClose={onClose}>
@@ -108,13 +105,11 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
             !selectedDeviceClass
           }
           onClick={() => {
-            dispatch(
-              editorImported({
-                id: selectedDeviceClass!,
-                udr: inputValidation!.udr!.e173doc.deviceClasses![
-                  selectedDeviceClass!
-                ],
-              }),
+            importDeviceClassEditor(
+              selectedDeviceClass!,
+              inputValidation!.udr!.e173doc.deviceClasses![
+                selectedDeviceClass!
+              ],
             );
 
             onClose();

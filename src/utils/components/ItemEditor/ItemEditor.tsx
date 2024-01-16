@@ -1,6 +1,6 @@
 import { Button, Collapse, Colors, H4 } from "@blueprintjs/core";
 import { useState } from "react";
-import { useAppSelector } from "app/hooks";
+import { useDarkMode } from "app/state";
 import "./ItemEditor.css";
 
 const BACKGROUND_COLOR_DARK = Colors.DARK_GRAY2;
@@ -19,7 +19,7 @@ export const ItemEditor = ({
   onDelete,
   children,
 }: Props) => {
-  const inDarkMode = useAppSelector((state) => state.appSettings.darkMode);
+  const inDarkMode = useDarkMode();
 
   const [isExpanded, setExpanded] = useState(expanded || false);
 
@@ -34,6 +34,7 @@ export const ItemEditor = ({
     >
       <div className="item-editor-title-section">
         <Button
+          aria-label={`Expand ${title}`}
           icon={isExpanded ? "minus" : "plus"}
           minimal={true}
           style={{ opacity: 0.8 }}

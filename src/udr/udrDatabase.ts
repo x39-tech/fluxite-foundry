@@ -87,7 +87,7 @@ export function getItemClassName(
   const library = database.libraries[itemClass.libraryId];
 
   // TODO: use current localization
-  return library.localizations?.en?.strings?.[itemClass["@name"]];
+  return library.localizations?.["en-US"]?.strings?.[itemClass["@name"]];
 }
 
 export function getItemClassDescription(
@@ -104,7 +104,7 @@ export function getItemClassDescription(
   const library = database.libraries[itemClass.libraryId];
 
   // TODO: use current localization
-  return library.localizations?.en?.strings?.[itemClass["@description"]];
+  return library.localizations?.["en-US"]?.strings?.[itemClass["@description"]];
 }
 
 export function lookupParameterClass(
@@ -156,7 +156,7 @@ export function getLibraryFriendlyName(
   const library = database.libraries[libraryId];
 
   // TODO: use current localization
-  return library.localizations?.en?.strings?.[library["@description"]];
+  return library.localizations?.["en-US"]?.strings?.[library["@description"]];
 }
 
 export type LoadLibrariesResult = true | string;

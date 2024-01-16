@@ -19,6 +19,7 @@ import "./ItemClassSelector.scss";
 interface ItemClassSelectorProps<T extends ItemClassWithId> {
   itemClasses: T[];
   selectedClass?: T;
+  "aria-labelledby"?: string;
   onSelectedClassChanged: (newClass: T) => void;
   tooltipRenderer: (item: T) => JSX.Element;
   database: UdrDatabase;
@@ -27,6 +28,7 @@ interface ItemClassSelectorProps<T extends ItemClassWithId> {
 export const ItemClassSelector = <T extends ItemClassWithId>({
   itemClasses,
   selectedClass,
+  "aria-labelledby": ariaLabelledBy,
   onSelectedClassChanged,
   tooltipRenderer,
   database,
@@ -123,6 +125,7 @@ export const ItemClassSelector = <T extends ItemClassWithId>({
         icon="property"
         rightIcon="caret-down"
         fill={true}
+        aria-labelledby={ariaLabelledBy}
         text={
           selectedClass
             ? getItemClassName(database, selectedClass) ||

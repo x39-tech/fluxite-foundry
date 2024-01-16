@@ -8,7 +8,12 @@ interface Props {
 export const AddItemSection = ({ onClick }: Props) => {
   return (
     <div className="add-new-item-section">
-      <Button icon="plus" minimal={true} onClick={onClick} />
+      <Button
+        icon="plus"
+        aria-label="Add Item"
+        minimal={true}
+        onClick={onClick}
+      />
     </div>
   );
 };
