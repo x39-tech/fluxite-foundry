@@ -6,11 +6,7 @@ import { ItemClassSelector } from "utils/components/ItemClassSelector/ItemClassS
 import { SimplePropsTable } from "utils/components/SimplePropsTable/SimplePropsTable";
 import { StructureClassDisplay } from "utils/components/StructureClassDisplay/StructureClassDisplay";
 import { validateNewItemId } from "utils/inputValidation";
-import {
-  UdrDatabase,
-  getAllStructuresWithIds,
-  getFullyQualifiedId,
-} from "udr/udrDatabase";
+import { UdrDatabase, getAllStructuresWithIds } from "udr/udrDatabase";
 import { getUniqueItemId } from "utils/utils";
 import { createNewStructure, useStructureIds } from "./state";
 import "./NewStructureDialog.css";
@@ -73,7 +69,11 @@ export const NewStructureDialog = ({ isOpen, onClose, database }: Props) => {
           intent="success"
           icon="tick"
           onClick={() => {
-            createNewStructure(getFullyQualifiedId(newItemClass), newItemId);
+            createNewStructure(
+              newItemClass.libraryId,
+              newItemClass.id,
+              newItemId,
+            );
             onClose();
           }}
         >

@@ -1,11 +1,7 @@
 import { nanoid } from "nanoid";
 import { Draft } from "immer";
 import { ItemEditor, ParametersEditorState } from "app/state";
-import {
-  Access,
-  Lifetime,
-  Parameter,
-} from "generated/draft-2023-1/udr-document";
+import { Access, Lifetime, Parameter } from "e173";
 import { getCurrentEditor, useCurrentEditorPart } from "../state";
 import { useAppStore } from "app/store";
 
@@ -34,6 +30,7 @@ export function useParameter(id: string): Parameter | undefined {
 }
 
 export function createNewParameter(
+  library: string,
   paramClass: string,
   id: string,
   friendlyName: string,
@@ -49,9 +46,10 @@ export function createNewParameter(
     }
 
     paramState.parameters[id] = {
+      library,
       class: paramClass,
-      access: Access.READWRITE,
-      lifetime: Lifetime.RUNTIME,
+      access: Access.ReadWrite,
+      lifetime: Lifetime.Runtime,
       "@friendlyName": friendlyName,
     };
 
@@ -83,8 +81,13 @@ export function changeParameterId(id: string, newId: string) {
       return;
     }
 
+    const existingParam = paramState.parameters[id];
+    if (!existingParam) {
+      return;
+    }
+
     // Update UDR
-    paramState.parameters[newId] = paramState.parameters[id];
+    paramState.parameters[newId] = existingParam;
     delete paramState.parameters[id];
 
     // Update UI paramState

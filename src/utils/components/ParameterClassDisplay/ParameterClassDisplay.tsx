@@ -6,6 +6,7 @@ import {
   getItemClassName,
 } from "udr/udrDatabase";
 import { useUdrDatabase } from "app/state";
+import { Unit } from "e173";
 
 interface Props {
   paramClass: ParameterClassWithId;
@@ -44,9 +45,21 @@ export const ParameterClassDisplay = ({ paramClass }: Props) => {
         </tr>
         <tr>
           <td>Unit</td>
-          <td>{paramClass.unit || "N/A"}</td>
+          <td>{unitToString(paramClass.unit)}</td>
         </tr>
       </tbody>
     </HTMLTable>
   );
 };
+
+function unitToString(unit: Unit | undefined): string {
+  if (unit) {
+    if (unit.exponent) {
+      return `${unit.name} ^ ${unit.exponent}`;
+    } else {
+      return unit.name;
+    }
+  } else {
+    return "N/A";
+  }
+}

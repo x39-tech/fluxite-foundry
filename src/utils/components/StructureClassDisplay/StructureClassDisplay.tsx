@@ -14,7 +14,7 @@ interface Props {
 export const StructureClassDisplay = ({ udr, database }: Props) => {
   // TODO: Revisit this formatting, ideally tables should be sized reasonably to their contents
   return (
-    <HTMLTable striped condensed style={{ width: "400px" }}>
+    <HTMLTable striped compact style={{ width: "400px" }}>
       <colgroup>
         <col span={1} style={{ width: "30%" }} />
         <col span={1} />

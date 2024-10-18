@@ -8,7 +8,7 @@ import {
   HTMLTable,
 } from "@blueprintjs/core";
 import { useState } from "react";
-import { E173UDRDocuments as UDRDocument } from "generated/draft-2023-1/udr-document";
+import { E173Document } from "e173";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
 import {
   useDeviceClassEditors,
@@ -126,20 +126,22 @@ function getFileDownloadUrl(
   if (selectedEditorId) {
     const selectedEditor = editors[selectedEditorId];
     if (selectedEditor) {
-      const document: UDRDocument = {
+      const document: E173Document = {
         e173doc: {
           deviceClasses: {
             [deviceClassId || "my-device"]: {
-              libraries: {},
-              ...selectedEditor.basicData,
-              parameters: selectedEditor.parameters.parameters,
-              structures: selectedEditor.structures.structures,
+              // TODO version
+              "1.0.0": {
+                libraries: selectedEditor.libraries,
+                ...selectedEditor.basicData,
+                parameters: selectedEditor.parameters.parameters,
+                structures: selectedEditor.structures.structures,
+              },
             },
           },
         },
-        // TODO fix in e173 repo
         $schema:
-          "https://gitlab.com/esta-cpwg/e173/-/raw/main/schemas/draft-2023-1/full/udr-document.json" as any, // eslint-disable-line
+          "https://gitlab.com/esta-cpwg/e173/-/raw/main/schemas/draft-2024-1/full/udr-document.json",
       };
       const blob = new Blob([
         prettyPrint

@@ -25,7 +25,11 @@ export function useStructureIds(): string[] {
   return ids ?? [];
 }
 
-export function createNewStructure(structClass: string, id: string) {
+export function createNewStructure(
+  library: string,
+  structClass: string,
+  id: string,
+) {
   useAppStore.setState((state) => {
     const structures = getCurrentEditor(state)?.structures;
     if (!structures) {

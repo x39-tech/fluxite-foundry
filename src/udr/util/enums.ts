@@ -1,12 +1,8 @@
-import {
-  Access,
-  Lifetime,
-  DataType,
-} from "generated/draft-2023-1/udr-document";
+import { Access, Lifetime, DataType } from "e173";
 
 const accessFriendlyNames: FriendlyNameMap<Access> = {
-  [Access.READONLY]: "Read-Only",
-  [Access.READWRITE]: "Read-Write",
+  [Access.ReadOnly]: "Read-Only",
+  [Access.ReadWrite]: "Read-Write",
 };
 
 export function getAccessFriendlyName(key: Access): string {
@@ -26,7 +22,7 @@ export function getLifetimeFriendlyName(key: Lifetime): string {
 
 const dataTypeFriendlyNames = Object.values(DataType).reduce(
   (previousValue, currentValue) => {
-    if (currentValue === DataType.UUID) {
+    if (currentValue === DataType.Uuid) {
       return { [currentValue]: currentValue.toUpperCase(), ...previousValue };
     } else {
       return { [currentValue]: toTitleCase(currentValue), ...previousValue };

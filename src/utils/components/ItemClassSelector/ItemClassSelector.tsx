@@ -8,7 +8,6 @@ import {
 import {
   ItemClassWithId,
   UdrDatabase,
-  getFullyQualifiedId,
   getItemClassName,
   getLibraryFriendlyName,
 } from "udr/udrDatabase";
@@ -35,14 +34,10 @@ export const ItemClassSelector = <T extends ItemClassWithId>({
 }: ItemClassSelectorProps<T>) => {
   const ItemClassSelect = Select2<T>;
 
-  const selectedFQID = selectedClass ? getFullyQualifiedId(selectedClass) : "";
-
   const itemRenderer: ItemRenderer<T> = (item, { handleClick, modifiers }) => {
     if (!modifiers.matchesPredicate) {
       return null;
     }
-
-    const itemFQID = getFullyQualifiedId(item);
 
     return (
       <Popover2
@@ -60,7 +55,7 @@ export const ItemClassSelector = <T extends ItemClassWithId>({
           fill={true}
           alignText="left"
           {...getItemRenderProps(item, handleClick, modifiers, database)}
-          icon={selectedFQID === itemFQID ? "tick" : "blank"}
+          icon={item === selectedClass ? "tick" : "blank"}
         />
       </Popover2>
     );
@@ -86,15 +81,21 @@ export const ItemClassSelector = <T extends ItemClassWithId>({
   }) => {
     const renderedItems: JSX.Element[] = [];
     let currentLibrary = "";
+    let currentLibraryVersion = "";
 
     for (const [index, item] of items.entries()) {
       const renderedItem = renderItem(item, index);
       if (renderedItem != null) {
         if (item.libraryId !== currentLibrary) {
           currentLibrary = item.libraryId;
+          currentLibraryVersion = item.libraryVersion;
           renderedItems.push(
             <Button key={currentLibrary} disabled={true} alignText="left">
-              {getLibraryFriendlyName(database, currentLibrary)}
+              {getLibraryFriendlyName(
+                database,
+                currentLibrary,
+                currentLibraryVersion,
+              )}
             </Button>,
           );
         }

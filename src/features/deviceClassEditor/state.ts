@@ -20,6 +20,10 @@ export function useCurrentEditorPart<T>(
   });
 }
 
+export function useLibraries(): Record<string, string> | undefined {
+  return useCurrentEditorPart((state) => state.libraries);
+}
+
 export function setWindowLayout(model: FlexLayout.IJsonModel) {
   useAppStore.setState((state) => {
     const currentEditor = getCurrentEditor(state);

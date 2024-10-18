@@ -5,7 +5,7 @@ import { TextEditorTableRow } from "utils/components/EditorFields/TextEditorFiel
 import { ParameterClassDisplay } from "utils/components/ParameterClassDisplay/ParameterClassDisplay";
 import { SimplePropsTable } from "utils/components/SimplePropsTable/SimplePropsTable";
 import { validateNewItemId } from "utils/inputValidation";
-import { getAllParametersWithIds, getFullyQualifiedId } from "udr/udrDatabase";
+import { getAllParametersWithIds } from "udr/udrDatabase";
 import { ItemClassSelector } from "utils/components/ItemClassSelector/ItemClassSelector";
 import { getUniqueItemId } from "utils/utils";
 import { createNewParameter, useParameterIds } from "./state";
@@ -82,7 +82,8 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
           icon="tick"
           onClick={() => {
             createNewParameter(
-              getFullyQualifiedId(newItemClass),
+              newItemClass.libraryId,
+              newItemClass.id,
               newItemId,
               newItemFriendlyName,
             );

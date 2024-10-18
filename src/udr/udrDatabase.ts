@@ -1,14 +1,13 @@
 import {
-  E173UDRDocuments,
   Library,
   ParameterClass,
   StructureClass,
-} from "generated/draft-2023-1/udr-document";
-import udrDocumentSchema from "e173/schemas/draft-2023-1/full/udr-document.json";
-import core from "e173/libraries/core/draft-2023-1/library.json";
-import intensityColor from "e173/libraries/intensity-color/draft-2023-1/library.json";
-import motion from "e173/libraries/motion/draft-2023-1/library.json";
-import { validateWithSchema } from "../utils/schemaValidation";
+  importUdr,
+  Error as E173Error,
+} from "e173";
+import core from "e173/libraries/core/draft-2024-1/library.json";
+import intensityColor from "e173/libraries/intensity-color/draft-2024-1/library.json";
+import motion from "e173/libraries/motion/draft-2024-1/library.json";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Public Types
@@ -21,6 +20,7 @@ export interface ItemClass {
 
 export interface ItemClassWithId extends ItemClass {
   libraryId: string;
+  libraryVersion: string;
   id: string;
 }
 
@@ -34,7 +34,9 @@ interface ItemClassDatabase {
 }
 
 interface LibraryDatabase {
-  [key: string]: Library;
+  [key: string]: {
+    [key: string]: Library;
+  };
 }
 
 export interface UdrDatabase {
@@ -84,7 +86,13 @@ export function getItemClassName(
     return undefined;
   }
 
-  const library = database.libraries[itemClass.libraryId];
+  // TODO: use current localization
+  const library =
+    database.libraries[itemClass.libraryId]?.[itemClass.libraryVersion];
+
+  if (!library) {
+    return undefined;
+  }
 
   // TODO: use current localization
   return library.localizations?.["en-US"]?.strings?.[itemClass["@name"]];
@@ -94,14 +102,16 @@ export function getItemClassDescription(
   database: Readonly<UdrDatabase>,
   itemClass: ItemClassWithId,
 ): string | undefined {
-  if (
-    !itemClass["@description"] ||
-    !(itemClass.libraryId in database.libraries)
-  ) {
+  if (!itemClass["@description"]) {
     return undefined;
   }
 
-  const library = database.libraries[itemClass.libraryId];
+  const library =
+    database.libraries[itemClass.libraryId]?.[itemClass.libraryVersion];
+
+  if (!library) {
+    return undefined;
+  }
 
   // TODO: use current localization
   return library.localizations?.["en-US"]?.strings?.[itemClass["@description"]];
@@ -109,38 +119,42 @@ export function getItemClassDescription(
 
 export function lookupParameterClass(
   database: Readonly<UdrDatabase>,
-  className: string,
+  libraryId: string,
+  libraryVersion: string,
+  classId: string,
 ): ParameterClassWithId | undefined {
-  const classInfo = getClassInfo(className, database.libraries);
-  if (!classInfo) {
-    return undefined;
-  }
+  const cls =
+    database.libraries[libraryId]?.[libraryVersion]?.parameterClasses?.[
+      classId
+    ];
 
-  const cls = classInfo.library.parameterClasses?.[classInfo.classId];
   return cls
     ? {
         ...cls,
-        id: classInfo.classId,
-        libraryId: classInfo.libraryId,
+        id: classId,
+        libraryId,
+        libraryVersion,
       }
     : undefined;
 }
 
 export function lookupStructureClass(
   database: Readonly<UdrDatabase>,
-  className: string,
+  libraryId: string,
+  libraryVersion: string,
+  classId: string,
 ): StructureClassWithId | undefined {
-  const classInfo = getClassInfo(className, database.libraries);
-  if (!classInfo) {
-    return undefined;
-  }
+  const cls =
+    database.libraries[libraryId]?.[libraryVersion]?.structureClasses?.[
+      classId
+    ];
 
-  const cls = classInfo.library.structureClasses?.[classInfo.classId];
   return cls
     ? {
         ...cls,
-        id: classInfo.classId,
-        libraryId: classInfo.libraryId,
+        id: classId,
+        libraryId,
+        libraryVersion,
       }
     : undefined;
 }
@@ -148,12 +162,13 @@ export function lookupStructureClass(
 export function getLibraryFriendlyName(
   database: Readonly<UdrDatabase>,
   libraryId: string,
+  libraryVersion: string,
 ): string | undefined {
-  if (!(libraryId in database.libraries)) {
+  const library = database.libraries[libraryId]?.[libraryVersion];
+
+  if (!library) {
     return undefined;
   }
-
-  const library = database.libraries[libraryId];
 
   // TODO: use current localization
   return library.localizations?.["en-US"]?.strings?.[library["@description"]];
@@ -162,39 +177,61 @@ export function getLibraryFriendlyName(
 export type LoadLibrariesResult = true | string;
 
 export function loadLibrariesFromDocument(
-  document: object,
+  doc_obj: object,
   database: UdrDatabase,
 ): LoadLibrariesResult {
-  const validateResult = validateWithSchema(udrDocumentSchema, document);
-  if (validateResult !== true) {
-    return validateResult;
+  let document;
+  try {
+    document = importUdr(doc_obj);
+  } catch (err) {
+    const e173err = err as E173Error;
+    let errMsg = `Error loading UDR library document: ${e173err.type}: ${e173err.description}`;
+    if (e173err.path) {
+      errMsg += `at ${e173err.path}`;
+    } else if (e173err.line && e173err.column) {
+      errMsg += `at line ${e173err.line}, column ${e173err.column}`;
+    }
+    return errMsg;
   }
 
-  const libraries = (document as E173UDRDocuments).e173doc.libraries;
+  const libraries = document.e173doc.libraries;
   if (!libraries) {
     // Nothing to load
     return true;
   }
 
-  if (Object.keys(libraries).some((id) => id in database.libraries)) {
-    // Library already exists
-    return "A library with the same identifier is already loaded";
+  for (const [key, versionCollection] of Object.entries(libraries)) {
+    if (key in database.libraries) {
+      for (const version in versionCollection) {
+        if (version in database.libraries[key]) {
+          // Library already exists
+          return "A library with the same identifier is already loaded";
+        }
+      }
+    }
   }
 
   // TODO: Verify localizations
 
-  const itemDb = Object.entries(libraries).reduce(
-    (itemDb, [libraryId, library]) => {
-      return concatItemClasses(itemDb, {
-        parameters: transformItemClasses(libraryId, library.parameterClasses),
-        structures: transformItemClasses(libraryId, library.structureClasses),
+  let itemDb: ItemClassDatabase = { parameters: [], structures: [] };
+  for (const [libraryId, libraryVersionCollection] of Object.entries(
+    libraries,
+  )) {
+    for (const [version, library] of Object.entries(libraryVersionCollection)) {
+      itemDb = concatItemClasses(itemDb, {
+        parameters: transformItemClasses(
+          libraryId,
+          version,
+          library.parameterClasses,
+        ),
+        structures: transformItemClasses(
+          libraryId,
+          version,
+          library.structureClasses,
+        ),
       });
-    },
-    {
-      parameters: [],
-      structures: [],
-    } as ItemClassDatabase,
-  );
+    }
+  }
 
   database.libraries = {
     ...libraries,
@@ -211,58 +248,29 @@ export function loadDefaultLibraries(): UdrDatabase {
   const database = getEmptyUdrDatabase();
 
   for (const document of DEFAULT_LIBRARY_DOCUMENTS) {
-    loadLibrariesFromDocument(document, database);
+    const loadLibrariesResult = loadLibrariesFromDocument(document, database);
+    if (loadLibrariesResult !== true) {
+      console.log(`Error loading default library: ${loadLibrariesResult}`);
+    }
   }
 
   return database;
-}
-
-export function getFullyQualifiedId(itemClass: ItemClassWithId): string {
-  return `${itemClass.libraryId}/${itemClass.id}`;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Private Functions
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-interface ClassInfo {
-  library: Library;
-  libraryId: string;
-  classId: string;
-}
-
-function getClassInfo(
-  className: string,
-  libraryDatabase: LibraryDatabase,
-): ClassInfo | undefined {
-  // Class string must have at least one slash: <qualified identifier>/<identifier>
-  const parts = className.split("/");
-  if (parts.length < 2) {
-    return undefined;
-  }
-
-  const libraryId = parts[0];
-  const classId = parts.slice(1).join("/");
-
-  if (!(libraryId in libraryDatabase)) {
-    return undefined;
-  }
-
-  return {
-    library: libraryDatabase[libraryId],
-    libraryId,
-    classId,
-  };
-}
-
 function transformItemClasses<ClassType extends ItemClass>(
   libraryId: string,
-  libraryClasses?: { [key: string]: ClassType },
+  libraryVersion: string,
+  libraryClasses: Record<string, ClassType>,
 ): (ClassType & ItemClassWithId)[] {
   return libraryClasses
     ? Object.entries(libraryClasses).map(([id, itemClass]) => {
         return {
           libraryId,
+          libraryVersion,
           id,
           ...itemClass,
         };

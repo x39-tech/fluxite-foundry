@@ -7,10 +7,17 @@ import { loadDefaultLibraries } from "udr/udrDatabase";
 export const useAppStore = create<AppState>()(
   persist(immer(devtools(() => getDefaultState())), {
     name: "udr-builder-state",
-    version: 0,
-    migrate: () => {
-      // Currently there is only one version, all other version numbers are errors
-      return getDefaultState();
+    version: 2,
+    migrate: (persistedState, version) => {
+      if (version == 0 || version == 1) {
+        // State breaking change
+        return getDefaultState();
+      } else if (version == 2) {
+        return persistedState;
+      } else {
+        // Future versions are an error
+        return getDefaultState();
+      }
     },
   }),
 );

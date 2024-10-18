@@ -4,8 +4,8 @@ import {
   TextEditorTableRow,
 } from "utils/components/EditorFields/TextEditorField";
 import { SelectTableRow } from "utils/components/EditorFields/SelectField";
-import { Category, Subcategory } from "generated/draft-2023-1/udr-document";
-import builderInfo from "e173/extras/draft-2023-1/_builder.json";
+import { Category, Subcategory } from "e173";
+import builderInfo from "e173/extras/draft-2024-1/_builder.json";
 import { TagInputTableRow } from "utils/components/EditorFields/TagInputField";
 import { modifyBasicData, useBasicData } from "./state";
 import { RenderError } from "utils/components/RenderError";
@@ -39,10 +39,10 @@ export const DeviceInfoEditor = () => {
         />
         <OptionalTextEditorTableRow
           label="Manufacturer ESTA ID"
-          defaultValue={basicData.info.manufacturer["esta-id"]}
+          defaultValue={basicData.info.manufacturer.estaId}
           onValueChanged={(newValue) =>
             modifyBasicData((draft) => {
-              draft.info.manufacturer["esta-id"] = newValue;
+              draft.info.manufacturer.estaId = newValue;
             })
           }
         />

@@ -11,23 +11,25 @@ import {
 } from "@blueprintjs/core";
 import { useState } from "react";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
-import udrDocumentSchema from "e173/schemas/draft-2023-1/full/udr-document.json";
-import { E173UDRDocuments as UDRDocument } from "generated/draft-2023-1/udr-document";
-import { validateWithSchema } from "utils/schemaValidation";
+import { E173Document, importUdr, Error as E173Error } from "e173";
 import { importDeviceClassEditor } from "./state";
 import "./ImportUdrDialog.css";
 
 enum FeedbackKind {
   UnableToReadFile,
-  InvalidJson,
-  SchemaValidationFailed,
+  ValidationFailed,
 }
 
 interface InputValidationResult {
   valid: boolean;
   feedbackKind?: FeedbackKind;
   feedback?: string;
-  udr?: UDRDocument;
+  udr?: E173Document;
+}
+
+interface DeviceClass {
+  id: string;
+  version: string;
 }
 
 interface Props {
@@ -41,19 +43,27 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
     InputValidationResult | undefined
   >(undefined);
   const [selectedDeviceClass, setSelectedDeviceClass] = useState<
-    string | undefined
+    DeviceClass | undefined
   >(undefined);
 
+  let deviceClasses: DeviceClass[] = [];
+
   // Fix up state
-  if (inputValidation?.valid && hasDeviceClasses(inputValidation.udr!)) {
-    const deviceClassKeys = Object.keys(
+  if (inputValidation?.valid) {
+    deviceClasses = Object.entries(
       inputValidation.udr!.e173doc.deviceClasses!,
-    );
+    ).reduce((accum, [key, value]) => {
+      for (const version of Object.keys(value)) {
+        accum.push({ id: key, version });
+      }
+      return accum;
+    }, [] as DeviceClass[]);
+
     if (
-      !selectedDeviceClass ||
-      !deviceClassKeys.includes(selectedDeviceClass)
+      deviceClasses.length > 0 &&
+      (!selectedDeviceClass || !deviceClasses.includes(selectedDeviceClass))
     ) {
-      setSelectedDeviceClass(deviceClassKeys[0]);
+      setSelectedDeviceClass(deviceClasses[0]);
     }
   }
 
@@ -90,6 +100,7 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
         {getAdditionalDialogElements(
           inputFile,
           inputValidation,
+          deviceClasses,
           selectedDeviceClass,
           setSelectedDeviceClass,
         )}
@@ -101,15 +112,15 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
           disabled={
             !inputValidation ||
             !inputValidation.valid ||
-            !hasDeviceClasses(inputValidation.udr!) ||
+            deviceClasses.length == 0 ||
             !selectedDeviceClass
           }
           onClick={() => {
             importDeviceClassEditor(
-              selectedDeviceClass!,
+              selectedDeviceClass!.id,
               inputValidation!.udr!.e173doc.deviceClasses![
-                selectedDeviceClass!
-              ],
+                selectedDeviceClass!.id
+              ]![selectedDeviceClass!.version]!,
             );
 
             onClose();
@@ -129,22 +140,14 @@ function validateInputFile(fileContent?: string): InputValidationResult {
   }
 
   try {
-    const fileJson = JSON.parse(fileContent);
-
-    const validateResult = validateWithSchema(udrDocumentSchema, fileJson);
-    if (validateResult !== true) {
-      return {
-        valid: false,
-        feedbackKind: FeedbackKind.SchemaValidationFailed,
-        feedback: validateResult,
-      };
-    }
-    return { valid: true, udr: fileJson as UDRDocument };
-  } catch (err) {
+    const udr = importUdr(fileContent);
+    return { valid: true, udr };
+  } catch (e) {
+    const err = e as E173Error;
     return {
       valid: false,
-      feedbackKind: FeedbackKind.InvalidJson,
-      feedback: `${err}`,
+      feedbackKind: FeedbackKind.ValidationFailed,
+      feedback: `${err.type}: ${err.description}`,
     };
   }
 }
@@ -152,9 +155,10 @@ function validateInputFile(fileContent?: string): InputValidationResult {
 function getAdditionalDialogElements(
   inputFile: File | null,
   inputValidation: InputValidationResult | undefined,
-  selectedDeviceClass: string | undefined,
+  deviceClasses: DeviceClass[],
+  selectedDeviceClass: DeviceClass | undefined,
   setSelectedDeviceClass: React.Dispatch<
-    React.SetStateAction<string | undefined>
+    React.SetStateAction<DeviceClass | undefined>
   >,
 ) {
   if (inputFile) {
@@ -170,7 +174,7 @@ function getAdditionalDialogElements(
       // Either device class selection or validation failure to show
       if (inputValidation.valid) {
         return getDeviceClassSelectionElement(
-          inputValidation.udr!,
+          deviceClasses,
           selectedDeviceClass,
           setSelectedDeviceClass,
         );
@@ -187,16 +191,13 @@ function getAdditionalDialogElements(
 }
 
 function getDeviceClassSelectionElement(
-  udr: UDRDocument,
-  selectedDeviceClass: string | undefined,
+  deviceClasses: DeviceClass[],
+  selectedDeviceClass: DeviceClass | undefined,
   setSelectedDeviceClass: React.Dispatch<
-    React.SetStateAction<string | undefined>
+    React.SetStateAction<DeviceClass | undefined>
   >,
 ) {
-  if (
-    !udr.e173doc.deviceClasses ||
-    Object.keys(udr.e173doc.deviceClasses!).length === 0
-  ) {
+  if (deviceClasses.length === 0) {
     return (
       <Callout intent="danger">
         No Device Classes found in selected document.
@@ -207,10 +208,12 @@ function getDeviceClassSelectionElement(
       <>
         <p>Select Device Class to import:</p>
         <HTMLSelect
-          options={Object.keys(udr.e173doc.deviceClasses)}
-          value={selectedDeviceClass}
+          options={deviceClasses.map(deviceClassToString)}
+          value={deviceClassToString(selectedDeviceClass)}
           onChange={(event) =>
-            setSelectedDeviceClass(event.currentTarget.value)
+            setSelectedDeviceClass(
+              stringToDeviceClass(event.currentTarget.value),
+            )
           }
         />
       </>
@@ -227,23 +230,7 @@ function getValidationFailureElement(
       return (
         <Callout intent="danger">The selected file could not be read.</Callout>
       );
-    case FeedbackKind.InvalidJson:
-      return (
-        <Callout intent="danger">
-          <p>
-            JSON parsing error(s) encountered while loading the selected file:
-          </p>
-          <TextArea
-            fill={true}
-            growVertically={true}
-            small={true}
-            readOnly={true}
-          >
-            {feedback}
-          </TextArea>
-        </Callout>
-      );
-    case FeedbackKind.SchemaValidationFailed:
+    case FeedbackKind.ValidationFailed:
       return (
         <Callout intent="danger">
           <p>Selected file contains invalid UDR. Details:</p>
@@ -255,9 +242,15 @@ function getValidationFailureElement(
   }
 }
 
-function hasDeviceClasses(udr: UDRDocument): boolean {
-  return (
-    udr.e173doc.deviceClasses !== undefined &&
-    Object.keys(udr.e173doc.deviceClasses).length > 0
-  );
+function deviceClassToString(dc?: DeviceClass): string {
+  if (dc) {
+    return `${dc.id} (${dc.version})`;
+  } else {
+    return "";
+  }
+}
+
+function stringToDeviceClass(str: string): DeviceClass {
+  const match = str.match(/([^\s+]) \(([^)+])\)/);
+  return { id: match![1], version: match![2] };
 }

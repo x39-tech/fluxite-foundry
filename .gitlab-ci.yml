@@ -29,10 +29,18 @@ build:
     paths:
       - dist/
 
-test:
+# Tests are broken, something to do with this https://github.com/Menci/vite-plugin-wasm/issues/56
+# test:
+#   stage: build
+#   script:
+#     - npm run testrun
+
+check_state_migration:
   stage: build
   script:
-    - npm run testrun
+    - npx --yes ts-json-schema-generator@1.5.0 --path 'src/app/state.ts' --type 'AppStateUnvalidated' --tsconfig tsconfig.json > data/state/app-state-latest.json
+    - npm run format
+    - git diff --exit-code
 
 lint:
   stage: build

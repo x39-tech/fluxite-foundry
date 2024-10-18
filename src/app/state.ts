@@ -1,13 +1,37 @@
 import * as FlexLayout from "flexlayout-react";
-import {
-  DeviceClassInfo,
-  Parameter,
-  Structure,
-} from "generated/draft-2023-1/udr-document";
+import { DeviceClassInfo, Parameter, Structure } from "e173";
 import { UdrDatabase } from "udr/udrDatabase";
 import { useAppStore } from "./store";
 
-export interface AppState {
+// This ensures that the application state is JSON-compatible, e.g. contains only basic
+// JS objects.
+// https://dev.to/nodge/mastering-type-safe-json-serialization-in-typescript-1g96
+
+type JSONPrimitive = string | number | boolean | null | undefined;
+
+type JSONValue =
+  | JSONPrimitive
+  | JSONValue[]
+  | {
+      [key: string]: JSONValue;
+    };
+
+type JSONCompatible<T> = unknown extends T
+  ? never
+  : {
+      [P in keyof T]: T[P] extends JSONValue
+        ? T[P]
+        : T[P] extends NotAssignableToJson
+          ? never
+          : JSONCompatible<T[P]>;
+    };
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+type NotAssignableToJson = bigint | symbol | Function;
+
+export type AppState = JSONCompatible<AppStateUnvalidated>;
+
+export interface AppStateUnvalidated {
   appSettings: AppSettings;
   openEditors: OpenEditors;
   deviceClassEditors: { [key: string]: DeviceClassEditorState };
@@ -35,6 +59,7 @@ export interface AppSettings {
 export interface DeviceClassEditorState {
   deviceClassId: string;
   basicData: BasicData;
+  libraries: Record<string, string>;
   parameters: ParametersEditorState;
   structures: StructuresEditorState;
   windowLayout: FlexLayout.IJsonRowNode;

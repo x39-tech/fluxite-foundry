@@ -1,0 +1,906 @@
+{
+  "$ref": "#/definitions/AppStateUnvalidated",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "Access": {
+      "enum": ["readonly", "readwrite"],
+      "type": "string"
+    },
+    "AppSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "darkMode": {
+          "type": "boolean"
+        }
+      },
+      "required": ["darkMode"],
+      "type": "object"
+    },
+    "AppStateUnvalidated": {
+      "additionalProperties": false,
+      "properties": {
+        "appSettings": {
+          "$ref": "#/definitions/AppSettings"
+        },
+        "deviceClassEditors": {
+          "additionalProperties": {
+            "$ref": "#/definitions/DeviceClassEditorState"
+          },
+          "type": "object"
+        },
+        "openEditors": {
+          "$ref": "#/definitions/OpenEditors"
+        },
+        "udrDatabase": {
+          "$ref": "#/definitions/UdrDatabase"
+        }
+      },
+      "required": [
+        "appSettings",
+        "openEditors",
+        "deviceClassEditors",
+        "udrDatabase"
+      ],
+      "type": "object"
+    },
+    "BasicData": {
+      "additionalProperties": false,
+      "properties": {
+        "@description": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "history": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "info": {
+          "$ref": "#/definitions/DeviceClassInfo"
+        },
+        "publishDate": {
+          "type": "string"
+        }
+      },
+      "required": ["@description", "publishDate", "author", "history", "info"],
+      "type": "object"
+    },
+    "Category": {
+      "enum": [
+        "lighting",
+        "video",
+        "audio",
+        "machinery-automation",
+        "atmosphere",
+        "effect",
+        "infrastructure",
+        "other"
+      ],
+      "type": "string"
+    },
+    "Compatibility": {
+      "additionalProperties": false,
+      "properties": {
+        "firmwareVersions": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "DataType": {
+      "enum": ["number", "string", "binary", "boolean", "uuid"],
+      "type": "string"
+    },
+    "DefinitionLocalization": {
+      "additionalProperties": false,
+      "properties": {
+        "categories": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "strings": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "DeviceClassEditorState": {
+      "additionalProperties": false,
+      "properties": {
+        "basicData": {
+          "$ref": "#/definitions/BasicData"
+        },
+        "deviceClassId": {
+          "type": "string"
+        },
+        "libraries": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "parameters": {
+          "$ref": "#/definitions/ParametersEditorState"
+        },
+        "structures": {
+          "$ref": "#/definitions/StructuresEditorState"
+        },
+        "windowLayout": {
+          "$ref": "#/definitions/IJsonRowNode"
+        }
+      },
+      "required": [
+        "deviceClassId",
+        "basicData",
+        "libraries",
+        "parameters",
+        "structures",
+        "windowLayout"
+      ],
+      "type": "object"
+    },
+    "DeviceClassInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "compatibility": {
+          "$ref": "#/definitions/Compatibility"
+        },
+        "manufacturer": {
+          "$ref": "#/definitions/Manufacturer"
+        },
+        "model": {
+          "$ref": "#/definitions/Model"
+        }
+      },
+      "required": ["manufacturer", "model"],
+      "type": "object"
+    },
+    "EditorType": {
+      "const": "deviceClass",
+      "type": "string"
+    },
+    "ICloseType": {
+      "enum": [1, 2, 3],
+      "type": "number"
+    },
+    "IInsets": {
+      "additionalProperties": false,
+      "properties": {
+        "bottom": {
+          "type": "number"
+        },
+        "left": {
+          "type": "number"
+        },
+        "right": {
+          "type": "number"
+        },
+        "top": {
+          "type": "number"
+        }
+      },
+      "required": ["top", "right", "bottom", "left"],
+      "type": "object"
+    },
+    "IJsonRowNode": {
+      "additionalProperties": false,
+      "properties": {
+        "children": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/IJsonRowNode"
+              },
+              {
+                "$ref": "#/definitions/IJsonTabSetNode"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        "height": {
+          "type": "number"
+        },
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "const": "row",
+          "type": "string"
+        },
+        "weight": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number"
+        }
+      },
+      "required": ["children", "type"],
+      "type": "object"
+    },
+    "IJsonTabNode": {
+      "additionalProperties": false,
+      "properties": {
+        "altName": {
+          "type": "string"
+        },
+        "borderHeight": {
+          "type": "number"
+        },
+        "borderWidth": {
+          "type": "number"
+        },
+        "className": {
+          "type": "string"
+        },
+        "closeType": {
+          "$ref": "#/definitions/ICloseType"
+        },
+        "component": {
+          "type": "string"
+        },
+        "config": {},
+        "contentClassName": {
+          "type": "string"
+        },
+        "enableClose": {
+          "type": "boolean"
+        },
+        "enableDrag": {
+          "type": "boolean"
+        },
+        "enableFloat": {
+          "type": "boolean"
+        },
+        "enableRename": {
+          "type": "boolean"
+        },
+        "enableRenderOnDemand": {
+          "type": "boolean"
+        },
+        "floating": {
+          "type": "boolean"
+        },
+        "helpText": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "tabsetClassName": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "IJsonTabSetNode": {
+      "additionalProperties": false,
+      "properties": {
+        "active": {
+          "type": "boolean"
+        },
+        "autoSelectTab": {
+          "type": "boolean"
+        },
+        "borderInsets": {
+          "$ref": "#/definitions/IInsets"
+        },
+        "children": {
+          "items": {
+            "$ref": "#/definitions/IJsonTabNode"
+          },
+          "type": "array"
+        },
+        "classNameHeader": {
+          "type": "string"
+        },
+        "classNameTabStrip": {
+          "type": "string"
+        },
+        "config": {},
+        "enableClose": {
+          "type": "boolean"
+        },
+        "enableDeleteWhenEmpty": {
+          "type": "boolean"
+        },
+        "enableDivide": {
+          "type": "boolean"
+        },
+        "enableDrag": {
+          "type": "boolean"
+        },
+        "enableDrop": {
+          "type": "boolean"
+        },
+        "enableMaximize": {
+          "type": "boolean"
+        },
+        "enableSingleTabStretch": {
+          "type": "boolean"
+        },
+        "enableTabStrip": {
+          "type": "boolean"
+        },
+        "headerHeight": {
+          "type": "number"
+        },
+        "height": {
+          "type": "number"
+        },
+        "id": {
+          "type": "string"
+        },
+        "marginInsets": {
+          "$ref": "#/definitions/IInsets"
+        },
+        "maximized": {
+          "type": "boolean"
+        },
+        "minHeight": {
+          "type": "number"
+        },
+        "minWidth": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "selected": {
+          "type": "number"
+        },
+        "tabLocation": {
+          "$ref": "#/definitions/ITabLocation"
+        },
+        "tabStripHeight": {
+          "type": "number"
+        },
+        "type": {
+          "const": "tabset",
+          "type": "string"
+        },
+        "weight": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number"
+        }
+      },
+      "required": ["children", "type"],
+      "type": "object"
+    },
+    "ITabLocation": {
+      "enum": ["top", "bottom"],
+      "type": "string"
+    },
+    "ItemEditor": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "udrId": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "udrId"],
+      "type": "object"
+    },
+    "Library": {
+      "additionalProperties": false,
+      "properties": {
+        "@description": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "localizations": {
+          "additionalProperties": {
+            "$ref": "#/definitions/DefinitionLocalization"
+          },
+          "type": "object"
+        },
+        "parameterClasses": {
+          "additionalProperties": {
+            "$ref": "#/definitions/ParameterClass"
+          },
+          "type": "object"
+        },
+        "publishDate": {
+          "type": "string"
+        },
+        "serializerClasses": {
+          "additionalProperties": {
+            "$ref": "#/definitions/SerializerClass"
+          },
+          "type": "object"
+        },
+        "structureClasses": {
+          "additionalProperties": {
+            "$ref": "#/definitions/StructureClass"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "@description",
+        "publishDate",
+        "author",
+        "parameterClasses",
+        "structureClasses",
+        "serializerClasses",
+        "localizations"
+      ],
+      "type": "object"
+    },
+    "Lifetime": {
+      "enum": ["static", "persistent", "runtime"],
+      "type": "string"
+    },
+    "Manufacturer": {
+      "additionalProperties": false,
+      "properties": {
+        "estaId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": ["name"],
+      "type": "object"
+    },
+    "Model": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "$ref": "#/definitions/Category"
+        },
+        "name": {
+          "type": "string"
+        },
+        "subcategory": {
+          "$ref": "#/definitions/Subcategory"
+        }
+      },
+      "required": ["name", "category", "subcategory"],
+      "type": "object"
+    },
+    "OpenEditor": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/EditorType"
+        }
+      },
+      "required": ["type", "id"],
+      "type": "object"
+    },
+    "OpenEditors": {
+      "additionalProperties": false,
+      "properties": {
+        "editors": {
+          "items": {
+            "$ref": "#/definitions/OpenEditor"
+          },
+          "type": "array"
+        },
+        "selectedEditor": {
+          "type": "number"
+        }
+      },
+      "required": ["editors", "selectedEditor"],
+      "type": "object"
+    },
+    "Parameter": {
+      "additionalProperties": false,
+      "properties": {
+        "@friendlyName": {
+          "type": "string"
+        },
+        "access": {
+          "$ref": "#/definitions/Access"
+        },
+        "atomicIdentifier": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        },
+        "count": {
+          "type": "number"
+        },
+        "default": {
+          "$ref": "#/definitions/ParameterValue"
+        },
+        "dynamicMaximum": {
+          "type": "number"
+        },
+        "dynamicMinimum": {
+          "type": "number"
+        },
+        "library": {
+          "type": "string"
+        },
+        "lifetime": {
+          "$ref": "#/definitions/Lifetime"
+        },
+        "maximum": {
+          "$ref": "#/definitions/ParameterValue"
+        },
+        "maximumModifier": {
+          "type": "string"
+        },
+        "minimum": {
+          "$ref": "#/definitions/ParameterValue"
+        },
+        "minimumModifier": {
+          "type": "string"
+        },
+        "wrapping": {
+          "type": "boolean"
+        }
+      },
+      "required": ["class", "access", "lifetime"],
+      "type": "object"
+    },
+    "ParameterClass": {
+      "additionalProperties": false,
+      "properties": {
+        "@description": {
+          "type": "string"
+        },
+        "@name": {
+          "type": "string"
+        },
+        "dataType": {
+          "$ref": "#/definitions/DataType"
+        },
+        "unit": {
+          "$ref": "#/definitions/Unit"
+        }
+      },
+      "required": ["@name", "dataType"],
+      "type": "object"
+    },
+    "ParameterClassWithId": {
+      "additionalProperties": false,
+      "properties": {
+        "@description": {
+          "type": "string"
+        },
+        "@name": {
+          "type": "string"
+        },
+        "dataType": {
+          "$ref": "#/definitions/DataType"
+        },
+        "id": {
+          "type": "string"
+        },
+        "libraryId": {
+          "type": "string"
+        },
+        "libraryVersion": {
+          "type": "string"
+        },
+        "unit": {
+          "$ref": "#/definitions/Unit"
+        }
+      },
+      "required": ["@name", "dataType", "id", "libraryId", "libraryVersion"],
+      "type": "object"
+    },
+    "ParameterValue": {
+      "type": ["number", "boolean"]
+    },
+    "ParametersEditorState": {
+      "additionalProperties": false,
+      "properties": {
+        "itemEditorLayout": {
+          "items": {
+            "$ref": "#/definitions/ItemEditor"
+          },
+          "type": "array"
+        },
+        "parameters": {
+          "additionalProperties": {
+            "$ref": "#/definitions/Parameter"
+          },
+          "type": "object"
+        }
+      },
+      "required": ["itemEditorLayout", "parameters"],
+      "type": "object"
+    },
+    "SerializerClass": {
+      "additionalProperties": false,
+      "properties": {
+        "@description": {
+          "type": "string"
+        },
+        "@name": {
+          "type": "string"
+        }
+      },
+      "required": ["@name"],
+      "type": "object"
+    },
+    "Structure": {
+      "additionalProperties": false,
+      "properties": {
+        "access": {
+          "$ref": "#/definitions/Access"
+        },
+        "class": {
+          "type": "string"
+        },
+        "default": {
+          "type": "object"
+        },
+        "library": {
+          "type": "string"
+        },
+        "lifetime": {
+          "$ref": "#/definitions/Lifetime"
+        }
+      },
+      "required": ["class", "access", "lifetime", "default"],
+      "type": "object"
+    },
+    "StructureClass": {
+      "additionalProperties": false,
+      "properties": {
+        "@description": {
+          "type": "string"
+        },
+        "@name": {
+          "type": "string"
+        },
+        "multipleAllowed": {
+          "type": "boolean"
+        }
+      },
+      "required": ["@name"],
+      "type": "object"
+    },
+    "StructureClassWithId": {
+      "additionalProperties": false,
+      "properties": {
+        "@description": {
+          "type": "string"
+        },
+        "@name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "libraryId": {
+          "type": "string"
+        },
+        "libraryVersion": {
+          "type": "string"
+        },
+        "multipleAllowed": {
+          "type": "boolean"
+        }
+      },
+      "required": ["@name", "id", "libraryId", "libraryVersion"],
+      "type": "object"
+    },
+    "StructuresEditorState": {
+      "additionalProperties": false,
+      "properties": {
+        "itemEditorLayout": {
+          "items": {
+            "$ref": "#/definitions/ItemEditor"
+          },
+          "type": "array"
+        },
+        "structures": {
+          "additionalProperties": {
+            "$ref": "#/definitions/Structure"
+          },
+          "type": "object"
+        }
+      },
+      "required": ["itemEditorLayout", "structures"],
+      "type": "object"
+    },
+    "Subcategory": {
+      "enum": [
+        "fixed-profile",
+        "fixed-fresnel",
+        "fixed-pebble-convex",
+        "fixed-wash",
+        "fixed-par",
+        "fixed-strip",
+        "fixed-other",
+        "moving-profile",
+        "moving-fresnel",
+        "moving-pebble-convex",
+        "moving-wash",
+        "moving-strip",
+        "moving-mirror",
+        "moving-other",
+        "accessory-scroller",
+        "accessory-gobo-rotator",
+        "accessory-animation",
+        "accessory-iris",
+        "accessory-other",
+        "architectural-sconce",
+        "architectural-downlight",
+        "architectural-flood",
+        "architectural-spot",
+        "architectural-tracklight",
+        "architectural-wall-wash",
+        "architectural-other",
+        "practical-floor-lamp",
+        "practical-desk-lamp",
+        "practical-table-lamp",
+        "practical-pendant",
+        "practical-chandelier",
+        "practical-other",
+        "controller",
+        "media-server",
+        "projector",
+        "panel",
+        "camera",
+        "amplifier",
+        "speaker-line-array",
+        "speaker-point-source",
+        "speaker-column",
+        "speaker-horn-loaded",
+        "speaker-monitor",
+        "speaker-stage-wedge",
+        "speaker-iem",
+        "speaker-subwoofer",
+        "speaker-ceiling",
+        "speaker-surface",
+        "speaker-other",
+        "processor",
+        "mixer",
+        "winch",
+        "hoist",
+        "drive",
+        "revolve",
+        "load-cell",
+        "estop",
+        "smoke",
+        "haze",
+        "pyro",
+        "fire",
+        "strobe",
+        "laser",
+        "water",
+        "snow",
+        "bubble",
+        "fan",
+        "network-switch",
+        "router",
+        "security",
+        "gateway",
+        "wireless",
+        "splitter",
+        "management",
+        "other"
+      ],
+      "type": "string"
+    },
+    "UdrDatabase": {
+      "additionalProperties": false,
+      "properties": {
+        "itemClasses": {
+          "additionalProperties": false,
+          "properties": {
+            "parameters": {
+              "items": {
+                "$ref": "#/definitions/ParameterClassWithId"
+              },
+              "type": "array"
+            },
+            "structures": {
+              "items": {
+                "$ref": "#/definitions/StructureClassWithId"
+              },
+              "type": "array"
+            }
+          },
+          "required": ["parameters", "structures"],
+          "type": "object"
+        },
+        "libraries": {
+          "additionalProperties": {
+            "additionalProperties": {
+              "$ref": "#/definitions/Library"
+            },
+            "type": "object"
+          },
+          "type": "object"
+        }
+      },
+      "required": ["libraries", "itemClasses"],
+      "type": "object"
+    },
+    "Unit": {
+      "additionalProperties": false,
+      "properties": {
+        "exponent": {
+          "type": "number"
+        },
+        "name": {
+          "$ref": "#/definitions/UnitName"
+        }
+      },
+      "required": ["name"],
+      "type": "object"
+    },
+    "UnitName": {
+      "enum": [
+        "ampere",
+        "candela",
+        "kelvin",
+        "kilogram",
+        "meter",
+        "second",
+        "degree-celsius",
+        "hertz",
+        "joule",
+        "lumen",
+        "lux",
+        "newton",
+        "newton-meter",
+        "ohm",
+        "pascal",
+        "radian",
+        "radian-per-second",
+        "radian-per-second-squared",
+        "steradian",
+        "volt",
+        "watt",
+        "cubic-meter",
+        "meter-per-second",
+        "meter-per-second-squared",
+        "square-meter",
+        "amp-hours",
+        "byte",
+        "byte-per-second",
+        "degree",
+        "ratio",
+        "log-db",
+        "rpm",
+        "other",
+        "none"
+      ],
+      "type": "string"
+    }
+  }
+}

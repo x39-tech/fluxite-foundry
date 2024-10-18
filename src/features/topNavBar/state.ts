@@ -7,7 +7,7 @@ import {
   OpenEditor,
   OpenEditors,
 } from "app/state";
-import { DeviceClass } from "generated/draft-2023-1/udr-document";
+import { DeviceClass } from "e173";
 import { getUniqueItemId } from "utils/utils";
 import { getDefaultDeviceClass } from "udr/udr";
 
@@ -93,8 +93,8 @@ export function deleteEditor(index: number) {
       editors.editors.length === 1
         ? -1
         : index === editors.editors.length - 1
-        ? index - 1
-        : index;
+          ? index - 1
+          : index;
 
     editors.selectedEditor = newIndex;
     editors.editors.splice(index, 1);
@@ -133,6 +133,7 @@ function getImportedDeviceClassEditor(
     basicData: {
       ...udr,
     },
+    libraries: udr.libraries,
     parameters: {
       parameters: udr.parameters || {},
       itemEditorLayout: Object.keys(udr.parameters || {}).map((id) => {

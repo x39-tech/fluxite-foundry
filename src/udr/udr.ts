@@ -1,11 +1,5 @@
 import dayjs from "dayjs";
-import {
-  DeviceClass,
-  Access,
-  Lifetime,
-  Category,
-  Subcategory,
-} from "generated/draft-2023-1/udr-document";
+import { DeviceClass, Access, Lifetime, Category, Subcategory } from "e173";
 
 const DEFAULT_AUTHOR = "Firstname Lastname";
 const DEFAULT_COMPANY = "ACME Inc.";
@@ -24,20 +18,23 @@ export function getDefaultDeviceClass(deviceClassId: string): DeviceClass {
       },
       model: {
         name: modelName,
-        productIdentifier: deviceClassId,
-        category: Category.LIGHTING,
-        subcategory: Subcategory.MOVING_PROFILE,
+        category: Category.Lighting,
+        subcategory: Subcategory.MovingProfile,
       },
     },
+    // TODO populate this with something smarter (from the loaded UDR database)
     libraries: {
       "org.esta.lib.intensity-color": "1.0.0",
+      "org.esta.lib.core": "1.0.0",
+      "org.esta.lib.motion": "1.0.0",
     },
     parameters: {
       "main-dimmer": {
-        class: "org.esta.lib.intensity-color#1.0.0/intensity/dimmer",
+        library: "org.esta.lib.intensity-color",
+        class: "intensity/dimmer",
         "@friendlyName": "Main Dimmer",
-        access: Access.READWRITE,
-        lifetime: Lifetime.RUNTIME,
+        access: Access.ReadWrite,
+        lifetime: Lifetime.Runtime,
         minimum: 0,
         maximum: 1,
       },

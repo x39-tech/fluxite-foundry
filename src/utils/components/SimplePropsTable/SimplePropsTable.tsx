@@ -12,7 +12,7 @@ interface Props {
 
 export const SimplePropsTable = ({ name, children }: Props) => {
   return (
-    <HTMLTable striped condensed style={{ marginBottom: "10px" }}>
+    <HTMLTable striped compact style={{ marginBottom: "10px" }}>
       <colgroup>
         <col span={1} style={{ width: "35%" }} />
         <col span={1} />

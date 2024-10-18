@@ -1,12 +1,7 @@
 import { Callout } from "@blueprintjs/core";
 import { Popover2 } from "@blueprintjs/popover2";
 import { Draft } from "immer";
-import {
-  Parameter,
-  Access,
-  Lifetime,
-  DataType,
-} from "generated/draft-2023-1/udr-document";
+import { Parameter, Access, Lifetime, DataType } from "e173";
 import { getAccessFriendlyName, getLifetimeFriendlyName } from "udr/util/enums";
 import {
   ClearableNumericInputTableRow,
@@ -36,6 +31,7 @@ import {
 import { useUdrDatabase } from "app/state";
 import { RenderError } from "utils/components/RenderError";
 import "./ParameterEditor.css";
+import { useLibraries } from "../state";
 
 interface Props {
   id: string;
@@ -51,7 +47,23 @@ export const ParameterEditor = ({ id }: Props) => {
     return <RenderError />;
   }
 
-  const paramClass = lookupParameterClass(database, param.class);
+  const libraries = useLibraries();
+  if (!libraries) {
+    return <RenderError />;
+  }
+
+  // TODO handle device library
+  const libraryVersion = libraries[param.library!];
+  if (!libraryVersion) {
+    return <RenderError />;
+  }
+
+  const paramClass = lookupParameterClass(
+    database,
+    param.library!,
+    libraryVersion,
+    param.class,
+  );
 
   return (
     <ItemEditor
@@ -92,8 +104,8 @@ function getInstantiationProperties(
           udr.dynamicMinimum
             ? ParameterInstantiationType.DYNAMIC
             : udr.count
-            ? ParameterInstantiationType.MULTIPLE
-            : ParameterInstantiationType.SINGLE
+              ? ParameterInstantiationType.MULTIPLE
+              : ParameterInstantiationType.SINGLE
         }
         onSelectionChanged={(newValue) =>
           modifyParam((draft) =>
@@ -201,8 +213,9 @@ function getMinMaxDefaultProperties(
         validator={(input) =>
           validateStringIsNumberAndBetweenMinAndMaxOrEmpty(
             input,
-            udr.minimum,
-            udr.maximum,
+            // TODO: Fix to handle booleans
+            udr.minimum as number | undefined,
+            udr.maximum as number | undefined,
           )
         }
       />
@@ -218,12 +231,18 @@ function getParameterPropsTable(
   existingItemIds: string[],
 ): JSX.Element {
   const accessValues =
-    param.lifetime === Lifetime.STATIC
-      ? Object.values(Access).filter((value) => value !== Access.READWRITE)
+    param.lifetime === Lifetime.Static
+      ? Object.values(Access).filter((value) => value !== Access.ReadWrite)
       : Object.values(Access);
 
   return (
     <SimplePropsTable>
+      <tr>
+        <td>Library</td>
+        <td>
+          <pre>{param.library || "Device Library"}</pre>
+        </td>
+      </tr>
       <tr>
         <td>Class</td>
         <td>
@@ -272,16 +291,16 @@ function getParameterPropsTable(
           modifyParam((draft) => {
             draft.lifetime = newValue as Lifetime;
             if (
-              newValue === Lifetime.STATIC &&
-              draft.access === Access.READWRITE
+              newValue === Lifetime.Static &&
+              draft.access === Access.ReadWrite
             ) {
-              draft.access = Access.READONLY;
+              draft.access = Access.ReadOnly;
             }
           })
         }
       />
       {getInstantiationProperties(param, modifyParam)}
-      {paramClass.dataType === DataType.NUMBER ? (
+      {paramClass.dataType === DataType.Number ? (
         getMinMaxDefaultProperties(param, modifyParam)
       ) : (
         <></>

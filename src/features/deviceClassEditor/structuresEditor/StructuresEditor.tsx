@@ -21,11 +21,12 @@ export const StructuresEditor = () => {
 
   const editors: Array<JSX.Element> = [];
   for (const [index, { udrId }] of structureEditors.entries()) {
-    if (udrId in structures && structures[udrId].class in editorFactory) {
+    const structure = structures[udrId];
+    if (structure && structure.class in editorFactory) {
       editors.push(
-        editorFactory[structures[udrId].class as keyof typeof editorFactory](
+        editorFactory[structure.class as keyof typeof editorFactory](
           udrId,
-          structures[udrId].default!,
+          structure.default!,
           index,
         ),
       );
