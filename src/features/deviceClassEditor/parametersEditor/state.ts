@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import { Draft } from "immer";
 import { ItemEditor, ParametersEditorState } from "app/state";
-import { Access, Lifetime, Parameter } from "e173";
+import { Lifetime, Parameter, ParameterAccess } from "e173";
 import { getCurrentEditor, useCurrentEditorPart } from "../state";
 import { useAppStore } from "app/store";
 
@@ -48,7 +48,7 @@ export function createNewParameter(
     paramState.parameters[id] = {
       library,
       class: paramClass,
-      access: Access.ReadWrite,
+      access: [ParameterAccess.ReadActual, ParameterAccess.Write],
       lifetime: Lifetime.Runtime,
       "@friendlyName": friendlyName,
     };

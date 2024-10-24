@@ -16,7 +16,7 @@ export const ParametersEditor = () => {
   ));
 
   return (
-    <div className="parameters-editor-content">
+    <div className="flex flex-col items-stretch p-1">
       {parameterEditors}
       <AddItemSection onClick={() => setNewParameterDialogIsOpen(true)} />
       <NewParameterDialog

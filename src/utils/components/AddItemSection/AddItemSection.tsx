@@ -3,9 +3,10 @@ import "./AddItemSection.scss";
 
 interface Props {
   onClick: () => void;
+  text?: string;
 }
 
-export const AddItemSection = ({ onClick }: Props) => {
+export const AddItemSection = ({ onClick, text }: Props) => {
   return (
     <div className="add-new-item-section">
       <Button
@@ -13,7 +14,9 @@ export const AddItemSection = ({ onClick }: Props) => {
         aria-label="Add Item"
         minimal={true}
         onClick={onClick}
-      />
+      >
+        {text}
+      </Button>
     </div>
   );
 };

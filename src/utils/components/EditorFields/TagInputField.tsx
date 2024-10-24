@@ -1,16 +1,19 @@
 import { TagInput } from "@blueprintjs/core";
 
 interface TagInputFieldProps {
+  className?: string;
   values: string[];
   onValuesChanged: (newValues: string[]) => void;
 }
 
 export const TagInputField = ({
+  className,
   values,
   onValuesChanged,
 }: TagInputFieldProps) => {
   return (
     <TagInput
+      className={className}
       values={values}
       onChange={(values) => {
         onValuesChanged(values.map((value) => value as string));

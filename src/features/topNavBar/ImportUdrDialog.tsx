@@ -9,8 +9,8 @@ import {
   Spinner,
   TextArea,
 } from "@blueprintjs/core";
-import { useState } from "react";
-import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
+import { RefObject, useRef, useState } from "react";
+import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog";
 import { E173Document, importUdr, Error as E173Error } from "e173";
 import { importDeviceClassEditor } from "./state";
 import "./ImportUdrDialog.css";
@@ -42,9 +42,8 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
   const [inputValidation, setInputValidation] = useState<
     InputValidationResult | undefined
   >(undefined);
-  const [selectedDeviceClass, setSelectedDeviceClass] = useState<
-    DeviceClass | undefined
-  >(undefined);
+
+  const deviceClassSelectRef = useRef<HTMLSelectElement>(null);
 
   let deviceClasses: DeviceClass[] = [];
 
@@ -58,13 +57,6 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
       }
       return accum;
     }, [] as DeviceClass[]);
-
-    if (
-      deviceClasses.length > 0 &&
-      (!selectedDeviceClass || !deviceClasses.includes(selectedDeviceClass))
-    ) {
-      setSelectedDeviceClass(deviceClasses[0]);
-    }
   }
 
   return (
@@ -101,8 +93,7 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
           inputFile,
           inputValidation,
           deviceClasses,
-          selectedDeviceClass,
-          setSelectedDeviceClass,
+          deviceClassSelectRef,
         )}
       </div>
       <div className={Classes.DIALOG_FOOTER}>
@@ -112,16 +103,28 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
           disabled={
             !inputValidation ||
             !inputValidation.valid ||
-            deviceClasses.length == 0 ||
-            !selectedDeviceClass
+            deviceClasses.length == 0
           }
           onClick={() => {
-            importDeviceClassEditor(
-              selectedDeviceClass!.id,
-              inputValidation!.udr!.e173doc.deviceClasses![
-                selectedDeviceClass!.id
-              ]![selectedDeviceClass!.version]!,
-            );
+            if (deviceClassSelectRef.current !== null) {
+              const deviceClass = stringToDeviceClass(
+                deviceClassSelectRef.current.value,
+              );
+
+              const deviceClasses = inputValidation?.udr?.e173doc.deviceClasses;
+              if (
+                deviceClasses &&
+                deviceClass.id in deviceClasses &&
+                deviceClass.version in deviceClasses[deviceClass.id]
+              ) {
+                importDeviceClassEditor(
+                  deviceClass.id,
+                  inputValidation!.udr!.e173doc.deviceClasses![deviceClass.id]![
+                    deviceClass.version
+                  ]!,
+                );
+              }
+            }
 
             onClose();
           }}
@@ -156,10 +159,7 @@ function getAdditionalDialogElements(
   inputFile: File | null,
   inputValidation: InputValidationResult | undefined,
   deviceClasses: DeviceClass[],
-  selectedDeviceClass: DeviceClass | undefined,
-  setSelectedDeviceClass: React.Dispatch<
-    React.SetStateAction<DeviceClass | undefined>
-  >,
+  deviceClassSelectRef: RefObject<HTMLSelectElement>,
 ) {
   if (inputFile) {
     if (inputValidation === undefined) {
@@ -175,8 +175,7 @@ function getAdditionalDialogElements(
       if (inputValidation.valid) {
         return getDeviceClassSelectionElement(
           deviceClasses,
-          selectedDeviceClass,
-          setSelectedDeviceClass,
+          deviceClassSelectRef,
         );
       } else {
         return getValidationFailureElement(
@@ -192,10 +191,7 @@ function getAdditionalDialogElements(
 
 function getDeviceClassSelectionElement(
   deviceClasses: DeviceClass[],
-  selectedDeviceClass: DeviceClass | undefined,
-  setSelectedDeviceClass: React.Dispatch<
-    React.SetStateAction<DeviceClass | undefined>
-  >,
+  ref: RefObject<HTMLSelectElement>,
 ) {
   if (deviceClasses.length === 0) {
     return (
@@ -208,13 +204,8 @@ function getDeviceClassSelectionElement(
       <>
         <p>Select Device Class to import:</p>
         <HTMLSelect
+          ref={ref}
           options={deviceClasses.map(deviceClassToString)}
-          value={deviceClassToString(selectedDeviceClass)}
-          onChange={(event) =>
-            setSelectedDeviceClass(
-              stringToDeviceClass(event.currentTarget.value),
-            )
-          }
         />
       </>
     );
@@ -251,6 +242,6 @@ function deviceClassToString(dc?: DeviceClass): string {
 }
 
 function stringToDeviceClass(str: string): DeviceClass {
-  const match = str.match(/([^\s+]) \(([^)+])\)/);
+  const match = str.match(/([^\s]+) \(([^)]+)\)/);
   return { id: match![1], version: match![2] };
 }

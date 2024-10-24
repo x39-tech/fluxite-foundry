@@ -1,12 +1,22 @@
-import { Access, Lifetime, DataType } from "e173";
+import { Access, Lifetime, DataType, ParameterAccess } from "e173";
 
 const accessFriendlyNames: FriendlyNameMap<Access> = {
-  [Access.ReadOnly]: "Read-Only",
-  [Access.ReadWrite]: "Read-Write",
+  [Access.Read]: "Read",
+  [Access.Write]: "Write",
 };
 
 export function getAccessFriendlyName(key: Access): string {
   return accessFriendlyNames[key] || key;
+}
+
+const paramAccessFriendlyNames: FriendlyNameMap<ParameterAccess> = {
+  [ParameterAccess.ReadActual]: "Read Actual",
+  [ParameterAccess.ReadTarget]: "Read Target",
+  [ParameterAccess.Write]: "Write",
+};
+
+export function getParamAccessFriendlyName(key: ParameterAccess): string {
+  return paramAccessFriendlyNames[key] || key;
 }
 
 const lifetimeFriendlyNames = Object.values(Lifetime).reduce(

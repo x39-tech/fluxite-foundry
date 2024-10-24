@@ -1,4 +1,4 @@
-import { SimplePropsTable } from "utils/components/SimplePropsTable/SimplePropsTable";
+import { SimplePropsTable } from "utils/components/SimplePropsTable";
 import {
   OptionalTextEditorTableRow,
   TextEditorTableRow,

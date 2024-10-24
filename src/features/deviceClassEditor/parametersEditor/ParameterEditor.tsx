@@ -1,8 +1,11 @@
 import { Callout } from "@blueprintjs/core";
 import { Popover2 } from "@blueprintjs/popover2";
 import { Draft } from "immer";
-import { Parameter, Access, Lifetime, DataType } from "e173";
-import { getAccessFriendlyName, getLifetimeFriendlyName } from "udr/util/enums";
+import { Parameter, Lifetime, DataType, ParameterAccess } from "e173";
+import {
+  getParamAccessFriendlyName,
+  getLifetimeFriendlyName,
+} from "udr/util/enums";
 import {
   ClearableNumericInputTableRow,
   NumericInputTableRow,
@@ -13,8 +16,8 @@ import {
   TextEditorTableRow,
 } from "utils/components/EditorFields/TextEditorField";
 import { ItemEditor } from "utils/components/ItemEditor/ItemEditor";
-import { ParameterClassDisplay } from "utils/components/ParameterClassDisplay/ParameterClassDisplay";
-import { SimplePropsTable } from "utils/components/SimplePropsTable/SimplePropsTable";
+import { ParameterClassDisplay } from "utils/components/ParameterClassDisplay";
+import { SimplePropsTable } from "utils/components/SimplePropsTable";
 import {
   validateNewItemId,
   validateStringIsNumberAndBetweenMinAndMaxOrEmpty,
@@ -29,9 +32,9 @@ import {
   useParameterIds,
 } from "./state";
 import { useUdrDatabase } from "app/state";
+import { useLibraries } from "../state";
 import { RenderError } from "utils/components/RenderError";
 import "./ParameterEditor.css";
-import { useLibraries } from "../state";
 
 interface Props {
   id: string;
@@ -230,11 +233,6 @@ function getParameterPropsTable(
   paramClass: ParameterClassWithId,
   existingItemIds: string[],
 ): JSX.Element {
-  const accessValues =
-    param.lifetime === Lifetime.Static
-      ? Object.values(Access).filter((value) => value !== Access.ReadWrite)
-      : Object.values(Access);
-
   return (
     <SimplePropsTable>
       <tr>
@@ -273,15 +271,32 @@ function getParameterPropsTable(
           modifyParam((draft) => (draft["@friendlyName"] = newValue))
         }
       />
-      <SelectTableRow
-        label="Access"
-        values={accessValues}
-        displayValues={accessValues.map(getAccessFriendlyName)}
-        selectedValue={param.access}
-        onSelectionChanged={(newValue) =>
-          modifyParam((draft) => (draft.access = newValue as Access))
-        }
-      />
+      <tr>
+        <td>Access</td>
+        <td className="flex flex-row items-center">
+          {getAccessCheckbox(
+            id,
+            ParameterAccess.ReadActual,
+            param.access,
+            modifyParam,
+            false,
+          )}
+          {getAccessCheckbox(
+            id,
+            ParameterAccess.ReadTarget,
+            param.access,
+            modifyParam,
+            param.lifetime === Lifetime.Static,
+          )}
+          {getAccessCheckbox(
+            id,
+            ParameterAccess.Write,
+            param.access,
+            modifyParam,
+            param.lifetime === Lifetime.Static,
+          )}
+        </td>
+      </tr>
       <SelectTableRow
         label="Lifetime"
         values={Object.values(Lifetime)}
@@ -290,11 +305,10 @@ function getParameterPropsTable(
         onSelectionChanged={(newValue) =>
           modifyParam((draft) => {
             draft.lifetime = newValue as Lifetime;
-            if (
-              newValue === Lifetime.Static &&
-              draft.access === Access.ReadWrite
-            ) {
-              draft.access = Access.ReadOnly;
+            if (newValue === Lifetime.Static) {
+              draft.access = draft.access.filter(
+                (value) => value === ParameterAccess.ReadActual,
+              );
             }
           })
         }
@@ -306,6 +320,39 @@ function getParameterPropsTable(
         <></>
       )}
     </SimplePropsTable>
+  );
+}
+
+function getAccessCheckbox(
+  paramId: string,
+  access: ParameterAccess,
+  paramAccess: ParameterAccess[],
+  modifyParam: ParameterModifier,
+  disabled: boolean,
+): JSX.Element {
+  const id = `paramEditor-${paramId}-access${access}`;
+
+  return (
+    <>
+      <input
+        type="checkbox"
+        id={id}
+        checked={paramAccess.includes(access)}
+        disabled={disabled}
+        onChange={(event) =>
+          modifyParam((draft) => {
+            if (event.target.value && !draft.access.includes(access)) {
+              draft.access.push(access);
+            } else {
+              draft.access = draft.access.filter((value) => value !== access);
+            }
+          })
+        }
+      />
+      <label className="mx-1" htmlFor={id}>
+        {getParamAccessFriendlyName(access)}
+      </label>
+    </>
   );
 }
 

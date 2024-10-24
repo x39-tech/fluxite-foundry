@@ -6,7 +6,7 @@ import {
   REPO_ISSUES_LINK,
   TSP_WORKING_GROUPS_LINK,
 } from "appInfo";
-import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
+import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog";
 
 interface Props {
   isOpen: boolean;

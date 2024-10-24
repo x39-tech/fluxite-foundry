@@ -1,6 +1,6 @@
 import { ParametersEditor } from "./parametersEditor/ParametersEditor";
-import { StructuresEditor } from "./structuresEditor/StructuresEditor";
 import { DeviceInfoEditor } from "./deviceInfoEditor/DeviceInfoEditor";
+import { DmxEditor } from "./dmxEditor/DmxEditor";
 
 interface EditorWidget {
   name: string;
@@ -10,19 +10,19 @@ interface EditorWidget {
 
 export const WIDGETS: Record<string, EditorWidget> = {
   parametersEditor: {
-    name: "Parameters Editor",
+    name: "Parameters",
     description: "Create and edit parameters for the device class",
     factory: () => <ParametersEditor />,
   },
-  structuresEditor: {
-    name: "Structures Editor",
-    description: "Create and edit structures for the device class",
-    factory: () => <StructuresEditor />,
-  },
   deviceInfoEditor: {
-    name: "Device Info Editor",
+    name: "Device Info",
     description: "Edit basic device information",
     factory: () => <DeviceInfoEditor />,
+  },
+  dmxEditor: {
+    name: "DMX Footprint",
+    description: "Edit the DMX footprint of the device class",
+    factory: () => <DmxEditor />,
   },
 };
 

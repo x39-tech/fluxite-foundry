@@ -1,5 +1,11 @@
 import dayjs from "dayjs";
-import { DeviceClass, Access, Lifetime, Category, Subcategory } from "e173";
+import {
+  DeviceClass,
+  Lifetime,
+  Category,
+  Subcategory,
+  ParameterAccess,
+} from "e173";
 
 const DEFAULT_AUTHOR = "Firstname Lastname";
 const DEFAULT_COMPANY = "ACME Inc.";
@@ -33,7 +39,7 @@ export function getDefaultDeviceClass(deviceClassId: string): DeviceClass {
         library: "org.esta.lib.intensity-color",
         class: "intensity/dimmer",
         "@friendlyName": "Main Dimmer",
-        access: Access.ReadWrite,
+        access: [ParameterAccess.ReadActual, ParameterAccess.Write],
         lifetime: Lifetime.Runtime,
         minimum: 0,
         maximum: 1,

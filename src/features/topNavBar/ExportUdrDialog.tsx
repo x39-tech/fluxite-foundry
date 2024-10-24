@@ -9,7 +9,7 @@ import {
 } from "@blueprintjs/core";
 import { useState } from "react";
 import { E173Document } from "e173";
-import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
+import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog";
 import {
   useDeviceClassEditors,
   useOpenDeviceClassEditorsWithNames,

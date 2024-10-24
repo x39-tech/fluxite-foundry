@@ -1,5 +1,5 @@
 import * as FlexLayout from "flexlayout-react";
-import { DeviceClassInfo, Parameter, Structure } from "e173";
+import { DeviceClassInfo, EstaDmx, Parameter, Structure } from "e173";
 import { UdrDatabase } from "udr/udrDatabase";
 import { useAppStore } from "./store";
 
@@ -62,6 +62,7 @@ export interface DeviceClassEditorState {
   libraries: Record<string, string>;
   parameters: ParametersEditorState;
   structures: StructuresEditorState;
+  dmx: DmxSerializerState;
   windowLayout: FlexLayout.IJsonRowNode;
 }
 
@@ -86,6 +87,10 @@ export interface StructuresEditorState {
 export interface ItemEditor {
   id: string;
   udrId: string;
+}
+
+export interface DmxSerializerState {
+  udr: EstaDmx;
 }
 
 export function useUdrDatabase(): UdrDatabase {

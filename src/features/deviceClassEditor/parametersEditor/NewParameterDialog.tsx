@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Button, Classes, H3 } from "@blueprintjs/core";
-import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog/DarkModeAwareDialog";
+import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog";
 import { TextEditorTableRow } from "utils/components/EditorFields/TextEditorField";
-import { ParameterClassDisplay } from "utils/components/ParameterClassDisplay/ParameterClassDisplay";
-import { SimplePropsTable } from "utils/components/SimplePropsTable/SimplePropsTable";
+import { ParameterClassDisplay } from "utils/components/ParameterClassDisplay";
+import { SimplePropsTable } from "utils/components/SimplePropsTable";
 import { validateNewItemId } from "utils/inputValidation";
-import { getAllParametersWithIds } from "udr/udrDatabase";
+import { getAllParametersWithIds, ParameterClassWithId } from "udr/udrDatabase";
 import { ItemClassSelector } from "utils/components/ItemClassSelector/ItemClassSelector";
 import { getUniqueItemId } from "utils/utils";
 import { createNewParameter, useParameterIds } from "./state";
@@ -21,9 +21,9 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
   const database = useUdrDatabase();
   const parameterIds = useParameterIds();
 
-  const [newItemClass, setNewItemClass] = useState(
-    getAllParametersWithIds(database)[0],
-  );
+  const [newItemClass, setNewItemClass] = useState<
+    ParameterClassWithId | undefined
+  >(undefined);
   const [newItemId, setNewItemId] = useState(getUniqueItemId(parameterIds));
   const [newItemFriendlyName, setNewItemFriendlyName] = useState("My New Item");
 
@@ -80,13 +80,16 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
           aria-label="Add"
           intent="success"
           icon="tick"
+          disabled={!newItemClass}
           onClick={() => {
-            createNewParameter(
-              newItemClass.libraryId,
-              newItemClass.id,
-              newItemId,
-              newItemFriendlyName,
-            );
+            if (newItemClass) {
+              createNewParameter(
+                newItemClass.libraryId,
+                newItemClass.id,
+                newItemId,
+                newItemFriendlyName,
+              );
+            }
 
             onClose();
           }}

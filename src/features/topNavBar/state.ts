@@ -7,7 +7,7 @@ import {
   OpenEditor,
   OpenEditors,
 } from "app/state";
-import { DeviceClass } from "e173";
+import { DeviceClass, EstaDmx } from "e173";
 import { getUniqueItemId } from "utils/utils";
 import { getDefaultDeviceClass } from "udr/udr";
 
@@ -128,6 +128,18 @@ function getImportedDeviceClassEditor(
   id: string,
   udr: DeviceClass,
 ): DeviceClassEditorState {
+  let dmx: EstaDmx | undefined = undefined;
+
+  if (udr.serializers) {
+    for (const value of Object.values(udr.serializers)) {
+      // TODO remove hardcoded values
+      if (value.library == "org.esta.lib.core" && value.class == "esta-dmx") {
+        // It is validated by the E1.73 library
+        dmx = value.default as EstaDmx;
+      }
+    }
+  }
+
   return {
     deviceClassId: id,
     basicData: {
@@ -145,6 +157,9 @@ function getImportedDeviceClassEditor(
       itemEditorLayout: Object.keys(udr.structures || {}).map((id) => {
         return { id: nanoid(), udrId: id };
       }),
+    },
+    dmx: {
+      udr: dmx ? dmx : { chunks: {} },
     },
     windowLayout: {
       type: "row",

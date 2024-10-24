@@ -3,7 +3,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "Access": {
-      "enum": ["readonly", "readwrite"],
+      "enum": ["read", "write"],
       "type": "string"
     },
     "AppSettings": {
@@ -81,6 +81,25 @@
       ],
       "type": "string"
     },
+    "Chunk": {
+      "additionalProperties": false,
+      "properties": {
+        "mappingGroups": {
+          "items": {
+            "$ref": "#/definitions/MappingGroup"
+          },
+          "type": "array"
+        },
+        "offsets": {
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        }
+      },
+      "required": ["offsets", "mappingGroups"],
+      "type": "object"
+    },
     "Compatibility": {
       "additionalProperties": false,
       "properties": {
@@ -92,6 +111,34 @@
         }
       },
       "type": "object"
+    },
+    "Condition": {
+      "additionalProperties": false,
+      "properties": {
+        "chunk": {
+          "type": "string"
+        },
+        "chunkEnd": {
+          "type": "number"
+        },
+        "chunkStart": {
+          "type": "number"
+        },
+        "conditions": {
+          "items": {
+            "$ref": "#/definitions/Condition"
+          },
+          "type": "array"
+        },
+        "match": {
+          "$ref": "#/definitions/ConditionMatch"
+        }
+      },
+      "type": "object"
+    },
+    "ConditionMatch": {
+      "enum": ["any", "all"],
+      "type": "string"
     },
     "DataType": {
       "enum": ["number", "string", "binary", "boolean", "uuid"],
@@ -124,6 +171,9 @@
         "deviceClassId": {
           "type": "string"
         },
+        "dmx": {
+          "$ref": "#/definitions/DmxSerializerState"
+        },
         "libraries": {
           "additionalProperties": {
             "type": "string"
@@ -146,6 +196,7 @@
         "libraries",
         "parameters",
         "structures",
+        "dmx",
         "windowLayout"
       ],
       "type": "object"
@@ -166,9 +217,32 @@
       "required": ["manufacturer", "model"],
       "type": "object"
     },
+    "DmxSerializerState": {
+      "additionalProperties": false,
+      "properties": {
+        "udr": {
+          "$ref": "#/definitions/EstaDmx"
+        }
+      },
+      "required": ["udr"],
+      "type": "object"
+    },
     "EditorType": {
       "const": "deviceClass",
       "type": "string"
+    },
+    "EstaDmx": {
+      "additionalProperties": false,
+      "properties": {
+        "chunks": {
+          "additionalProperties": {
+            "$ref": "#/definitions/Chunk"
+          },
+          "type": "object"
+        }
+      },
+      "required": ["chunks"],
+      "type": "object"
     },
     "ICloseType": {
       "enum": [1, 2, 3],
@@ -474,6 +548,69 @@
       "required": ["name"],
       "type": "object"
     },
+    "Mapping": {
+      "additionalProperties": false,
+      "properties": {
+        "mappedParam": {
+          "type": "string"
+        },
+        "ranges": {
+          "items": {
+            "$ref": "#/definitions/MappingRange"
+          },
+          "type": "array"
+        },
+        "unmappedParams": {
+          "items": {
+            "$ref": "#/definitions/UnmappedParam"
+          },
+          "type": "array"
+        }
+      },
+      "required": ["mappedParam", "ranges"],
+      "type": "object"
+    },
+    "MappingBound": {
+      "type": ["number", "boolean"]
+    },
+    "MappingGroup": {
+      "additionalProperties": false,
+      "properties": {
+        "conditions": {
+          "items": {
+            "$ref": "#/definitions/Condition"
+          },
+          "type": "array"
+        },
+        "mappings": {
+          "items": {
+            "$ref": "#/definitions/Mapping"
+          },
+          "type": "array"
+        }
+      },
+      "required": ["mappings"],
+      "type": "object"
+    },
+    "MappingRange": {
+      "additionalProperties": false,
+      "properties": {
+        "chunkEnd": {
+          "type": "number"
+        },
+        "chunkStart": {
+          "type": "number"
+        },
+        "end": {
+          "$ref": "#/definitions/MappingBound"
+        },
+        "start": {
+          "$ref": "#/definitions/MappingBound"
+        }
+      },
+      "required": ["chunkStart", "chunkEnd"],
+      "type": "object"
+    },
     "Model": {
       "additionalProperties": false,
       "properties": {
@@ -526,7 +663,10 @@
           "type": "string"
         },
         "access": {
-          "$ref": "#/definitions/Access"
+          "items": {
+            "$ref": "#/definitions/ParameterAccess"
+          },
+          "type": "array"
         },
         "atomicIdentifier": {
           "type": "string"
@@ -570,6 +710,10 @@
       },
       "required": ["class", "access", "lifetime"],
       "type": "object"
+    },
+    "ParameterAccess": {
+      "enum": ["readActual", "readTarget", "write"],
+      "type": "string"
     },
     "ParameterClass": {
       "additionalProperties": false,
@@ -657,7 +801,10 @@
       "additionalProperties": false,
       "properties": {
         "access": {
-          "$ref": "#/definitions/Access"
+          "items": {
+            "$ref": "#/definitions/Access"
+          },
+          "type": "array"
         },
         "class": {
           "type": "string"
@@ -901,6 +1048,22 @@
         "none"
       ],
       "type": "string"
+    },
+    "UnmappedParam": {
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "$ref": "#/definitions/MappingBound"
+        },
+        "parameter": {
+          "type": "string"
+        },
+        "start": {
+          "$ref": "#/definitions/MappingBound"
+        }
+      },
+      "required": ["parameter"],
+      "type": "object"
     }
   }
 }
