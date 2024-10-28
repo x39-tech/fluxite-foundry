@@ -5,11 +5,15 @@ import { TextEditorTableRow } from "utils/components/EditorFields/TextEditorFiel
 import { ParameterClassDisplay } from "utils/components/ParameterClassDisplay";
 import { SimplePropsTable } from "utils/components/SimplePropsTable";
 import { validateNewItemId } from "utils/inputValidation";
-import { getAllParametersWithIds, ParameterClassWithId } from "udr/udrDatabase";
+import {
+  getAllParametersWithIds,
+  lookupParameterClass,
+  ParameterClassWithId,
+} from "udr/udrDatabase";
+import { useUdrDatabase } from "app/store";
 import { ItemClassSelector } from "utils/components/ItemClassSelector/ItemClassSelector";
 import { getUniqueItemId } from "utils/utils";
 import { createNewParameter, useParameterIds } from "./state";
-import { useUdrDatabase } from "app/state";
 import "./NewParameterDialog.css";
 
 interface Props {
@@ -54,9 +58,16 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
                 selectedClass={newItemClass}
                 aria-labelledby="class-label"
                 onSelectedClassChanged={setNewItemClass}
-                tooltipRenderer={(item) => (
-                  <ParameterClassDisplay paramClass={item} />
-                )}
+                tooltipRenderer={(item) => {
+                  // TODO clean up
+                  const resolvedClass = lookupParameterClass(
+                    database,
+                    item.libraryId,
+                    item.libraryVersion,
+                    item.id,
+                  );
+                  return <ParameterClassDisplay paramClass={resolvedClass!} />;
+                }}
                 database={database}
               />
             </td>

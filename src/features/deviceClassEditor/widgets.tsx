@@ -1,6 +1,7 @@
 import { ParametersEditor } from "./parametersEditor/ParametersEditor";
 import { DeviceInfoEditor } from "./deviceInfoEditor/DeviceInfoEditor";
 import { DmxEditor } from "./dmxEditor/DmxEditor";
+import { DmxController } from "./controller/DmxController";
 
 interface EditorWidget {
   name: string;
@@ -23,6 +24,11 @@ export const WIDGETS: Record<string, EditorWidget> = {
     name: "DMX Footprint",
     description: "Edit the DMX footprint of the device class",
     factory: () => <DmxEditor />,
+  },
+  dmxController: {
+    name: "Test DMX Controller",
+    description: "Test the device class with a virtual controller",
+    factory: () => <DmxController />,
   },
 };
 

@@ -5,10 +5,10 @@ import { Popover2 } from "@blueprintjs/popover2";
 import { throttle } from "lodash";
 import { nanoid } from "nanoid";
 import { APP_NAME } from "appInfo";
+import { useDarkMode } from "app/store";
 import { WIDGETS, isValidWidget } from "./widgets";
 import { NewWidgetMenu } from "./newWidgetMenu";
 import { setWindowLayout, useCurrentEditor } from "./state";
-import { useAppStore } from "app/store";
 import { RenderError } from "utils/components/RenderError";
 import "./DeviceClassEditor.scss";
 
@@ -25,7 +25,7 @@ export const DeviceClassEditor = () => {
     };
   });
 
-  const darkMode = useAppStore((state) => state.appSettings.darkMode);
+  const darkMode = useDarkMode();
   const flexlayoutClassPrefix = darkMode
     ? "flexlayout-dark "
     : "flexlayout-light ";

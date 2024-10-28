@@ -23,7 +23,12 @@ import {
   validateStringIsNumberAndBetweenMinAndMaxOrEmpty,
   validateStringIsNumberOrEmpty,
 } from "utils/inputValidation";
-import { ParameterClassWithId, lookupParameterClass } from "udr/udrDatabase";
+import {
+  ResolvedParameterClass,
+  lookupDeviceParameterClass,
+  lookupParameterClass,
+} from "udr/udrDatabase";
+import { useUdrDatabase } from "app/store";
 import {
   changeParameterId,
   deleteParameter,
@@ -31,8 +36,11 @@ import {
   useParameter,
   useParameterIds,
 } from "./state";
-import { useUdrDatabase } from "app/state";
-import { useLibraries } from "../state";
+import {
+  useDeviceLibrary,
+  useDeviceLocalizations,
+  useLibraries,
+} from "../state";
 import { RenderError } from "utils/components/RenderError";
 import "./ParameterEditor.css";
 
@@ -51,22 +59,29 @@ export const ParameterEditor = ({ id }: Props) => {
   }
 
   const libraries = useLibraries();
-  if (!libraries) {
-    return <RenderError />;
-  }
+  const deviceLibrary = useDeviceLibrary();
+  const deviceLocalizations = useDeviceLocalizations();
 
-  // TODO handle device library
-  const libraryVersion = libraries[param.library!];
-  if (!libraryVersion) {
-    return <RenderError />;
-  }
+  let paramClass: ResolvedParameterClass | undefined = undefined;
+  if (param.library) {
+    const libraryVersion = libraries?.[param.library];
+    if (!libraryVersion) {
+      return <RenderError />;
+    }
 
-  const paramClass = lookupParameterClass(
-    database,
-    param.library!,
-    libraryVersion,
-    param.class,
-  );
+    paramClass = lookupParameterClass(
+      database,
+      param.library,
+      libraryVersion,
+      param.class,
+    );
+  } else {
+    paramClass = lookupDeviceParameterClass(
+      deviceLibrary,
+      deviceLocalizations,
+      param.class,
+    );
+  }
 
   return (
     <ItemEditor
@@ -79,7 +94,7 @@ export const ParameterEditor = ({ id }: Props) => {
               id,
               param,
               (recipe) => modifyParameter(id, recipe),
-              paramClass!,
+              paramClass,
               parameterIds,
             )
           : getClassNotFoundMessage(param.class)}
@@ -230,7 +245,7 @@ function getParameterPropsTable(
   id: string,
   param: Parameter,
   modifyParam: ParameterModifier,
-  paramClass: ParameterClassWithId,
+  paramClass: ResolvedParameterClass,
   existingItemIds: string[],
 ): JSX.Element {
   return (

@@ -1,19 +1,21 @@
 import { Draft } from "immer";
-import { getCurrentEditor, useCurrentEditorPart } from "../state";
-import { useAppStore } from "app/store";
+import { updateCurrentEditor, useCurrentEditorPart } from "../state";
 import { BasicData } from "app/state";
+
+// ---------------------------------------------------------------------------
+// Read
+// ---------------------------------------------------------------------------
 
 export function useBasicData(): BasicData | undefined {
   return useCurrentEditorPart((state) => state.basicData);
 }
 
-export function modifyBasicData(recipe: (state: Draft<BasicData>) => void) {
-  useAppStore.setState((state) => {
-    const basicData = getCurrentEditor(state)?.basicData;
-    if (!basicData) {
-      return;
-    }
+// ---------------------------------------------------------------------------
+// Write
+// ---------------------------------------------------------------------------
 
-    recipe(basicData);
+export function modifyBasicData(recipe: (state: Draft<BasicData>) => void) {
+  updateCurrentEditor((editor) => {
+    recipe(editor.basicData);
   });
 }

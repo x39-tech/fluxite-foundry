@@ -9,6 +9,7 @@ import { InputValidationResult } from "utils/inputValidation";
 interface CommonTextEditorFieldProps {
   value?: string;
   defaultValue?: string;
+  placeholder?: string;
   validator?: (value: string) => InputValidationResult;
   validationErrorPlacement?: Placement;
 }
@@ -21,6 +22,7 @@ interface TextEditorFieldProps extends CommonTextEditorFieldProps {
 export const TextEditorField = ({
   value,
   defaultValue,
+  placeholder,
   onValueChanged,
   validator,
   validationErrorPlacement,
@@ -53,6 +55,7 @@ export const TextEditorField = ({
     >
       <EditableText
         value={textToDisplay}
+        placeholder={placeholder}
         onChange={(newValue) => {
           if (validator) {
             setValidationResult(validator(newValue));

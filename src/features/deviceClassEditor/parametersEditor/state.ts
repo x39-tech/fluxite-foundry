@@ -2,8 +2,11 @@ import { nanoid } from "nanoid";
 import { Draft } from "immer";
 import { ItemEditor, ParametersEditorState } from "app/state";
 import { Lifetime, Parameter, ParameterAccess } from "e173";
-import { getCurrentEditor, useCurrentEditorPart } from "../state";
-import { useAppStore } from "app/store";
+import { updateCurrentEditor, useCurrentEditorPart } from "../state";
+
+// ---------------------------------------------------------------------------
+// Read
+// ---------------------------------------------------------------------------
 
 export function useParameters(): ParametersEditorState | undefined {
   return useCurrentEditorPart((state) => state.parameters);
@@ -29,17 +32,18 @@ export function useParameter(id: string): Parameter | undefined {
   return useCurrentEditorPart((state) => state.parameters.parameters[id]);
 }
 
+// ---------------------------------------------------------------------------
+// Write
+// ---------------------------------------------------------------------------
+
 export function createNewParameter(
   library: string,
   paramClass: string,
   id: string,
   friendlyName: string,
 ) {
-  useAppStore.setState((state) => {
-    const paramState = getCurrentEditor(state)?.parameters;
-    if (!paramState) {
-      return;
-    }
+  updateCurrentEditor((editor) => {
+    const paramState = editor.parameters;
 
     if (id in paramState.parameters) {
       return;
@@ -64,8 +68,8 @@ export function modifyParameter(
   id: string,
   recipe: (state: Draft<Parameter>) => void,
 ) {
-  useAppStore.setState((state) => {
-    const param = getCurrentEditor(state)?.parameters.parameters[id];
+  updateCurrentEditor((editor) => {
+    const param = editor.parameters.parameters[id];
     if (!param) {
       return;
     }
@@ -75,9 +79,9 @@ export function modifyParameter(
 }
 
 export function changeParameterId(id: string, newId: string) {
-  useAppStore.setState((state) => {
-    const paramState = getCurrentEditor(state)?.parameters;
-    if (!paramState || newId in paramState.parameters) {
+  updateCurrentEditor((editor) => {
+    const paramState = editor.parameters;
+    if (newId in paramState.parameters) {
       return;
     }
 
@@ -100,12 +104,8 @@ export function changeParameterId(id: string, newId: string) {
 }
 
 export function deleteParameter(id: string) {
-  useAppStore.setState((state) => {
-    const paramState = getCurrentEditor(state)?.parameters;
-    if (!paramState) {
-      return;
-    }
-
+  updateCurrentEditor((editor) => {
+    const paramState = editor.parameters;
     delete paramState.parameters[id];
     paramState.itemEditorLayout = paramState.itemEditorLayout.filter(
       (value) => value.udrId !== id,

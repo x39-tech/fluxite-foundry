@@ -3,8 +3,8 @@ import { DataType, Mapping, MappingRange, UnmappedParam } from "e173";
 import { StringSelector } from "utils/components/StringSelector";
 import { TextEditorField } from "utils/components/EditorFields/TextEditorField";
 import { SelectField } from "utils/components/EditorFields/SelectField";
-import { ParameterClassWithId } from "udr/udrDatabase";
-import { useDarkMode } from "app/state";
+import { ResolvedParameterClass } from "udr/udrDatabase";
+import { useDarkMode } from "app/store";
 import { useParametersWithClasses } from "../state";
 
 interface DmxParameterMappingProps {
@@ -19,7 +19,9 @@ export const DmxParameterMapping = ({
   onRemove,
 }: DmxParameterMappingProps) => {
   const inDarkMode = useDarkMode();
-  const background = inDarkMode ? "bg-gray-600" : "bg-gray-400";
+  const background = inDarkMode
+    ? "bg-gray-600"
+    : "bg-slate-300 border border-gray-400";
 
   const paramsWithClasses = Object.fromEntries(
     Object.entries(useParametersWithClasses()).filter(([_, paramClass]) => {
@@ -167,13 +169,11 @@ export const DmxParameterMapping = ({
   }
 
   return (
-    <div
-      className={`${background} m-2 p-2 border-b border-gray-500 rounded flex flex-col`}
-    >
+    <div className={`${background} m-2 p-2 rounded flex flex-col`}>
       <div className="flex items-center">
         <div className="mx-1">Parameter:</div>
         <StringSelector
-          className="!min-w-48"
+          className="!min-w-48 overflow-y-auto"
           items={mappedParameterCandidates}
           selectedItem={mapping.mappedParam}
           onSelectedItemChanged={(newVal) =>
@@ -211,7 +211,13 @@ function getRangeTableRowNumeric(
   mapping: Mapping,
   onUpdate: (mapping: Mapping) => void,
 ): JSX.Element {
-  if (typeof range.start !== "number" || typeof range.end !== "number") {
+  const start = range.start;
+  const end =
+    range.start === undefined ? range.start : range.end || range.start;
+  if (
+    (typeof start !== "number" && typeof start !== "undefined") ||
+    (typeof end !== "number" && typeof end !== "undefined")
+  ) {
     throw new Error();
   }
 
@@ -219,17 +225,31 @@ function getRangeTableRowNumeric(
     <tr key={index}>
       <td className="!align-middle">
         <TextEditorField
-          value={range.start.toString()}
+          value={(start === undefined ? "" : start).toString()}
+          placeholder="<null>"
           onValueChanged={(newValue) => {
-            onUpdate(updateRangeStart(mapping, index, parseInt(newValue)));
+            onUpdate(
+              updateRangeStart(
+                mapping,
+                index,
+                newValue ? parseInt(newValue) : undefined,
+              ),
+            );
           }}
         />
       </td>
       <td className="!align-middle">
         <TextEditorField
-          value={range.end.toString()}
+          value={(end === undefined ? "" : end).toString()}
+          placeholder="<null>"
           onValueChanged={(newValue) => {
-            onUpdate(updateRangeEnd(mapping, index, parseInt(newValue)));
+            onUpdate(
+              updateRangeEnd(
+                mapping,
+                index,
+                newValue ? parseInt(newValue) : undefined,
+              ),
+            );
           }}
         />
       </td>
@@ -274,9 +294,15 @@ function getRangeTableRowBoolean(
   mapping: Mapping,
   onUpdate: (mapping: Mapping) => void,
 ): JSX.Element {
-  const selectValues = ["false", "true"];
+  const selectValues = ["false", "true", "null"];
 
-  if (typeof range.start !== "boolean" || typeof range.end !== "boolean") {
+  const start = range.start;
+  const end =
+    range.start === undefined ? range.start : range.end || range.start;
+  if (
+    (typeof start !== "boolean" && typeof start !== "undefined") ||
+    (typeof end !== "boolean" && typeof end !== "undefined")
+  ) {
     throw new Error();
   }
 
@@ -285,18 +311,30 @@ function getRangeTableRowBoolean(
       <td className="!align-middle">
         <SelectField
           values={selectValues}
-          selectedValue={range.start.toString()}
+          selectedValue={(start === undefined ? "null" : start).toString()}
           onSelectionChanged={(newValue) => {
-            onUpdate(updateRangeStart(mapping, index, newValue === "true"));
+            onUpdate(
+              updateRangeStart(
+                mapping,
+                index,
+                newValue === "null" ? undefined : newValue === "true",
+              ),
+            );
           }}
         />
       </td>
       <td className="!align-middle">
         <SelectField
           values={selectValues}
-          selectedValue={range.end.toString()}
+          selectedValue={(end === undefined ? "null" : end).toString()}
           onSelectionChanged={(newValue) => {
-            onUpdate(updateRangeEnd(mapping, index, newValue === "true"));
+            onUpdate(
+              updateRangeEnd(
+                mapping,
+                index,
+                newValue === "null" ? undefined : newValue === "true",
+              ),
+            );
           }}
         />
       </td>
@@ -362,7 +400,7 @@ const INVALID_UNMAPPED_PARAM_TABLE_ROW = (
 function getUnmappedParameterTableRow(
   index: number,
   param: UnmappedParam,
-  paramsWithClasses: Record<string, ParameterClassWithId>,
+  paramsWithClasses: Record<string, ResolvedParameterClass>,
   eligibleParams: string[],
   mapping: Mapping,
   onUpdate: (mapping: Mapping) => void,
@@ -399,7 +437,7 @@ function getUnmappedParameterTableRow(
 function getUnmappedParameterTableRowBoolean(
   index: number,
   param: UnmappedParam,
-  paramsWithClasses: Record<string, ParameterClassWithId>,
+  paramsWithClasses: Record<string, ResolvedParameterClass>,
   eligibleParams: string[],
   mapping: Mapping,
   onUpdate: (mapping: Mapping) => void,
@@ -472,7 +510,7 @@ function getUnmappedParameterTableRowBoolean(
 function getUnmappedParameterTableRowNumeric(
   index: number,
   param: UnmappedParam,
-  paramsWithClasses: Record<string, ParameterClassWithId>,
+  paramsWithClasses: Record<string, ResolvedParameterClass>,
   eligibleParams: string[],
   mapping: Mapping,
   onUpdate: (mapping: Mapping) => void,
@@ -557,7 +595,7 @@ function getNewUnmappedParam(param: string, isBoolean: boolean): UnmappedParam {
 function updateRangeStart(
   mapping: Mapping,
   rangeIndex: number,
-  newStart: number | boolean,
+  newStart: number | boolean | undefined,
 ): Mapping {
   const newRange = {
     ...mapping.ranges[rangeIndex],
@@ -576,7 +614,7 @@ function updateRangeStart(
 function updateRangeEnd(
   mapping: Mapping,
   rangeIndex: number,
-  newEnd: number | boolean,
+  newEnd: number | boolean | undefined,
 ): Mapping {
   const newRange = {
     ...mapping.ranges[rangeIndex],

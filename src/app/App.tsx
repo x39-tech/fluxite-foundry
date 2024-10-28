@@ -3,7 +3,8 @@ import { DeviceClassEditor } from "features/deviceClassEditor/DeviceClassEditor"
 import { TopNavBar } from "features/topNavBar/TopNavBar";
 import { udrDatabaseIsEmpty } from "udr/udrDatabase";
 import { LibraryErrorDialog } from "./libraryErrorDialog";
-import { useDarkMode, useUdrDatabase, EditorType } from "./state";
+import { useDarkMode, useUdrDatabase } from "./store";
+import { EditorType } from "./state";
 import { useOpenEditors } from "features/topNavBar/state";
 import "./App.scss";
 

@@ -1,9 +1,21 @@
 import * as FlexLayout from "flexlayout-react";
-import { DeviceClassInfo, EstaDmx, Parameter, Structure } from "e173";
+import {
+  DefinitionLocalization,
+  DeviceClassInfo,
+  DeviceLibrary,
+  EstaDmx,
+  Parameter,
+  ParameterDatabase,
+  Structure,
+  Error as E173Error,
+} from "e173";
 import { UdrDatabase } from "udr/udrDatabase";
-import { useAppStore } from "./store";
 
-// This ensures that the application state is JSON-compatible, e.g. contains only basic
+// ---------------------------------------------------------------------------
+// Persistent State
+// ---------------------------------------------------------------------------
+
+// This ensures that the persistent application state is JSON-compatible, e.g. contains only basic
 // JS objects.
 // https://dev.to/nodge/mastering-type-safe-json-serialization-in-typescript-1g96
 
@@ -29,9 +41,9 @@ type JSONCompatible<T> = unknown extends T
 // eslint-disable-next-line @typescript-eslint/ban-types
 type NotAssignableToJson = bigint | symbol | Function;
 
-export type AppState = JSONCompatible<AppStateUnvalidated>;
+export type AppPersistentState = JSONCompatible<AppPersistentStateUnvalidated>;
 
-export interface AppStateUnvalidated {
+export interface AppPersistentStateUnvalidated {
   appSettings: AppSettings;
   openEditors: OpenEditors;
   deviceClassEditors: { [key: string]: DeviceClassEditorState };
@@ -60,9 +72,11 @@ export interface DeviceClassEditorState {
   deviceClassId: string;
   basicData: BasicData;
   libraries: Record<string, string>;
+  deviceLibrary: DeviceLibrary;
   parameters: ParametersEditorState;
   structures: StructuresEditorState;
   dmx: DmxSerializerState;
+  localizations: Record<string, DefinitionLocalization>;
   windowLayout: FlexLayout.IJsonRowNode;
 }
 
@@ -93,16 +107,29 @@ export interface DmxSerializerState {
   udr: EstaDmx;
 }
 
-export function useUdrDatabase(): UdrDatabase {
-  return useAppStore((state) => state.udrDatabase);
+// ---------------------------------------------------------------------------
+// Runtime State
+// ---------------------------------------------------------------------------
+
+export interface AppRuntimeState {
+  dmxController: DmxController;
 }
 
-export function useDarkMode(): boolean {
-  return useAppStore((state) => state.appSettings.darkMode);
+export type DmxController =
+  | DmxControllerNotCreated
+  | DmxControllerAvailable
+  | DmxControllerError;
+
+export interface DmxControllerNotCreated {
+  state: "not-created";
 }
 
-export function setDarkMode(darkMode: boolean) {
-  useAppStore.setState((state) => {
-    state.appSettings.darkMode = darkMode;
-  });
+export interface DmxControllerAvailable {
+  state: "available";
+  db: ParameterDatabase;
+}
+
+export interface DmxControllerError {
+  state: "error";
+  error: E173Error;
 }

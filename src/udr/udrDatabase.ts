@@ -4,6 +4,10 @@ import {
   StructureClass,
   importUdr,
   Error as E173Error,
+  DataType,
+  Unit,
+  DeviceLibrary,
+  DefinitionLocalization,
 } from "e173";
 import core from "e173/libraries/core/draft-2024-1/library.json";
 import intensityColor from "e173/libraries/intensity-color/draft-2024-1/library.json";
@@ -42,6 +46,16 @@ interface LibraryDatabase {
 export interface UdrDatabase {
   libraries: LibraryDatabase;
   itemClasses: ItemClassDatabase;
+}
+
+export interface ResolvedParameterClass {
+  libraryId?: string;
+  libraryVersion?: string;
+  id: string;
+  name: string;
+  description?: string;
+  dataType: DataType;
+  unit?: Unit;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -86,7 +100,6 @@ export function getItemClassName(
     return undefined;
   }
 
-  // TODO: use current localization
   const library =
     database.libraries[itemClass.libraryId]?.[itemClass.libraryVersion];
 
@@ -122,20 +135,60 @@ export function lookupParameterClass(
   libraryId: string,
   libraryVersion: string,
   classId: string,
-): ParameterClassWithId | undefined {
-  const cls =
-    database.libraries[libraryId]?.[libraryVersion]?.parameterClasses?.[
-      classId
-    ];
+): ResolvedParameterClass | undefined {
+  const library = database.libraries[libraryId]?.[libraryVersion];
+  if (!library) {
+    return undefined;
+  }
 
-  return cls
-    ? {
-        ...cls,
-        id: classId,
-        libraryId,
-        libraryVersion,
-      }
-    : undefined;
+  const cls = library.parameterClasses?.[classId];
+
+  if (cls) {
+    // TODO: use current localization
+    const localizedName =
+      library.localizations?.["en-US"]?.strings?.[cls["@name"]];
+    const localizedDesc = cls["@description"]
+      ? library.localizations?.["en-US"]?.strings?.[cls["@description"]]
+      : undefined;
+
+    return {
+      id: classId,
+      libraryId,
+      libraryVersion,
+      name: localizedName || cls["@name"],
+      description: localizedDesc || cls["@description"],
+      unit: cls.unit,
+      dataType: cls.dataType,
+    };
+  } else {
+    return undefined;
+  }
+}
+
+export function lookupDeviceParameterClass(
+  deviceLibrary: DeviceLibrary,
+  deviceLocalizations: Record<string, DefinitionLocalization>,
+  classId: string,
+): ResolvedParameterClass | undefined {
+  const cls = deviceLibrary.parameterClasses?.[classId];
+
+  if (cls) {
+    // TODO: use current localization
+    const localizedName = deviceLocalizations["en-US"]?.strings?.[cls["@name"]];
+    const localizedDesc = cls["@description"]
+      ? deviceLocalizations["en-US"]?.strings?.[cls["@description"]]
+      : undefined;
+
+    return {
+      id: classId,
+      name: localizedName || cls["@name"],
+      description: localizedDesc || cls["@description"],
+      unit: cls.unit,
+      dataType: cls.dataType,
+    };
+  } else {
+    return undefined;
+  }
 }
 
 export function lookupStructureClass(

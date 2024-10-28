@@ -133,9 +133,15 @@ function getFileDownloadUrl(
               // TODO version
               "1.0.0": {
                 libraries: selectedEditor.libraries,
+                deviceLibrary: selectedEditor.deviceLibrary
+                  ? selectedEditor.deviceLibrary
+                  : undefined,
                 ...selectedEditor.basicData,
                 parameters: selectedEditor.parameters.parameters,
                 structures: selectedEditor.structures.structures,
+                localizations: selectedEditor.localizations
+                  ? selectedEditor.localizations
+                  : undefined,
               },
             },
           },

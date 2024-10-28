@@ -1,22 +1,12 @@
 {
-  "$ref": "#/definitions/AppStateUnvalidated",
+  "$ref": "#/definitions/AppPersistentStateUnvalidated",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "Access": {
       "enum": ["read", "write"],
       "type": "string"
     },
-    "AppSettings": {
-      "additionalProperties": false,
-      "properties": {
-        "darkMode": {
-          "type": "boolean"
-        }
-      },
-      "required": ["darkMode"],
-      "type": "object"
-    },
-    "AppStateUnvalidated": {
+    "AppPersistentStateUnvalidated": {
       "additionalProperties": false,
       "properties": {
         "appSettings": {
@@ -41,6 +31,16 @@
         "deviceClassEditors",
         "udrDatabase"
       ],
+      "type": "object"
+    },
+    "AppSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "darkMode": {
+          "type": "boolean"
+        }
+      },
+      "required": ["darkMode"],
       "type": "object"
     },
     "BasicData": {
@@ -171,12 +171,21 @@
         "deviceClassId": {
           "type": "string"
         },
+        "deviceLibrary": {
+          "$ref": "#/definitions/DeviceLibrary"
+        },
         "dmx": {
           "$ref": "#/definitions/DmxSerializerState"
         },
         "libraries": {
           "additionalProperties": {
             "type": "string"
+          },
+          "type": "object"
+        },
+        "localizations": {
+          "additionalProperties": {
+            "$ref": "#/definitions/DefinitionLocalization"
           },
           "type": "object"
         },
@@ -194,9 +203,11 @@
         "deviceClassId",
         "basicData",
         "libraries",
+        "deviceLibrary",
         "parameters",
         "structures",
         "dmx",
+        "localizations",
         "windowLayout"
       ],
       "type": "object"
@@ -215,6 +226,30 @@
         }
       },
       "required": ["manufacturer", "model"],
+      "type": "object"
+    },
+    "DeviceLibrary": {
+      "additionalProperties": false,
+      "properties": {
+        "parameterClasses": {
+          "additionalProperties": {
+            "$ref": "#/definitions/ParameterClass"
+          },
+          "type": "object"
+        },
+        "serializerClasses": {
+          "additionalProperties": {
+            "$ref": "#/definitions/SerializerClass"
+          },
+          "type": "object"
+        },
+        "structureClasses": {
+          "additionalProperties": {
+            "$ref": "#/definitions/StructureClass"
+          },
+          "type": "object"
+        }
+      },
       "type": "object"
     },
     "DmxSerializerState": {

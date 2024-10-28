@@ -1,6 +1,6 @@
 import { Button, Tooltip } from "@blueprintjs/core";
 import { Chunk, MappingGroup } from "e173";
-import { useDarkMode } from "app/state";
+import { useDarkMode } from "app/store";
 import {
   addCondition,
   addParameterMapping,

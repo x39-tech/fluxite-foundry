@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Button, Icon, Menu, MenuDivider } from "@blueprintjs/core";
 import { MenuItem2, Popover2 } from "@blueprintjs/popover2";
 import { APP_NAME } from "appInfo";
+import { setDarkMode, useDarkMode } from "app/store";
 import { AboutDialog } from "./AboutDialog";
 import { ImportUdrDialog } from "./ImportUdrDialog";
 import { ExportUdrDialog } from "./ExportUdrDialog";
-import { setDarkMode, useDarkMode } from "app/state";
 
 export const AppMainMenu = () => {
   const darkMode = useDarkMode();

@@ -1,6 +1,6 @@
 import { Button, Collapse, Colors, H4 } from "@blueprintjs/core";
 import { useState } from "react";
-import { useDarkMode } from "app/state";
+import { useDarkMode } from "app/store";
 import "./ItemEditor.css";
 
 const BACKGROUND_COLOR_DARK = Colors.DARK_GRAY2;

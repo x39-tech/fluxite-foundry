@@ -1,19 +1,28 @@
-import { DmxSerializerState } from "app/state";
-import { getCurrentEditor, useCurrentEditorPart } from "../state";
-import { useAppStore } from "app/store";
-import { getUniqueItemId } from "utils/utils";
 import { Condition, Mapping } from "e173";
+import { DmxController, DmxSerializerState } from "app/state";
+import { updateCurrentEditor, useCurrentEditorPart } from "../state";
+import { getUniqueItemId } from "utils/utils";
+import { useAppRuntimeStore } from "app/store";
+
+// ---------------------------------------------------------------------------
+// Read
+// ---------------------------------------------------------------------------
 
 export function useDmxSerializer(): DmxSerializerState | undefined {
   return useCurrentEditorPart((state) => state.dmx);
 }
 
+export function useDmxController(): DmxController {
+  return useAppRuntimeStore((state) => state.dmxController);
+}
+
+// ---------------------------------------------------------------------------
+// Write
+// ---------------------------------------------------------------------------
+
 export function addDmxChunk() {
-  useAppStore.setState((state) => {
-    const dmx = getCurrentEditor(state)?.dmx.udr;
-    if (!dmx) {
-      return;
-    }
+  updateCurrentEditor((editor) => {
+    const dmx = editor.dmx.udr;
 
     const offsetsInUse = Object.values(dmx.chunks).reduce((acc, chunk) => {
       acc.push(...chunk.offsets);
@@ -44,22 +53,14 @@ export function addDmxChunk() {
 }
 
 export function removeDmxChunk(chunkId: string) {
-  useAppStore.setState((state) => {
-    const dmx = getCurrentEditor(state)?.dmx.udr;
-    if (!dmx) {
-      return;
-    }
-
-    delete dmx.chunks[chunkId];
+  updateCurrentEditor((editor) => {
+    delete editor.dmx.udr.chunks[chunkId];
   });
 }
 
 export function changeDmxChunkOffsets(chunkId: string, newOffsets: string[]) {
-  useAppStore.setState((state) => {
-    const dmx = getCurrentEditor(state)?.dmx.udr;
-    if (!dmx) {
-      return;
-    }
+  updateCurrentEditor((editor) => {
+    const dmx = editor.dmx.udr;
 
     const chunk = dmx.chunks[chunkId];
     if (!chunk) {
@@ -90,18 +91,8 @@ export function changeDmxChunkOffsets(chunkId: string, newOffsets: string[]) {
 }
 
 export function addParameterMappingGroup(chunkId: string) {
-  useAppStore.setState((state) => {
-    const currentEditor = getCurrentEditor(state);
-    if (!currentEditor) {
-      return;
-    }
-
-    const dmx = currentEditor.dmx.udr;
-    if (!dmx) {
-      return;
-    }
-
-    const chunk = dmx.chunks[chunkId];
+  updateCurrentEditor((editor) => {
+    const chunk = editor.dmx.udr.chunks[chunkId];
     if (!chunk) {
       return;
     }
@@ -111,13 +102,8 @@ export function addParameterMappingGroup(chunkId: string) {
 }
 
 export function removeParameterMappingGroup(chunkId: string, index: number) {
-  useAppStore.setState((state) => {
-    const dmx = getCurrentEditor(state)?.dmx.udr;
-    if (!dmx) {
-      return;
-    }
-
-    const chunk = dmx.chunks[chunkId];
+  updateCurrentEditor((editor) => {
+    const chunk = editor.dmx.udr.chunks[chunkId];
     if (!chunk) {
       return;
     }
@@ -130,24 +116,14 @@ export function addParameterMapping(
   chunkId: string,
   mappingGroupIndex: number,
 ) {
-  useAppStore.setState((state) => {
-    const currentEditor = getCurrentEditor(state);
-    if (!currentEditor) {
-      return;
-    }
-
-    const dmx = currentEditor.dmx.udr;
-    if (!dmx) {
-      return;
-    }
-
-    const chunk = dmx.chunks[chunkId];
+  updateCurrentEditor((editor) => {
+    const chunk = editor.dmx.udr.chunks[chunkId];
     if (!chunk) {
       return;
     }
 
     chunk.mappingGroups[mappingGroupIndex].mappings.push({
-      mappedParam: Object.keys(currentEditor.parameters.parameters)[0] || "",
+      mappedParam: Object.keys(editor.parameters.parameters)[0] || "",
       ranges: [],
     });
   });
@@ -159,13 +135,8 @@ export function updateParameterMapping(
   mappingIndex: number,
   newValue: Mapping,
 ) {
-  useAppStore.setState((state) => {
-    const dmx = getCurrentEditor(state)?.dmx.udr;
-    if (!dmx) {
-      return;
-    }
-
-    const chunk = dmx.chunks[chunkId];
+  updateCurrentEditor((editor) => {
+    const chunk = editor.dmx.udr.chunks[chunkId];
     if (!chunk) {
       return;
     }
@@ -179,13 +150,8 @@ export function removeParameterMapping(
   mappingGroupIndex: number,
   mappingIndex: number,
 ) {
-  useAppStore.setState((state) => {
-    const dmx = getCurrentEditor(state)?.dmx.udr;
-    if (!dmx) {
-      return;
-    }
-
-    const chunk = dmx.chunks[chunkId];
+  updateCurrentEditor((editor) => {
+    const chunk = editor.dmx.udr.chunks[chunkId];
     if (!chunk) {
       return;
     }
@@ -195,8 +161,8 @@ export function removeParameterMapping(
 }
 
 export function addCondition(chunkId: string, mappingGroupIndex: number) {
-  useAppStore.setState((state) => {
-    const dmx = getCurrentEditor(state)?.dmx.udr;
+  updateCurrentEditor((editor) => {
+    const dmx = editor.dmx.udr;
     if (!dmx) {
       return;
     }
@@ -250,13 +216,8 @@ export function updateCondition(
   conditionIndex: number,
   newCondition: Condition,
 ) {
-  useAppStore.setState((state) => {
-    const dmx = getCurrentEditor(state)?.dmx.udr;
-    if (!dmx) {
-      return;
-    }
-
-    const chunk = dmx.chunks[chunkId];
+  updateCurrentEditor((editor) => {
+    const chunk = editor.dmx.udr.chunks[chunkId];
     if (!chunk) {
       return;
     }
@@ -271,13 +232,8 @@ export function removeCondition(
   mappingGroupIndex: number,
   conditionIndex: number,
 ) {
-  useAppStore.setState((state) => {
-    const dmx = getCurrentEditor(state)?.dmx.udr;
-    if (!dmx) {
-      return;
-    }
-
-    const chunk = dmx.chunks[chunkId];
+  updateCurrentEditor((editor) => {
+    const chunk = editor.dmx.udr.chunks[chunkId];
     if (!chunk) {
       return;
     }

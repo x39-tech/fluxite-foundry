@@ -1,17 +1,42 @@
+import { Draft, produceWithPatches } from "immer";
 import * as FlexLayout from "flexlayout-react";
-import { AppState, EditorType } from "app/state";
-import { useAppStore } from "app/store";
-import { DeviceClassEditorState } from "app/state";
-import { lookupParameterClass, ParameterClassWithId } from "udr/udrDatabase";
+import {
+  Access,
+  createParameterDatabase,
+  DefinitionLocalization,
+  DeviceClass,
+  DeviceLibrary,
+  Lifetime,
+  Error as E173Error,
+} from "e173";
+import {
+  AppPersistentState,
+  EditorType,
+  DeviceClassEditorState,
+} from "app/state";
+import {
+  useAppPersistentStore,
+  updateAppRuntimeState,
+  updateAppPersistentState,
+} from "app/store";
+import {
+  lookupDeviceParameterClass,
+  lookupParameterClass,
+  ResolvedParameterClass,
+} from "udr/udrDatabase";
+
+// ---------------------------------------------------------------------------
+// Read
+// ---------------------------------------------------------------------------
 
 export function useCurrentEditor(): DeviceClassEditorState | undefined {
-  return useAppStore((state) => getCurrentEditor(state));
+  return useAppPersistentStore((state) => getCurrentEditor(state));
 }
 
 export function useCurrentEditorPart<T>(
   reducer: (state: DeviceClassEditorState) => T,
 ): T | undefined {
-  return useAppStore((state) => {
+  return useAppPersistentStore((state) => {
     const currentEditor = getCurrentEditor(state);
     if (!currentEditor) {
       return undefined;
@@ -27,9 +52,9 @@ export function useLibraries(): Record<string, string> | undefined {
 
 export function useParametersWithClasses(): Record<
   string,
-  ParameterClassWithId
+  ResolvedParameterClass
 > {
-  return useAppStore((state) => {
+  return useAppPersistentStore((state) => {
     const currentEditor = getCurrentEditor(state);
     if (!currentEditor) {
       return {};
@@ -37,21 +62,27 @@ export function useParametersWithClasses(): Record<
 
     return Object.entries(currentEditor.parameters.parameters).reduce(
       (acc, [paramId, param]) => {
-        if (!param.library) {
-          return acc;
-        }
+        let paramClass = undefined;
 
-        const libraryVersion = currentEditor.libraries[param.library];
-        if (!libraryVersion) {
-          return acc;
-        }
+        if (param.library) {
+          const libraryVersion = currentEditor.libraries[param.library];
+          if (!libraryVersion) {
+            return acc;
+          }
 
-        const paramClass = lookupParameterClass(
-          state.udrDatabase,
-          param.library,
-          libraryVersion,
-          param.class,
-        );
+          paramClass = lookupParameterClass(
+            state.udrDatabase,
+            param.library,
+            libraryVersion,
+            param.class,
+          );
+        } else {
+          paramClass = lookupDeviceParameterClass(
+            currentEditor.deviceLibrary,
+            currentEditor.localizations,
+            param.class,
+          );
+        }
 
         if (!paramClass) {
           return acc;
@@ -60,23 +91,96 @@ export function useParametersWithClasses(): Record<
         acc[paramId] = paramClass;
         return acc;
       },
-      {} as Record<string, ParameterClassWithId>,
+      {} as Record<string, ResolvedParameterClass>,
     );
   });
 }
 
-export function setWindowLayout(model: FlexLayout.IJsonModel) {
-  useAppStore.setState((state) => {
-    const currentEditor = getCurrentEditor(state);
-    if (!currentEditor) {
-      return;
+export function useDeviceLibrary(): DeviceLibrary {
+  return (
+    useCurrentEditorPart((state) => state.deviceLibrary) || {
+      parameterClasses: {},
+      structureClasses: {},
+      serializerClasses: {},
+    }
+  );
+}
+
+export function useDeviceLocalizations(): Record<
+  string,
+  DefinitionLocalization
+> {
+  return useCurrentEditorPart((state) => state.localizations) || {};
+}
+
+// ---------------------------------------------------------------------------
+// Write
+// ---------------------------------------------------------------------------
+
+export function updateCurrentEditor(
+  updater: (editor: Draft<DeviceClassEditorState>) => void,
+) {
+  updateAppPersistentState((state) => {
+    const [nextState, patches, _invPatches] = produceWithPatches(
+      state,
+      (state) => {
+        const currentEditor = getCurrentEditor(state);
+        if (!currentEditor) {
+          return state;
+        }
+
+        updater(currentEditor);
+      },
+    );
+
+    if (
+      patches.some((patch) => {
+        if (
+          patch.path.length >= 3 &&
+          patch.path[0] == "deviceClassEditors" &&
+          typeof patch.path[2] == "string"
+        ) {
+          return ["libraries", "deviceLibrary", "parameters", "dmx"].includes(
+            patch.path[2],
+          );
+        }
+      })
+    ) {
+      updateDmxController(getCurrentEditor(nextState)!);
     }
 
-    currentEditor.windowLayout = model.layout;
+    return nextState;
   });
 }
 
-export function getCurrentEditor<S extends AppState>(
+export function setWindowLayout(model: FlexLayout.IJsonModel) {
+  updateCurrentEditor((editor) => (editor.windowLayout = model.layout));
+}
+
+export function updateDmxController(editor: DeviceClassEditorState) {
+  if (editor.dmx.udr) {
+    try {
+      const deviceClass = exportDeviceClass(editor);
+      const db = createParameterDatabase(deviceClass);
+      updateAppRuntimeState((state) => {
+        state.dmxController = {
+          state: "available",
+          db,
+        };
+      });
+    } catch (e) {
+      const err = e as E173Error;
+      updateAppRuntimeState((state) => {
+        state.dmxController = {
+          state: "error",
+          error: err,
+        };
+      });
+    }
+  }
+}
+
+export function getCurrentEditor<S extends AppPersistentState>(
   state: S,
 ): DeviceClassEditorState | undefined {
   const currentEditor =
@@ -85,4 +189,31 @@ export function getCurrentEditor<S extends AppState>(
     return undefined;
   }
   return state.deviceClassEditors[currentEditor.id];
+}
+
+export function exportDeviceClass(editor: DeviceClassEditorState): DeviceClass {
+  const deviceClass: DeviceClass = {
+    libraries: editor.libraries,
+    deviceLibrary: editor.deviceLibrary ? editor.deviceLibrary : undefined,
+    ...editor.basicData,
+    parameters: editor.parameters.parameters,
+    structures: {
+      ...editor.structures.structures,
+    },
+    localizations: editor.localizations ? editor.localizations : undefined,
+  };
+
+  if (editor.dmx.udr) {
+    deviceClass.serializers = {
+      dmx: {
+        library: "org.esta.lib.core",
+        class: "esta-dmx",
+        access: [Access.Read],
+        lifetime: Lifetime.Static,
+        default: editor.dmx.udr,
+      },
+    };
+  }
+
+  return deviceClass;
 }

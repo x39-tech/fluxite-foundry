@@ -1,36 +1,45 @@
 import { nanoid } from "nanoid";
-import { useAppStore } from "app/store";
+import { useAppPersistentStore, updateAppPersistentState } from "app/store";
 import {
-  AppState,
+  AppPersistentState,
   DeviceClassEditorState,
   EditorType,
   OpenEditor,
   OpenEditors,
 } from "app/state";
+
 import { DeviceClass, EstaDmx } from "e173";
 import { getUniqueItemId } from "utils/utils";
 import { getDefaultDeviceClass } from "udr/udr";
+import {
+  getCurrentEditor,
+  updateDmxController,
+} from "features/deviceClassEditor/state";
 
 interface OpenEditorWithName extends OpenEditor {
   name: string;
 }
 
+// ---------------------------------------------------------------------------
+// Read
+// ---------------------------------------------------------------------------
+
 export function useOpenEditors(): OpenEditors {
-  return useAppStore((state) => state.openEditors);
+  return useAppPersistentStore((state) => state.openEditors);
 }
 
 export function useDeviceClassEditors(): {
   [key: string]: DeviceClassEditorState;
 } {
-  return useAppStore((state) => state.deviceClassEditors);
+  return useAppPersistentStore((state) => state.deviceClassEditors);
 }
 
 export function useEditorNames(): string[] {
-  return useAppStore((state) => getOpenEditorModelNames(state));
+  return useAppPersistentStore((state) => getOpenEditorModelNames(state));
 }
 
 export function useOpenDeviceClassEditorsWithNames(): OpenEditorWithName[] {
-  return useAppStore((state) =>
+  return useAppPersistentStore((state) =>
     state.openEditors.editors.reduce((accum: OpenEditorWithName[], value) => {
       if (value.type == EditorType.DEVICE_CLASS) {
         const editorState = state.deviceClassEditors[value.id];
@@ -43,8 +52,12 @@ export function useOpenDeviceClassEditorsWithNames(): OpenEditorWithName[] {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Write
+// ---------------------------------------------------------------------------
+
 export function createDeviceClassEditor() {
-  useAppStore.setState((state) => {
+  updateAppPersistentState((state) => {
     const deviceClassEditors = state.deviceClassEditors;
     const openEditors = state.openEditors;
 
@@ -56,17 +69,20 @@ export function createDeviceClassEditor() {
     deviceClassEditors[newId] = getNewDeviceClassEditor(existingIds);
     openEditors.editors.push({ type: EditorType.DEVICE_CLASS, id: newId });
     openEditors.selectedEditor = openEditors.editors.length - 1;
+
+    updateDmxController(deviceClassEditors[newId]);
   });
 }
 
 export function setSelectedEditor(index: number) {
-  useAppStore.setState((state) => {
+  updateAppPersistentState((state) => {
     state.openEditors.selectedEditor = index;
+    updateDmxController(getCurrentEditor(state)!);
   });
 }
 
 export function importDeviceClassEditor(id: string, deviceClass: DeviceClass) {
-  useAppStore.setState((state) => {
+  updateAppPersistentState((state) => {
     const deviceClassEditors = state.deviceClassEditors;
     const openEditors = state.openEditors;
 
@@ -74,11 +90,13 @@ export function importDeviceClassEditor(id: string, deviceClass: DeviceClass) {
     deviceClassEditors[newId] = getImportedDeviceClassEditor(id, deviceClass);
     openEditors.editors.push({ type: EditorType.DEVICE_CLASS, id: newId });
     openEditors.selectedEditor = openEditors.editors.length - 1;
+
+    updateDmxController(deviceClassEditors[newId]);
   });
 }
 
 export function deleteEditor(index: number) {
-  useAppStore.setState((state) => {
+  updateAppPersistentState((state) => {
     const editors = state.openEditors;
     if (index < 0 || index >= editors.editors.length) {
       return;
@@ -101,7 +119,11 @@ export function deleteEditor(index: number) {
   });
 }
 
-function getOpenEditorModelNames(state: AppState): string[] {
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function getOpenEditorModelNames(state: AppPersistentState): string[] {
   return state.openEditors.editors.map((editor) => {
     switch (editor.type) {
       case EditorType.DEVICE_CLASS: {
@@ -146,6 +168,11 @@ function getImportedDeviceClassEditor(
       ...udr,
     },
     libraries: udr.libraries,
+    deviceLibrary: udr.deviceLibrary || {
+      parameterClasses: {},
+      structureClasses: {},
+      serializerClasses: {},
+    },
     parameters: {
       parameters: udr.parameters || {},
       itemEditorLayout: Object.keys(udr.parameters || {}).map((id) => {
@@ -161,6 +188,7 @@ function getImportedDeviceClassEditor(
     dmx: {
       udr: dmx ? dmx : { chunks: {} },
     },
+    localizations: udr.localizations || {},
     windowLayout: {
       type: "row",
       weight: 100,
