@@ -21,6 +21,21 @@ test("Adds a new parameter correctly from the new parameter dialog", async () =>
   await user.keyboard("{Control>}a{/Control}{Delete}test-item{Enter}");
   await user.click(screen.getByText("My New Item"));
   await user.keyboard("{Control>}a{/Control}{Delete}Test Item{Enter}");
+
+  // Select a parameter class before adding
+  await user.click(screen.getByRole("button", { name: "Class" }));
+  // Wait for dropdown to open and select any available (non-disabled) parameter class
+  const selectableButtons = await screen.findAllByRole("button");
+  const enabledClassButtons = selectableButtons.filter(
+    (button) =>
+      !button.hasAttribute("disabled") &&
+      button.textContent &&
+      button.textContent.includes("/"), // Parameter classes have format like "category/name"
+  );
+  if (enabledClassButtons.length > 0) {
+    await user.click(enabledClassButtons[0]);
+  }
+
   await user.click(screen.getByRole("button", { name: "Add" }));
 
   const expandButton = getByRole("button", { name: "Expand Test Item" });

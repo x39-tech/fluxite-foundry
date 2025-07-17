@@ -29,11 +29,10 @@ build:
     paths:
       - dist/
 
-# Tests are broken, something to do with this https://github.com/Menci/vite-plugin-wasm/issues/56
-# test:
-#   stage: build
-#   script:
-#     - npm run testrun
+test:
+  stage: build
+  script:
+    - npm run test
 
 check_state_migration:
   stage: build

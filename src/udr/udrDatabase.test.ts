@@ -68,7 +68,10 @@ describe("class lookup", () => {
       id: "parameter1",
       libraryId: "org.test.lib.test_lib",
       libraryVersion: "1.0.0",
-      ...expectedItem,
+      name: expectedItem["@name"],
+      description: expectedItem["@description"],
+      dataType: expectedItem.dataType,
+      unit: expectedItem.unit,
     });
   });
 
