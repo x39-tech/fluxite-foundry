@@ -1,6 +1,6 @@
-import { getByText, screen } from "@testing-library/react";
+import { getByText, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
-// A few implementation details :(
 export function getEditorTableRow(
   labelText: string,
   element?: HTMLElement,
@@ -18,4 +18,54 @@ export function getEditorTableRow(
   }
 
   return labelElem.parentElement;
+}
+
+// Returns the second column of the row with the given label text.
+export function getEditorTableRowSecondCol(
+  labelText: string,
+  element?: HTMLElement,
+): HTMLElement {
+  const row = getEditorTableRow(labelText, element);
+  const tdElement = row.querySelector<HTMLElement>("td:nth-child(2)");
+  if (!tdElement) {
+    throw Error(`No second column found for row with label ${labelText}`);
+  }
+  return tdElement;
+}
+
+export async function changeEditableTextField(
+  user: ReturnType<typeof userEvent.setup>,
+  container: HTMLElement,
+  newValue: string,
+) {
+  const editableText = container.querySelector("button");
+  if (!editableText) {
+    throw Error("No editable text element found");
+  }
+  await user.click(editableText);
+
+  // Wait for edit mode to be activated
+  const inputElement = await waitFor(
+    () => {
+      const inputElement: HTMLInputElement | HTMLElement | null =
+        container.querySelector("input");
+      if (!inputElement) {
+        // waitFor retries only after an error is thrown
+        throw new Error("No input element found");
+      }
+
+      return inputElement;
+    },
+    { timeout: 2000 },
+  );
+
+  await user.clear(inputElement as HTMLInputElement);
+  await user.type(inputElement, newValue);
+  await user.keyboard("{Enter}");
+
+  // Wait for the content to update
+  await waitFor(() => {
+    const newValueElement = getByText(container, newValue);
+    expect(newValueElement).toBeInTheDocument();
+  });
 }

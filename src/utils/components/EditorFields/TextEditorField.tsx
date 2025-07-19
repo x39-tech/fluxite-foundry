@@ -2,7 +2,8 @@
 // Can either be controlled (value) or uncontrolled (defaultValue).
 
 import { useState } from "react";
-import { Callout, EditableText } from "@blueprintjs/core";
+import { Callout } from "@blueprintjs/core";
+import { EditableText } from "../EditableText";
 import { Placement, Popover2 } from "@blueprintjs/popover2";
 import { InputValidationResult } from "utils/inputValidation";
 
