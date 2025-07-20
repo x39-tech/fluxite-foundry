@@ -2,12 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Button, HTMLSelect, Icon, Slider } from "@blueprintjs/core";
 import {
   DataType,
-  DmxDriver,
-  DmxMapping,
-  Parameter,
   ParameterCluster,
   ParameterCombo,
-  ParamRange,
   Unit,
   UnitName,
 } from "e173";
@@ -15,16 +11,12 @@ import { useCurrentEditor, useParametersWithClasses } from "../state";
 import { useDmxController } from "../dmxEditor/state";
 import { TextEditorField } from "utils/components/EditorFields/TextEditorField";
 import { useDarkMode } from "app/store";
-
-interface ParamValue {
-  value: number;
-  active: boolean;
-}
-
-interface ParamState {
-  params: { [key: string]: ParamValue };
-  dmxChunks: { [key: string]: number };
-}
+import {
+  calculateDmxValue,
+  ParamState,
+  ParamValue,
+  reconcileParamValues,
+} from "./logic";
 
 interface DmxDisplay {
   slots: {
@@ -62,6 +54,20 @@ export const DmxController = () => {
   const websocketConnRef = useRef<WebSocket | null>(null);
   const darkMode = useDarkMode();
 
+  // Update the param values when the set of parameters in the DMX controller changes
+  useEffect(() => {
+    if (dmxController.state === "available" && dmxController.db.dmxDriver) {
+      setParamValues(
+        reconcileParamValues(
+          paramValues,
+          dmxController.db.parameters,
+          dmxController.db.dmxDriver,
+        ),
+      );
+    }
+  }, [dmxController]);
+
+  // Send websocket data when relevant state changes
   useEffect(() => {
     if (serverConnection.active && websocketConnRef.current) {
       const slots = [...Array(dmxDisplayData.maxSlot + 1).keys()].map(
@@ -90,7 +96,7 @@ export const DmxController = () => {
         } as WebSocketPayload),
       );
     }
-  });
+  }, [serverConnection.active, paramValues, dmxController]);
 
   const serverAreaBg = darkMode ? "bg-gray-800" : "bg-gray-200";
 
@@ -100,7 +106,7 @@ export const DmxController = () => {
 
   switch (dmxController.state) {
     case "available":
-      if (!dmxController.db.dmx_driver) {
+      if (!dmxController.db.dmxDriver) {
         return (
           <p>
             Add a DMX parameter mapping in the DMX editor to use the test
@@ -122,19 +128,8 @@ export const DmxController = () => {
       );
   }
 
-  if (
-    Object.keys(paramValues.dmxChunks).length === 0 ||
-    Object.keys(paramValues.params).length === 0
-  ) {
-    setInitialParamValues(
-      setParamValues,
-      dmxController.db.parameters,
-      dmxController.db.dmx_driver,
-    );
-  }
-
   const dmxDisplayData = Object.entries(
-    dmxController.db.dmx_driver.chunks,
+    dmxController.db.dmxDriver.chunks,
   ).reduce(
     (acc, [chunkId, chunk]) => {
       chunk.offsets.forEach((offset, index) => {
@@ -230,7 +225,7 @@ export const DmxController = () => {
   );
 
   const clustersOrdered: ParameterCluster[] =
-    dmxController.db.dmx_driver.clusters
+    dmxController.db.dmxDriver.clusters
       .map((cluster) => ({
         combinations: cluster.combinations,
         parameters: cluster.parameters.toSorted(),
@@ -400,70 +395,6 @@ function getSliderStepSize(min: number, max: number): number {
   return stepSize;
 }
 
-function setInitialParamValues(
-  setParamValues: (paramValues: ParamState) => void,
-  paramDb: Record<string, Parameter>,
-  dmxDriver: DmxDriver,
-) {
-  const newParamValues: { [key: string]: ParamValue } = {};
-  const newDmxChunks: { [key: string]: number } = {};
-
-  for (const cluster of dmxDriver.clusters) {
-    const firstCombo = cluster.combinations[0];
-    for (const [param, constraint] of Object.entries(firstCombo.constraints)) {
-      const parsedParam = param.match(/([^[]+)(\[(\d+)\])?/);
-      if (!parsedParam) {
-        console.error(`Invalid parameter name ${param}`);
-        continue;
-      }
-
-      const paramName = parsedParam[1];
-      const paramData = paramDb[paramName];
-
-      if (constraint.param_range) {
-        if (
-          paramData.default !== undefined &&
-          typeof paramData.default === "number" &&
-          paramData.default <= (constraint.param_range.end as number) &&
-          paramData.default >= (constraint.param_range.start as number)
-        ) {
-          newParamValues[param] = { value: paramData.default, active: true };
-        } else {
-          newParamValues[param] = {
-            value: constraint.param_range.start as number,
-            active: true,
-          };
-        }
-      }
-
-      if (constraint.dmx_mapping) {
-        const paramValue = newParamValues[param]?.value;
-        if (paramValue !== undefined) {
-          newDmxChunks[constraint.dmx_mapping.chunk_id] = calculateDmxValue(
-            paramValue,
-            constraint.param_range,
-            constraint.dmx_mapping,
-          );
-        } else {
-          newDmxChunks[constraint.dmx_mapping.chunk_id] =
-            constraint.dmx_mapping.start;
-        }
-      }
-    }
-  }
-
-  for (const chunk in dmxDriver.chunks) {
-    if (!(chunk in newDmxChunks)) {
-      newDmxChunks[chunk] = 0;
-    }
-  }
-
-  setParamValues({
-    params: newParamValues,
-    dmxChunks: newDmxChunks,
-  });
-}
-
 function setParamValue(
   paramValues: ParamState,
   setParamValues: (paramValues: ParamState) => void,
@@ -475,9 +406,9 @@ function setParamValue(
     const constraint = combo.constraints[parameter];
     return (
       constraint &&
-      constraint.param_range &&
-      value >= (constraint.param_range.start as number) &&
-      value <= (constraint.param_range.end as number)
+      constraint.paramRange &&
+      value >= (constraint.paramRange.start as number) &&
+      value <= (constraint.paramRange.end as number)
     );
   });
 
@@ -488,8 +419,8 @@ function setParamValue(
   const winningCandidate = candidates.reduce(
     (acc, candidate) => {
       if (
-        !candidate.constraints[parameter].param_range ||
-        !candidate.constraints[parameter].dmx_mapping
+        !candidate.constraints[parameter].paramRange ||
+        !candidate.constraints[parameter].dmxMapping
       ) {
         return acc;
       }
@@ -523,23 +454,23 @@ function setParamValue(
   )) {
     if (param == parameter) {
       newParamValues[param] = { value, active: true };
-      newDmxChunks[constraint.dmx_mapping!.chunk_id] = calculateDmxValue(
+      newDmxChunks[constraint.dmxMapping!.chunkId] = calculateDmxValue(
         value,
-        constraint.param_range,
-        constraint.dmx_mapping!,
+        constraint.paramRange,
+        constraint.dmxMapping!,
       );
     } else {
       const paramCurValue = paramValues.params[param]?.value;
       if (paramCurValue !== undefined) {
-        if (constraint.param_range) {
-          if (paramCurValue < (constraint.param_range.start as number)) {
+        if (constraint.paramRange) {
+          if (paramCurValue < (constraint.paramRange.start as number)) {
             newParamValues[param] = {
-              value: constraint.param_range.start as number,
+              value: constraint.paramRange.start as number,
               active: true,
             };
-          } else if (paramCurValue > (constraint.param_range.end as number)) {
+          } else if (paramCurValue > (constraint.paramRange.end as number)) {
             newParamValues[param] = {
-              value: constraint.param_range.end as number,
+              value: constraint.paramRange.end as number,
               active: true,
             };
           } else {
@@ -549,11 +480,11 @@ function setParamValue(
             };
           }
 
-          if (constraint.dmx_mapping) {
-            newDmxChunks[constraint.dmx_mapping.chunk_id] = calculateDmxValue(
+          if (constraint.dmxMapping) {
+            newDmxChunks[constraint.dmxMapping.chunkId] = calculateDmxValue(
               paramCurValue,
-              constraint.param_range,
-              constraint.dmx_mapping,
+              constraint.paramRange,
+              constraint.dmxMapping,
             );
           }
         } else {
@@ -590,10 +521,10 @@ function getNumberOfParamsToBeAdjusted(
         ? paramValue.active != !constraint.calculated
         : !constraint.calculated;
       const paramWillChangeRange =
-        constraint.param_range &&
+        constraint.paramRange &&
         paramValue !== undefined &&
-        (paramValue.value < (constraint.param_range.start as number) ||
-          paramValue.value > (constraint.param_range.end as number));
+        (paramValue.value < (constraint.paramRange.start as number) ||
+          paramValue.value > (constraint.paramRange.end as number));
 
       if (
         param !== excludeParam &&
@@ -606,28 +537,4 @@ function getNumberOfParamsToBeAdjusted(
     },
     0,
   );
-}
-
-function calculateDmxValue(
-  paramValue: number,
-  paramRange: ParamRange,
-  dmxMapping: DmxMapping,
-): number {
-  const paramStart = paramRange!.start as number;
-  const paramEnd = paramRange!.end as number;
-
-  const paramSpan = paramEnd - paramStart;
-
-  if (paramSpan > 0) {
-    return Math.round(
-      ((paramValue - paramStart) / paramSpan) *
-        (dmxMapping.end - dmxMapping.start) +
-        dmxMapping.start,
-    );
-  } else if (paramSpan == 0) {
-    return dmxMapping.start;
-  } else {
-    // TODO
-    return dmxMapping.start;
-  }
 }
