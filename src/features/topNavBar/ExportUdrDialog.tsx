@@ -1,14 +1,13 @@
 import {
   AnchorButton,
   Button,
-  Checkbox,
   Classes,
   H3,
   HTMLSelect,
-  HTMLTable,
 } from "@blueprintjs/core";
 import { useState } from "react";
 import { E173Document } from "e173";
+import { LabeledCheckbox } from "utils/components/LabeledCheckbox";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog";
 import {
   useDeviceClassEditors,
@@ -16,6 +15,7 @@ import {
 } from "./state";
 import { DeviceClassEditorState } from "app/state";
 import { TextEditorField } from "utils/components/EditorFields/TextEditorField";
+import { SimplePropsTable } from "utils/components/SimplePropsTable";
 
 interface Props {
   isOpen: boolean;
@@ -52,53 +52,51 @@ export const ExportUdrDialog = ({ isOpen, onClose }: Props) => {
         <H3>Export UDR Document</H3>
       </div>
       <div className={"export-udr-dialog-body " + Classes.DIALOG_BODY}>
-        <HTMLTable compact>
-          <tbody>
-            <tr>
-              <td style={{ verticalAlign: "middle" }}>
-                Choose a device class to export:
-              </td>
-              <td>
-                <HTMLSelect
-                  value={selectedEditorId}
-                  onChange={(event) => {
-                    setSelectedEditorId(event.currentTarget.value);
-                    setDeviceClassId(
-                      deviceClassEditors[event.currentTarget.value]
-                        ?.deviceClassId ?? "",
-                    );
-                  }}
-                >
-                  {editors.map(({ id, name }, index) => (
-                    <option key={id} value={id}>
-                      {`${index + 1}: ${name}`}
-                    </option>
-                  ))}
-                </HTMLSelect>
-              </td>
-            </tr>
-            <tr>
-              <td style={{ verticalAlign: "middle " }}>
-                Select a device class ID:
-              </td>
-              <td>
-                <TextEditorField
-                  value={deviceClassId}
-                  onValueChanged={(newValue) => setDeviceClassId(newValue)}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <Checkbox
-                  label="Formatted"
-                  checked={prettyPrint}
-                  onChange={() => setPrettyPrint(!prettyPrint)}
-                />
-              </td>
-            </tr>
-          </tbody>
-        </HTMLTable>
+        <SimplePropsTable>
+          <tr>
+            <td style={{ verticalAlign: "middle" }}>
+              Choose a device class to export:
+            </td>
+            <td>
+              <HTMLSelect
+                value={selectedEditorId}
+                onChange={(event) => {
+                  setSelectedEditorId(event.currentTarget.value);
+                  setDeviceClassId(
+                    deviceClassEditors[event.currentTarget.value]
+                      ?.deviceClassId ?? "",
+                  );
+                }}
+              >
+                {editors.map(({ id, name }, index) => (
+                  <option key={id} value={id}>
+                    {`${index + 1}: ${name}`}
+                  </option>
+                ))}
+              </HTMLSelect>
+            </td>
+          </tr>
+          <tr>
+            <td style={{ verticalAlign: "middle " }}>
+              Select a device class ID:
+            </td>
+            <td>
+              <TextEditorField
+                value={deviceClassId}
+                onValueChanged={(newValue) => setDeviceClassId(newValue)}
+              />
+            </td>
+          </tr>
+          <tr>
+            <td colSpan={2}>
+              <LabeledCheckbox
+                label="Formatted"
+                checked={prettyPrint}
+                onChange={() => setPrettyPrint(!prettyPrint)}
+              />
+            </td>
+          </tr>
+        </SimplePropsTable>
       </div>
       <div className={Classes.DIALOG_FOOTER}>
         <AnchorButton

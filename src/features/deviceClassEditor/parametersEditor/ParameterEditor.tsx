@@ -249,7 +249,7 @@ function getParameterPropsTable(
   existingItemIds: string[],
 ): JSX.Element {
   return (
-    <SimplePropsTable>
+    <SimplePropsTable className="mb-2">
       <tr>
         <td>Library</td>
         <td>

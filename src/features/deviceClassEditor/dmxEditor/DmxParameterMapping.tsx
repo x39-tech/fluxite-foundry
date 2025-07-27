@@ -1,4 +1,4 @@
-import { HTMLTable, Tooltip } from "@blueprintjs/core";
+import { Tooltip } from "@blueprintjs/core";
 import { DataType, Mapping, MappingRange, UnmappedParam } from "e173";
 import { Button } from "utils/components/Button";
 import { StringSelector } from "utils/components/StringSelector";
@@ -6,6 +6,7 @@ import { TextEditorField } from "utils/components/EditorFields/TextEditorField";
 import { SelectField } from "utils/components/EditorFields/SelectField";
 import { ResolvedParameterClass } from "udr/udrDatabase";
 import { useParametersWithClasses } from "../state";
+import { Table } from "utils/components/Table";
 
 interface DmxParameterMappingProps {
   mapping: Mapping;
@@ -84,7 +85,7 @@ export const DmxParameterMapping = ({
           addRangeButton
         ) : (
           <>
-            <HTMLTable striped compact>
+            <Table>
               <thead>
                 <tr>
                   <td>Start</td>
@@ -104,7 +105,7 @@ export const DmxParameterMapping = ({
                   );
                 })}
               </tbody>
-            </HTMLTable>
+            </Table>
             {addRangeButton}
           </>
         );
@@ -141,7 +142,7 @@ export const DmxParameterMapping = ({
   if (mapping.unmappedParams && mapping.unmappedParams.length > 0) {
     unmappedParams = (
       <>
-        <HTMLTable striped compact>
+        <Table>
           <thead>
             <tr>
               <td>Parameter</td>
@@ -161,7 +162,7 @@ export const DmxParameterMapping = ({
               );
             })}
           </tbody>
-        </HTMLTable>
+        </Table>
         {unmappedParams}
       </>
     );
