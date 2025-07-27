@@ -1,6 +1,7 @@
-import { Button, Tooltip } from "@blueprintjs/core";
+import { Tooltip } from "@blueprintjs/core";
 import { Chunk, MappingGroup } from "e173";
 import { useDarkMode } from "app/store";
+import { Button } from "utils/components/Button";
 import {
   addCondition,
   addParameterMapping,
@@ -37,7 +38,7 @@ export const DmxParameterGroup = ({
         <div className="font-bold mx-2 my-1">Parameter Group</div>
         <div className="grow" />
         <Button
-          icon="delete"
+          icon="TrashIcon"
           minimal
           onClick={() => removeParameterMappingGroup(chunkId, groupIndex)}
         />
@@ -69,14 +70,14 @@ export const DmxParameterGroup = ({
         <div className="grow" />
         <Tooltip content="Add Parameter Mapping">
           <Button
-            icon="flow-linear"
+            icon="CalculatorIcon"
             minimal
             onClick={() => addParameterMapping(chunkId, groupIndex)}
           />
         </Tooltip>
         <Tooltip content="Add Condition">
           <Button
-            icon="filter"
+            icon="FunnelIcon"
             minimal
             disabled={chunksArray.length <= 1}
             onClick={() => addCondition(chunkId, groupIndex)}

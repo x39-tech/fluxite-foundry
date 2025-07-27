@@ -1,15 +1,15 @@
 import { useCallback, useEffect } from "react";
 import * as FlexLayout from "flexlayout-react";
-import { Button } from "@blueprintjs/core";
 import { Popover2 } from "@blueprintjs/popover2";
 import { throttle } from "lodash";
 import { nanoid } from "nanoid";
 import { APP_NAME } from "appInfo";
+import { RenderError } from "utils/components/RenderError";
+import { Button } from "utils/components/Button";
 import { useDarkMode } from "app/store";
 import { WIDGETS, isValidWidget } from "./widgets";
 import { NewWidgetMenu } from "./newWidgetMenu";
 import { setWindowLayout, useCurrentEditor } from "./state";
-import { RenderError } from "utils/components/RenderError";
 import "./DeviceClassEditor.scss";
 
 export const DeviceClassEditor = () => {
@@ -79,7 +79,13 @@ export const DeviceClassEditor = () => {
               />
             }
           >
-            <Button icon="add" minimal />
+            <Button
+              minimal
+              icon="PlusCircleIcon"
+              iconType="outline"
+              iconSize={5}
+              aria-label="Add new widget"
+            />
           </Popover2>,
         ];
       }}

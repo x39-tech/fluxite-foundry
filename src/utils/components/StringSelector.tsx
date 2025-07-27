@@ -1,7 +1,8 @@
 import { ItemRenderer, Select } from "@blueprintjs/select";
 import { useParameters } from "features/deviceClassEditor/parametersEditor/state";
 import { RenderError } from "./RenderError";
-import { Button, MenuItem } from "@blueprintjs/core";
+import { MenuItem } from "@blueprintjs/core";
+import { Button } from "./Button";
 
 interface StringSelectorProps {
   className?: string;
@@ -63,11 +64,11 @@ export const StringSelector = ({
     >
       <Button
         className={className}
-        icon="property"
-        rightIcon="caret-down"
-        fill={true}
-        text={buttonDisplayName || placeholderText || "Select an item..."}
-      />
+        icon="ListBulletIcon"
+        rightIcon="ChevronDownIcon"
+      >
+        {buttonDisplayName || placeholderText || "Select an item..."}
+      </Button>
     </StringSelect>
   );
 };

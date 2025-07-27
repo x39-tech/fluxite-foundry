@@ -1,5 +1,6 @@
-import { Button, HTMLSelect } from "@blueprintjs/core";
+import { HTMLSelect } from "@blueprintjs/core";
 import { Chunk, Condition } from "e173";
+import { Button } from "utils/components/Button";
 import { TextEditorField } from "utils/components/EditorFields/TextEditorField";
 import { StringSelector } from "utils/components/StringSelector";
 
@@ -177,7 +178,13 @@ const DmxMappingCondition = ({
           }
         }}
       />
-      <Button icon="delete" minimal onClick={onRemove} />
+      <Button
+        minimal
+        className="mx-1"
+        icon="TrashIcon"
+        onClick={onRemove}
+        aria-label="Delete condition"
+      />
     </div>
   );
 };

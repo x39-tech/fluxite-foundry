@@ -75,6 +75,13 @@ export const TextEditorField = ({
           }
           setIsEditing(false);
         }}
+        onCancel={() => {
+          setStagedText(defaultText);
+          setIsEditing(false);
+          if (validator) {
+            setValidationResult(validator(defaultText));
+          }
+        }}
         intent={validationResult.isValid ? "none" : "danger"}
       />
     </Popover2>

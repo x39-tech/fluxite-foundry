@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AddItemSection } from "utils/components/AddItemSection/AddItemSection";
+import { AddItemSection } from "utils/components/AddItemSection";
 import { NewParameterDialog } from "./NewParameterDialog";
 import { ParameterEditor } from "./ParameterEditor";
 import { useParameterEditors } from "./state";

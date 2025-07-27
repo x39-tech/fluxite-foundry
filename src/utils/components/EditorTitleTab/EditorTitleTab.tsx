@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Button, Icon, Navbar } from "@blueprintjs/core";
-import "./EditorTitleTab.css";
+import { Button } from "../Button";
+import { TrashIcon } from "@heroicons/react/24/solid";
+import { VerticalDivider } from "../VerticalDivider";
 
 interface Props {
   name: string;
@@ -24,7 +25,6 @@ export const EditorTitleTab = ({
       <Button
         minimal
         active={active}
-        className="editor-selector-button"
         onClick={() => {
           onSelect(id);
         }}
@@ -35,17 +35,18 @@ export const EditorTitleTab = ({
           setHovered(false);
         }}
       >
-        <span className="name-text">{name}</span>
-        <Icon
-          icon="delete"
-          style={{ visibility: hovered ? "visible" : "hidden" }}
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(id);
-          }}
-        />
+        <div className="flex gap-2 mx-2 my-0.5">
+          {name}
+          <TrashIcon
+            className={`size-4 ${hovered ? "visible" : "invisible"}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(id);
+            }}
+          />
+        </div>
       </Button>
-      <Navbar.Divider />
+      <VerticalDivider />
     </>
   );
 };

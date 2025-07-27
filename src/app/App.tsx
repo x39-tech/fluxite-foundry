@@ -19,7 +19,7 @@ export const App = () => {
   const currentEditor = editors.editors[editors.selectedEditor];
 
   return (
-    <div className={darkMode ? "app " + Classes.DARK : "app"}>
+    <div className={darkMode ? "app dark " + Classes.DARK : "app"}>
       <TopNavBar />
       <div className="display-area">
         {currentEditor ? EDITORS[currentEditor.type]() : <div />}

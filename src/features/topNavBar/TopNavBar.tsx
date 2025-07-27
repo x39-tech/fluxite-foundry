@@ -1,6 +1,7 @@
-import { Alignment, Button, Navbar } from "@blueprintjs/core";
+import { Alignment, Navbar } from "@blueprintjs/core";
 import { Popover2 } from "@blueprintjs/popover2";
 import { APP_NAME } from "appInfo";
+import { Button } from "utils/components/Button";
 import { EditorTitleTab } from "utils/components/EditorTitleTab/EditorTitleTab";
 import { AppMainMenu } from "./AppMainMenu";
 import { createDeviceClassEditor, useEditorNames } from "./state";
@@ -44,7 +45,9 @@ export const TopNavBar = () => {
             position="bottom"
           >
             <Button
-              icon="add"
+              icon="PlusCircleIcon"
+              iconType="outline"
+              iconSize={5}
               aria-label="Add New Editor"
               onClick={createDeviceClassEditor}
             />

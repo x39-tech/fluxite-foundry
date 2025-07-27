@@ -1,5 +1,6 @@
-import { Button, HTMLTable, Tooltip } from "@blueprintjs/core";
+import { HTMLTable, Tooltip } from "@blueprintjs/core";
 import { DataType, Mapping, MappingRange, UnmappedParam } from "e173";
+import { Button } from "utils/components/Button";
 import { StringSelector } from "utils/components/StringSelector";
 import { TextEditorField } from "utils/components/EditorFields/TextEditorField";
 import { SelectField } from "utils/components/EditorFields/SelectField";
@@ -68,9 +69,11 @@ export const DmxParameterMapping = ({
       }
 
       const addRangeButton = (
-        <Tooltip content="Add Range">
+        <Tooltip className="self-start" content="Add Range">
           <Button
-            icon="add"
+            icon="PlusCircleIcon"
+            iconType="outline"
+            iconSize={5}
             minimal
             onClick={() => {
               onUpdate({
@@ -118,9 +121,11 @@ export const DmxParameterMapping = ({
   }
 
   let unmappedParams = (
-    <Tooltip content="Add Unmapped Parameter">
+    <Tooltip className="self-start" content="Add Unmapped Parameter">
       <Button
-        icon="add"
+        icon="PlusCircleIcon"
+        iconType="outline"
+        iconSize={5}
         minimal
         disabled={!isOk || unmappedParameterCandidates.length === 0}
         onClick={() => {
@@ -181,7 +186,7 @@ export const DmxParameterMapping = ({
           }
         />
         <div className="grow" />
-        <Button icon="delete" minimal={true} onClick={onRemove} />
+        <Button icon="TrashIcon" minimal={true} onClick={onRemove} />
       </div>
       <span className="font-bold mt-2 p-1">Mapping Ranges</span>
       {ranges}
@@ -271,7 +276,7 @@ function getRangeTableRowNumeric(
       </td>
       <td>
         <Button
-          icon="delete"
+          icon="TrashIcon"
           minimal
           onClick={() => {
             onUpdate({
@@ -356,7 +361,7 @@ function getRangeTableRowBoolean(
       </td>
       <td>
         <Button
-          icon="delete"
+          icon="TrashIcon"
           minimal
           onClick={() => {
             onUpdate({
@@ -467,7 +472,7 @@ function getUnmappedParameterTableRowBoolean(
           }}
         />
       </td>
-      <td>
+      <td className="!align-middle">
         <SelectField
           values={selectValues}
           selectedValue={(param.start as boolean).toString()}
@@ -476,7 +481,7 @@ function getUnmappedParameterTableRowBoolean(
           }}
         />
       </td>
-      <td>
+      <td className="!align-middle">
         <SelectField
           values={selectValues}
           selectedValue={(param.end as boolean).toString()}
@@ -485,9 +490,9 @@ function getUnmappedParameterTableRowBoolean(
           }}
         />
       </td>
-      <td>
+      <td className="!align-middle">
         <Button
-          icon="delete"
+          icon="TrashIcon"
           minimal
           onClick={() => {
             onUpdate({
@@ -554,9 +559,9 @@ function getUnmappedParameterTableRowNumeric(
           }}
         />
       </td>
-      <td>
+      <td className="!align-middle">
         <Button
-          icon="delete"
+          icon="TrashIcon"
           minimal
           onClick={() => {
             onUpdate({

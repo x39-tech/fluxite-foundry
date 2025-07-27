@@ -1,5 +1,6 @@
-import { Button, NumericInput, NumericInputProps } from "@blueprintjs/core";
+import { NumericInput, NumericInputProps } from "@blueprintjs/core";
 import { Tooltip2 } from "@blueprintjs/popover2";
+import { Button } from "utils/components/Button";
 
 interface NumericInputTableRowProps {
   label: string;
@@ -27,13 +28,14 @@ export const ClearableNumericInput = (props: ClearableNumericInputProps) => {
     <NumericInput
       leftElement={
         <Tooltip2
+          className="flex"
           content="Clear property value"
           placement="left"
           disabled={!props.value}
         >
           <Button
             minimal
-            icon="delete"
+            icon="TrashIcon"
             disabled={!props.value}
             onClick={() => {
               props.onValueChange(undefined);

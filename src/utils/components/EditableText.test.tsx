@@ -61,6 +61,23 @@ describe("EditableText", () => {
     expect(handleCancel).toHaveBeenCalled();
   });
 
+  it("reverts to original value when Escape is pressed", async () => {
+    const user = userEvent.setup();
+    render(<EditableText defaultValue="Original" />);
+
+    await user.click(screen.getByText("Original"));
+    const input = screen.getByDisplayValue("Original");
+    await user.clear(input);
+    await user.type(input, "Modified value");
+    expect(input).toHaveValue("Modified value");
+
+    await user.keyboard("{Escape}");
+    expect(screen.getByText("Original")).toBeInTheDocument();
+    expect(
+      screen.queryByDisplayValue("Modified value"),
+    ).not.toBeInTheDocument();
+  });
+
   it("confirms value on blur", async () => {
     const user = userEvent.setup();
     const handleConfirm = vi.fn();

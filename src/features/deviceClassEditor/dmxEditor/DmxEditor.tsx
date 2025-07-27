@@ -6,7 +6,7 @@ import {
   removeDmxChunk,
   useDmxSerializer,
 } from "./state";
-import { AddItemSection } from "utils/components/AddItemSection/AddItemSection";
+import { AddItemSection } from "utils/components/AddItemSection";
 import { TagInputField } from "utils/components/EditorFields/TagInputField";
 import { DmxParameterGroup } from "./DmxParameterGroup";
 

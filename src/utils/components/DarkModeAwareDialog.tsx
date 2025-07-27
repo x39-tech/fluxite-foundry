@@ -4,5 +4,7 @@ import { useDarkMode } from "app/store";
 export const DarkModeAwareDialog = (props: DialogProps) => {
   const isInDarkMode = useDarkMode();
 
-  return <Dialog className={isInDarkMode ? Classes.DARK : ""} {...props} />;
+  return (
+    <Dialog className={isInDarkMode ? `dark ${Classes.DARK}` : ""} {...props} />
+  );
 };

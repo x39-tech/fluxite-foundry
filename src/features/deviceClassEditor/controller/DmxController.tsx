@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Button, HTMLSelect, Icon, Slider } from "@blueprintjs/core";
+import { CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { HTMLSelect, Slider } from "@blueprintjs/core";
 import {
   DataType,
   ParameterCluster,
@@ -7,6 +8,7 @@ import {
   Unit,
   UnitName,
 } from "e173";
+import { Button } from "utils/components/Button";
 import { useCurrentEditor, useParametersWithClasses } from "../state";
 import { useDmxController } from "../dmxEditor/state";
 import { TextEditorField } from "utils/components/EditorFields/TextEditorField";
@@ -238,7 +240,7 @@ export const DmxController = () => {
     <div className="flex flex-col h-full">
       {dmxDisplay}
       <div
-        className={`${serverAreaBg} flex justify-center items-center gap-2 p-1`}
+        className={`${serverAreaBg} flex flex-wrap justify-center items-center gap-2 p-1`}
       >
         <span className="font-bold">Server</span>
         <span>Address and Port:</span>
@@ -248,22 +250,21 @@ export const DmxController = () => {
             setServerConnection({ ...serverConnection, addressAndPort: value })
           }
         />
-        <span>
+        <span className="flex items-center">
           Status:{" "}
           {serverConnection.active ? (
             <>
               <span className="mr-2">Connected</span>
-              <Icon icon="tick" />
+              <CheckIcon className="size-5" />
             </>
           ) : (
             <>
               <span className="mr-2">Disconnected</span>
-              <Icon icon="cross" />
+              <XMarkIcon className="size-5" />
             </>
           )}
         </span>
         <Button
-          color="green"
           onClick={() => {
             const ws = new WebSocket(`ws://${serverConnection.addressAndPort}`);
             ws.onopen = () => {

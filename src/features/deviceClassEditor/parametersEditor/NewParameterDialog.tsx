@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Button, Classes, H3 } from "@blueprintjs/core";
+import { Classes, H3 } from "@blueprintjs/core";
+import { Button } from "utils/components/Button";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog";
 import { TextEditorTableRow } from "utils/components/EditorFields/TextEditorField";
 import { ParameterClassDisplay } from "utils/components/ParameterClassDisplay";
@@ -90,7 +91,7 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
         <Button
           aria-label="Add"
           intent="success"
-          icon="tick"
+          icon="CheckIcon"
           disabled={!newItemClass}
           onClick={() => {
             if (newItemClass) {
