@@ -5,7 +5,6 @@ import { StringSelector } from "utils/components/StringSelector";
 import { TextEditorField } from "utils/components/EditorFields/TextEditorField";
 import { SelectField } from "utils/components/EditorFields/SelectField";
 import { ResolvedParameterClass } from "udr/udrDatabase";
-import { useDarkMode } from "app/store";
 import { useParametersWithClasses } from "../state";
 
 interface DmxParameterMappingProps {
@@ -19,11 +18,6 @@ export const DmxParameterMapping = ({
   onUpdate,
   onRemove,
 }: DmxParameterMappingProps) => {
-  const inDarkMode = useDarkMode();
-  const background = inDarkMode
-    ? "bg-gray-600"
-    : "bg-slate-300 border border-gray-400";
-
   const paramsWithClasses = Object.fromEntries(
     Object.entries(useParametersWithClasses()).filter(([_, paramClass]) => {
       return (
@@ -174,7 +168,7 @@ export const DmxParameterMapping = ({
   }
 
   return (
-    <div className={`${background} m-2 p-2 rounded flex flex-col`}>
+    <div className="bg-slate-300 border border-gray-400 dark:border-hidden dark:bg-gray-600 m-2 p-2 rounded flex flex-col">
       <div className="flex items-center">
         <div className="mx-1">Parameter:</div>
         <StringSelector

@@ -1,6 +1,5 @@
 import { Tooltip } from "@blueprintjs/core";
 import { Chunk, MappingGroup } from "e173";
-import { useDarkMode } from "app/store";
 import { Button } from "utils/components/Button";
 import {
   addCondition,
@@ -27,13 +26,10 @@ export const DmxParameterGroup = ({
   index: groupIndex,
   mappingGroup,
 }: DmxParameterGroupProps) => {
-  const inDarkMode = useDarkMode();
-  const background = inDarkMode ? "bg-gray-700" : "bg-gray-300";
-
   const chunksArray = Object.entries(chunks);
 
   return (
-    <div className={`${background} my-2 p-1 rounded-lg`}>
+    <div className="bg-gray-300 dark:bg-gray-700 my-2 p-1 rounded-lg">
       <div className="flex">
         <div className="font-bold mx-2 my-1">Parameter Group</div>
         <div className="grow" />
