@@ -1,7 +1,7 @@
-import { HTMLSelect } from "@blueprintjs/core";
 import { Chunk, Condition } from "e173";
 import { Button } from "utils/components/Button";
 import { TextEditorField } from "utils/components/EditorFields/TextEditorField";
+import { Select } from "utils/components/Select";
 import { StringSelector } from "utils/components/StringSelector";
 
 // TODO: support arbitrarily nested conditions
@@ -42,15 +42,15 @@ export const DmxCondition = ({
     condition.match !== undefined
   ) {
     return (
-      <div className="flex flex-col">
+      <div className="flex flex-col items-start">
         {condition.conditions.map((subCondition, index) => {
           const sep = [<></>];
 
           if (index == 1) {
             // First separator is a selector
             sep.push(
-              <HTMLSelect
-                className="m-2 max-w-24"
+              <Select
+                className="m-2"
                 options={["AND", "OR"]}
                 value={condition.match === "any" ? "OR" : "AND"}
                 onChange={(event) => {

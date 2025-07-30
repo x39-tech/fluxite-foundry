@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import { HTMLSelect, Slider } from "@blueprintjs/core";
+import { Slider } from "@blueprintjs/core";
 import {
   DataType,
   ParameterCluster,
@@ -12,6 +12,7 @@ import { Button } from "utils/components/Button";
 import { useCurrentEditor, useParametersWithClasses } from "../state";
 import { useDmxController } from "../dmxEditor/state";
 import { TextEditorField } from "utils/components/EditorFields/TextEditorField";
+import { Select } from "utils/components/Select";
 import { useDarkMode } from "app/store";
 import {
   calculateDmxValue,
@@ -153,7 +154,7 @@ export const DmxController = () => {
     <div className="flex flex-row items-center justify-center mt-2 mb-4 sticky">
       <div className="flex flex-col">
         <span className="mx-4 font-bold">DMX Output</span>
-        <HTMLSelect
+        <Select
           className="my-1"
           options={["hex", "decimal"]}
           value={dmxDisplayFormat}

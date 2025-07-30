@@ -1,10 +1,4 @@
-import {
-  AnchorButton,
-  Button,
-  Classes,
-  H3,
-  HTMLSelect,
-} from "@blueprintjs/core";
+import { AnchorButton, Button, Classes, H3 } from "@blueprintjs/core";
 import { useState } from "react";
 import { E173Document } from "e173";
 import { LabeledCheckbox } from "utils/components/LabeledCheckbox";
@@ -16,6 +10,7 @@ import {
 import { DeviceClassEditorState } from "app/state";
 import { TextEditorField } from "utils/components/EditorFields/TextEditorField";
 import { SimplePropsTable } from "utils/components/SimplePropsTable";
+import { Select } from "utils/components/Select";
 
 interface Props {
   isOpen: boolean;
@@ -58,7 +53,7 @@ export const ExportUdrDialog = ({ isOpen, onClose }: Props) => {
               Choose a device class to export:
             </td>
             <td>
-              <HTMLSelect
+              <Select
                 value={selectedEditorId}
                 onChange={(event) => {
                   setSelectedEditorId(event.currentTarget.value);
@@ -73,7 +68,7 @@ export const ExportUdrDialog = ({ isOpen, onClose }: Props) => {
                     {`${index + 1}: ${name}`}
                   </option>
                 ))}
-              </HTMLSelect>
+              </Select>
             </td>
           </tr>
           <tr>

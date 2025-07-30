@@ -5,12 +5,12 @@ import {
   Classes,
   FileInput,
   H3,
-  HTMLSelect,
   Spinner,
   TextArea,
 } from "@blueprintjs/core";
 import { RefObject, useRef, useState } from "react";
 import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog";
+import { Select } from "utils/components/Select";
 import { E173Document, importUdr, Error as E173Error } from "e173";
 import { importDeviceClassEditor } from "./state";
 import "./ImportUdrDialog.css";
@@ -203,10 +203,7 @@ function getDeviceClassSelectionElement(
     return (
       <>
         <p>Select Device Class to import:</p>
-        <HTMLSelect
-          ref={ref}
-          options={deviceClasses.map(deviceClassToString)}
-        />
+        <Select ref={ref} options={deviceClasses.map(deviceClassToString)} />
       </>
     );
   }

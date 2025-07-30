@@ -1,4 +1,4 @@
-import { HTMLSelect } from "@blueprintjs/core";
+import { Select } from "../Select";
 
 interface SelectFieldProps {
   values: string[];
@@ -14,7 +14,7 @@ export const SelectField = ({
   onSelectionChanged,
 }: SelectFieldProps) => {
   return (
-    <HTMLSelect
+    <Select
       onChange={(event) => onSelectionChanged(event.currentTarget.value)}
       value={selectedValue}
     >
@@ -27,7 +27,7 @@ export const SelectField = ({
           </option>
         );
       })}
-    </HTMLSelect>
+    </Select>
   );
 };
 
