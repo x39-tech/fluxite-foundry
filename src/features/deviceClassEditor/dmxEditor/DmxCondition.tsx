@@ -1,8 +1,8 @@
 import { Chunk, Condition } from "e173";
-import { Button } from "utils/components/Button";
-import { TextEditorField } from "utils/components/EditorFields/TextEditorField";
-import { Select } from "utils/components/Select";
-import { StringSelector } from "utils/components/StringSelector";
+import { Button } from "components/Button";
+import { TextEditorField } from "components/EditorFields/TextEditorField";
+import { Select } from "components/Select";
+import { StringSelector } from "components/StringSelector";
 
 // TODO: support arbitrarily nested conditions
 

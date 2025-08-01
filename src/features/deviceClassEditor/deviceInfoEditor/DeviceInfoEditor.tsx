@@ -1,14 +1,14 @@
-import { SimplePropsTable } from "utils/components/SimplePropsTable";
+import { SimplePropsTable } from "components/SimplePropsTable";
 import {
   OptionalTextEditorTableRow,
   TextEditorTableRow,
-} from "utils/components/EditorFields/TextEditorField";
-import { SelectTableRow } from "utils/components/EditorFields/SelectField";
+} from "components/EditorFields/TextEditorField";
+import { SelectTableRow } from "components/EditorFields/SelectField";
 import { Category, Subcategory } from "e173";
 import builderInfo from "e173/extras/draft-2024-1/_builder.json";
-import { TagInputTableRow } from "utils/components/EditorFields/TagInputField";
+import { TagInputTableRow } from "components/EditorFields/TagInputField";
 import { modifyBasicData, useBasicData } from "./state";
-import { RenderError } from "utils/components/RenderError";
+import { RenderError } from "components/RenderError";
 
 export const DeviceInfoEditor = () => {
   const basicData = useBasicData();

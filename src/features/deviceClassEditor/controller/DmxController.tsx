@@ -8,11 +8,11 @@ import {
   Unit,
   UnitName,
 } from "e173";
-import { Button } from "utils/components/Button";
+import { Button } from "components/Button";
 import { useCurrentEditor, useParametersWithClasses } from "../state";
 import { useDmxController } from "../dmxEditor/state";
-import { TextEditorField } from "utils/components/EditorFields/TextEditorField";
-import { Select } from "utils/components/Select";
+import { TextEditorField } from "components/EditorFields/TextEditorField";
+import { Select } from "components/Select";
 import { useDarkMode } from "app/store";
 import {
   calculateDmxValue,

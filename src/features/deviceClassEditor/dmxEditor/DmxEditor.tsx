@@ -1,4 +1,4 @@
-import { ItemEditor } from "utils/components/ItemEditor/ItemEditor";
+import { ItemEditor } from "components/ItemEditor/ItemEditor";
 import {
   addDmxChunk,
   addParameterMappingGroup,
@@ -6,8 +6,8 @@ import {
   removeDmxChunk,
   useDmxSerializer,
 } from "./state";
-import { AddItemSection } from "utils/components/AddItemSection";
-import { TagInputField } from "utils/components/EditorFields/TagInputField";
+import { AddItemSection } from "components/AddItemSection";
+import { TagInputField } from "components/EditorFields/TagInputField";
 import { DmxParameterGroup } from "./DmxParameterGroup";
 
 export const DmxEditor = () => {

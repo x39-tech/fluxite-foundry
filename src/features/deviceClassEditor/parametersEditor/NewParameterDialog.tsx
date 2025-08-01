@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Classes, H3 } from "@blueprintjs/core";
-import { Button } from "utils/components/Button";
-import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog";
-import { TextEditorTableRow } from "utils/components/EditorFields/TextEditorField";
-import { ParameterClassDisplay } from "utils/components/ParameterClassDisplay";
-import { SimplePropsTable } from "utils/components/SimplePropsTable";
+import { Button } from "components/Button";
+import { DarkModeAwareDialog } from "components/DarkModeAwareDialog";
+import { TextEditorTableRow } from "components/EditorFields/TextEditorField";
+import { ParameterClassDisplay } from "components/ParameterClassDisplay";
+import { SimplePropsTable } from "components/SimplePropsTable";
 import { validateNewItemId } from "utils/inputValidation";
 import {
   getAllParametersWithIds,
@@ -12,7 +12,7 @@ import {
   ParameterClassWithId,
 } from "udr/udrDatabase";
 import { useUdrDatabase } from "app/store";
-import { ItemClassSelector } from "utils/components/ItemClassSelector/ItemClassSelector";
+import { ItemClassSelector } from "components/ItemClassSelector/ItemClassSelector";
 import { getUniqueItemId } from "utils/utils";
 import { createNewParameter, useParameterIds } from "./state";
 import "./NewParameterDialog.css";

@@ -1,6 +1,6 @@
 import { Tooltip } from "@blueprintjs/core";
 import { Chunk, MappingGroup } from "e173";
-import { Button } from "utils/components/Button";
+import { Button } from "components/Button";
 import {
   addCondition,
   addParameterMapping,

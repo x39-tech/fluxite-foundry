@@ -9,15 +9,15 @@ import {
 import {
   ClearableNumericInputTableRow,
   NumericInputTableRow,
-} from "utils/components/EditorFields/NumericInputField";
-import { SelectTableRow } from "utils/components/EditorFields/SelectField";
+} from "components/EditorFields/NumericInputField";
+import { SelectTableRow } from "components/EditorFields/SelectField";
 import {
   OptionalTextEditorTableRow,
   TextEditorTableRow,
-} from "utils/components/EditorFields/TextEditorField";
-import { ItemEditor } from "utils/components/ItemEditor/ItemEditor";
-import { ParameterClassDisplay } from "utils/components/ParameterClassDisplay";
-import { SimplePropsTable } from "utils/components/SimplePropsTable";
+} from "components/EditorFields/TextEditorField";
+import { ItemEditor } from "components/ItemEditor/ItemEditor";
+import { ParameterClassDisplay } from "components/ParameterClassDisplay";
+import { SimplePropsTable } from "components/SimplePropsTable";
 import {
   validateNewItemId,
   validateStringIsNumberAndBetweenMinAndMaxOrEmpty,
@@ -41,7 +41,7 @@ import {
   useDeviceLocalizations,
   useLibraries,
 } from "../state";
-import { RenderError } from "utils/components/RenderError";
+import { RenderError } from "components/RenderError";
 import "./ParameterEditor.css";
 
 interface Props {

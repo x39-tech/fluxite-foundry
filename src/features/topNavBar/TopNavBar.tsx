@@ -1,8 +1,8 @@
 import { Alignment, Navbar } from "@blueprintjs/core";
 import { Popover2 } from "@blueprintjs/popover2";
 import { APP_NAME } from "appInfo";
-import { Button } from "utils/components/Button";
-import { EditorTitleTab } from "utils/components/EditorTitleTab/EditorTitleTab";
+import { Button } from "components/Button";
+import { EditorTitleTab } from "components/EditorTitleTab/EditorTitleTab";
 import { AppMainMenu } from "./AppMainMenu";
 import { createDeviceClassEditor, useEditorNames } from "./state";
 import { setSelectedEditor, useOpenEditors, deleteEditor } from "./state";

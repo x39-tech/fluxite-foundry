@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Classes } from "@blueprintjs/core";
 import { DeviceClassEditor } from "features/deviceClassEditor/DeviceClassEditor";
 import { TopNavBar } from "features/topNavBar/TopNavBar";
@@ -18,8 +19,17 @@ export const App = () => {
   const editors = useOpenEditors();
   const currentEditor = editors.editors[editors.selectedEditor];
 
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (darkMode) {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+  }, [darkMode]);
+
   return (
-    <div className={darkMode ? "app dark " + Classes.DARK : "app"}>
+    <div className={darkMode ? "app " + Classes.DARK : "app"}>
       <TopNavBar />
       <div className="display-area">
         {currentEditor ? EDITORS[currentEditor.type]() : <div />}

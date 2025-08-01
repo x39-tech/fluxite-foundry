@@ -9,8 +9,8 @@ import {
   TextArea,
 } from "@blueprintjs/core";
 import { RefObject, useRef, useState } from "react";
-import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog";
-import { Select } from "utils/components/Select";
+import { DarkModeAwareDialog } from "components/DarkModeAwareDialog";
+import { Select } from "components/Select";
 import { E173Document, importUdr, Error as E173Error } from "e173";
 import { importDeviceClassEditor } from "./state";
 import "./ImportUdrDialog.css";

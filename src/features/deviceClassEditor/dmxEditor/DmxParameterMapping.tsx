@@ -1,12 +1,12 @@
 import { Tooltip } from "@blueprintjs/core";
 import { DataType, Mapping, MappingRange, UnmappedParam } from "e173";
-import { Button } from "utils/components/Button";
-import { StringSelector } from "utils/components/StringSelector";
-import { TextEditorField } from "utils/components/EditorFields/TextEditorField";
-import { SelectField } from "utils/components/EditorFields/SelectField";
+import { Button } from "components/Button";
+import { StringSelector } from "components/StringSelector";
+import { TextEditorField } from "components/EditorFields/TextEditorField";
+import { SelectField } from "components/EditorFields/SelectField";
 import { ResolvedParameterClass } from "udr/udrDatabase";
 import { useParametersWithClasses } from "../state";
-import { Table } from "utils/components/Table";
+import { Table } from "components/Table";
 
 interface DmxParameterMappingProps {
   mapping: Mapping;

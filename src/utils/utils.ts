@@ -1,3 +1,6 @@
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
 export function getUniqueItemId(
   existingItemIds: string[],
   defaultId: string = "my-new-item",
@@ -10,4 +13,8 @@ export function getUniqueItemId(
   }
 
   return newItemId;
+}
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
 }

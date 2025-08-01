@@ -1,6 +1,6 @@
 import { NumericInput, NumericInputProps } from "@blueprintjs/core";
 import { Tooltip2 } from "@blueprintjs/popover2";
-import { Button } from "utils/components/Button";
+import { Button } from "components/Button";
 
 interface NumericInputTableRowProps {
   label: string;

@@ -1,16 +1,16 @@
 import { AnchorButton, Button, Classes, H3 } from "@blueprintjs/core";
 import { useState } from "react";
 import { E173Document } from "e173";
-import { LabeledCheckbox } from "utils/components/LabeledCheckbox";
-import { DarkModeAwareDialog } from "utils/components/DarkModeAwareDialog";
+import { LabeledCheckbox } from "components/LabeledCheckbox";
+import { DarkModeAwareDialog } from "components/DarkModeAwareDialog";
 import {
   useDeviceClassEditors,
   useOpenDeviceClassEditorsWithNames,
 } from "./state";
 import { DeviceClassEditorState } from "app/state";
-import { TextEditorField } from "utils/components/EditorFields/TextEditorField";
-import { SimplePropsTable } from "utils/components/SimplePropsTable";
-import { Select } from "utils/components/Select";
+import { TextEditorField } from "components/EditorFields/TextEditorField";
+import { SimplePropsTable } from "components/SimplePropsTable";
+import { Select } from "components/Select";
 
 interface Props {
   isOpen: boolean;

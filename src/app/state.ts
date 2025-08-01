@@ -38,7 +38,7 @@ type JSONCompatible<T> = unknown extends T
           : JSONCompatible<T[P]>;
     };
 
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 type NotAssignableToJson = bigint | symbol | Function;
 
 export type AppPersistentState = JSONCompatible<AppPersistentStateUnvalidated>;

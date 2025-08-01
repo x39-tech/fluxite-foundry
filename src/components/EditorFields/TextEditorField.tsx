@@ -2,17 +2,22 @@
 // Can either be controlled (value) or uncontrolled (defaultValue).
 
 import { useState } from "react";
-import { Callout } from "@blueprintjs/core";
+import { ExclamationCircleIcon } from "@heroicons/react/16/solid";
 import { EditableText } from "../EditableText";
-import { Placement, Popover2 } from "@blueprintjs/popover2";
 import { InputValidationResult } from "utils/inputValidation";
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+} from "components/scn-ui/Popover";
+import { Alert, AlertDescription } from "components/scn-ui/Alert";
 
 interface CommonTextEditorFieldProps {
   value?: string;
   defaultValue?: string;
   placeholder?: string;
   validator?: (value: string) => InputValidationResult;
-  validationErrorPlacement?: Placement;
+  validationErrorPlacement?: "top" | "bottom" | "left" | "right";
 }
 
 interface TextEditorFieldProps extends CommonTextEditorFieldProps {
@@ -45,46 +50,61 @@ export const TextEditorField = ({
   })();
 
   return (
-    <Popover2
-      isOpen={
+    <Popover
+      open={
         !validationResult.isValid && validationResult.feedback !== undefined
       }
-      content={<Callout intent="danger">{validationResult.feedback}</Callout>}
-      autoFocus={false}
-      enforceFocus={false}
-      placement={validationErrorPlacement}
+      onOpenChange={(isOpen) => {
+        console.log(`openChange: ${isOpen}`);
+      }}
     >
-      <EditableText
-        value={textToDisplay}
-        placeholder={placeholder}
-        onChange={(newValue) => {
-          if (validator) {
-            setValidationResult(validator(newValue));
-          }
-          setIsEditing(true);
-          setStagedText(newValue);
-        }}
-        onConfirm={(newValue) => {
-          if (validationResult.isValid) {
-            onValueChanged(newValue);
-          } else {
+      <PopoverAnchor className="inline-block">
+        <EditableText
+          value={textToDisplay}
+          placeholder={placeholder}
+          onChange={(newValue) => {
+            if (validator) {
+              setValidationResult(validator(newValue));
+            }
+            setIsEditing(true);
+            setStagedText(newValue);
+          }}
+          onConfirm={(newValue) => {
+            if (validationResult.isValid) {
+              onValueChanged(newValue);
+            } else {
+              if (validator) {
+                setValidationResult(validator(defaultText));
+              }
+              setStagedText(defaultText);
+            }
+            setIsEditing(false);
+          }}
+          onCancel={() => {
+            setStagedText(defaultText);
+            setIsEditing(false);
             if (validator) {
               setValidationResult(validator(defaultText));
             }
-            setStagedText(defaultText);
-          }
-          setIsEditing(false);
+          }}
+          intent={validationResult.isValid ? "none" : "danger"}
+        />
+      </PopoverAnchor>
+      <PopoverContent
+        asChild
+        side={validationErrorPlacement}
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
         }}
-        onCancel={() => {
-          setStagedText(defaultText);
-          setIsEditing(false);
-          if (validator) {
-            setValidationResult(validator(defaultText));
-          }
-        }}
-        intent={validationResult.isValid ? "none" : "danger"}
-      />
-    </Popover2>
+      >
+        <Alert variant="destructive">
+          <ExclamationCircleIcon />
+          <AlertDescription>
+            {validationResult.feedback || "An unknown error occurred."}
+          </AlertDescription>
+        </Alert>
+      </PopoverContent>
+    </Popover>
   );
 };
 
@@ -117,7 +137,7 @@ export interface TextEditorTableRowProps extends TextEditorFieldProps {
 export const TextEditorTableRow = (props: TextEditorTableRowProps) => {
   return (
     <tr>
-      <td style={{ verticalAlign: "middle" }}>{props.label}</td>
+      <td className="align-middle">{props.label}</td>
       <td>
         <TextEditorField {...props} />
       </td>
@@ -135,8 +155,8 @@ export const OptionalTextEditorTableRow = (
 ) => {
   return (
     <tr>
-      <td style={{ verticalAlign: "middle" }}>{props.label}</td>
-      <td>
+      <td className="align-middle">{props.label}</td>
+      <td className="block">
         <OptionalTextEditorField {...props} />
       </td>
     </tr>

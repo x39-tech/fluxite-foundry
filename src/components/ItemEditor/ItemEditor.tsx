@@ -3,7 +3,7 @@ import {
   DisclosureButton,
   DisclosurePanel,
 } from "@headlessui/react";
-import { Button } from "utils/components/Button";
+import { Button } from "components/Button";
 
 interface Props {
   title: string;
