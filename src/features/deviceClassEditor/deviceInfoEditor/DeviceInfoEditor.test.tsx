@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { DeviceInfoEditor } from "./DeviceInfoEditor";
 import { createDeviceClassEditor } from "features/topNavBar/state";
 import {
-  changeEditableTextField,
+  changeConfirmableInputField,
   getEditorTableRow,
   getEditorTableRowSecondCol,
 } from "test/utils";
@@ -91,7 +91,7 @@ test("can change manufacturer name field", async () => {
   expect(tdElement).toBeInTheDocument();
 
   if (tdElement) {
-    await changeEditableTextField(user, tdElement, "New Manufacturer Name");
+    await changeConfirmableInputField(user, tdElement, "New Manufacturer Name");
   }
 });
 
@@ -103,7 +103,7 @@ test("can change model name field", async () => {
   expect(tdElement).toBeInTheDocument();
 
   if (tdElement) {
-    await changeEditableTextField(user, tdElement, "New Model Name");
+    await changeConfirmableInputField(user, tdElement, "New Model Name");
   }
 });
 
@@ -165,7 +165,11 @@ test("can change description field", async () => {
   expect(tdElement).toBeInTheDocument();
 
   if (tdElement) {
-    await changeEditableTextField(user, tdElement, "New Device Description");
+    await changeConfirmableInputField(
+      user,
+      tdElement,
+      "New Device Description",
+    );
   }
 });
 
@@ -177,7 +181,7 @@ test("can change author field", async () => {
   expect(tdElement).toBeInTheDocument();
 
   if (tdElement) {
-    await changeEditableTextField(user, tdElement, "New Author Name");
+    await changeConfirmableInputField(user, tdElement, "New Author Name");
   }
 });
 
@@ -189,7 +193,7 @@ test("can change publish date field", async () => {
   expect(tdElement).toBeInTheDocument();
 
   if (tdElement) {
-    await changeEditableTextField(user, tdElement, "New Publish Date");
+    await changeConfirmableInputField(user, tdElement, "New Publish Date");
   }
 });
 
@@ -201,7 +205,7 @@ test("can change manufacturer URL field", async () => {
   expect(tdElement).toBeInTheDocument();
 
   if (tdElement) {
-    await changeEditableTextField(user, tdElement, "https://example.com");
+    await changeConfirmableInputField(user, tdElement, "https://example.com");
   }
 });
 
@@ -216,7 +220,7 @@ test("can change manufacturer ESTA ID field", async () => {
   expect(tdElement).toBeInTheDocument();
 
   if (tdElement) {
-    await changeEditableTextField(user, tdElement, "12345");
+    await changeConfirmableInputField(user, tdElement, "12345");
   }
 });
 

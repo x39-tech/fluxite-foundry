@@ -1,9 +1,9 @@
-// A component that renders a Blueprint EditableText inline text editor with optional validation.
+// A component that renders a ConfirmableInput inline text editor with optional validation.
 // Can either be controlled (value) or uncontrolled (defaultValue).
 
 import { useState } from "react";
 import { ExclamationCircleIcon } from "@heroicons/react/16/solid";
-import { EditableText } from "../EditableText";
+import { ConfirmableInput } from "../ConfirmableInput";
 import { InputValidationResult } from "utils/inputValidation";
 import {
   Popover,
@@ -14,7 +14,6 @@ import { Alert, AlertDescription } from "components/scn-ui/Alert";
 
 interface CommonTextEditorFieldProps {
   value?: string;
-  defaultValue?: string;
   placeholder?: string;
   validator?: (value: string) => InputValidationResult;
   validationErrorPlacement?: "top" | "bottom" | "left" | "right";
@@ -27,27 +26,13 @@ interface TextEditorFieldProps extends CommonTextEditorFieldProps {
 // A field with editable text.
 export const TextEditorField = ({
   value,
-  defaultValue,
   placeholder,
   onValueChanged,
   validator,
-  validationErrorPlacement,
+  validationErrorPlacement = "right",
 }: TextEditorFieldProps) => {
-  const defaultText = value ?? (defaultValue || "");
-
-  const [validationResult, setValidationResult] = useState(
-    validator ? validator(defaultText) : { isValid: true },
-  );
-  const [stagedText, setStagedText] = useState(defaultText);
-  const [isEditing, setIsEditing] = useState(false);
-
-  const textToDisplay = (() => {
-    if (!isEditing && value && value != stagedText) {
-      return value;
-    } else {
-      return stagedText;
-    }
-  })();
+  const [validationResult, setValidationResult] =
+    useState<InputValidationResult>({ isValid: true });
 
   return (
     <Popover
@@ -59,35 +44,12 @@ export const TextEditorField = ({
       }}
     >
       <PopoverAnchor className="inline-block">
-        <EditableText
-          value={textToDisplay}
+        <ConfirmableInput
+          value={value}
+          validator={validator}
+          onValidationResult={(_, result) => setValidationResult(result)}
           placeholder={placeholder}
-          onChange={(newValue) => {
-            if (validator) {
-              setValidationResult(validator(newValue));
-            }
-            setIsEditing(true);
-            setStagedText(newValue);
-          }}
-          onConfirm={(newValue) => {
-            if (validationResult.isValid) {
-              onValueChanged(newValue);
-            } else {
-              if (validator) {
-                setValidationResult(validator(defaultText));
-              }
-              setStagedText(defaultText);
-            }
-            setIsEditing(false);
-          }}
-          onCancel={() => {
-            setStagedText(defaultText);
-            setIsEditing(false);
-            if (validator) {
-              setValidationResult(validator(defaultText));
-            }
-          }}
-          intent={validationResult.isValid ? "none" : "danger"}
+          onConfirm={onValueChanged}
         />
       </PopoverAnchor>
       <PopoverContent

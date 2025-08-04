@@ -21,7 +21,7 @@ export const DeviceInfoEditor = () => {
       <SimplePropsTable name="Manufacturer Information">
         <TextEditorTableRow
           label="Manufacturer Name"
-          defaultValue={basicData.info.manufacturer.name}
+          value={basicData.info.manufacturer.name}
           onValueChanged={(newValue) =>
             modifyBasicData((draft) => {
               draft.info.manufacturer.name = newValue;
@@ -30,7 +30,7 @@ export const DeviceInfoEditor = () => {
         />
         <OptionalTextEditorTableRow
           label="Manufacturer URL"
-          defaultValue={basicData.info.manufacturer.url}
+          value={basicData.info.manufacturer.url}
           onValueChanged={(newValue) =>
             modifyBasicData((draft) => {
               draft.info.manufacturer.url = newValue;
@@ -39,7 +39,7 @@ export const DeviceInfoEditor = () => {
         />
         <OptionalTextEditorTableRow
           label="Manufacturer ESTA ID"
-          defaultValue={basicData.info.manufacturer.estaId}
+          value={basicData.info.manufacturer.estaId}
           onValueChanged={(newValue) =>
             modifyBasicData((draft) => {
               draft.info.manufacturer.estaId = newValue;
@@ -50,7 +50,7 @@ export const DeviceInfoEditor = () => {
       <SimplePropsTable name="Model Information">
         <TextEditorTableRow
           label="Model Name"
-          defaultValue={basicData.info.model.name}
+          value={basicData.info.model.name}
           onValueChanged={(newValue) =>
             modifyBasicData((draft) => {
               draft.info.model.name = newValue;
@@ -102,7 +102,7 @@ export const DeviceInfoEditor = () => {
       <SimplePropsTable name="UDR Device Class Information">
         <TextEditorTableRow
           label="Description"
-          defaultValue={basicData["@description"]}
+          value={basicData["@description"]}
           onValueChanged={(newValue) =>
             modifyBasicData((draft) => {
               draft["@description"] = newValue;
@@ -111,7 +111,7 @@ export const DeviceInfoEditor = () => {
         />
         <TextEditorTableRow
           label="Author"
-          defaultValue={basicData.author}
+          value={basicData.author}
           onValueChanged={(newValue) =>
             modifyBasicData((draft) => {
               draft.author = newValue;
@@ -120,7 +120,7 @@ export const DeviceInfoEditor = () => {
         />
         <TextEditorTableRow
           label="Publish Date"
-          defaultValue={basicData.publishDate}
+          value={basicData.publishDate}
           onValueChanged={(newValue) =>
             modifyBasicData((draft) => {
               draft.publishDate = newValue;

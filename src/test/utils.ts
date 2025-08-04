@@ -33,39 +33,22 @@ export function getEditorTableRowSecondCol(
   return tdElement;
 }
 
-export async function changeEditableTextField(
+export async function changeConfirmableInputField(
   user: ReturnType<typeof userEvent.setup>,
   container: HTMLElement,
   newValue: string,
 ) {
-  const editableText = container.querySelector("button");
-  if (!editableText) {
-    throw Error("No editable text element found");
+  const inputElement = container.querySelector("input");
+  if (!inputElement) {
+    throw Error("No input element found");
   }
-  await user.click(editableText);
 
-  // Wait for edit mode to be activated
-  const inputElement = await waitFor(
-    () => {
-      const inputElement: HTMLInputElement | HTMLElement | null =
-        container.querySelector("input");
-      if (!inputElement) {
-        // waitFor retries only after an error is thrown
-        throw new Error("No input element found");
-      }
-
-      return inputElement;
-    },
-    { timeout: 2000 },
-  );
-
-  await user.clear(inputElement as HTMLInputElement);
+  await user.clear(inputElement);
   await user.type(inputElement, newValue);
   await user.keyboard("{Enter}");
 
-  // Wait for the content to update
+  // Wait for the input to have the new value after confirmation
   await waitFor(() => {
-    const newValueElement = getByText(container, newValue);
-    expect(newValueElement).toBeInTheDocument();
+    expect(inputElement).toHaveValue(newValue);
   });
 }

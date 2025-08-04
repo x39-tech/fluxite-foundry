@@ -75,14 +75,14 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
           </tr>
           <TextEditorTableRow
             label="ID"
-            defaultValue={newItemId}
+            value={newItemId}
             onValueChanged={setNewItemId}
             validator={(input) => validateNewItemId(input, parameterIds)}
             validationErrorPlacement="right"
           />
           <TextEditorTableRow
             label="Display Name"
-            defaultValue={newItemFriendlyName}
+            value={newItemFriendlyName}
             onValueChanged={setNewItemFriendlyName}
           />
         </SimplePropsTable>

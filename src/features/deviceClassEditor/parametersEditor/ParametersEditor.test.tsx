@@ -17,9 +17,9 @@ test("Adds a new parameter correctly from the new parameter dialog", async () =>
 
   // Hm, a bit brittle. Revisit aria-label stuff here if possible
   const user = userEvent.setup();
-  await user.click(screen.getByText("my-new-item"));
+  await user.click(screen.getByDisplayValue("my-new-item"));
   await user.keyboard("{Control>}a{/Control}{Delete}test-item{Enter}");
-  await user.click(screen.getByText("My New Item"));
+  await user.click(screen.getByDisplayValue("My New Item"));
   await user.keyboard("{Control>}a{/Control}{Delete}Test Item{Enter}");
 
   // Select a parameter class before adding

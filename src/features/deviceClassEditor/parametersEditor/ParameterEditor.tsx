@@ -202,7 +202,7 @@ function getMinMaxDefaultProperties(
     <>
       <OptionalTextEditorTableRow
         label="Minimum Value"
-        defaultValue={udr.minimum !== undefined ? `${udr.minimum}` : ""}
+        value={udr.minimum !== undefined ? `${udr.minimum}` : ""}
         onValueChanged={(newValue) =>
           modifyParam((draft) => {
             draft.minimum = parseIfNotUndefined(newValue);
@@ -212,7 +212,7 @@ function getMinMaxDefaultProperties(
       />
       <OptionalTextEditorTableRow
         label="Maximum Value"
-        defaultValue={udr.maximum !== undefined ? `${udr.maximum}` : undefined}
+        value={udr.maximum !== undefined ? `${udr.maximum}` : undefined}
         onValueChanged={(newValue) =>
           modifyParam((draft) => {
             draft.maximum = parseIfNotUndefined(newValue);
@@ -222,7 +222,7 @@ function getMinMaxDefaultProperties(
       />
       <OptionalTextEditorTableRow
         label="Default Value"
-        defaultValue={udr.default !== undefined ? `${udr.default}` : undefined}
+        value={udr.default !== undefined ? `${udr.default}` : undefined}
         onValueChanged={(newValue) =>
           modifyParam((draft) => {
             draft.default = parseIfNotUndefined(newValue);
@@ -270,7 +270,7 @@ function getParameterPropsTable(
       </tr>
       <TextEditorTableRow
         label="ID"
-        defaultValue={id}
+        value={id}
         onValueChanged={(newValue) => changeParameterId(id, newValue)}
         validator={(input) =>
           validateNewItemId(
@@ -281,7 +281,7 @@ function getParameterPropsTable(
       />
       <TextEditorTableRow
         label="Display Name"
-        defaultValue={param["@friendlyName"]}
+        value={param["@friendlyName"]}
         onValueChanged={(newValue) =>
           modifyParam((draft) => (draft["@friendlyName"] = newValue))
         }

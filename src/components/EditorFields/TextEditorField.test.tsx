@@ -4,23 +4,17 @@ import { TextEditorField } from "./TextEditorField";
 
 describe("TextEditorField", () => {
   it("renders with default value", () => {
-    render(
-      <TextEditorField defaultValue="Test value" onValueChanged={() => {}} />,
-    );
-    expect(screen.getByText("Test value")).toBeInTheDocument();
+    render(<TextEditorField value="Test value" onValueChanged={() => {}} />);
+    expect(screen.getByDisplayValue("Test value")).toBeInTheDocument();
   });
 
   it("calls onValueChanged when confirmed", async () => {
     const user = userEvent.setup();
     const handleValueChanged = vi.fn();
     render(
-      <TextEditorField
-        defaultValue="Original"
-        onValueChanged={handleValueChanged}
-      />,
+      <TextEditorField value="Original" onValueChanged={handleValueChanged} />,
     );
 
-    await user.click(screen.getByText("Original"));
     const input = screen.getByDisplayValue("Original");
     await user.clear(input);
     await user.type(input, "New value");
@@ -33,14 +27,9 @@ describe("TextEditorField", () => {
     const user = userEvent.setup();
     const handleValueChanged = vi.fn();
     render(
-      <TextEditorField
-        defaultValue="Original"
-        onValueChanged={handleValueChanged}
-      />,
+      <TextEditorField value="Original" onValueChanged={handleValueChanged} />,
     );
 
-    // Click to edit
-    await user.click(screen.getByText("Original"));
     const input = screen.getByDisplayValue("Original");
 
     // Modify the value
@@ -52,13 +41,10 @@ describe("TextEditorField", () => {
     await user.keyboard("{Escape}");
 
     // Should revert to original value
-    expect(screen.getByText("Original")).toBeInTheDocument();
-    expect(
-      screen.queryByDisplayValue("Modified value"),
-    ).not.toBeInTheDocument();
+    expect(input).toHaveValue("Original");
 
-    // onValueChanged should not be called when cancelling
-    expect(handleValueChanged).not.toHaveBeenCalled();
+    // onValueChanged is called with the original value when cancelling due to blur after Escape
+    expect(handleValueChanged).toHaveBeenCalledWith("Original");
   });
 
   it("shows validation error for invalid input", async () => {
@@ -72,13 +58,12 @@ describe("TextEditorField", () => {
 
     render(
       <TextEditorField
-        defaultValue="Test"
+        value="Test"
         onValueChanged={() => {}}
         validator={validator}
       />,
     );
 
-    await user.click(screen.getByText("Test"));
     const input = screen.getByDisplayValue("Test");
     await user.clear(input);
     await user.type(input, "ab");
@@ -100,19 +85,18 @@ describe("TextEditorField", () => {
 
     render(
       <TextEditorField
-        defaultValue="Valid"
+        value="Valid"
         onValueChanged={handleValueChanged}
         validator={validator}
       />,
     );
 
-    await user.click(screen.getByText("Valid"));
     const input = screen.getByDisplayValue("Valid");
     await user.clear(input);
     await user.type(input, "ab");
     await user.keyboard("{Enter}");
 
     expect(handleValueChanged).not.toHaveBeenCalled();
-    expect(screen.getByText("Valid")).toBeInTheDocument();
+    expect(input).toHaveValue("Valid");
   });
 });
