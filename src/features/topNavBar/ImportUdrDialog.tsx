@@ -2,18 +2,22 @@ import {
   Button,
   Callout,
   Card,
-  Classes,
   FileInput,
   H3,
   Spinner,
   TextArea,
 } from "@blueprintjs/core";
 import { RefObject, useRef, useState } from "react";
-import { DarkModeAwareDialog } from "components/DarkModeAwareDialog";
+import {
+  Dialog,
+  DialogFooter,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "components/scn-ui/Dialog";
 import { Select } from "components/Select";
 import { E173Document, importUdr, Error as E173Error } from "e173";
 import { importDeviceClassEditor } from "./state";
-import "./ImportUdrDialog.css";
 
 enum FeedbackKind {
   UnableToReadFile,
@@ -60,80 +64,89 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
   }
 
   return (
-    <DarkModeAwareDialog isOpen={isOpen} onClose={onClose}>
-      <div className={Classes.DIALOG_HEADER}>
-        <H3>Import UDR Document</H3>
-      </div>
-      <div className={"import-udr-dialog-body " + Classes.DIALOG_BODY}>
-        <FileInput
-          text={inputFile ? inputFile.name : "Choose file..."}
-          className="import-udr-file-input"
-          onInputChange={(event) => {
-            const file = event.currentTarget.files?.item(0) ?? null;
-            setInputFile(file);
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Import UDR Document</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col items-center gap-2">
+          <FileInput
+            text={inputFile ? inputFile.name : "Choose file..."}
+            onInputChange={(event) => {
+              const file = event.currentTarget.files?.item(0) ?? null;
+              setInputFile(file);
 
-            if (file !== null) {
-              const reader = new FileReader();
-              reader.onload = (event) => {
-                setInputValidation(
-                  validateInputFile(event.target?.result as string | undefined),
-                );
-              };
-              reader.readAsText(file);
-            }
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (event.target as unknown as { value: any }).value = null;
-          }}
-          inputProps={{
-            accept: "application/json,.udr",
-          }}
-        />
-        {getAdditionalDialogElements(
-          inputFile,
-          inputValidation,
-          deviceClasses,
-          deviceClassSelectRef,
-        )}
-      </div>
-      <div className={Classes.DIALOG_FOOTER}>
-        <Button
-          intent="success"
-          icon="tick"
-          disabled={
-            !inputValidation ||
-            !inputValidation.valid ||
-            deviceClasses.length == 0
-          }
-          onClick={() => {
-            if (deviceClassSelectRef.current !== null) {
-              const deviceClass = stringToDeviceClass(
-                deviceClassSelectRef.current.value,
-              );
-
-              const deviceClasses = inputValidation?.udr?.e173doc.deviceClasses;
-              if (
-                deviceClasses &&
-                deviceClass.id in deviceClasses &&
-                deviceClass.version in deviceClasses[deviceClass.id]
-              ) {
-                importDeviceClassEditor(
-                  deviceClass.id,
-                  inputValidation!.udr!.e173doc.deviceClasses![deviceClass.id]![
-                    deviceClass.version
-                  ]!,
-                );
+              if (file !== null) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                  setInputValidation(
+                    validateInputFile(
+                      event.target?.result as string | undefined,
+                    ),
+                  );
+                };
+                reader.readAsText(file);
               }
-            }
 
-            onClose();
-          }}
-        >
-          Import
-        </Button>
-        <Button onClick={onClose}>Cancel</Button>
-      </div>
-    </DarkModeAwareDialog>
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (event.target as unknown as { value: any }).value = null;
+            }}
+            inputProps={{
+              accept: "application/json,.udr",
+            }}
+          />
+          {getAdditionalDialogElements(
+            inputFile,
+            inputValidation,
+            deviceClasses,
+            deviceClassSelectRef,
+          )}
+        </div>
+        <DialogFooter>
+          <Button
+            intent="success"
+            icon="tick"
+            disabled={
+              !inputValidation ||
+              !inputValidation.valid ||
+              deviceClasses.length == 0
+            }
+            onClick={() => {
+              if (deviceClassSelectRef.current !== null) {
+                const deviceClass = stringToDeviceClass(
+                  deviceClassSelectRef.current.value,
+                );
+
+                const deviceClasses =
+                  inputValidation?.udr?.e173doc.deviceClasses;
+                if (
+                  deviceClasses &&
+                  deviceClass.id in deviceClasses &&
+                  deviceClass.version in deviceClasses[deviceClass.id]
+                ) {
+                  importDeviceClassEditor(
+                    deviceClass.id,
+                    inputValidation!.udr!.e173doc.deviceClasses![
+                      deviceClass.id
+                    ]![deviceClass.version]!,
+                  );
+                }
+              }
+
+              onClose();
+            }}
+          >
+            Import
+          </Button>
+          <Button onClick={onClose}>Cancel</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
@@ -202,7 +215,7 @@ function getDeviceClassSelectionElement(
   } else {
     return (
       <>
-        <p>Select Device Class to import:</p>
+        Select Device Class to import:
         <Select ref={ref} options={deviceClasses.map(deviceClassToString)} />
       </>
     );

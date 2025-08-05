@@ -20,16 +20,16 @@ export const App = () => {
   const currentEditor = editors.editors[editors.selectedEditor];
 
   useEffect(() => {
-    const root = window.document.documentElement;
+    const root = window.document.body;
     if (darkMode) {
-      root.classList.add("dark");
+      root.classList.add("dark", Classes.DARK);
     } else {
-      root.classList.remove("dark");
+      root.classList.remove("dark", Classes.DARK);
     }
   }, [darkMode]);
 
   return (
-    <div className={darkMode ? "app " + Classes.DARK : "app"}>
+    <div className="app">
       <TopNavBar />
       <div className="display-area">
         {currentEditor ? EDITORS[currentEditor.type]() : <div />}

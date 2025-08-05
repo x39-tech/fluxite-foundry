@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { Classes, H3 } from "@blueprintjs/core";
+import { Classes, Dialog, H3 } from "@blueprintjs/core";
 import { Button } from "components/Button";
-import { DarkModeAwareDialog } from "components/DarkModeAwareDialog";
 import { TextEditorTableRow } from "components/EditorFields/TextEditorField";
 import { ParameterClassDisplay } from "components/ParameterClassDisplay";
 import { SimplePropsTable } from "components/SimplePropsTable";
@@ -15,7 +14,6 @@ import { useUdrDatabase } from "app/store";
 import { ItemClassSelector } from "components/ItemClassSelector/ItemClassSelector";
 import { getUniqueItemId } from "utils/utils";
 import { createNewParameter, useParameterIds } from "./state";
-import "./NewParameterDialog.css";
 
 interface Props {
   isOpen: boolean;
@@ -43,14 +41,14 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
   }
 
   return (
-    <DarkModeAwareDialog isOpen={isOpen} onClose={onClose}>
+    <Dialog isOpen={isOpen} onClose={onClose}>
       <div className={Classes.DIALOG_HEADER}>
         <H3>New Parameter</H3>
       </div>
-      <div className={"new-parameter-body " + Classes.DIALOG_BODY}>
+      <div className={"flex flex-col " + Classes.DIALOG_BODY}>
         <SimplePropsTable>
           <tr>
-            <td id="class-label" style={{ verticalAlign: "middle" }}>
+            <td id="class-label" className="align-middle">
               Class
             </td>
             <td>
@@ -112,6 +110,6 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
           Cancel
         </Button>
       </div>
-    </DarkModeAwareDialog>
+    </Dialog>
   );
 };
