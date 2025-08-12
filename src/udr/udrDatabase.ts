@@ -28,6 +28,11 @@ export interface ItemClassWithId extends ItemClass {
   id: string;
 }
 
+export interface LibraryWithId extends Library {
+  id: string;
+  version: string;
+}
+
 export type ParameterClassWithId = ParameterClass & ItemClassWithId;
 
 export type StructureClassWithId = StructureClass & ItemClassWithId;
@@ -45,7 +50,6 @@ interface LibraryDatabase {
 
 export interface UdrDatabase {
   libraries: LibraryDatabase;
-  itemClasses: ItemClassDatabase;
 }
 
 export interface ResolvedParameterClass {
@@ -65,31 +69,30 @@ export interface ResolvedParameterClass {
 export function getEmptyUdrDatabase(): UdrDatabase {
   return {
     libraries: {},
-    itemClasses: {
-      parameters: [],
-      structures: [],
-    },
   };
 }
 
 export function udrDatabaseIsEmpty(database: Readonly<UdrDatabase>): boolean {
-  return (
-    !database.libraries &&
-    !database.itemClasses.parameters &&
-    !database.itemClasses.structures
-  );
+  return !database.libraries;
 }
 
-export function getAllParametersWithIds(
+export function getNewestVersionOfEachLibrary(
   database: Readonly<UdrDatabase>,
-): ParameterClassWithId[] {
-  return database.itemClasses.parameters;
-}
-
-export function getAllStructuresWithIds(
-  database: Readonly<UdrDatabase>,
-): StructureClassWithId[] {
-  return database.itemClasses.structures;
+): LibraryWithId[] {
+  const libraries: LibraryWithId[] = [];
+  for (const [libraryId, versions] of Object.entries(database.libraries)) {
+    const versionKeys = Object.keys(versions);
+    if (versionKeys.length > 0) {
+      // TODO: proper version sort
+      const newestVersion = versionKeys.sort().reverse()[0];
+      libraries.push({
+        ...versions[newestVersion],
+        id: libraryId,
+        version: newestVersion,
+      });
+    }
+  }
+  return libraries;
 }
 
 export function getItemClassName(
@@ -109,6 +112,13 @@ export function getItemClassName(
 
   // TODO: use current localization
   return library.localizations?.["en-US"]?.strings?.[itemClass["@name"]];
+}
+
+export function getItemClassNameOrId(
+  database: Readonly<UdrDatabase>,
+  itemClass: ItemClassWithId,
+): string {
+  return getItemClassName(database, itemClass) || itemClass.id;
 }
 
 export function getItemClassDescription(
@@ -212,19 +222,11 @@ export function lookupStructureClass(
     : undefined;
 }
 
-export function getLibraryFriendlyName(
-  database: Readonly<UdrDatabase>,
-  libraryId: string,
-  libraryVersion: string,
-): string | undefined {
-  const library = database.libraries[libraryId]?.[libraryVersion];
-
-  if (!library) {
-    return undefined;
-  }
-
-  // TODO: use current localization
-  return library.localizations?.["en-US"]?.strings?.[library["@description"]];
+export function getLibraryFriendlyName(library: LibraryWithId): string {
+  return (
+    library.localizations?.["en-US"]?.strings?.[library["@description"]] ||
+    library.id
+  );
 }
 
 export type LoadLibrariesResult = true | string;
@@ -290,7 +292,6 @@ export function loadLibrariesFromDocument(
     ...libraries,
     ...database.libraries,
   };
-  database.itemClasses = concatItemClasses(database.itemClasses, itemDb);
 
   return true;
 }

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Button } from "../Button";
 import { TrashIcon } from "@heroicons/react/24/solid";
-import { VerticalDivider } from "../VerticalDivider";
+import { Toggle } from "components/scn-ui/Toggle";
+import { Separator } from "components/scn-ui/Separator";
+import { Button } from "components/scn-ui/Button";
 
 interface Props {
   name: string;
@@ -22,9 +23,8 @@ export const EditorTitleTab = ({
 
   return (
     <>
-      <Button
-        minimal
-        active={active}
+      <Toggle
+        pressed={active}
         onClick={() => {
           onSelect(id);
         }}
@@ -35,18 +35,23 @@ export const EditorTitleTab = ({
           setHovered(false);
         }}
       >
-        <div className="flex gap-2 mx-2 my-0.5">
-          {name}
-          <TrashIcon
-            className={`size-4 ${hovered ? "visible" : "invisible"}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(id);
-            }}
-          />
-        </div>
-      </Button>
-      <VerticalDivider />
+        {name}
+        <Button
+          size="icon"
+          aria-label="Delete Editor"
+          variant="ghost"
+          className={hovered ? "visible" : "invisible"}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(id);
+          }}
+        >
+          <TrashIcon className="size-4" />
+        </Button>
+      </Toggle>
+      <div className="h-[50%] mx-3">
+        <Separator orientation="vertical" />
+      </div>
     </>
   );
 };

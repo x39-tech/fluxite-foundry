@@ -769,34 +769,6 @@
       "required": ["@name", "dataType"],
       "type": "object"
     },
-    "ParameterClassWithId": {
-      "additionalProperties": false,
-      "properties": {
-        "@description": {
-          "type": "string"
-        },
-        "@name": {
-          "type": "string"
-        },
-        "dataType": {
-          "$ref": "#/definitions/DataType"
-        },
-        "id": {
-          "type": "string"
-        },
-        "libraryId": {
-          "type": "string"
-        },
-        "libraryVersion": {
-          "type": "string"
-        },
-        "unit": {
-          "$ref": "#/definitions/Unit"
-        }
-      },
-      "required": ["@name", "dataType", "id", "libraryId", "libraryVersion"],
-      "type": "object"
-    },
     "ParameterValue": {
       "type": ["number", "boolean"]
     },
@@ -871,31 +843,6 @@
         }
       },
       "required": ["@name"],
-      "type": "object"
-    },
-    "StructureClassWithId": {
-      "additionalProperties": false,
-      "properties": {
-        "@description": {
-          "type": "string"
-        },
-        "@name": {
-          "type": "string"
-        },
-        "id": {
-          "type": "string"
-        },
-        "libraryId": {
-          "type": "string"
-        },
-        "libraryVersion": {
-          "type": "string"
-        },
-        "multipleAllowed": {
-          "type": "boolean"
-        }
-      },
-      "required": ["@name", "id", "libraryId", "libraryVersion"],
       "type": "object"
     },
     "StructuresEditorState": {
@@ -1000,25 +947,6 @@
     "UdrDatabase": {
       "additionalProperties": false,
       "properties": {
-        "itemClasses": {
-          "additionalProperties": false,
-          "properties": {
-            "parameters": {
-              "items": {
-                "$ref": "#/definitions/ParameterClassWithId"
-              },
-              "type": "array"
-            },
-            "structures": {
-              "items": {
-                "$ref": "#/definitions/StructureClassWithId"
-              },
-              "type": "array"
-            }
-          },
-          "required": ["parameters", "structures"],
-          "type": "object"
-        },
         "libraries": {
           "additionalProperties": {
             "additionalProperties": {
@@ -1029,7 +957,7 @@
           "type": "object"
         }
       },
-      "required": ["libraries", "itemClasses"],
+      "required": ["libraries"],
       "type": "object"
     },
     "Unit": {

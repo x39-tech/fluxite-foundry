@@ -1,12 +1,14 @@
 import { Tooltip } from "@blueprintjs/core";
+import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import { DataType, Mapping, MappingRange, UnmappedParam } from "e173";
-import { Button } from "components/Button";
 import { StringSelector } from "components/StringSelector";
 import { TextEditorField } from "components/EditorFields/TextEditorField";
 import { SelectField } from "components/EditorFields/SelectField";
 import { ResolvedParameterClass } from "udr/udrDatabase";
 import { useParametersWithClasses } from "../state";
 import { Table } from "components/Table";
+import { SmallIconButton } from "components/SmallIconButton";
+import { TrashIcon } from "@heroicons/react/24/solid";
 
 interface DmxParameterMappingProps {
   mapping: Mapping;
@@ -65,18 +67,17 @@ export const DmxParameterMapping = ({
 
       const addRangeButton = (
         <Tooltip className="self-start" content="Add Range">
-          <Button
-            icon="PlusCircleIcon"
-            iconType="outline"
-            iconSize={5}
-            minimal
+          <SmallIconButton
+            className="size-7"
             onClick={() => {
               onUpdate({
                 ...mapping,
                 ranges: [...mapping.ranges, getNewRange(isBoolean)],
               });
             }}
-          />
+          >
+            <PlusCircleIcon className="size-5" />
+          </SmallIconButton>
         </Tooltip>
       );
 
@@ -117,11 +118,8 @@ export const DmxParameterMapping = ({
 
   let unmappedParams = (
     <Tooltip className="self-start" content="Add Unmapped Parameter">
-      <Button
-        icon="PlusCircleIcon"
-        iconType="outline"
-        iconSize={5}
-        minimal
+      <SmallIconButton
+        className="size-7"
         disabled={!isOk || unmappedParameterCandidates.length === 0}
         onClick={() => {
           const newParam = getNewUnmappedParam(
@@ -136,7 +134,9 @@ export const DmxParameterMapping = ({
               : [newParam],
           });
         }}
-      />
+      >
+        <PlusCircleIcon className="size-5" />
+      </SmallIconButton>
     </Tooltip>
   );
   if (mapping.unmappedParams && mapping.unmappedParams.length > 0) {
@@ -181,7 +181,9 @@ export const DmxParameterMapping = ({
           }
         />
         <div className="grow" />
-        <Button icon="TrashIcon" minimal={true} onClick={onRemove} />
+        <SmallIconButton onClick={onRemove}>
+          <TrashIcon />
+        </SmallIconButton>
       </div>
       <span className="font-bold mt-2 p-1">Mapping Ranges</span>
       {ranges}
@@ -270,9 +272,7 @@ function getRangeTableRowNumeric(
         />
       </td>
       <td>
-        <Button
-          icon="TrashIcon"
-          minimal
+        <SmallIconButton
           onClick={() => {
             onUpdate({
               ...mapping,
@@ -282,7 +282,9 @@ function getRangeTableRowNumeric(
               ],
             });
           }}
-        />
+        >
+          <TrashIcon />
+        </SmallIconButton>
       </td>
     </tr>
   );
@@ -355,9 +357,7 @@ function getRangeTableRowBoolean(
         />
       </td>
       <td>
-        <Button
-          icon="TrashIcon"
-          minimal
+        <SmallIconButton
           onClick={() => {
             onUpdate({
               ...mapping,
@@ -367,7 +367,9 @@ function getRangeTableRowBoolean(
               ],
             });
           }}
-        />
+        >
+          <TrashIcon />
+        </SmallIconButton>
       </td>
     </tr>
   );
@@ -486,9 +488,7 @@ function getUnmappedParameterTableRowBoolean(
         />
       </td>
       <td className="!align-middle">
-        <Button
-          icon="TrashIcon"
-          minimal
+        <SmallIconButton
           onClick={() => {
             onUpdate({
               ...mapping,
@@ -501,7 +501,9 @@ function getUnmappedParameterTableRowBoolean(
                     ],
             });
           }}
-        />
+        >
+          <TrashIcon />
+        </SmallIconButton>
       </td>
     </tr>
   );
@@ -555,9 +557,7 @@ function getUnmappedParameterTableRowNumeric(
         />
       </td>
       <td className="!align-middle">
-        <Button
-          icon="TrashIcon"
-          minimal
+        <SmallIconButton
           onClick={() => {
             onUpdate({
               ...mapping,
@@ -570,7 +570,9 @@ function getUnmappedParameterTableRowNumeric(
                     ],
             });
           }}
-        />
+        >
+          <TrashIcon />
+        </SmallIconButton>
       </td>
     </tr>
   );

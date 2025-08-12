@@ -1,6 +1,11 @@
+import {
+  CalculatorIcon,
+  FunnelIcon,
+  TrashIcon,
+} from "@heroicons/react/24/solid";
 import { Tooltip } from "@blueprintjs/core";
 import { Chunk, MappingGroup } from "e173";
-import { Button } from "components/Button";
+import { SmallIconButton } from "components/SmallIconButton";
 import {
   addCondition,
   addParameterMapping,
@@ -33,11 +38,11 @@ export const DmxParameterGroup = ({
       <div className="flex">
         <div className="font-bold mx-2 my-1">Parameter Group</div>
         <div className="grow" />
-        <Button
-          icon="TrashIcon"
-          minimal
+        <SmallIconButton
           onClick={() => removeParameterMappingGroup(chunkId, groupIndex)}
-        />
+        >
+          <TrashIcon />
+        </SmallIconButton>
       </div>
       {mappingGroup.mappings.map((mapping, index) => (
         <DmxParameterMapping
@@ -65,19 +70,19 @@ export const DmxParameterGroup = ({
       <div className="flex items-center my-1">
         <div className="grow" />
         <Tooltip content="Add Parameter Mapping">
-          <Button
-            icon="CalculatorIcon"
-            minimal
+          <SmallIconButton
             onClick={() => addParameterMapping(chunkId, groupIndex)}
-          />
+          >
+            <CalculatorIcon />
+          </SmallIconButton>
         </Tooltip>
         <Tooltip content="Add Condition">
-          <Button
-            icon="FunnelIcon"
-            minimal
+          <SmallIconButton
             disabled={chunksArray.length <= 1}
             onClick={() => addCondition(chunkId, groupIndex)}
-          />
+          >
+            <FunnelIcon />
+          </SmallIconButton>
         </Tooltip>
       </div>
     </div>

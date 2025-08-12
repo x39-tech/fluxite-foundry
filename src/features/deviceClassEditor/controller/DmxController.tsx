@@ -8,9 +8,9 @@ import {
   Unit,
   UnitName,
 } from "e173";
-import { Button } from "components/Button";
 import { useCurrentEditor, useParametersWithClasses } from "../state";
 import { useDmxController } from "../dmxEditor/state";
+import { Button } from "components/scn-ui/Button";
 import { TextEditorField } from "components/EditorFields/TextEditorField";
 import { Select } from "components/Select";
 import { useDarkMode } from "app/store";
@@ -266,6 +266,7 @@ export const DmxController = () => {
           )}
         </span>
         <Button
+          size="sm"
           onClick={() => {
             const ws = new WebSocket(`ws://${serverConnection.addressAndPort}`);
             ws.onopen = () => {

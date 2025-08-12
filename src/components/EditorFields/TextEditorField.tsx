@@ -1,7 +1,7 @@
 // A component that renders a ConfirmableInput inline text editor with optional validation.
 // Can either be controlled (value) or uncontrolled (defaultValue).
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { ExclamationCircleIcon } from "@heroicons/react/16/solid";
 import { ConfirmableInput } from "../ConfirmableInput";
 import { InputValidationResult } from "utils/inputValidation";
@@ -97,11 +97,15 @@ export interface TextEditorTableRowProps extends TextEditorFieldProps {
 }
 
 export const TextEditorTableRow = (props: TextEditorTableRowProps) => {
+  const id = useId();
+
   return (
     <tr>
-      <td className="align-middle">{props.label}</td>
+      <td id={id} className="align-middle">
+        {props.label}
+      </td>
       <td>
-        <TextEditorField {...props} />
+        <TextEditorField aria-labelledby={id} {...props} />
       </td>
     </tr>
   );

@@ -44,7 +44,10 @@ const Input = forwardRef<HTMLInputElement, Props>(function Input(
 
   useEffect(() => {
     if (dynamicWidth) {
-      setInputWidth(calculateInputWidth(currentValue));
+      const newInputWidth = calculateInputWidth(currentValue);
+      if (newInputWidth !== inputWidth) {
+        setInputWidth(newInputWidth);
+      }
     }
   }, [currentValue, placeholder]);
 

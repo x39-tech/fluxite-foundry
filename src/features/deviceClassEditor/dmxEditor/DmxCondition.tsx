@@ -1,8 +1,9 @@
 import { Chunk, Condition } from "e173";
-import { Button } from "components/Button";
+import { TrashIcon } from "@heroicons/react/24/solid";
 import { TextEditorField } from "components/EditorFields/TextEditorField";
 import { Select } from "components/Select";
 import { StringSelector } from "components/StringSelector";
+import { SmallIconButton } from "components/SmallIconButton";
 
 // TODO: support arbitrarily nested conditions
 
@@ -178,13 +179,13 @@ const DmxMappingCondition = ({
           }
         }}
       />
-      <Button
-        minimal
+      <SmallIconButton
         className="mx-1"
-        icon="TrashIcon"
         onClick={onRemove}
         aria-label="Delete condition"
-      />
+      >
+        <TrashIcon />
+      </SmallIconButton>
     </div>
   );
 };

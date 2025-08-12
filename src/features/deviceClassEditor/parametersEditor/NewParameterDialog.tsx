@@ -1,17 +1,20 @@
-import { useState } from "react";
-import { Classes, Dialog, H3 } from "@blueprintjs/core";
-import { Button } from "components/Button";
+import { useEffect, useState } from "react";
+import { CheckIcon } from "@heroicons/react/24/solid";
+import { Button } from "components/scn-ui/Button";
 import { TextEditorTableRow } from "components/EditorFields/TextEditorField";
 import { ParameterClassDisplay } from "components/ParameterClassDisplay";
 import { SimplePropsTable } from "components/SimplePropsTable";
-import { validateNewItemId } from "utils/inputValidation";
+import { ParameterClassSelector } from "components/ItemClassSelector";
 import {
-  getAllParametersWithIds,
-  lookupParameterClass,
-  ParameterClassWithId,
-} from "udr/udrDatabase";
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "components/scn-ui/Dialog";
+import { validateNewItemId } from "utils/inputValidation";
+import { lookupParameterClass, ParameterClassWithId } from "udr/udrDatabase";
 import { useUdrDatabase } from "app/store";
-import { ItemClassSelector } from "components/ItemClassSelector/ItemClassSelector";
 import { getUniqueItemId } from "utils/utils";
 import { createNewParameter, useParameterIds } from "./state";
 
@@ -31,85 +34,83 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
   const [newItemFriendlyName, setNewItemFriendlyName] = useState("My New Item");
 
   // Flush relevant parts of the state when the dialog was just opened
-  const [wasOpen, setWasOpen] = useState(true);
-  if (isOpen !== wasOpen) {
+  useEffect(() => {
     if (isOpen) {
       setNewItemId(getUniqueItemId(parameterIds));
       setNewItemFriendlyName("My New Item");
     }
-    setWasOpen(isOpen);
-  }
+  }, [isOpen]);
+
+  const renderItemClassTooltip = (item: ParameterClassWithId) => {
+    // TODO clean up
+    const resolvedClass = lookupParameterClass(
+      database,
+      item.libraryId,
+      item.libraryVersion,
+      item.id,
+    );
+    return <ParameterClassDisplay paramClass={resolvedClass!} />;
+  };
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose}>
-      <div className={Classes.DIALOG_HEADER}>
-        <H3>New Parameter</H3>
-      </div>
-      <div className={"flex flex-col " + Classes.DIALOG_BODY}>
-        <SimplePropsTable>
-          <tr>
-            <td id="class-label" className="align-middle">
-              Class
-            </td>
-            <td>
-              <ItemClassSelector
-                itemClasses={getAllParametersWithIds(database)}
-                selectedClass={newItemClass}
-                aria-labelledby="class-label"
-                onSelectedClassChanged={setNewItemClass}
-                tooltipRenderer={(item) => {
-                  // TODO clean up
-                  const resolvedClass = lookupParameterClass(
-                    database,
-                    item.libraryId,
-                    item.libraryVersion,
-                    item.id,
-                  );
-                  return <ParameterClassDisplay paramClass={resolvedClass!} />;
-                }}
-                database={database}
-              />
-            </td>
-          </tr>
-          <TextEditorTableRow
-            label="ID"
-            value={newItemId}
-            onValueChanged={setNewItemId}
-            validator={(input) => validateNewItemId(input, parameterIds)}
-            validationErrorPlacement="right"
-          />
-          <TextEditorTableRow
-            label="Display Name"
-            value={newItemFriendlyName}
-            onValueChanged={setNewItemFriendlyName}
-          />
-        </SimplePropsTable>
-      </div>
-      <div className={Classes.DIALOG_FOOTER}>
-        <Button
-          aria-label="Add"
-          intent="success"
-          icon="CheckIcon"
-          disabled={!newItemClass}
-          onClick={() => {
-            if (newItemClass) {
-              createNewParameter(
-                newItemClass.libraryId,
-                newItemClass.id,
-                newItemId,
-                newItemFriendlyName,
-              );
-            }
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>New Parameter</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col">
+          <SimplePropsTable>
+            <tr>
+              <td id="class-label">Class</td>
+              <td>
+                <ParameterClassSelector
+                  selectedClass={newItemClass}
+                  aria-labelledby="class-label"
+                  onSelectedClassChanged={setNewItemClass}
+                  tooltipRenderer={renderItemClassTooltip}
+                  database={database}
+                />
+              </td>
+            </tr>
+            <TextEditorTableRow
+              label="ID"
+              value={newItemId}
+              onValueChanged={setNewItemId}
+              validator={(input) => validateNewItemId(input, parameterIds)}
+              validationErrorPlacement="right"
+            />
+            <TextEditorTableRow
+              label="Display Name"
+              value={newItemFriendlyName}
+              onValueChanged={setNewItemFriendlyName}
+            />
+          </SimplePropsTable>
+        </div>
+        <DialogFooter>
+          <Button
+            aria-label="Add"
+            disabled={!newItemClass}
+            onClick={() => {
+              if (newItemClass) {
+                createNewParameter(
+                  newItemClass.libraryId,
+                  newItemClass.id,
+                  newItemId,
+                  newItemFriendlyName,
+                );
+              }
 
-            onClose();
-          }}
-        >
-          Add
-        </Button>
-        <Button aria-label="Cancel" onClick={onClose}>
-          Cancel
-        </Button>
-      </div>
+              onClose();
+            }}
+          >
+            <CheckIcon />
+            Add
+          </Button>
+          <Button variant="secondary" aria-label="Cancel" onClick={onClose}>
+            Cancel
+          </Button>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 };

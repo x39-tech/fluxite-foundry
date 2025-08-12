@@ -1,6 +1,7 @@
 import { NumericInput, NumericInputProps } from "@blueprintjs/core";
 import { Tooltip2 } from "@blueprintjs/popover2";
-import { Button } from "components/Button";
+import { TrashIcon } from "@heroicons/react/24/solid";
+import { Button } from "components/scn-ui/Button";
 
 interface NumericInputTableRowProps {
   label: string;
@@ -34,13 +35,16 @@ export const ClearableNumericInput = (props: ClearableNumericInputProps) => {
           disabled={!props.value}
         >
           <Button
-            minimal
-            icon="TrashIcon"
+            size="icon"
+            variant="ghost"
+            className="size-7 px-1"
             disabled={!props.value}
             onClick={() => {
               props.onValueChange(undefined);
             }}
-          />
+          >
+            <TrashIcon />
+          </Button>
         </Tooltip2>
       }
       {...props}

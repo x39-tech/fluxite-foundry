@@ -3,7 +3,8 @@ import {
   DisclosureButton,
   DisclosurePanel,
 } from "@headlessui/react";
-import { Button } from "components/Button";
+import { MinusIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { Button } from "components/scn-ui/Button";
 
 interface Props {
   title: string;
@@ -25,21 +26,25 @@ export const ItemEditor = ({
           <DisclosureButton as="div">
             {({ open }) => (
               <Button
+                size="icon"
+                variant="ghost"
                 aria-label={`Expand ${title}`}
-                icon={open ? "MinusIcon" : "PlusIcon"}
-                minimal={true}
                 className="opacity-80"
-              />
+              >
+                {open ? <MinusIcon /> : <PlusIcon />}
+              </Button>
             )}
           </DisclosureButton>
           <h2 className="text-lg">{title}</h2>
           <div className="flex-grow" />
           <Button
-            icon="TrashIcon"
-            minimal={true}
+            size="icon"
+            variant="ghost"
             onClick={onDelete}
             aria-label={`Delete ${title}`}
-          />
+          >
+            <TrashIcon />
+          </Button>
         </div>
         <div className="overflow-hidden">
           <DisclosurePanel

@@ -48,22 +48,15 @@ export const ExportUdrDialog = ({ isOpen, onClose }: Props) => {
   );
 
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={(open) => {
-        if (!open) onClose();
-      }}
-    >
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Export UDR Document</DialogTitle>
         </DialogHeader>
-        <div>
+        <div className="flex flex-col">
           <SimplePropsTable>
             <tr>
-              <td style={{ verticalAlign: "middle" }}>
-                Choose a device class to export:
-              </td>
+              <td>Choose a device class to export:</td>
               <td>
                 <Select
                   value={selectedEditorId}
@@ -84,9 +77,7 @@ export const ExportUdrDialog = ({ isOpen, onClose }: Props) => {
               </td>
             </tr>
             <tr>
-              <td style={{ verticalAlign: "middle " }}>
-                Select a device class ID:
-              </td>
+              <td>Select a device class ID:</td>
               <td>
                 <TextEditorField
                   value={deviceClassId}

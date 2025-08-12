@@ -21,15 +21,27 @@ export const useAppPersistentStore = create<AppPersistentState>()(
     devtools(() => getDefaultState()),
     {
       name: "udr-builder-state",
-      version: 4,
+      version: 5,
       migrate: (persistedState, version) => {
-        // All state changes are breaking right now
-        if (version == 4) {
-          return persistedState;
-        } else {
-          // Future versions are an error
+        if (typeof persistedState !== "object" || persistedState === null) {
           return getDefaultState();
         }
+
+        // State changes before 4 are breaking
+        // Starting at 4, we migrate
+        if (version === 4) {
+          return {
+            ...persistedState,
+            udrDatabase: {
+              // @ts-expect-error We don't have any type for older states right now
+              libraries: persistedState.udrDatabase.libraries,
+            },
+          };
+        }
+        if (version === 5) {
+          return persistedState;
+        }
+        return getDefaultState();
       },
       onRehydrateStorage: () => {
         return (state, error) => {
@@ -91,6 +103,7 @@ function getDefaultState(): AppPersistentState {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
 function getDefaultDarkModePreference(): boolean {
   // Check to see if Media-Queries are supported
   if (window.matchMedia) {

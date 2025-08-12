@@ -1,16 +1,16 @@
 import { useCallback, useEffect } from "react";
 import * as FlexLayout from "flexlayout-react";
 import { Popover2 } from "@blueprintjs/popover2";
+import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import { throttle } from "lodash";
 import { nanoid } from "nanoid";
 import { APP_NAME } from "appInfo";
 import { RenderError } from "components/RenderError";
-import { Button } from "components/Button";
+import { Button } from "components/scn-ui/Button";
 import { useDarkMode } from "app/store";
 import { WIDGETS, isValidWidget } from "./widgets";
 import { NewWidgetMenu } from "./newWidgetMenu";
 import { setWindowLayout, useCurrentEditor } from "./state";
-import "./DeviceClassEditor.scss";
 
 export const DeviceClassEditor = () => {
   const currentEditor = useCurrentEditor();
@@ -33,7 +33,7 @@ export const DeviceClassEditor = () => {
   const modelJson: FlexLayout.IJsonModel = {
     global: {
       tabEnableRename: false,
-      tabSetClassNameTabStrip: "udr-builder-tabstrip",
+      tabSetClassNameTabStrip: "bg-none",
       borderSize: 500,
       splitterSize: 2,
     },
@@ -80,12 +80,13 @@ export const DeviceClassEditor = () => {
             }
           >
             <Button
-              minimal
-              icon="PlusCircleIcon"
-              iconType="outline"
-              iconSize={5}
+              size="icon"
+              variant="ghost"
+              className="size-6 align-middle"
               aria-label="Add new widget"
-            />
+            >
+              <PlusCircleIcon className="size-5" />
+            </Button>
           </Popover2>,
         ];
       }}
