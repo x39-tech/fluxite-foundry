@@ -1,11 +1,30 @@
 import { useState } from "react";
-import { Button, Icon, Menu, MenuDivider } from "@blueprintjs/core";
-import { MenuItem2, Popover2 } from "@blueprintjs/popover2";
+import {
+  ArrowDownTrayIcon,
+  ArrowUpTrayIcon,
+  CheckIcon,
+  EllipsisHorizontalIcon,
+  MoonIcon,
+  QuestionMarkCircleIcon,
+} from "@heroicons/react/24/solid";
+import { CogIcon } from "@heroicons/react/24/outline";
 import { APP_NAME } from "appInfo";
 import { setDarkMode, useDarkMode } from "app/store";
 import { AboutDialog } from "./AboutDialog";
 import { ImportUdrDialog } from "./ImportUdrDialog";
 import { ExportUdrDialog } from "./ExportUdrDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "components/scn-ui/DropdownMenu";
+import { Button } from "components/scn-ui/Button";
 
 export const AppMainMenu = () => {
   const darkMode = useDarkMode();
@@ -14,40 +33,52 @@ export const AppMainMenu = () => {
   const [exportUdrDialogIsOpen, setExportUdrDialogIsOpen] = useState(false);
   const [aboutDialogIsOpen, setAboutDialogIsOpen] = useState(false);
 
-  const mainMenu = (
-    <Menu>
-      <MenuItem2
-        text="Import UDR..."
-        icon="import"
-        onClick={() => setImportUdrDialogIsOpen(true)}
-      />
-      <MenuItem2
-        text="Export UDR..."
-        icon="export"
-        onClick={() => setExportUdrDialogIsOpen(true)}
-      />
-      <MenuDivider />
-      <MenuItem2 text="Settings" icon="cog">
-        <MenuItem2
-          text="Dark Mode"
-          icon="moon"
-          labelElement={checkedIf(darkMode)}
-          onClick={() => setDarkMode(!darkMode)}
-        />
-      </MenuItem2>
-      <MenuItem2
-        text={`About ${APP_NAME}`}
-        icon="help"
-        onClick={() => setAboutDialogIsOpen(true)}
-      />
-    </Menu>
-  );
-
   return (
     <>
-      <Popover2 content={mainMenu}>
-        <Button icon="more" />
-      </Popover2>
+      <DropdownMenu>
+        <DropdownMenuTrigger>
+          <Button
+            size="icon"
+            variant="secondary"
+            className="size-8"
+            aria-label="App Menu"
+          >
+            <EllipsisHorizontalIcon className="size-6" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56" align="start">
+          <DropdownMenuItem onClick={() => setImportUdrDialogIsOpen(true)}>
+            <ArrowDownTrayIcon className="size-5" />
+            Import UDR...
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setExportUdrDialogIsOpen(true)}>
+            <ArrowUpTrayIcon className="size-5" />
+            Export UDR...
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger className="flex gap-2">
+              <CogIcon className="size-5" />
+              Settings
+            </DropdownMenuSubTrigger>
+            <DropdownMenuPortal>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem onClick={() => setDarkMode(!darkMode)}>
+                  <MoonIcon className="size-5" />
+                  Dark Mode
+                  <CheckIcon
+                    className={`size-5 ${darkMode ? "visible" : "invisible"}`}
+                  />
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuPortal>
+          </DropdownMenuSub>
+          <DropdownMenuItem>
+            <QuestionMarkCircleIcon className="size-5" />
+            {`About ${APP_NAME}`}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
       {importUdrDialogIsOpen && (
         <ImportUdrDialog
           isOpen={true}
@@ -69,7 +100,3 @@ export const AppMainMenu = () => {
     </>
   );
 };
-
-function checkedIf(condition: boolean): JSX.Element {
-  return condition ? <Icon icon="tick" /> : <></>;
-}

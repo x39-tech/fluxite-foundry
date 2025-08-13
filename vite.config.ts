@@ -22,4 +22,11 @@ export default defineConfig({
     setupFiles: "src/test/setup.ts",
     environment: "happy-dom",
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: "modern-compiler",
+      },
+    },
+  },
 });

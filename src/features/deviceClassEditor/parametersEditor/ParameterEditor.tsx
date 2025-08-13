@@ -1,5 +1,5 @@
+import { ComponentProps } from "react";
 import { Callout } from "@blueprintjs/core";
-import { Popover2 } from "@blueprintjs/popover2";
 import { Draft } from "immer";
 import { Parameter, Lifetime, DataType, ParameterAccess } from "e173";
 import {
@@ -10,6 +10,11 @@ import {
   ClearableNumericInputTableRow,
   NumericInputTableRow,
 } from "components/EditorFields/NumericInputField";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "components/scn-ui/Tooltip";
 import { SelectTableRow } from "components/EditorFields/SelectField";
 import {
   OptionalTextEditorTableRow,
@@ -42,13 +47,16 @@ import {
   useLibraries,
 } from "../state";
 import { RenderError } from "components/RenderError";
-import "./ParameterEditor.css";
 
 interface Props {
   id: string;
 }
 
 type ParameterModifier = (fn: (draft: Draft<Parameter>) => void) => void;
+
+const Pre = ({ ...props }: ComponentProps<"pre">) => (
+  <pre className="inline m-0" {...props} />
+);
 
 export const ParameterEditor = ({ id }: Props) => {
   const database = useUdrDatabase();
@@ -88,7 +96,7 @@ export const ParameterEditor = ({ id }: Props) => {
       title={param["@friendlyName"] ? param["@friendlyName"]! : id}
       onDelete={() => deleteParameter(id)}
     >
-      <div className="parameter-collapse-body">
+      <div className="flex flex-col">
         {paramClass
           ? getParameterPropsTable(
               id,
@@ -253,19 +261,20 @@ function getParameterPropsTable(
       <tr>
         <td>Library</td>
         <td>
-          <pre>{param.library || "Device Library"}</pre>
+          <Pre>{param.library || "Device Library"}</Pre>
         </td>
       </tr>
       <tr>
         <td>Class</td>
         <td>
-          <Popover2
-            content={<ParameterClassDisplay paramClass={paramClass} />}
-            position="right"
-            interactionKind="hover"
-          >
-            <pre>{param.class}</pre>
-          </Popover2>
+          <Tooltip>
+            <TooltipTrigger>
+              <Pre>{param.class}</Pre>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <ParameterClassDisplay paramClass={paramClass} />
+            </TooltipContent>
+          </Tooltip>
         </td>
       </tr>
       <TextEditorTableRow
@@ -396,7 +405,7 @@ function changeInstantiationType(
 function getClassNotFoundMessage(className: string): JSX.Element {
   return (
     <Callout intent="warning">
-      Class <pre>{className}</pre> not found. This may be an indication of
+      Class <Pre>{className}</Pre> not found. This may be an indication of
       invalid UDR.
     </Callout>
   );

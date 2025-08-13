@@ -1,6 +1,10 @@
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import { Alignment, Navbar } from "@blueprintjs/core";
-import { Popover2 } from "@blueprintjs/popover2";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "components/scn-ui/Tooltip";
 import { APP_NAME } from "appInfo";
 import { Button } from "components/scn-ui/Button";
 import { EditorTitleTab } from "components/EditorTitleTab/EditorTitleTab";
@@ -31,28 +35,23 @@ export const TopNavBar = () => {
             />
           );
         })}
-        <Popover2
-          content={
-            <div className="get-started-callout">
-              <p>
-                Get started by adding a new editor, or import an existing UDR
-                document using the import option to the right.
-              </p>
-            </div>
-          }
-          isOpen={currentEditor === undefined}
-          position="bottom"
-        >
-          <Button
-            size="icon"
-            variant="secondary"
-            className="size-8"
-            aria-label="Add New Editor"
-            onClick={createDeviceClassEditor}
-          >
-            <PlusCircleIcon className="size-5" />
-          </Button>
-        </Popover2>
+        <Tooltip open={currentEditor === undefined}>
+          <TooltipTrigger>
+            <Button
+              size="icon"
+              variant="secondary"
+              className="size-8"
+              aria-label="Add New Editor"
+              onClick={createDeviceClassEditor}
+            >
+              <PlusCircleIcon className="size-5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="text-md max-w-[260px] p-4">
+            Get started by adding a new editor, or import an existing UDR
+            document using the import option to the right.
+          </TooltipContent>
+        </Tooltip>
       </Navbar.Group>
       <Navbar.Group align={Alignment.RIGHT} className="ml-2">
         <AppMainMenu />

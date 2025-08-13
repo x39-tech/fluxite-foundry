@@ -1,6 +1,5 @@
 import { useCallback, useEffect } from "react";
 import * as FlexLayout from "flexlayout-react";
-import { Popover2 } from "@blueprintjs/popover2";
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import { throttle } from "lodash";
 import { nanoid } from "nanoid";
@@ -11,6 +10,11 @@ import { useDarkMode } from "app/store";
 import { WIDGETS, isValidWidget } from "./widgets";
 import { NewWidgetMenu } from "./newWidgetMenu";
 import { setWindowLayout, useCurrentEditor } from "./state";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "components/scn-ui/Popover";
 
 export const DeviceClassEditor = () => {
   const currentEditor = useCurrentEditor();
@@ -69,25 +73,25 @@ export const DeviceClassEditor = () => {
       onRenderTabSet={(tabSetNode, renderValues) => {
         const tabSetId = tabSetNode.getId();
         renderValues.stickyButtons = [
-          <Popover2
-            key="1"
-            content={
+          <Popover key="1">
+            <PopoverTrigger>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="size-6 align-middle"
+                aria-label="Add new widget"
+              >
+                <PlusCircleIcon className="size-5" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="p-0.5">
               <NewWidgetMenu
                 onNewWidgetSelected={(id, name) =>
                   addNewWidget(model, tabSetId, id, name)
                 }
               />
-            }
-          >
-            <Button
-              size="icon"
-              variant="ghost"
-              className="size-6 align-middle"
-              aria-label="Add new widget"
-            >
-              <PlusCircleIcon className="size-5" />
-            </Button>
-          </Popover2>,
+            </PopoverContent>
+          </Popover>,
         ];
       }}
       onRenderTab={(node, renderValues) => {

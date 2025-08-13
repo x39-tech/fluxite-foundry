@@ -12,7 +12,9 @@ test("Renders a tooltip and add editor button when no editor is open", async () 
   expect(
     screen.getByRole("button", { name: "Add New Editor" }),
   ).toBeInTheDocument();
-  await screen.findByText(/get started/i);
+
+  // https://github.com/radix-ui/primitives/issues/3034
+  expect((await screen.findAllByText(/get started/i))[0]).toBeInTheDocument();
 });
 
 test("Renders an editor when one is open", async () => {
