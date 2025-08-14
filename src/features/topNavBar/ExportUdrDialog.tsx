@@ -1,15 +1,10 @@
-import { AnchorButton, Button } from "@blueprintjs/core";
 import { useState } from "react";
 import { E173Document } from "e173";
 import { LabeledCheckbox } from "components/LabeledCheckbox";
-import {
-  useDeviceClassEditors,
-  useOpenDeviceClassEditorsWithNames,
-} from "./state";
-import { DeviceClassEditorState } from "app/state";
 import { TextEditorField } from "components/EditorFields/TextEditorField";
 import { SimplePropsTable } from "components/SimplePropsTable";
 import { Select } from "components/Select";
+import { Button } from "components/scn-ui/Button";
 import {
   Dialog,
   DialogContent,
@@ -17,6 +12,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "components/scn-ui/Dialog";
+import {
+  useDeviceClassEditors,
+  useOpenDeviceClassEditorsWithNames,
+} from "./state";
+import { DeviceClassEditorState } from "app/state";
 
 interface Props {
   isOpen: boolean;
@@ -97,17 +97,20 @@ export const ExportUdrDialog = ({ isOpen, onClose }: Props) => {
           </SimplePropsTable>
         </div>
         <DialogFooter>
-          <AnchorButton
-            intent="success"
-            icon="tick"
-            disabled={editors.length === 0}
-            download={`${deviceClassId || "my-device"}.json`}
-            href={fileDownloadUrl}
-            onClick={onClose}
-          >
-            Export
-          </AnchorButton>
-          <Button onClick={onClose}>Cancel</Button>
+          <Button asChild disabled={editors.length === 0}>
+            <a
+              // TODO: remove below when blueprint is purged
+              className="text-white! cursor-default! no-underline!"
+              href={fileDownloadUrl}
+              onClick={onClose}
+              download={`${deviceClassId || "my-device"}.json`}
+            >
+              Export
+            </a>
+          </Button>
+          <Button variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

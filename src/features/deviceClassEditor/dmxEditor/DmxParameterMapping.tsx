@@ -1,14 +1,18 @@
-import { Tooltip } from "@blueprintjs/core";
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
+import { TrashIcon } from "@heroicons/react/24/solid";
 import { DataType, Mapping, MappingRange, UnmappedParam } from "e173";
 import { StringSelector } from "components/StringSelector";
 import { TextEditorField } from "components/EditorFields/TextEditorField";
 import { SelectField } from "components/EditorFields/SelectField";
-import { ResolvedParameterClass } from "udr/udrDatabase";
-import { useParametersWithClasses } from "../state";
 import { Table } from "components/Table";
 import { SmallIconButton } from "components/SmallIconButton";
-import { TrashIcon } from "@heroicons/react/24/solid";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "components/scn-ui/Tooltip";
+import { ResolvedParameterClass } from "udr/udrDatabase";
+import { useParametersWithClasses } from "../state";
 
 interface DmxParameterMappingProps {
   mapping: Mapping;
@@ -66,18 +70,21 @@ export const DmxParameterMapping = ({
       }
 
       const addRangeButton = (
-        <Tooltip className="self-start" content="Add Range">
-          <SmallIconButton
-            className="size-7"
-            onClick={() => {
-              onUpdate({
-                ...mapping,
-                ranges: [...mapping.ranges, getNewRange(isBoolean)],
-              });
-            }}
-          >
-            <PlusCircleIcon className="size-5" />
-          </SmallIconButton>
+        <Tooltip>
+          <TooltipTrigger className="self-start">
+            <SmallIconButton
+              className="size-7"
+              onClick={() => {
+                onUpdate({
+                  ...mapping,
+                  ranges: [...mapping.ranges, getNewRange(isBoolean)],
+                });
+              }}
+            >
+              <PlusCircleIcon className="size-5" />
+            </SmallIconButton>
+          </TooltipTrigger>
+          <TooltipContent>Add Range</TooltipContent>
         </Tooltip>
       );
 
@@ -117,28 +124,32 @@ export const DmxParameterMapping = ({
   }
 
   let unmappedParams = (
-    <Tooltip className="self-start" content="Add Unmapped Parameter">
-      <SmallIconButton
-        className="size-7"
-        disabled={!isOk || unmappedParameterCandidates.length === 0}
-        onClick={() => {
-          const newParam = getNewUnmappedParam(
-            unmappedParameterCandidates[0],
-            paramsWithClasses[unmappedParameterCandidates[0]].dataType ==
-              DataType.Boolean,
-          );
-          onUpdate({
-            ...mapping,
-            unmappedParams: mapping.unmappedParams
-              ? [...mapping.unmappedParams, newParam]
-              : [newParam],
-          });
-        }}
-      >
-        <PlusCircleIcon className="size-5" />
-      </SmallIconButton>
+    <Tooltip>
+      <TooltipTrigger className="self-start">
+        <SmallIconButton
+          className="size-7"
+          disabled={!isOk || unmappedParameterCandidates.length === 0}
+          onClick={() => {
+            const newParam = getNewUnmappedParam(
+              unmappedParameterCandidates[0],
+              paramsWithClasses[unmappedParameterCandidates[0]].dataType ==
+                DataType.Boolean,
+            );
+            onUpdate({
+              ...mapping,
+              unmappedParams: mapping.unmappedParams
+                ? [...mapping.unmappedParams, newParam]
+                : [newParam],
+            });
+          }}
+        >
+          <PlusCircleIcon className="size-5" />
+        </SmallIconButton>
+      </TooltipTrigger>
+      <TooltipContent>Add Unmapped Parameter</TooltipContent>
     </Tooltip>
   );
+
   if (mapping.unmappedParams && mapping.unmappedParams.length > 0) {
     unmappedParams = (
       <>

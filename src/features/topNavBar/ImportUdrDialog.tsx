@@ -1,5 +1,4 @@
 import {
-  Button,
   Callout,
   Card,
   FileInput,
@@ -15,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "components/scn-ui/Dialog";
+import { Button } from "components/scn-ui/Button";
 import { Select } from "components/Select";
 import { E173Document, importUdr, Error as E173Error } from "e173";
 import { importDeviceClassEditor } from "./state";
@@ -109,8 +109,6 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
         </div>
         <DialogFooter>
           <Button
-            intent="success"
-            icon="tick"
             disabled={
               !inputValidation ||
               !inputValidation.valid ||
@@ -143,7 +141,9 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
           >
             Import
           </Button>
-          <Button onClick={onClose}>Cancel</Button>
+          <Button variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

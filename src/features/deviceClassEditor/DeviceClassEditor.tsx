@@ -6,15 +6,15 @@ import { nanoid } from "nanoid";
 import { APP_NAME } from "appInfo";
 import { RenderError } from "components/RenderError";
 import { Button } from "components/scn-ui/Button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "components/scn-ui/DropdownMenu";
 import { useDarkMode } from "app/store";
 import { WIDGETS, isValidWidget } from "./widgets";
-import { NewWidgetMenu } from "./newWidgetMenu";
 import { setWindowLayout, useCurrentEditor } from "./state";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "components/scn-ui/Popover";
 
 export const DeviceClassEditor = () => {
   const currentEditor = useCurrentEditor();
@@ -73,8 +73,8 @@ export const DeviceClassEditor = () => {
       onRenderTabSet={(tabSetNode, renderValues) => {
         const tabSetId = tabSetNode.getId();
         renderValues.stickyButtons = [
-          <Popover key="1">
-            <PopoverTrigger>
+          <DropdownMenu key={1}>
+            <DropdownMenuTrigger>
               <Button
                 size="icon"
                 variant="ghost"
@@ -83,15 +83,22 @@ export const DeviceClassEditor = () => {
               >
                 <PlusCircleIcon className="size-5" />
               </Button>
-            </PopoverTrigger>
-            <PopoverContent className="p-0.5">
-              <NewWidgetMenu
-                onNewWidgetSelected={(id, name) =>
-                  addNewWidget(model, tabSetId, id, name)
-                }
-              />
-            </PopoverContent>
-          </Popover>,
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="p-0.5">
+              {Object.entries(WIDGETS).map(([widgetId, widgetDesc]) => {
+                return (
+                  <DropdownMenuItem
+                    key={widgetId}
+                    onClick={() =>
+                      addNewWidget(model, tabSetId, widgetId, widgetDesc.name)
+                    }
+                  >
+                    {widgetDesc.name}
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>,
         ];
       }}
       onRenderTab={(node, renderValues) => {

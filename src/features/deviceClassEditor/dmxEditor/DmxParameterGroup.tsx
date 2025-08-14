@@ -3,9 +3,13 @@ import {
   FunnelIcon,
   TrashIcon,
 } from "@heroicons/react/24/solid";
-import { Tooltip } from "@blueprintjs/core";
 import { Chunk, MappingGroup } from "e173";
 import { SmallIconButton } from "components/SmallIconButton";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "components/scn-ui/Tooltip";
 import {
   addCondition,
   addParameterMapping,
@@ -69,20 +73,26 @@ export const DmxParameterGroup = ({
       ))}
       <div className="flex items-center my-1">
         <div className="grow" />
-        <Tooltip content="Add Parameter Mapping">
-          <SmallIconButton
-            onClick={() => addParameterMapping(chunkId, groupIndex)}
-          >
-            <CalculatorIcon />
-          </SmallIconButton>
+        <Tooltip>
+          <TooltipTrigger>
+            <SmallIconButton
+              onClick={() => addParameterMapping(chunkId, groupIndex)}
+            >
+              <CalculatorIcon />
+            </SmallIconButton>
+          </TooltipTrigger>
+          <TooltipContent>Add Parameter Mapping</TooltipContent>
         </Tooltip>
-        <Tooltip content="Add Condition">
-          <SmallIconButton
-            disabled={chunksArray.length <= 1}
-            onClick={() => addCondition(chunkId, groupIndex)}
-          >
-            <FunnelIcon />
-          </SmallIconButton>
+        <Tooltip>
+          <TooltipTrigger>
+            <SmallIconButton
+              disabled={chunksArray.length <= 1}
+              onClick={() => addCondition(chunkId, groupIndex)}
+            >
+              <FunnelIcon />
+            </SmallIconButton>
+          </TooltipTrigger>
+          <TooltipContent>Add Condition</TooltipContent>
         </Tooltip>
       </div>
     </div>
