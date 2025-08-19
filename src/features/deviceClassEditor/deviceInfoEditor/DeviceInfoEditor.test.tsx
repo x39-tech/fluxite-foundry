@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { getByRole, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DeviceInfoEditor } from "./DeviceInfoEditor";
 import { createDeviceClassEditor } from "features/topNavBar/state";
@@ -229,27 +229,14 @@ test("can add firmware versions using tag input", async () => {
   const { container } = render(<DeviceInfoEditor />);
 
   const firmwareVersionsRow = getEditorTableRow("Firmware Versions", container);
-  const tagInput = firmwareVersionsRow.querySelector(".bp5-tag-input");
-  expect(tagInput).toBeInTheDocument();
 
-  if (tagInput) {
-    const input = tagInput.querySelector("input");
-    expect(input).toBeInTheDocument();
+  const input = getByRole(firmwareVersionsRow, "textbox");
+  expect(input).toBeInTheDocument();
 
-    if (input) {
-      await user.click(input);
-      await user.type(input, "v1.0.0");
-      await user.keyboard("{Enter}");
+  await user.type(input, "v1.0.0");
+  await user.keyboard("{Enter}");
 
-      await waitFor(() => {
-        const tags = tagInput.querySelectorAll(".bp5-tag");
-        expect(tags.length).toBeGreaterThan(0);
-        expect(
-          Array.from(tags).some((tag) => tag.textContent?.includes("v1.0.0")),
-        ).toBe(true);
-      });
-    }
-  }
+  expect(screen.getByText("v1.0.0")).toBeInTheDocument();
 });
 
 test("can add multiple firmware versions", async () => {
@@ -257,30 +244,18 @@ test("can add multiple firmware versions", async () => {
   const { container } = render(<DeviceInfoEditor />);
 
   const firmwareVersionsRow = getEditorTableRow("Firmware Versions", container);
-  const tagInput = firmwareVersionsRow.querySelector(".bp5-tag-input");
-  expect(tagInput).toBeInTheDocument();
 
-  if (tagInput) {
-    const input = tagInput.querySelector("input");
-    expect(input).toBeInTheDocument();
+  const input = getByRole(firmwareVersionsRow, "textbox");
+  expect(input).toBeInTheDocument();
 
-    if (input) {
-      // Add first version
-      await user.click(input);
-      await user.type(input, "v1.0.0");
-      await user.keyboard("{Enter}");
+  // Add first version
+  await user.type(input, "v1.0.0");
+  await user.keyboard("{Enter}");
 
-      // Add second version
-      await user.type(input, "v2.0.0");
-      await user.keyboard("{Enter}");
+  // Add second version
+  await user.type(input, "v2.0.0");
+  await user.keyboard("{Enter}");
 
-      await waitFor(() => {
-        const tags = tagInput.querySelectorAll(".bp5-tag");
-        expect(tags.length).toBeGreaterThanOrEqual(2);
-        const tagTexts = Array.from(tags).map((tag) => tag.textContent);
-        expect(tagTexts.some((text) => text?.includes("v1.0.0"))).toBe(true);
-        expect(tagTexts.some((text) => text?.includes("v2.0.0"))).toBe(true);
-      });
-    }
-  }
+  expect(screen.getByText("v1.0.0")).toBeInTheDocument();
+  expect(screen.getByText("v2.0.0")).toBeInTheDocument();
 });
