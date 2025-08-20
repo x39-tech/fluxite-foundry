@@ -48,8 +48,8 @@ export const TextEditorField = ({
           value={value}
           validator={validator}
           onValidationResult={(_, result) => setValidationResult(result)}
-          placeholder={placeholder}
           onConfirm={onValueChanged}
+          placeholder={placeholder}
         />
       </PopoverAnchor>
       <PopoverContent

@@ -6,10 +6,7 @@ import {
   getParamAccessFriendlyName,
   getLifetimeFriendlyName,
 } from "udr/util/enums";
-import {
-  ClearableNumericInputTableRow,
-  NumericInputTableRow,
-} from "components/EditorFields/NumericInputField";
+import { IntegerInputTableRow } from "components/EditorFields/IntegerInputField";
 import {
   Tooltip,
   TooltipContent,
@@ -143,14 +140,14 @@ function getInstantiationProperties(
         }
       />
       {udr.count ? (
-        <NumericInputTableRow
+        <IntegerInputTableRow
           label="Instance Count"
-          value={udr.count || ""}
+          value={udr.count ?? null}
           min={1}
-          minorStepSize={null}
           onValueChange={(newValue) =>
+            newValue &&
             modifyParam((draft) => {
-              draft.count = newValue;
+              draft.count = newValue || undefined;
             })
           }
         />
@@ -159,12 +156,12 @@ function getInstantiationProperties(
       )}
       {udr.dynamicMinimum ? (
         <>
-          <NumericInputTableRow
+          <IntegerInputTableRow
             label="Minimum Instance Count"
-            value={udr.dynamicMinimum || ""}
+            value={udr.dynamicMinimum ?? null}
             min={1}
-            minorStepSize={null}
             onValueChange={(newValue) =>
+              newValue &&
               modifyParam((draft) => {
                 draft.dynamicMinimum = newValue;
                 if (
@@ -176,23 +173,20 @@ function getInstantiationProperties(
               })
             }
           />
-          <ClearableNumericInputTableRow
+          <IntegerInputTableRow
+            clearable
             label="Maximum Instance Count"
-            value={udr.dynamicMaximum || ""}
+            value={udr.dynamicMaximum ?? null}
             placeholder="(no maximum)"
             min={1}
-            minorStepSize={null}
-            onValueChange={(newValue) =>
+            onValueChange={(newValue) => {
               modifyParam((draft) => {
-                draft.dynamicMaximum = newValue;
-                if (
-                  newValue !== undefined &&
-                  draft.dynamicMinimum! > newValue
-                ) {
+                draft.dynamicMaximum = newValue || undefined;
+                if (newValue !== null && draft.dynamicMinimum! > newValue) {
                   draft.dynamicMinimum = newValue;
                 }
-              })
-            }
+              });
+            }}
           />
         </>
       ) : (

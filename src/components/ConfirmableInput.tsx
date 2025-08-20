@@ -2,7 +2,7 @@
 // whether to 'confirm' or 'cancel' it when focused out or on certain key presses.
 
 import { useState, useEffect, KeyboardEvent, ChangeEvent, useRef } from "react";
-import { Input } from "./scn-ui/Input";
+import { AppInput } from "components/AppInput";
 import { InputValidationResult } from "utils/inputValidation";
 
 export interface ConfirmableInputProps {
@@ -86,7 +86,7 @@ export const ConfirmableInput = ({
   };
 
   return (
-    <Input
+    <AppInput
       ref={inputRef}
       minimal
       dynamicWidth
