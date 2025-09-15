@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import { Slider } from "@blueprintjs/core";
 import {
   DataType,
   ParameterCluster,
@@ -11,6 +10,7 @@ import {
 import { useCurrentEditor, useParametersWithClasses } from "../state";
 import { useDmxController } from "../dmxEditor/state";
 import { Button } from "components/scn-ui/Button";
+import { Slider } from "components/scn-ui/Slider";
 import { TextEditorField } from "components/EditorFields/TextEditorField";
 import { Select } from "components/Select";
 import { useDarkMode } from "app/store";
@@ -303,7 +303,7 @@ export const DmxController = () => {
                     const active = paramValues.params[parameter]?.active;
 
                     return (
-                      <div key={index} className="flex items-center">
+                      <div key={index} className="flex items-center py-2">
                         <span className="mx-4">
                           {parameter}
                           {getUnitString(paramClass.unit)}
@@ -313,19 +313,17 @@ export const DmxController = () => {
                           className={`max-w-96 mx-4 ${!active ? "opacity-50" : ""}`}
                           min={min}
                           max={max}
-                          value={paramValues.params[parameter]?.value}
-                          onChange={(value) => {
+                          value={[paramValues.params[parameter]?.value]}
+                          onValueChange={(values) => {
                             setParamValue(
                               paramValues,
                               setParamValues,
                               cluster,
                               parameter,
-                              value,
+                              values[0],
                             );
                           }}
-                          labelValues={[]}
-                          showTrackFill={false}
-                          stepSize={getSliderStepSize(min, max)}
+                          step={getSliderStepSize(min, max)}
                         />
                       </div>
                     );

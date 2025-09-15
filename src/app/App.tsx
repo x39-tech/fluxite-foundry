@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { Classes } from "@blueprintjs/core";
 import { DeviceClassEditor } from "features/deviceClassEditor/DeviceClassEditor";
 import { TopNavBar } from "features/topNavBar/TopNavBar";
 import { udrDatabaseIsEmpty } from "udr/udrDatabase";
@@ -22,9 +21,9 @@ export const App = () => {
   useEffect(() => {
     const root = window.document.body;
     if (darkMode) {
-      root.classList.add("dark", Classes.DARK);
+      root.classList.add("dark");
     } else {
-      root.classList.remove("dark", Classes.DARK);
+      root.classList.remove("dark");
     }
   }, [darkMode]);
 

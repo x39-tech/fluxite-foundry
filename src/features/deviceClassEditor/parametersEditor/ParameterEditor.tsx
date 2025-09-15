@@ -1,7 +1,6 @@
-import { ComponentProps } from "react";
-import { Callout } from "@blueprintjs/core";
 import { Draft } from "immer";
 import { Parameter, Lifetime, DataType, ParameterAccess } from "e173";
+import { ExclamationTriangleIcon } from "@heroicons/react/16/solid";
 import {
   getParamAccessFriendlyName,
   getLifetimeFriendlyName,
@@ -44,16 +43,13 @@ import {
   useLibraries,
 } from "../state";
 import { RenderError } from "components/RenderError";
+import { Alert, AlertDescription, AlertTitle } from "components/scn-ui/Alert";
 
 interface Props {
   id: string;
 }
 
 type ParameterModifier = (fn: (draft: Draft<Parameter>) => void) => void;
-
-const Pre = ({ ...props }: ComponentProps<"pre">) => (
-  <pre className="inline m-0" {...props} />
-);
 
 export const ParameterEditor = ({ id }: Props) => {
   const database = useUdrDatabase();
@@ -255,7 +251,7 @@ function getParameterPropsTable(
       <tr>
         <td>Library</td>
         <td>
-          <Pre>{param.library || "Device Library"}</Pre>
+          <code>{param.library || "Device Library"}</code>
         </td>
       </tr>
       <tr>
@@ -263,7 +259,7 @@ function getParameterPropsTable(
         <td>
           <Tooltip>
             <TooltipTrigger>
-              <Pre>{param.class}</Pre>
+              <code>{param.class}</code>
             </TooltipTrigger>
             <TooltipContent side="right">
               <ParameterClassDisplay paramClass={paramClass} />
@@ -398,10 +394,17 @@ function changeInstantiationType(
 
 function getClassNotFoundMessage(className: string): JSX.Element {
   return (
-    <Callout intent="warning">
-      Class <Pre>{className}</Pre> not found. This may be an indication of
-      invalid UDR.
-    </Callout>
+    <Alert>
+      <ExclamationTriangleIcon />
+      <AlertTitle>
+        <span>
+          Class <code>{className}</code> not found.
+        </span>
+      </AlertTitle>
+      <AlertDescription>
+        This may be an indication of invalid UDR.
+      </AlertDescription>
+    </Alert>
   );
 }
 

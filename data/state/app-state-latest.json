@@ -283,25 +283,6 @@
       "enum": [1, 2, 3],
       "type": "number"
     },
-    "IInsets": {
-      "additionalProperties": false,
-      "properties": {
-        "bottom": {
-          "type": "number"
-        },
-        "left": {
-          "type": "number"
-        },
-        "right": {
-          "type": "number"
-        },
-        "top": {
-          "type": "number"
-        }
-      },
-      "required": ["top", "right", "bottom", "left"],
-      "type": "object"
-    },
     "IJsonRowNode": {
       "additionalProperties": false,
       "properties": {
@@ -318,85 +299,126 @@
           },
           "type": "array"
         },
-        "height": {
-          "type": "number"
-        },
         "id": {
+          "description": "the unique id of the row, if left undefined a uuid will be assigned\n\nDefault: undefined",
           "type": "string"
         },
         "type": {
-          "const": "row",
+          "description": "Fixed value: \"row\"",
           "type": "string"
         },
         "weight": {
-          "type": "number"
-        },
-        "width": {
+          "description": "relative weight for sizing of this row in parent row\n\nDefault: 100",
           "type": "number"
         }
       },
-      "required": ["children", "type"],
+      "required": ["children"],
       "type": "object"
     },
     "IJsonTabNode": {
       "additionalProperties": false,
       "properties": {
         "altName": {
+          "description": "if there is no name specifed then this value will be used in the overflow menu\n\nDefault: undefined",
           "type": "string"
         },
         "borderHeight": {
+          "description": "height when added to border, -1 will use border size\n\nDefault: inherited from Global attribute tabBorderHeight (default -1)",
           "type": "number"
         },
         "borderWidth": {
+          "description": "width when added to border, -1 will use border size\n\nDefault: inherited from Global attribute tabBorderWidth (default -1)",
           "type": "number"
         },
         "className": {
+          "description": "class applied to tab button\n\nDefault: inherited from Global attribute tabClassName (default undefined)",
           "type": "string"
         },
         "closeType": {
-          "$ref": "#/definitions/ICloseType"
+          "$ref": "#/definitions/ICloseType",
+          "description": "see values in ICloseType\n\nDefault: inherited from Global attribute tabCloseType (default 1)"
         },
         "component": {
+          "description": "string identifying which component to run (for factory)\n\nDefault: undefined",
           "type": "string"
         },
-        "config": {},
+        "config": {
+          "description": "a place to hold json config for the hosted component\n\nDefault: undefined"
+        },
         "contentClassName": {
+          "description": "class applied to tab content\n\nDefault: inherited from Global attribute tabContentClassName (default undefined)",
           "type": "string"
         },
         "enableClose": {
+          "description": "allow user to close tab via close button\n\nDefault: inherited from Global attribute tabEnableClose (default true)",
           "type": "boolean"
         },
         "enableDrag": {
+          "description": "allow user to drag tab to new location\n\nDefault: inherited from Global attribute tabEnableDrag (default true)",
           "type": "boolean"
         },
-        "enableFloat": {
+        "enablePopout": {
+          "description": "enable popout (in popout capable browser)\n\nDefault: inherited from Global attribute tabEnablePopout (default false)",
+          "type": "boolean"
+        },
+        "enablePopoutIcon": {
+          "description": "whether to show the popout icon in the tabset header if this tab enables popouts\n\nDefault: inherited from Global attribute tabEnablePopoutIcon (default true)",
+          "type": "boolean"
+        },
+        "enablePopoutOverlay": {
+          "description": "if this tab will not work correctly in a popout window when the main window is backgrounded (inactive)       then enabling this option will gray out this tab\n\nDefault: inherited from Global attribute tabEnablePopoutOverlay (default false)",
           "type": "boolean"
         },
         "enableRename": {
+          "description": "allow user to rename tabs by double clicking\n\nDefault: inherited from Global attribute tabEnableRename (default true)",
           "type": "boolean"
         },
         "enableRenderOnDemand": {
+          "description": "whether to avoid rendering component until tab is visible\n\nDefault: inherited from Global attribute tabEnableRenderOnDemand (default true)",
           "type": "boolean"
         },
-        "floating": {
+        "enableWindowReMount": {
+          "description": "if enabled the tab will re-mount when popped out/in\n\nDefault: false",
           "type": "boolean"
         },
         "helpText": {
+          "description": "An optional help text for the tab to be displayed upon tab hover.\n\nDefault: undefined",
           "type": "string"
         },
         "icon": {
+          "description": "the tab icon\n\nDefault: inherited from Global attribute tabIcon (default undefined)",
           "type": "string"
         },
         "id": {
+          "description": "the unique id of the tab, if left undefined a uuid will be assigned\n\nDefault: undefined",
           "type": "string"
         },
+        "maxHeight": {
+          "description": "the max height of this tab\n\nDefault: inherited from Global attribute tabMaxHeight (default 99999)",
+          "type": "number"
+        },
+        "maxWidth": {
+          "description": "the max width of this tab\n\nDefault: inherited from Global attribute tabMaxWidth (default 99999)",
+          "type": "number"
+        },
+        "minHeight": {
+          "description": "the min height of this tab\n\nDefault: inherited from Global attribute tabMinHeight (default 0)",
+          "type": "number"
+        },
+        "minWidth": {
+          "description": "the min width of this tab\n\nDefault: inherited from Global attribute tabMinWidth (default 0)",
+          "type": "number"
+        },
         "name": {
+          "description": "name of tab to be displayed in the tab button\n\nDefault: \"[Unnamed Tab]\"",
           "type": "string"
         },
         "tabsetClassName": {
+          "description": "class applied to parent tabset when this is the only tab and it is stretched to fill the tabset\n\nDefault: undefined",
           "type": "string"
         },
         "type": {
+          "description": "Fixed value: \"tab\"",
           "type": "string"
         }
       },
@@ -406,13 +428,12 @@
       "additionalProperties": false,
       "properties": {
         "active": {
+          "description": "Marks this as the active tab set, read from initial json but must subseqently be set on the model (only one tab set can be active)",
           "type": "boolean"
         },
         "autoSelectTab": {
+          "description": "whether to select new/moved tabs in tabset\n\nDefault: inherited from Global attribute tabSetAutoSelectTab (default true)",
           "type": "boolean"
-        },
-        "borderInsets": {
-          "$ref": "#/definitions/IInsets"
         },
         "children": {
           "items": {
@@ -420,82 +441,103 @@
           },
           "type": "array"
         },
-        "classNameHeader": {
-          "type": "string"
-        },
         "classNameTabStrip": {
+          "description": "a class name to apply to the tab strip\n\nDefault: inherited from Global attribute tabSetClassNameTabStrip (default undefined)",
           "type": "string"
         },
-        "config": {},
+        "config": {
+          "description": "a place to hold json config used in your own code\n\nDefault: undefined"
+        },
+        "enableActiveIcon": {
+          "description": "whether the active icon (*) should be displayed when the tabset is active\n\nDefault: inherited from Global attribute tabSetEnableActiveIcon (default false)",
+          "type": "boolean"
+        },
         "enableClose": {
+          "description": "allow user to close tabset via a close button\n\nDefault: inherited from Global attribute tabSetEnableClose (default false)",
           "type": "boolean"
         },
         "enableDeleteWhenEmpty": {
+          "description": "whether to delete this tabset when is has no tabs\n\nDefault: inherited from Global attribute tabSetEnableDeleteWhenEmpty (default true)",
           "type": "boolean"
         },
         "enableDivide": {
+          "description": "allow user to drag tabs to region of this tabset, splitting into new tabset\n\nDefault: inherited from Global attribute tabSetEnableDivide (default true)",
           "type": "boolean"
         },
         "enableDrag": {
+          "description": "allow user to drag tabs out this tabset\n\nDefault: inherited from Global attribute tabSetEnableDrag (default true)",
           "type": "boolean"
         },
         "enableDrop": {
+          "description": "allow user to drag tabs into this tabset\n\nDefault: inherited from Global attribute tabSetEnableDrop (default true)",
           "type": "boolean"
         },
         "enableMaximize": {
+          "description": "allow user to maximize tabset to fill view via maximize button\n\nDefault: inherited from Global attribute tabSetEnableMaximize (default true)",
           "type": "boolean"
         },
         "enableSingleTabStretch": {
+          "description": "if the tabset has only a single tab then stretch the single tab to fill area and display in a header style\n\nDefault: inherited from Global attribute tabSetEnableSingleTabStretch (default false)",
+          "type": "boolean"
+        },
+        "enableTabScrollbar": {
+          "description": "whether to show a mini scrollbar for the tabs\n\nDefault: inherited from Global attribute tabSetEnableTabScrollbar (default false)",
           "type": "boolean"
         },
         "enableTabStrip": {
+          "description": "enable tab strip and allow multiple tabs in this tabset\n\nDefault: inherited from Global attribute tabSetEnableTabStrip (default true)",
           "type": "boolean"
         },
-        "headerHeight": {
-          "type": "number"
-        },
-        "height": {
-          "type": "number"
+        "enableTabWrap": {
+          "description": "wrap tabs onto multiple lines\n\nDefault: inherited from Global attribute tabSetEnableTabWrap (default false)",
+          "type": "boolean"
         },
         "id": {
+          "description": "the unique id of the tab set, if left undefined a uuid will be assigned\n\nDefault: undefined",
           "type": "string"
         },
-        "marginInsets": {
-          "$ref": "#/definitions/IInsets"
+        "maxHeight": {
+          "description": "maximum height (in px) for this tabset\n\nDefault: inherited from Global attribute tabSetMaxHeight (default 99999)",
+          "type": "number"
+        },
+        "maxWidth": {
+          "description": "maximum width (in px) for this tabset\n\nDefault: inherited from Global attribute tabSetMaxWidth (default 99999)",
+          "type": "number"
         },
         "maximized": {
+          "description": "Marks this tab set as being maximized, read from initial json but must subseqently be set on the model (only one tab set can be maximized)",
           "type": "boolean"
         },
         "minHeight": {
+          "description": "minimum height (in px) for this tabset\n\nDefault: inherited from Global attribute tabSetMinHeight (default 0)",
           "type": "number"
         },
         "minWidth": {
+          "description": "minimum width (in px) for this tabset\n\nDefault: inherited from Global attribute tabSetMinWidth (default 0)",
           "type": "number"
         },
         "name": {
+          "description": "Default: undefined",
           "type": "string"
         },
         "selected": {
+          "description": "index of selected/visible tab in tabset\n\nDefault: 0",
           "type": "number"
         },
         "tabLocation": {
-          "$ref": "#/definitions/ITabLocation"
-        },
-        "tabStripHeight": {
-          "type": "number"
+          "$ref": "#/definitions/ITabLocation",
+          "description": "the location of the tabs either top or bottom\n\nDefault: inherited from Global attribute tabSetTabLocation (default \"top\")"
         },
         "type": {
-          "const": "tabset",
+          "description": "Fixed value: \"tabset\"",
           "type": "string"
         },
         "weight": {
-          "type": "number"
-        },
-        "width": {
+          "description": "relative weight for sizing of this tabset in parent row\n\nDefault: 100",
           "type": "number"
         }
       },
-      "required": ["children", "type"],
+      "required": ["children"],
       "type": "object"
     },
     "ITabLocation": {

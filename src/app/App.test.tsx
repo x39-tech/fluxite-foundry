@@ -26,5 +26,5 @@ test("Renders an editor when one is open", async () => {
   expect(screen.getAllByText("Super Light")[0]).toBeInTheDocument();
 
   // Editor panes
-  expect(screen.getByText(/parameters/i)).toBeInTheDocument();
+  expect(screen.getAllByText(/parameters/i)[0]).toBeInTheDocument();
 });

@@ -1,5 +1,4 @@
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
-import { Alignment, Navbar } from "@blueprintjs/core";
 import {
   Tooltip,
   TooltipContent,
@@ -7,8 +6,10 @@ import {
 } from "components/scn-ui/Tooltip";
 import { APP_NAME } from "appInfo";
 import { Button } from "components/scn-ui/Button";
-import { EditorTitleTab } from "components/EditorTitleTab/EditorTitleTab";
+import { Separator } from "components/scn-ui/Separator";
+import { EditorTitleTab } from "./EditorTitleTab";
 import { AppMainMenu } from "./AppMainMenu";
+import { NavbarDivider } from "./NavbarDivider";
 import { createDeviceClassEditor, useEditorNames } from "./state";
 import { setSelectedEditor, useOpenEditors, deleteEditor } from "./state";
 
@@ -18,10 +19,10 @@ export const TopNavBar = () => {
   const currentEditor = editors.editors[editors.selectedEditor];
 
   return (
-    <Navbar fixedToTop={true}>
-      <Navbar.Group align={Alignment.LEFT}>
-        <Navbar.Heading>{APP_NAME}</Navbar.Heading>
-        <Navbar.Divider />
+    <>
+      <div className="fixed top-0 left-0 right-0 flex items-center h-[50px]">
+        <h1 className="pl-4 pr-2 text-lg font-semibold">{APP_NAME}</h1>
+        <NavbarDivider />
         {editors.editors.map((editor, index) => {
           const name = editorNames[index] ?? "unknown";
           return (
@@ -52,10 +53,12 @@ export const TopNavBar = () => {
             document using the import option to the right.
           </TooltipContent>
         </Tooltip>
-      </Navbar.Group>
-      <Navbar.Group align={Alignment.RIGHT} className="ml-2">
-        <AppMainMenu />
-      </Navbar.Group>
-    </Navbar>
+        <div className="flex-grow" />
+        <div className="mr-4">
+          <AppMainMenu />
+        </div>
+      </div>
+      <Separator className="shadow-[0px_2px_4px_-1px_#0000000F,0px_4px_6px_-1px_#0000001A] fixed top-[50px] z-1" />
+    </>
   );
 };

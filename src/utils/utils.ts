@@ -1,4 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
+import { IJsonRowNode } from "flexlayout-react";
+import { nanoid } from "nanoid";
 import { twMerge } from "tailwind-merge";
 
 export function getUniqueItemId(
@@ -17,4 +19,40 @@ export function getUniqueItemId(
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+export function getDefaultWindowLayout(): IJsonRowNode {
+  return {
+    type: "row",
+    weight: 100,
+    id: nanoid(),
+    children: [
+      {
+        type: "tabset",
+        weight: 50,
+        id: nanoid(),
+        children: [
+          {
+            type: "tab",
+            name: "Parameters Editor",
+            component: "parametersEditor",
+            id: nanoid(),
+          },
+        ],
+      },
+      {
+        type: "tabset",
+        weight: 50,
+        id: nanoid(),
+        children: [
+          {
+            type: "tab",
+            name: "Device Info Editor",
+            component: "deviceInfoEditor",
+            id: nanoid(),
+          },
+        ],
+      },
+    ],
+  };
 }

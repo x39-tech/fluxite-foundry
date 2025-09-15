@@ -1,0 +1,66 @@
+@use "flexlayout-react/style/base" as base;
+
+.flexlayout {
+  &__layout {
+    --color-text: var(--foreground);
+    --color-background: var(--background);
+    --color-base: var(--background);
+    --color-1: var(--background);
+    --color-2: var(--accent);
+    --color-3: var(--accent);
+    --color-4: var(--accent);
+    --color-5: var(--accent);
+    --color-6: var(--accent);
+    --color-drag1: var(--color-gray-500);
+    --color-drag2: var(--color-gray-600);
+    --color-drag1-background: rgba(128, 128, 128, 0.15);
+    --color-drag2-background: rgba(128, 128, 128, 0.15);
+
+    --font-size: 14px;
+    // --font-family: #{bp.$pt-font-family};
+
+    --color-overflow: gray;
+    --color-icon: gray;
+
+    --color-tabset-background: var(--color-background);
+    --color-tabset-background-selected: var(--color-1);
+    --color-tabset-background-maximized: var(--color-6);
+    --color-tabset-divider-line: var(--color-4);
+
+    --color-tabset-header-background: var(--color-background);
+    --color-tabset-header: var(--color-text);
+
+    --color-border-background: var(--color-background);
+    --color-border-divider-line: var(--color-4);
+
+    --color-tab-selected: var(--color-text);
+    --color-tab-selected-background: var(--color-4);
+    --color-tab-unselected: gray;
+    --color-tab-unselected-background: transparent;
+    --color-tab-textbox: var(--color-text);
+    --color-tab-textbox-background: var(--color-3);
+
+    --color-border-tab-selected: var(--color-text);
+    --color-border-tab-selected-background: var(--color-4);
+    --color-border-tab-unselected: gray;
+    --color-border-tab-unselected-background: var(--color-2);
+
+    --color-splitter: var(--color-1);
+    --color-splitter-hover: var(--color-4);
+    --color-splitter-drag: var(--color-4);
+
+    --color-drag-rect-border: var(--color-6);
+    --color-drag-rect-background: var(--color-4);
+    --color-drag-rect: var(--color-text);
+
+    --color-popup-border: var(--color-6);
+    --color-popup-unselected: var(--color-text);
+    --color-popup-unselected-background: var(--color-background);
+    --color-popup-selected: var(--color-text);
+    --color-popup-selected-background: var(--color-3);
+
+    --color-edge-marker: gray;
+  }
+}
+
+@include base.baseMixin;

@@ -1,12 +1,7 @@
-import {
-  Callout,
-  Card,
-  FileInput,
-  H3,
-  Spinner,
-  TextArea,
-} from "@blueprintjs/core";
 import { RefObject, useRef, useState } from "react";
+import { LoaderCircle } from "lucide-react";
+import { E173Document, importUdr, Error as E173Error } from "e173";
+import { ExclamationCircleIcon } from "@heroicons/react/16/solid";
 import {
   Dialog,
   DialogFooter,
@@ -15,8 +10,10 @@ import {
   DialogTitle,
 } from "components/scn-ui/Dialog";
 import { Button } from "components/scn-ui/Button";
+import { Textarea } from "components/scn-ui/Textarea";
+import { Input } from "components/scn-ui/Input";
+import { Alert, AlertDescription, AlertTitle } from "components/scn-ui/Alert";
 import { Select } from "components/Select";
-import { E173Document, importUdr, Error as E173Error } from "e173";
 import { importDeviceClassEditor } from "./state";
 
 enum FeedbackKind {
@@ -52,7 +49,11 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
   let deviceClasses: DeviceClass[] = [];
 
   // Fix up state
-  if (inputValidation?.valid) {
+  if (
+    inputValidation?.valid &&
+    inputValidation.udr &&
+    inputValidation.udr.e173doc.deviceClasses
+  ) {
     deviceClasses = Object.entries(
       inputValidation.udr!.e173doc.deviceClasses!,
     ).reduce((accum, [key, value]) => {
@@ -75,9 +76,10 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
           <DialogTitle>Import UDR Document</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center gap-2">
-          <FileInput
-            text={inputFile ? inputFile.name : "Choose file..."}
-            onInputChange={(event) => {
+          <Input
+            type="file"
+            accept="application/json,.udr"
+            onChange={(event) => {
               const file = event.currentTarget.files?.item(0) ?? null;
               setInputFile(file);
 
@@ -92,12 +94,6 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
                 };
                 reader.readAsText(file);
               }
-
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (event.target as unknown as { value: any }).value = null;
-            }}
-            inputProps={{
-              accept: "application/json,.udr",
             }}
           />
           {getAdditionalDialogElements(
@@ -160,10 +156,11 @@ function validateInputFile(fileContent?: string): InputValidationResult {
     return { valid: true, udr };
   } catch (e) {
     const err = e as E173Error;
+    const path = err.path ? ` (at ${err.path})` : undefined;
     return {
       valid: false,
       feedbackKind: FeedbackKind.ValidationFailed,
-      feedback: `${err.type}: ${err.description}`,
+      feedback: `${err.type}: ${err.description}${path}`,
     };
   }
 }
@@ -178,10 +175,10 @@ function getAdditionalDialogElements(
     if (inputValidation === undefined) {
       // pending
       return (
-        <Card>
-          <H3>Loading file contents...</H3>
-          <Spinner />
-        </Card>
+        <div className="flex gap-2 items-center">
+          <LoaderCircle className="h-6 w-6 animate-spin" />
+          <div className="text-lg">Loading file contents...</div>
+        </div>
       );
     } else {
       // Either device class selection or validation failure to show
@@ -208,9 +205,10 @@ function getDeviceClassSelectionElement(
 ) {
   if (deviceClasses.length === 0) {
     return (
-      <Callout intent="danger">
-        No Device Classes found in selected document.
-      </Callout>
+      <Alert variant="destructive">
+        <ExclamationCircleIcon />
+        <AlertTitle>No Device Classes found in selected document.</AlertTitle>
+      </Alert>
     );
   } else {
     return (
@@ -229,17 +227,30 @@ function getValidationFailureElement(
   switch (feedbackKind) {
     case FeedbackKind.UnableToReadFile:
       return (
-        <Callout intent="danger">The selected file could not be read.</Callout>
+        <Alert variant="destructive">
+          <ExclamationCircleIcon />
+          <AlertTitle>The selected file could not be read.</AlertTitle>
+        </Alert>
       );
     case FeedbackKind.ValidationFailed:
       return (
-        <Callout intent="danger">
-          <p>Selected file contains invalid UDR. Details:</p>
-          <TextArea value={feedback} small fill readOnly />
-        </Callout>
+        <Alert variant="destructive">
+          <ExclamationCircleIcon />
+          <AlertTitle>Selected file contains invalid UDR.</AlertTitle>
+          <AlertDescription>
+            <Textarea value={feedback} readOnly />
+          </AlertDescription>
+        </Alert>
       );
     default:
-      return <></>;
+      return (
+        <Alert variant="destructive">
+          <ExclamationCircleIcon />
+          <AlertTitle>
+            An unknown error occurred importing the selected file.
+          </AlertTitle>
+        </Alert>
+      );
   }
 }
 

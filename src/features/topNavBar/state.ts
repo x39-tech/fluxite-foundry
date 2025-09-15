@@ -9,7 +9,7 @@ import {
 } from "app/state";
 
 import { DeviceClass, EstaDmx } from "e173";
-import { getUniqueItemId } from "utils/utils";
+import { getDefaultWindowLayout, getUniqueItemId } from "utils/utils";
 import { getDefaultDeviceClass } from "udr/udr";
 import {
   getCurrentEditor,
@@ -189,38 +189,6 @@ function getImportedDeviceClassEditor(
       udr: dmx ? dmx : { chunks: {} },
     },
     localizations: udr.localizations || {},
-    windowLayout: {
-      type: "row",
-      weight: 100,
-      id: nanoid(),
-      children: [
-        {
-          type: "tabset",
-          weight: 50,
-          id: nanoid(),
-          children: [
-            {
-              type: "tab",
-              name: "Parameters Editor",
-              component: "parametersEditor",
-              id: nanoid(),
-            },
-          ],
-        },
-        {
-          type: "tabset",
-          weight: 50,
-          id: nanoid(),
-          children: [
-            {
-              type: "tab",
-              name: "Device Info Editor",
-              component: "deviceInfoEditor",
-              id: nanoid(),
-            },
-          ],
-        },
-      ],
-    },
+    windowLayout: getDefaultWindowLayout(),
   };
 }

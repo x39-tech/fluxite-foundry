@@ -1,5 +1,12 @@
-import { useCallback, useEffect } from "react";
-import * as FlexLayout from "flexlayout-react";
+import { useCallback, useEffect, useMemo } from "react";
+import {
+  Layout,
+  Model,
+  TabNode,
+  Actions,
+  DockLocation,
+  IJsonModel,
+} from "flexlayout-react";
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import { throttle } from "lodash";
 import { nanoid } from "nanoid";
@@ -12,13 +19,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "components/scn-ui/DropdownMenu";
-import { useDarkMode } from "app/store";
 import { WIDGETS, isValidWidget } from "./widgets";
-import { setWindowLayout, useCurrentEditor } from "./state";
+import { setWindowLayout, useCurrentEditor, useCurrentEditorId } from "./state";
 
 export const DeviceClassEditor = () => {
   const currentEditor = useCurrentEditor();
-  if (!currentEditor) {
+  const currentEditorId = useCurrentEditorId();
+  if (!currentEditor || !currentEditorId) {
     return <RenderError />;
   }
 
@@ -29,22 +36,21 @@ export const DeviceClassEditor = () => {
     };
   });
 
-  const darkMode = useDarkMode();
-  const flexlayoutClassPrefix = darkMode
-    ? "flexlayout-dark "
-    : "flexlayout-light ";
-
-  const modelJson: FlexLayout.IJsonModel = {
+  const modelJson: IJsonModel = {
     global: {
       tabEnableRename: false,
       tabSetClassNameTabStrip: "bg-none",
+      tabSetEnableMaximize: false,
       borderSize: 500,
       splitterSize: 2,
     },
     borders: [],
     layout: currentEditor.windowLayout,
   };
-  const model = FlexLayout.Model.fromJson(modelJson);
+  // We let the model be 'uncontrolled' (only created on initial render)
+  // We keep the saved window layout in sync using onModelChange
+  // The alternative results in every widget being rerendered constantly
+  const model = useMemo(() => Model.fromJson(modelJson), [currentEditorId]);
 
   const onModelChange = useCallback(
     throttle((model) => {
@@ -53,7 +59,7 @@ export const DeviceClassEditor = () => {
     [],
   );
 
-  const factory = (node: FlexLayout.TabNode) => {
+  const factory = (node: TabNode) => {
     const componentName = node.getComponent();
 
     if (componentName && isValidWidget(componentName)) {
@@ -63,13 +69,10 @@ export const DeviceClassEditor = () => {
   };
 
   return (
-    <FlexLayout.Layout
+    <Layout
       model={model}
       onModelChange={onModelChange}
       factory={factory}
-      classNameMapper={(defaultName) => {
-        return flexlayoutClassPrefix + defaultName;
-      }}
       onRenderTabSet={(tabSetNode, renderValues) => {
         const tabSetId = tabSetNode.getId();
         renderValues.stickyButtons = [
@@ -114,13 +117,13 @@ export const DeviceClassEditor = () => {
 };
 
 function addNewWidget(
-  model: FlexLayout.Model,
+  model: Model,
   tabSetId: string,
   componentId: string,
   componentName: string,
 ) {
   model.doAction(
-    FlexLayout.Actions.addNode(
+    Actions.addNode(
       {
         type: "tab",
         name: componentName,
@@ -128,7 +131,7 @@ function addNewWidget(
         id: nanoid(),
       },
       tabSetId,
-      FlexLayout.DockLocation.CENTER,
+      DockLocation.CENTER,
       -1,
     ),
   );

@@ -33,6 +33,12 @@ export function useCurrentEditor(): DeviceClassEditorState | undefined {
   return useAppPersistentStore((state) => getCurrentEditor(state));
 }
 
+export function useCurrentEditorId(): string | undefined {
+  return useAppPersistentStore(
+    (state) => state.openEditors.editors[state.openEditors.selectedEditor]?.id,
+  );
+}
+
 export function useCurrentEditorPart<T>(
   reducer: (state: DeviceClassEditorState) => T,
 ): T | undefined {

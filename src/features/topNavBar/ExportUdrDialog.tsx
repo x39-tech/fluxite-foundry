@@ -99,8 +99,6 @@ export const ExportUdrDialog = ({ isOpen, onClose }: Props) => {
         <DialogFooter>
           <Button asChild disabled={editors.length === 0}>
             <a
-              // TODO: remove below when blueprint is purged
-              className="text-white! cursor-default! no-underline!"
               href={fileDownloadUrl}
               onClick={onClose}
               download={`${deviceClassId || "my-device"}.json`}
@@ -126,10 +124,12 @@ function getFileDownloadUrl(
   if (selectedEditorId) {
     const selectedEditor = editors[selectedEditorId];
     if (selectedEditor) {
+      const id = `org.esta.e173.user.${crypto.randomUUID()}.dev.${deviceClassId || "my-device"}`;
+
       const document: E173Document = {
         e173doc: {
           deviceClasses: {
-            [deviceClassId || "my-device"]: {
+            [id]: {
               // TODO version
               "1.0.0": {
                 libraries: selectedEditor.libraries,
