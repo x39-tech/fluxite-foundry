@@ -36,7 +36,7 @@ export const AppMainMenu = () => {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger>
+        <DropdownMenuTrigger asChild>
           <Button
             size="icon"
             variant="secondary"

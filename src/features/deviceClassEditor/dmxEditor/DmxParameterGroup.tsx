@@ -74,7 +74,7 @@ export const DmxParameterGroup = ({
       <div className="flex items-center my-1">
         <div className="grow" />
         <Tooltip>
-          <TooltipTrigger>
+          <TooltipTrigger asChild>
             <SmallIconButton
               onClick={() => addParameterMapping(chunkId, groupIndex)}
             >
@@ -84,7 +84,7 @@ export const DmxParameterGroup = ({
           <TooltipContent>Add Parameter Mapping</TooltipContent>
         </Tooltip>
         <Tooltip>
-          <TooltipTrigger>
+          <TooltipTrigger asChild>
             <SmallIconButton
               disabled={chunksArray.length <= 1}
               onClick={() => addCondition(chunkId, groupIndex)}

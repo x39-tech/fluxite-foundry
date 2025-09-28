@@ -23,32 +23,28 @@ export const EditorTitleTab = ({
 
   return (
     <>
-      <Toggle
-        pressed={active}
-        onClick={() => {
-          onSelect(id);
-        }}
-        onMouseEnter={() => {
-          setHovered(true);
-        }}
-        onMouseLeave={() => {
-          setHovered(false);
-        }}
+      <div
+        className="relative flex items-center"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
       >
-        {name}
+        <Toggle
+          className="flex-1 pr-12"
+          pressed={active}
+          onClick={() => onSelect(id)}
+        >
+          {name}
+        </Toggle>
         <Button
           size="icon"
           aria-label="Delete Editor"
           variant="ghost"
-          className={hovered ? "visible" : "invisible"}
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(id);
-          }}
+          className={`absolute right-1 ${hovered ? "visible" : "invisible"}`}
+          onClick={() => onDelete(id)}
         >
           <TrashIcon className="size-4" />
         </Button>
-      </Toggle>
+      </div>
       <NavbarDivider />
     </>
   );

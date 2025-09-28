@@ -18,6 +18,7 @@
     "jsx": "react-jsx"
   },
   "include": ["src", "__mocks__"],
+  "exclude": ["src/features/deviceClassEditor/device3DView/**/*"],
   "references": [
     {
       "path": "./tsconfig.node.json"

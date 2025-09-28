@@ -55,7 +55,7 @@ export const IntegerInput = forwardRef<
     // Use controlled value if provided, otherwise use internal state
     const currentValue = value !== undefined ? value : internalValue;
     const currentInputValue =
-      value !== undefined ? value?.toString() ?? "" : inputValue;
+      value !== undefined ? (value?.toString() ?? "") : inputValue;
 
     const validateAndClamp = useCallback(
       (num: number): number => {

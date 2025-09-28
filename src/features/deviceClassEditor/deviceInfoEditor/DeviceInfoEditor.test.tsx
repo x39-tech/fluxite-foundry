@@ -50,37 +50,47 @@ test("renders UDR device class information section", () => {
 });
 
 test("category field has valid options", async () => {
+  const user = userEvent.setup();
   const { container } = render(<DeviceInfoEditor />);
 
   const categoryRow = getEditorTableRow("Category", container);
-  const categorySelect = categoryRow.querySelector("select");
+  const categorySelect = getByRole(categoryRow, "combobox");
   expect(categorySelect).toBeInTheDocument();
 
-  if (categorySelect) {
-    const options = Array.from(categorySelect.querySelectorAll("option"));
-    expect(options.length).toBeGreaterThan(0);
+  // Focus and use keyboard to open the dropdown (more reliable in tests)
+  categorySelect.focus();
+  await user.keyboard("{ArrowDown}");
 
-    // Verify at least one valid category is available
-    const categoryValues = Object.values(Category);
-    const hasValidCategory = options.some((option) =>
-      categoryValues.includes(option.value as Category),
-    );
-    expect(hasValidCategory).toBe(true);
-  }
+  // Find all options (they appear as listbox options when opened)
+  const options = await screen.findAllByRole("option");
+  expect(options.length).toBeGreaterThan(0);
+
+  // Verify at least one valid category is available
+  const categoryValues = Object.values(Category);
+  const hasValidCategory = options.some((option) =>
+    categoryValues.includes(option.textContent as Category),
+  );
+  expect(hasValidCategory).toBe(true);
 });
 
 test("subcategory field has options", async () => {
+  const user = userEvent.setup();
   const { container } = render(<DeviceInfoEditor />);
 
   const subcategoryRow = getEditorTableRow("Subcategory", container);
-  const subcategorySelect = subcategoryRow.querySelector("select");
+  const subcategorySelect = getByRole(subcategoryRow, "combobox");
   expect(subcategorySelect).toBeInTheDocument();
 
-  if (subcategorySelect) {
-    const options = Array.from(subcategorySelect.querySelectorAll("option"));
-    expect(options.length).toBeGreaterThan(0);
-    expect(subcategorySelect.value).toBeTruthy();
-  }
+  // Focus and use keyboard to open the dropdown
+  subcategorySelect.focus();
+  await user.keyboard("{ArrowDown}");
+
+  // Find all options (they appear as listbox options when opened)
+  const options = await screen.findAllByRole("option");
+  expect(options.length).toBeGreaterThan(0);
+
+  // Verify that there's a current value displayed
+  expect(subcategorySelect.textContent).toBeTruthy();
 });
 
 test("can change manufacturer name field", async () => {
@@ -112,24 +122,28 @@ test("can change category field", async () => {
   const { container } = render(<DeviceInfoEditor />);
 
   const categoryRow = getEditorTableRow("Category", container);
-  const categorySelect = categoryRow.querySelector("select");
+  const categorySelect = getByRole(categoryRow, "combobox");
   expect(categorySelect).toBeInTheDocument();
 
-  if (categorySelect) {
-    const initialValue = categorySelect.value;
-    const options = Array.from(categorySelect.querySelectorAll("option"));
-    const differentOption = options.find(
-      (option) => option.value !== initialValue,
-    );
+  const initialValue = categorySelect.textContent;
 
-    if (differentOption) {
-      await user.selectOptions(categorySelect, differentOption.value);
+  // Focus and use keyboard to open the dropdown
+  categorySelect.focus();
+  await user.keyboard("{ArrowDown}");
 
-      await waitFor(() => {
-        expect(categorySelect.value).toBe(differentOption.value);
-      });
-    }
-  }
+  // Find all options
+  const options = await screen.findAllByRole("option");
+  expect(options.length).toBeGreaterThan(1); // Ensure there are multiple options
+
+  // Use keyboard to navigate and select a different option
+  await user.keyboard("{ArrowDown}{Enter}");
+
+  await waitFor(() => {
+    // Just verify that the value changed from the initial value
+    expect(categorySelect.textContent).not.toBe(initialValue);
+    // And verify it's not empty
+    expect(categorySelect.textContent).toBeTruthy();
+  });
 });
 
 test("can change subcategory field", async () => {
@@ -137,24 +151,28 @@ test("can change subcategory field", async () => {
   const { container } = render(<DeviceInfoEditor />);
 
   const subcategoryRow = getEditorTableRow("Subcategory", container);
-  const subcategorySelect = subcategoryRow.querySelector("select");
+  const subcategorySelect = getByRole(subcategoryRow, "combobox");
   expect(subcategorySelect).toBeInTheDocument();
 
-  if (subcategorySelect) {
-    const initialValue = subcategorySelect.value;
-    const options = Array.from(subcategorySelect.querySelectorAll("option"));
-    const differentOption = options.find(
-      (option) => option.value !== initialValue,
-    );
+  const initialValue = subcategorySelect.textContent;
 
-    if (differentOption) {
-      await user.selectOptions(subcategorySelect, differentOption.value);
+  // Focus and use keyboard to open the dropdown
+  subcategorySelect.focus();
+  await user.keyboard("{ArrowDown}");
 
-      await waitFor(() => {
-        expect(subcategorySelect.value).toBe(differentOption.value);
-      });
-    }
-  }
+  // Find all options
+  const options = await screen.findAllByRole("option");
+  expect(options.length).toBeGreaterThan(1); // Ensure there are multiple options
+
+  // Use keyboard to navigate and select a different option
+  await user.keyboard("{ArrowDown}{Enter}");
+
+  await waitFor(() => {
+    // Just verify that the value changed from the initial value
+    expect(subcategorySelect.textContent).not.toBe(initialValue);
+    // And verify it's not empty
+    expect(subcategorySelect.textContent).toBeTruthy();
+  });
 });
 
 test("can change description field", async () => {

@@ -1,4 +1,5 @@
 import { nanoid } from "nanoid";
+import { useShallow } from "zustand/shallow";
 import { useAppPersistentStore, updateAppPersistentState } from "app/store";
 import {
   AppPersistentState,
@@ -35,20 +36,27 @@ export function useDeviceClassEditors(): {
 }
 
 export function useEditorNames(): string[] {
-  return useAppPersistentStore((state) => getOpenEditorModelNames(state));
+  return useAppPersistentStore(
+    useShallow((state) => getOpenEditorModelNames(state)),
+  );
 }
 
 export function useOpenDeviceClassEditorsWithNames(): OpenEditorWithName[] {
-  return useAppPersistentStore((state) =>
-    state.openEditors.editors.reduce((accum: OpenEditorWithName[], value) => {
-      if (value.type == EditorType.DEVICE_CLASS) {
-        const editorState = state.deviceClassEditors[value.id];
-        if (editorState) {
-          accum.push({ ...value, name: editorState.basicData.info.model.name });
+  return useAppPersistentStore(
+    useShallow((state) =>
+      state.openEditors.editors.reduce((accum: OpenEditorWithName[], value) => {
+        if (value.type == EditorType.DEVICE_CLASS) {
+          const editorState = state.deviceClassEditors[value.id];
+          if (editorState) {
+            accum.push({
+              ...value,
+              name: editorState.basicData.info.model.name,
+            });
+          }
         }
-      }
-      return accum;
-    }, []),
+        return accum;
+      }, []),
+    ),
   );
 }
 

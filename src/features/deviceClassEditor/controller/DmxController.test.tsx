@@ -7,7 +7,6 @@ import { DmxController } from "./DmxController";
 
 // Mock the hooks
 vi.mock("../state", () => ({
-  useCurrentEditor: vi.fn(),
   useParametersWithClasses: vi.fn(),
 }));
 
@@ -19,10 +18,9 @@ vi.mock("app/store", () => ({
   useDarkMode: vi.fn(() => false),
 }));
 
-import { useCurrentEditor, useParametersWithClasses } from "../state";
+import { useParametersWithClasses } from "../state";
 import { useDmxController } from "../dmxEditor/state";
 
-const mockUseCurrentEditor = useCurrentEditor as ReturnType<typeof vi.fn>;
 const mockUseParametersWithClasses = useParametersWithClasses as ReturnType<
   typeof vi.fn
 >;
@@ -36,12 +34,6 @@ const noMappingsMessage =
   /Add a DMX parameter mapping in the DMX editor to use the test controller/;
 
 test("Correctly handles case where reconcileParamValues results in empty state", () => {
-  // Mock a basic editor
-  mockUseCurrentEditor.mockReturnValue({
-    id: "test-editor",
-    name: "Test Editor",
-  });
-
   // Mock empty parameter classes
   mockUseParametersWithClasses.mockReturnValue({});
 
@@ -66,11 +58,6 @@ test("Correctly handles case where reconcileParamValues results in empty state",
 });
 
 test("Shows message when no DMX driver is present", () => {
-  mockUseCurrentEditor.mockReturnValue({
-    id: "test-editor",
-    name: "Test Editor",
-  });
-
   mockUseParametersWithClasses.mockReturnValue({});
 
   mockUseDmxController.mockReturnValue({
@@ -87,11 +74,6 @@ test("Shows message when no DMX driver is present", () => {
 });
 
 test("Shows message when DMX controller is not created", () => {
-  mockUseCurrentEditor.mockReturnValue({
-    id: "test-editor",
-    name: "Test Editor",
-  });
-
   mockUseParametersWithClasses.mockReturnValue({});
 
   mockUseDmxController.mockReturnValue({
@@ -104,11 +86,6 @@ test("Shows message when DMX controller is not created", () => {
 });
 
 test("Shows error message when DMX controller has error", () => {
-  mockUseCurrentEditor.mockReturnValue({
-    id: "test-editor",
-    name: "Test Editor",
-  });
-
   mockUseParametersWithClasses.mockReturnValue({});
 
   mockUseDmxController.mockReturnValue({

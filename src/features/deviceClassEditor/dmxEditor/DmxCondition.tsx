@@ -1,7 +1,13 @@
 import { Chunk, Condition } from "e173";
 import { TrashIcon } from "@heroicons/react/24/solid";
 import { TextEditorField } from "components/EditorFields/TextEditorField";
-import { Select } from "components/Select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "components/scn-ui/Select";
 import { StringSelector } from "components/StringSelector";
 import { SmallIconButton } from "components/SmallIconButton";
 
@@ -51,16 +57,22 @@ export const DmxCondition = ({
             // First separator is a selector
             sep.push(
               <Select
-                className="m-2"
-                options={["AND", "OR"]}
                 value={condition.match === "any" ? "OR" : "AND"}
-                onChange={(event) => {
+                onValueChange={(value) => {
                   onUpdate({
                     ...condition,
-                    match: event.currentTarget.value == "OR" ? "any" : "all",
+                    match: value == "OR" ? "any" : "all",
                   });
                 }}
-              />,
+              >
+                <SelectTrigger className="m-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="AND">AND</SelectItem>
+                  <SelectItem value="OR">OR</SelectItem>
+                </SelectContent>
+              </Select>,
             );
           } else if (index > 1) {
             sep.push(

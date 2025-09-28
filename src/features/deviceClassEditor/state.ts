@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { Draft, produceWithPatches } from "immer";
 import * as FlexLayout from "flexlayout-react";
+import { useShallow } from "zustand/react/shallow";
 import {
   Access,
   createParameterDatabase,
@@ -18,6 +20,7 @@ import {
   useAppPersistentStore,
   updateAppRuntimeState,
   updateAppPersistentState,
+  useUdrDatabase,
 } from "app/store";
 import {
   lookupDeviceParameterClass,
@@ -28,10 +31,6 @@ import {
 // ---------------------------------------------------------------------------
 // Read
 // ---------------------------------------------------------------------------
-
-export function useCurrentEditor(): DeviceClassEditorState | undefined {
-  return useAppPersistentStore((state) => getCurrentEditor(state));
-}
 
 export function useCurrentEditorId(): string | undefined {
   return useAppPersistentStore(
@@ -52,6 +51,21 @@ export function useCurrentEditorPart<T>(
   });
 }
 
+export function useCurrentEditorPartShallow<T>(
+  reducer: (state: DeviceClassEditorState) => T,
+): T | undefined {
+  return useAppPersistentStore(
+    useShallow((state) => {
+      const currentEditor = getCurrentEditor(state);
+      if (!currentEditor) {
+        return undefined;
+      }
+
+      return reducer(currentEditor);
+    }),
+  );
+}
+
 export function useLibraries(): Record<string, string> | undefined {
   return useCurrentEditorPart((state) => state.libraries);
 }
@@ -60,32 +74,39 @@ export function useParametersWithClasses(): Record<
   string,
   ResolvedParameterClass
 > {
-  return useAppPersistentStore((state) => {
-    const currentEditor = getCurrentEditor(state);
-    if (!currentEditor) {
+  const parameters = useCurrentEditorPart(
+    (state) => state.parameters.parameters,
+  );
+  const libraries = useCurrentEditorPart((state) => state.libraries);
+  const deviceLibrary = useCurrentEditorPart((state) => state.deviceLibrary);
+  const localizations = useCurrentEditorPart((state) => state.localizations);
+  const udrDatabase = useUdrDatabase();
+
+  return useMemo(() => {
+    if (!parameters || !deviceLibrary || !libraries || !localizations) {
       return {};
     }
 
-    return Object.entries(currentEditor.parameters.parameters).reduce(
+    return Object.entries(parameters).reduce(
       (acc, [paramId, param]) => {
         let paramClass = undefined;
 
         if (param.library) {
-          const libraryVersion = currentEditor.libraries[param.library];
+          const libraryVersion = libraries[param.library];
           if (!libraryVersion) {
             return acc;
           }
 
           paramClass = lookupParameterClass(
-            state.udrDatabase,
+            udrDatabase,
             param.library,
             libraryVersion,
             param.class,
           );
         } else {
           paramClass = lookupDeviceParameterClass(
-            currentEditor.deviceLibrary,
-            currentEditor.localizations,
+            deviceLibrary,
+            localizations,
             param.class,
           );
         }
@@ -99,24 +120,28 @@ export function useParametersWithClasses(): Record<
       },
       {} as Record<string, ResolvedParameterClass>,
     );
-  });
+  }, [parameters, libraries, deviceLibrary, localizations, udrDatabase]);
 }
+
+const EMPTY_DEVICE_LIBRARY: DeviceLibrary = {
+  parameterClasses: {},
+  structureClasses: {},
+  serializerClasses: {},
+};
 
 export function useDeviceLibrary(): DeviceLibrary {
   return (
-    useCurrentEditorPart((state) => state.deviceLibrary) || {
-      parameterClasses: {},
-      structureClasses: {},
-      serializerClasses: {},
-    }
+    useCurrentEditorPart((state) => state.deviceLibrary) || EMPTY_DEVICE_LIBRARY
   );
 }
+
+const EMPTY_OBJ = {};
 
 export function useDeviceLocalizations(): Record<
   string,
   DefinitionLocalization
 > {
-  return useCurrentEditorPart((state) => state.localizations) || {};
+  return useCurrentEditorPart((state) => state.localizations) || EMPTY_OBJ;
 }
 
 // ---------------------------------------------------------------------------

@@ -37,7 +37,7 @@ export const TopNavBar = () => {
           );
         })}
         <Tooltip open={currentEditor === undefined}>
-          <TooltipTrigger>
+          <TooltipTrigger asChild>
             <Button
               size="icon"
               variant="secondary"

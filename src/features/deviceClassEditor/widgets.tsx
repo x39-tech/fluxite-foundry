@@ -1,3 +1,4 @@
+import { JSX } from "react";
 import { ParametersEditor } from "./parametersEditor/ParametersEditor";
 import { DeviceInfoEditor } from "./deviceInfoEditor/DeviceInfoEditor";
 import { DmxEditor } from "./dmxEditor/DmxEditor";

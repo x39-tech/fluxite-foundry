@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, JSX } from "react";
 import { DeviceClassEditor } from "features/deviceClassEditor/DeviceClassEditor";
 import { TopNavBar } from "features/topNavBar/TopNavBar";
 import { udrDatabaseIsEmpty } from "udr/udrDatabase";

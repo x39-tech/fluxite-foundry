@@ -13,7 +13,13 @@ import { Button } from "components/scn-ui/Button";
 import { Textarea } from "components/scn-ui/Textarea";
 import { Input } from "components/scn-ui/Input";
 import { Alert, AlertDescription, AlertTitle } from "components/scn-ui/Alert";
-import { Select } from "components/Select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "components/scn-ui/Select";
 import { importDeviceClassEditor } from "./state";
 
 enum FeedbackKind {
@@ -44,11 +50,9 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
     InputValidationResult | undefined
   >(undefined);
 
-  const deviceClassSelectRef = useRef<HTMLSelectElement>(null);
+  const deviceClassSelectRef = useRef<HTMLSpanElement>(null);
 
   let deviceClasses: DeviceClass[] = [];
-
-  // Fix up state
   if (
     inputValidation?.valid &&
     inputValidation.udr &&
@@ -96,12 +100,12 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
               }
             }}
           />
-          {getAdditionalDialogElements(
-            inputFile,
-            inputValidation,
-            deviceClasses,
-            deviceClassSelectRef,
-          )}
+          <AdditionalDialogElements
+            inputFile={inputFile}
+            inputValidation={inputValidation}
+            deviceClasses={deviceClasses}
+            deviceClassSelectRef={deviceClassSelectRef}
+          />
         </div>
         <DialogFooter>
           <Button
@@ -113,7 +117,7 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
             onClick={() => {
               if (deviceClassSelectRef.current !== null) {
                 const deviceClass = stringToDeviceClass(
-                  deviceClassSelectRef.current.value,
+                  deviceClassSelectRef.current.innerText,
                 );
 
                 const deviceClasses =
@@ -165,12 +169,19 @@ function validateInputFile(fileContent?: string): InputValidationResult {
   }
 }
 
-function getAdditionalDialogElements(
-  inputFile: File | null,
-  inputValidation: InputValidationResult | undefined,
-  deviceClasses: DeviceClass[],
-  deviceClassSelectRef: RefObject<HTMLSelectElement>,
-) {
+interface AdditionalDialogElementsProps {
+  inputFile: File | null;
+  inputValidation: InputValidationResult | undefined;
+  deviceClasses: DeviceClass[];
+  deviceClassSelectRef: RefObject<HTMLSpanElement | null>;
+}
+
+const AdditionalDialogElements = ({
+  inputFile,
+  inputValidation,
+  deviceClasses,
+  deviceClassSelectRef,
+}: AdditionalDialogElementsProps) => {
   if (inputFile) {
     if (inputValidation === undefined) {
       // pending
@@ -183,26 +194,32 @@ function getAdditionalDialogElements(
     } else {
       // Either device class selection or validation failure to show
       if (inputValidation.valid) {
-        return getDeviceClassSelectionElement(
-          deviceClasses,
-          deviceClassSelectRef,
+        return (
+          <DeviceClassSelect
+            deviceClasses={deviceClasses}
+            ref={deviceClassSelectRef}
+          />
         );
       } else {
-        return getValidationFailureElement(
-          inputValidation.feedbackKind!,
-          inputValidation.feedback!,
+        return (
+          <ValidationFailure
+            feedbackKind={inputValidation.feedbackKind!}
+            feedback={inputValidation.feedback!}
+          />
         );
       }
     }
   }
   // No file select yet, nothing to show
   return <></>;
+};
+
+interface DeviceClassSelectProps {
+  deviceClasses: DeviceClass[];
+  ref: RefObject<HTMLSpanElement | null>;
 }
 
-function getDeviceClassSelectionElement(
-  deviceClasses: DeviceClass[],
-  ref: RefObject<HTMLSelectElement>,
-) {
+const DeviceClassSelect = ({ deviceClasses, ref }: DeviceClassSelectProps) => {
   if (deviceClasses.length === 0) {
     return (
       <Alert variant="destructive">
@@ -214,16 +231,39 @@ function getDeviceClassSelectionElement(
     return (
       <>
         Select Device Class to import:
-        <Select ref={ref} options={deviceClasses.map(deviceClassToString)} />
+        <Select>
+          <SelectTrigger>
+            <SelectValue
+              className="overflow-hidden"
+              placeholder="Select a device class..."
+              ref={ref}
+            />
+          </SelectTrigger>
+          <SelectContent>
+            {deviceClasses.map((dc, index) => {
+              const dcString = deviceClassToString(dc);
+              return (
+                <SelectItem key={index} value={dcString}>
+                  {dcString}
+                </SelectItem>
+              );
+            })}
+          </SelectContent>
+        </Select>
       </>
     );
   }
+};
+
+interface ValidationFailureProps {
+  feedbackKind: FeedbackKind;
+  feedback: string;
 }
 
-function getValidationFailureElement(
-  feedbackKind: FeedbackKind,
-  feedback: string,
-) {
+const ValidationFailure = ({
+  feedbackKind,
+  feedback,
+}: ValidationFailureProps) => {
   switch (feedbackKind) {
     case FeedbackKind.UnableToReadFile:
       return (
@@ -252,7 +292,7 @@ function getValidationFailureElement(
         </Alert>
       );
   }
-}
+};
 
 function deviceClassToString(dc?: DeviceClass): string {
   if (dc) {

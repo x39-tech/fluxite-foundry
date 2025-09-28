@@ -3,7 +3,13 @@ import { E173Document } from "e173";
 import { LabeledCheckbox } from "components/LabeledCheckbox";
 import { TextEditorField } from "components/EditorFields/TextEditorField";
 import { SimplePropsTable } from "components/SimplePropsTable";
-import { Select } from "components/Select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "components/scn-ui/Select";
 import { Button } from "components/scn-ui/Button";
 import {
   Dialog,
@@ -60,19 +66,23 @@ export const ExportUdrDialog = ({ isOpen, onClose }: Props) => {
               <td>
                 <Select
                   value={selectedEditorId}
-                  onChange={(event) => {
-                    setSelectedEditorId(event.currentTarget.value);
+                  onValueChange={(value) => {
+                    setSelectedEditorId(value);
                     setDeviceClassId(
-                      deviceClassEditors[event.currentTarget.value]
-                        ?.deviceClassId ?? "",
+                      deviceClassEditors[value]?.deviceClassId ?? "",
                     );
                   }}
                 >
-                  {editors.map(({ id, name }, index) => (
-                    <option key={id} value={id}>
-                      {`${index + 1}: ${name}`}
-                    </option>
-                  ))}
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {editors.map(({ id, name }, index) => (
+                      <SelectItem key={id} value={id}>
+                        {`${index + 1}: ${name}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
               </td>
             </tr>

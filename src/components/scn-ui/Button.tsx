@@ -41,26 +41,18 @@ const buttonVariants = cva(
   },
 );
 
-// TODO: Remove forwardRef when blueprint is gone and upgrading to React 19
-// eslint-disable-next-line react/display-name
-const Button = React.forwardRef(
-  (
-    { className, variant, size, asChild = false, ...props }: ButtonProps,
-    ref,
-  ) => {
-    const Comp = asChild ? Slot : "button";
-    const cls = cn(buttonVariants({ variant, size, className }));
+const Button = ({
+  className,
+  variant,
+  size,
+  asChild = false,
+  ref,
+  ...props
+}: ButtonProps) => {
+  const Comp = asChild ? Slot : "button";
+  const cls = cn(buttonVariants({ variant, size, className }));
 
-    return (
-      <Comp
-        // @ts-expect-error TODO remove
-        ref={ref}
-        data-slot="button"
-        className={cls}
-        {...props}
-      />
-    );
-  },
-);
+  return <Comp ref={ref} data-slot="button" className={cls} {...props} />;
+};
 
 export { Button, buttonVariants };

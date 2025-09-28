@@ -1,4 +1,10 @@
-import { Select } from "../Select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "components/scn-ui/Select";
 
 interface SelectFieldProps {
   values: string[];
@@ -15,18 +21,23 @@ export const SelectField = ({
 }: SelectFieldProps) => {
   return (
     <Select
-      onChange={(event) => onSelectionChanged(event.currentTarget.value)}
+      onValueChange={(newValue) => onSelectionChanged(newValue)}
       value={selectedValue}
     >
-      {values.map((value, index) => {
-        return (
-          <option key={index} value={value}>
-            {displayValues && index < displayValues.length
-              ? displayValues[index]
-              : value}
-          </option>
-        );
-      })}
+      <SelectTrigger>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {values.map((value, index) => {
+          return (
+            <SelectItem key={index} value={value}>
+              {displayValues && index < displayValues.length
+                ? displayValues[index]
+                : value}
+            </SelectItem>
+          );
+        })}
+      </SelectContent>
     </Select>
   );
 };

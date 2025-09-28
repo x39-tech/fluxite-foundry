@@ -1,3 +1,4 @@
+import { JSX } from "react";
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import { TrashIcon } from "@heroicons/react/24/solid";
 import { DataType, Mapping, MappingRange, UnmappedParam } from "e173";
@@ -71,7 +72,7 @@ export const DmxParameterMapping = ({
 
       const addRangeButton = (
         <Tooltip>
-          <TooltipTrigger className="self-start">
+          <TooltipTrigger asChild className="self-start">
             <SmallIconButton
               className="size-7"
               onClick={() => {
@@ -125,7 +126,7 @@ export const DmxParameterMapping = ({
 
   let unmappedParams = (
     <Tooltip>
-      <TooltipTrigger className="self-start">
+      <TooltipTrigger asChild className="self-start">
         <SmallIconButton
           className="size-7"
           disabled={!isOk || unmappedParameterCandidates.length === 0}

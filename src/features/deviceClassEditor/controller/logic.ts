@@ -75,10 +75,11 @@ export function reconcileParamValues(
 }
 
 function getParamInitialValue(
-  paramData: Parameter,
+  paramData: Parameter | undefined,
   paramRange: ParamRange,
 ): ParamValue {
   if (
+    paramData &&
     paramData.default !== undefined &&
     typeof paramData.default === "number" &&
     paramData.default <= (paramRange!.end as number) &&

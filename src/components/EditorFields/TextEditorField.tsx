@@ -39,9 +39,6 @@ export const TextEditorField = ({
       open={
         !validationResult.isValid && validationResult.feedback !== undefined
       }
-      onOpenChange={(isOpen) => {
-        console.log(`openChange: ${isOpen}`);
-      }}
     >
       <PopoverAnchor className="inline-block">
         <ConfirmableInput

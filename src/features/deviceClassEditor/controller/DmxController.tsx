@@ -7,12 +7,18 @@ import {
   Unit,
   UnitName,
 } from "e173";
-import { useCurrentEditor, useParametersWithClasses } from "../state";
+import { useParametersWithClasses } from "../state";
 import { useDmxController } from "../dmxEditor/state";
 import { Button } from "components/scn-ui/Button";
 import { Slider } from "components/scn-ui/Slider";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "components/scn-ui/Select";
 import { TextEditorField } from "components/EditorFields/TextEditorField";
-import { Select } from "components/Select";
 import { useDarkMode } from "app/store";
 import {
   calculateDmxValue,
@@ -40,7 +46,6 @@ interface WebSocketPayload {
 }
 
 export const DmxController = () => {
-  const editor = useCurrentEditor();
   const paramClasses = useParametersWithClasses();
   const dmxController = useDmxController();
   const [paramValues, setParamValues] = useState<ParamState>({
@@ -103,10 +108,6 @@ export const DmxController = () => {
 
   const serverAreaBg = darkMode ? "bg-gray-800" : "bg-gray-200";
 
-  if (!editor) {
-    return <></>;
-  }
-
   switch (dmxController.state) {
     case "available":
       if (!dmxController.db.dmxDriver) {
@@ -155,13 +156,19 @@ export const DmxController = () => {
       <div className="flex flex-col">
         <span className="mx-4 font-bold">DMX Output</span>
         <Select
-          className="my-1"
-          options={["hex", "decimal"]}
           value={dmxDisplayFormat}
-          onChange={(e) =>
-            setDmxDisplayFormat(e.target.value as "hex" | "decimal")
+          onValueChange={(value) =>
+            setDmxDisplayFormat(value as "hex" | "decimal")
           }
-        />
+        >
+          <SelectTrigger className="my-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="hex">hex</SelectItem>
+            <SelectItem value="decimal">decimal</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <div className="flex flex-col items-stretch">
         <div className="flex flex-row" key={0}>

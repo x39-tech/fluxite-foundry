@@ -20,37 +20,26 @@ import {
   DropdownMenuTrigger,
 } from "components/scn-ui/DropdownMenu";
 import { WIDGETS, isValidWidget } from "./widgets";
-import { setWindowLayout, useCurrentEditor, useCurrentEditorId } from "./state";
+import {
+  getCurrentEditor,
+  setWindowLayout,
+  useCurrentEditorId,
+  useCurrentEditorPart,
+} from "./state";
+import { useAppPersistentStore } from "app/store";
 
 export const DeviceClassEditor = () => {
-  const currentEditor = useCurrentEditor();
   const currentEditorId = useCurrentEditorId();
-  if (!currentEditor || !currentEditorId) {
-    return <RenderError />;
-  }
+  const editorName = useCurrentEditorPart(
+    (state) => state.basicData.info.model.name,
+  );
 
   useEffect(() => {
-    document.title = `Editing: ${currentEditor.basicData.info.model.name} -- ${APP_NAME}`;
+    document.title = `Editing: ${editorName} -- ${APP_NAME}`;
     return () => {
       document.title = APP_NAME;
     };
-  });
-
-  const modelJson: IJsonModel = {
-    global: {
-      tabEnableRename: false,
-      tabSetClassNameTabStrip: "bg-none",
-      tabSetEnableMaximize: false,
-      borderSize: 500,
-      splitterSize: 2,
-    },
-    borders: [],
-    layout: currentEditor.windowLayout,
-  };
-  // We let the model be 'uncontrolled' (only created on initial render)
-  // We keep the saved window layout in sync using onModelChange
-  // The alternative results in every widget being rerendered constantly
-  const model = useMemo(() => Model.fromJson(modelJson), [currentEditorId]);
+  }, [editorName]);
 
   const onModelChange = useCallback(
     throttle((model) => {
@@ -58,6 +47,34 @@ export const DeviceClassEditor = () => {
     }, 1000),
     [],
   );
+
+  // We let the model be 'uncontrolled' (only created on initial render)
+  // We keep the saved window layout in sync using onModelChange
+  // The alternative results in every widget being rerendered constantly
+  const model = useMemo(() => {
+    const state = useAppPersistentStore.getState();
+    const currentEditor = getCurrentEditor(state);
+    if (!currentEditor) {
+      return undefined;
+    }
+
+    const modelJson: IJsonModel = {
+      global: {
+        tabEnableRename: false,
+        tabSetClassNameTabStrip: "bg-none",
+        tabSetEnableMaximize: false,
+        borderSize: 500,
+        splitterSize: 2,
+      },
+      borders: [],
+      layout: currentEditor.windowLayout,
+    };
+    return Model.fromJson(modelJson);
+  }, [currentEditorId]);
+
+  if (!model) {
+    return <RenderError />;
+  }
 
   const factory = (node: TabNode) => {
     const componentName = node.getComponent();
@@ -77,7 +94,7 @@ export const DeviceClassEditor = () => {
         const tabSetId = tabSetNode.getId();
         renderValues.stickyButtons = [
           <DropdownMenu key={1}>
-            <DropdownMenuTrigger>
+            <DropdownMenuTrigger asChild>
               <Button
                 size="icon"
                 variant="ghost"

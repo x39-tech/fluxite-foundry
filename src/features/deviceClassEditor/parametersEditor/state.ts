@@ -2,7 +2,11 @@ import { nanoid } from "nanoid";
 import { Draft } from "immer";
 import { ItemEditor, ParametersEditorState } from "app/state";
 import { Lifetime, Parameter, ParameterAccess } from "e173";
-import { updateCurrentEditor, useCurrentEditorPart } from "../state";
+import {
+  updateCurrentEditor,
+  useCurrentEditorPart,
+  useCurrentEditorPartShallow,
+} from "../state";
 
 // ---------------------------------------------------------------------------
 // Read
@@ -13,7 +17,7 @@ export function useParameters(): ParametersEditorState | undefined {
 }
 
 export function useParameterEditors(): ItemEditor[] {
-  const editors = useCurrentEditorPart((state) =>
+  const editors = useCurrentEditorPartShallow((state) =>
     state.parameters.itemEditorLayout.filter(
       (editor) => editor.udrId in state.parameters.parameters,
     ),
@@ -22,7 +26,7 @@ export function useParameterEditors(): ItemEditor[] {
 }
 
 export function useParameterIds(): string[] {
-  const ids = useCurrentEditorPart((state) =>
+  const ids = useCurrentEditorPartShallow((state) =>
     Object.keys(state.parameters.parameters),
   );
   return ids ?? [];
