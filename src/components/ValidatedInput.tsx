@@ -1,11 +1,9 @@
-// Editor field for freeform text with validation
-
 import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { ExclamationCircleIcon } from "@heroicons/react/16/solid";
 import { InputValidationResult } from "utils/inputValidation";
-import { Popover, PopoverAnchor, PopoverContent } from "../scn-ui/Popover";
-import { Alert, AlertDescription } from "../scn-ui/Alert";
-import { AppInput } from "../AppInput";
+import { Popover, PopoverAnchor, PopoverContent } from "./scn-ui/Popover";
+import { Alert, AlertDescription } from "./scn-ui/Alert";
+import { AppInput } from "./AppInput";
 
 interface Props {
   value: string;
@@ -16,7 +14,7 @@ interface Props {
   cancelOnEscapeKey?: boolean;
 }
 
-export const TextEditorField = ({
+export const ValidatedInput = ({
   value,
   maxLength,
   onConfirm,

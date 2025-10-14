@@ -17,6 +17,12 @@ export default defineConfig({
     tsconfigPaths(),
     checker({ typescript: true }),
   ],
+  resolve: {
+    preserveSymlinks: true,
+  },
+  optimizeDeps: {
+    exclude: ["e173"],
+  },
   test: {
     globals: true,
     setupFiles: "src/test/setup.ts",

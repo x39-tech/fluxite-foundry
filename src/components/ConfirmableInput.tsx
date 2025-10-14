@@ -1,8 +1,10 @@
+// DEPRECATED - use ValidatedInput for new components
+//
 // Models a controlled input which stages the current value while focused, and makes a decision on
 // whether to 'confirm' or 'cancel' it when focused out or on certain key presses.
 
 import { useState, useEffect, KeyboardEvent, ChangeEvent, useRef } from "react";
-import { AppInput } from "components/AppInput";
+import { AppInput } from "components/DeprecatedAppInput";
 import { InputValidationResult } from "utils/inputValidation";
 
 export interface ConfirmableInputProps {

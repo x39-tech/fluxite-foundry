@@ -61,7 +61,7 @@ export function validateNewItemId(
   if (existingItemIds.includes(input)) {
     return {
       isValid: false,
-      feedback: "ID must be unique among all parameters in the device",
+      feedback: "ID must be unique",
     };
   }
 

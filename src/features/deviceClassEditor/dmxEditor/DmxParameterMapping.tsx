@@ -3,8 +3,8 @@ import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import { TrashIcon } from "@heroicons/react/24/solid";
 import { DataType, Mapping, MappingRange, UnmappedParam } from "e173";
 import { StringSelector } from "components/StringSelector";
-import { TextEditorField } from "components/EditorFields/TextEditorField";
-import { SelectField } from "components/EditorFields/SelectField";
+import { TextEditorField } from "components/EditorFields/DeprecatedTextEditorField";
+import { SelectField } from "components/EditorFields/DeprecatedSelectField";
 import { Table } from "components/Table";
 import { SmallIconButton } from "components/SmallIconButton";
 import {

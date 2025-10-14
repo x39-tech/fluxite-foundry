@@ -80,37 +80,37 @@ test("Migrates from state v4", () => {
   );
 
   expect(migrated).toEqual({
-    udrDatabase: {
-      libraries: {
-        "org.esta.intensity-color": {
-          "1.0.0": {
-            "@description": "esta_intensity-color_library",
-            publishDate: "1970-01-01T00:00:00Z",
-            author: "ESTA",
-            parameterClasses: {},
-          },
-        },
-      },
-    },
     deviceClassEditors: {
       foo: {
         deviceClassId: "foo",
+        deviceClassVersion: "1.0.0",
         basicData: { foo: "bar1" },
         libraries: { foo: "bar2" },
         deviceLibrary: { foo: "bar3" },
         parameters: { foo: "bar4" },
         structures: { foo: "bar5" },
+        resources: {
+          itemEditorLayout: [],
+          resources: {},
+          resourceAssets: {},
+        },
         dmx: { foo: "bar6" },
         localizations: { foo: "bar7" },
         windowLayout: removeIdFields(getDefaultWindowLayout()),
       },
       baz: {
         deviceClassId: "foo",
+        deviceClassVersion: "1.0.0",
         basicData: { foo: "baz1" },
         libraries: { foo: "baz2" },
         deviceLibrary: { foo: "baz3" },
         parameters: { foo: "baz4" },
         structures: { foo: "baz5" },
+        resources: {
+          itemEditorLayout: [],
+          resources: {},
+          resourceAssets: {},
+        },
         dmx: { foo: "baz6" },
         localizations: { foo: "baz7" },
         windowLayout: removeIdFields(getDefaultWindowLayout()),
@@ -197,31 +197,146 @@ test("Migrates from state v5", () => {
   );
 
   expect(migrated).toEqual({
-    udrDatabase: {
-      foo: "bar",
-    },
     deviceClassEditors: {
       foo: {
         deviceClassId: "foo",
+        deviceClassVersion: "1.0.0",
         basicData: { foo: "bar1" },
         libraries: { foo: "bar2" },
         deviceLibrary: { foo: "bar3" },
         parameters: { foo: "bar4" },
         structures: { foo: "bar5" },
+        resources: {
+          itemEditorLayout: [],
+          resources: {},
+          resourceAssets: {},
+        },
         dmx: { foo: "bar6" },
         localizations: { foo: "bar7" },
         windowLayout: removeIdFields(getDefaultWindowLayout()),
       },
       baz: {
         deviceClassId: "foo",
+        deviceClassVersion: "1.0.0",
         basicData: { foo: "baz1" },
         libraries: { foo: "baz2" },
         deviceLibrary: { foo: "baz3" },
         parameters: { foo: "baz4" },
         structures: { foo: "baz5" },
+        resources: {
+          itemEditorLayout: [],
+          resources: {},
+          resourceAssets: {},
+        },
         dmx: { foo: "baz6" },
         localizations: { foo: "baz7" },
         windowLayout: removeIdFields(getDefaultWindowLayout()),
+      },
+    },
+    appSettings: {
+      darkMode: true,
+    },
+    openEditors: {
+      editors: [
+        {
+          type: "deviceClass",
+          id: "foo",
+        },
+        {
+          type: "deviceClass",
+          id: "baz",
+        },
+      ],
+      selectedEditor: 0,
+    },
+  });
+});
+
+test("migrates from state v6", () => {
+  const migrated = migrateState(
+    {
+      udrDatabase: {
+        foo: "bar",
+      },
+      deviceClassEditors: {
+        foo: {
+          deviceClassId: "foo",
+          basicData: { foo: "bar1" },
+          libraries: { foo: "bar2" },
+          deviceLibrary: { foo: "bar3" },
+          parameters: { foo: "bar4" },
+          structures: { foo: "bar5" },
+          dmx: { foo: "bar6" },
+          localizations: { foo: "bar7" },
+          windowLayout: { foo: "bar8" },
+        },
+        baz: {
+          deviceClassId: "foo",
+          basicData: { foo: "baz1" },
+          libraries: { foo: "baz2" },
+          deviceLibrary: { foo: "baz3" },
+          parameters: { foo: "baz4" },
+          structures: { foo: "baz5" },
+          dmx: { foo: "baz6" },
+          localizations: { foo: "baz7" },
+          windowLayout: { foo: "baz8" },
+        },
+      },
+      appSettings: {
+        darkMode: true,
+      },
+      openEditors: {
+        editors: [
+          {
+            type: "deviceClass",
+            id: "foo",
+          },
+          {
+            type: "deviceClass",
+            id: "baz",
+          },
+        ],
+        selectedEditor: 0,
+      },
+    },
+    6,
+  );
+
+  expect(migrated).toEqual({
+    deviceClassEditors: {
+      foo: {
+        deviceClassId: "foo",
+        deviceClassVersion: "1.0.0",
+        basicData: { foo: "bar1" },
+        libraries: { foo: "bar2" },
+        deviceLibrary: { foo: "bar3" },
+        parameters: { foo: "bar4" },
+        structures: { foo: "bar5" },
+        resources: {
+          itemEditorLayout: [],
+          resources: {},
+          resourceAssets: {},
+        },
+        dmx: { foo: "bar6" },
+        localizations: { foo: "bar7" },
+        windowLayout: { foo: "bar8" },
+      },
+      baz: {
+        deviceClassId: "foo",
+        deviceClassVersion: "1.0.0",
+        basicData: { foo: "baz1" },
+        libraries: { foo: "baz2" },
+        deviceLibrary: { foo: "baz3" },
+        parameters: { foo: "baz4" },
+        structures: { foo: "baz5" },
+        resources: {
+          itemEditorLayout: [],
+          resources: {},
+          resourceAssets: {},
+        },
+        dmx: { foo: "baz6" },
+        localizations: { foo: "baz7" },
+        windowLayout: { foo: "baz8" },
       },
     },
     appSettings: {

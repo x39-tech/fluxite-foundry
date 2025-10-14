@@ -4,8 +4,10 @@ import {
   ChevronDownIcon,
   ListBulletIcon,
 } from "@heroicons/react/24/solid";
+import { Library } from "e173";
 import {
-  ParameterClassWithId,
+  ItemClass,
+  ItemClassWithId,
   UdrDatabase,
   getItemClassName,
   getItemClassNameOrId,
@@ -30,24 +32,26 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "components/scn-ui/Tooltip";
-import { Button } from "components/scn-ui/Button";
+import { Button, ButtonProps } from "components/scn-ui/Button";
 import { useTextWidth } from "hooks/useTextWidth";
 
-interface ParameterClassSelectorProps {
-  selectedClass?: ParameterClassWithId;
+interface ItemClassSelectorProps<T extends ItemClass> extends ButtonProps {
+  selectedClass?: T & ItemClassWithId;
+  librarySelector: (library: Library) => [string, T][];
   "aria-labelledby"?: string;
-  onSelectedClassChanged: (newClass?: ParameterClassWithId) => void;
-  tooltipRenderer: (item: ParameterClassWithId) => JSX.Element;
+  onSelectedClassChanged: (newClass?: T & ItemClassWithId) => void;
+  tooltipRenderer: (item: T & ItemClassWithId) => JSX.Element;
   database: UdrDatabase;
 }
 
-export const ParameterClassSelector = ({
+export function ItemClassSelector<T extends ItemClass>({
   selectedClass,
-  "aria-labelledby": ariaLabelledBy,
+  librarySelector,
   onSelectedClassChanged,
   tooltipRenderer,
   database,
-}: ParameterClassSelectorProps) => {
+  ...props
+}: ItemClassSelectorProps<T>) {
   const [open, setOpen] = useState(false);
 
   const libraries = useMemo(
@@ -62,7 +66,7 @@ export const ParameterClassSelector = ({
   const allItemClassNames = useMemo(
     () =>
       libraries.flatMap((library) =>
-        Object.entries(library.parameterClasses).map(([id, cls]) => {
+        librarySelector(library).map(([id, cls]) => {
           const itemClassWithId = {
             ...cls,
             id,
@@ -89,13 +93,13 @@ export const ParameterClassSelector = ({
   const commandGroups = useMemo(
     () =>
       libraries
-        .filter((library) => Object.keys(library.parameterClasses).length > 0)
+        .filter((library) => librarySelector(library).length > 0)
         .map((library) => (
           <CommandGroup
             key={library.id}
             heading={getLibraryFriendlyName(library)}
           >
-            {Object.entries(library.parameterClasses).map(([id, cls]) => {
+            {librarySelector(library).map(([id, cls]) => {
               const itemClassWithId = {
                 ...cls,
                 id,
@@ -155,9 +159,9 @@ export const ParameterClassSelector = ({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            aria-labelledby={ariaLabelledBy}
             className="gap-3"
             style={{ width: buttonWidth > 0 ? `${buttonWidth}px` : "auto" }}
+            {...props}
           >
             <ListBulletIcon />
             {selectedClass
@@ -183,4 +187,4 @@ export const ParameterClassSelector = ({
       </Popover>
     </>
   );
-};
+}

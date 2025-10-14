@@ -1,11 +1,12 @@
 import { useEffect, JSX } from "react";
+import { useOpenEditors } from "features/topNavBar/state";
 import { DeviceClassEditor } from "features/deviceClassEditor/DeviceClassEditor";
 import { TopNavBar } from "features/topNavBar/TopNavBar";
+import { Toaster } from "components/scn-ui/Sonner";
 import { udrDatabaseIsEmpty } from "udr/udrDatabase";
 import { LibraryErrorDialog } from "./libraryErrorDialog";
 import { useDarkMode, useUdrDatabase } from "./store";
 import { EditorType } from "./state";
-import { useOpenEditors } from "features/topNavBar/state";
 import "./App.scss";
 
 const EDITORS: Record<EditorType, () => JSX.Element> = {
@@ -34,6 +35,7 @@ export const App = () => {
         {currentEditor ? EDITORS[currentEditor.type]() : <div />}
         <LibraryErrorDialog show={udrDatabaseIsEmpty(database)} />
       </div>
+      <Toaster />
     </div>
   );
 };

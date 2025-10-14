@@ -12,14 +12,16 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "components/scn-ui/Tooltip";
-import { SelectTableRow } from "components/EditorFields/SelectField";
+import { SelectTableRow } from "components/EditorFields/DeprecatedSelectField";
 import {
   OptionalTextEditorTableRow,
   TextEditorTableRow,
-} from "components/EditorFields/TextEditorField";
+} from "components/EditorFields/DeprecatedTextEditorField";
 import { ItemEditor } from "components/ItemEditor/ItemEditor";
-import { ParameterClassDisplay } from "components/ParameterClassDisplay";
 import { SimplePropsTable } from "components/SimplePropsTable";
+import { RenderError } from "components/RenderError";
+import { Alert, AlertDescription, AlertTitle } from "components/scn-ui/Alert";
+import { ParameterClassDisplay } from "./ParameterClassDisplay";
 import {
   validateNewItemId,
   validateStringIsNumberAndBetweenMinAndMaxOrEmpty,
@@ -43,8 +45,6 @@ import {
   useDeviceLocalizations,
   useLibraries,
 } from "../state";
-import { RenderError } from "components/RenderError";
-import { Alert, AlertDescription, AlertTitle } from "components/scn-ui/Alert";
 
 interface Props {
   id: string;
@@ -56,13 +56,13 @@ export const ParameterEditor = ({ id }: Props) => {
   const database = useUdrDatabase();
   const parameterIds = useParameterIds();
   const param = useParameter(id);
-  if (!param) {
-    return <RenderError />;
-  }
-
   const libraries = useLibraries();
   const deviceLibrary = useDeviceLibrary();
   const deviceLocalizations = useDeviceLocalizations();
+
+  if (!param) {
+    return <RenderError />;
+  }
 
   let paramClass: ResolvedParameterClass | undefined = undefined;
   if (param.library) {

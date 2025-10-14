@@ -2,27 +2,31 @@ import { create } from "zustand";
 import { persist, devtools } from "zustand/middleware";
 import { produce } from "immer";
 import { AppPersistentState, AppRuntimeState } from "./state";
-import { UdrDatabase } from "udr/udrDatabase";
+import { loadDefaultLibraries, UdrDatabase } from "udr/udrDatabase";
 import {
   getCurrentEditor,
   updateDmxController,
 } from "features/deviceClassEditor/state";
-import { getDefaultState, migrateState } from "./stateMigrations";
+import {
+  CURRENT_STATE_VERSION,
+  getDefaultState,
+  migrateState,
+} from "./stateMigrations";
 
 // ---------------------------------------------------------------------------
 // Read
 // ---------------------------------------------------------------------------
 
 export const useAppRuntimeStore = create<AppRuntimeState>()(
-  devtools(() => getDefaultRuntimeState()),
+  devtools(() => getDefaultRuntimeState(), { name: "ff-runtime-state" }),
 );
 
 export const useAppPersistentStore = create<AppPersistentState>()(
   persist(
-    devtools(() => getDefaultState()),
+    devtools(() => getDefaultState(), { name: "ff-persistent-state" }),
     {
-      name: "udr-builder-state",
-      version: 6,
+      name: "ff-persistent-state",
+      version: CURRENT_STATE_VERSION,
       migrate: migrateState,
       onRehydrateStorage: () => {
         return (state, error) => {
@@ -39,7 +43,7 @@ export const useAppPersistentStore = create<AppPersistentState>()(
 );
 
 export function useUdrDatabase(): UdrDatabase {
-  return useAppPersistentStore((state) => state.udrDatabase);
+  return useAppRuntimeStore((state) => state.udrDatabase);
 }
 
 export function useDarkMode(): boolean {
@@ -77,5 +81,6 @@ function getDefaultRuntimeState(): AppRuntimeState {
     dmxController: {
       state: "not-created",
     },
+    udrDatabase: loadDefaultLibraries(),
   };
 }

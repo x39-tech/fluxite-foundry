@@ -3,6 +3,7 @@ import { ParametersEditor } from "./parametersEditor/ParametersEditor";
 import { DeviceInfoEditor } from "./deviceInfoEditor/DeviceInfoEditor";
 import { DmxEditor } from "./dmxEditor/DmxEditor";
 import { DmxController } from "./controller/DmxController";
+import { ResourcesEditor } from "./resourcesEditor/ResourcesEditor";
 
 interface EditorWidget {
   name: string;
@@ -30,6 +31,11 @@ export const WIDGETS: Record<string, EditorWidget> = {
     name: "Test DMX Controller",
     description: "Test the device class with a virtual controller",
     factory: () => <DmxController />,
+  },
+  resourcesEditor: {
+    name: "Resources",
+    description: "Create and edit resources (e.g. assets) for the device class",
+    factory: () => <ResourcesEditor />,
   },
 };
 

@@ -1,6 +1,6 @@
-import { RefObject, useRef, useState } from "react";
+import { useState } from "react";
 import { LoaderCircle } from "lucide-react";
-import { E173Document, importUdr, Error as E173Error } from "e173";
+import { toast } from "sonner";
 import { ExclamationCircleIcon } from "@heroicons/react/16/solid";
 import {
   Dialog,
@@ -11,7 +11,6 @@ import {
 } from "components/scn-ui/Dialog";
 import { Button } from "components/scn-ui/Button";
 import { Textarea } from "components/scn-ui/Textarea";
-import { Input } from "components/scn-ui/Input";
 import { Alert, AlertDescription, AlertTitle } from "components/scn-ui/Alert";
 import {
   Select,
@@ -20,24 +19,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "components/scn-ui/Select";
+import { AppInput } from "components/AppInput";
+import {
+  validateInputFile,
+  UdrImportResult,
+  DeviceClassToImport,
+  FeedbackKind,
+  getDeviceClassFromArchive,
+  getDeviceClassFromDocument,
+} from "./importUtils";
 import { importDeviceClassEditor } from "./state";
-
-enum FeedbackKind {
-  UnableToReadFile,
-  ValidationFailed,
-}
-
-interface InputValidationResult {
-  valid: boolean;
-  feedbackKind?: FeedbackKind;
-  feedback?: string;
-  udr?: E173Document;
-}
-
-interface DeviceClass {
-  id: string;
-  version: string;
-}
 
 interface Props {
   isOpen: boolean;
@@ -47,26 +38,11 @@ interface Props {
 export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
   const [inputFile, setInputFile] = useState<File | null>(null);
   const [inputValidation, setInputValidation] = useState<
-    InputValidationResult | undefined
+    UdrImportResult | undefined
   >(undefined);
+  const [selectedDeviceClass, setSelectedDeviceClass] = useState(-1);
 
-  const deviceClassSelectRef = useRef<HTMLSpanElement>(null);
-
-  let deviceClasses: DeviceClass[] = [];
-  if (
-    inputValidation?.valid &&
-    inputValidation.udr &&
-    inputValidation.udr.e173doc.deviceClasses
-  ) {
-    deviceClasses = Object.entries(
-      inputValidation.udr!.e173doc.deviceClasses!,
-    ).reduce((accum, [key, value]) => {
-      for (const version of Object.keys(value)) {
-        accum.push({ id: key, version });
-      }
-      return accum;
-    }, [] as DeviceClass[]);
-  }
+  const deviceClasses = inputValidation?.deviceClasses || [];
 
   return (
     <Dialog
@@ -77,26 +53,23 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Import UDR Document</DialogTitle>
+          <DialogTitle>Import UDR</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center gap-2">
-          <Input
+          <AppInput
             type="file"
-            accept="application/json,.udr"
+            accept=".fca,.fcd"
             onChange={(event) => {
               const file = event.currentTarget.files?.item(0) ?? null;
               setInputFile(file);
 
               if (file !== null) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                  setInputValidation(
-                    validateInputFile(
-                      event.target?.result as string | undefined,
-                    ),
-                  );
-                };
-                reader.readAsText(file);
+                validateInputFile(file).then((value) => {
+                  setInputValidation(value);
+                  if (value.deviceClasses && value.deviceClasses.length > 0) {
+                    setSelectedDeviceClass(0);
+                  }
+                });
               }
             }}
           />
@@ -104,7 +77,8 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
             inputFile={inputFile}
             inputValidation={inputValidation}
             deviceClasses={deviceClasses}
-            deviceClassSelectRef={deviceClassSelectRef}
+            selectedIdx={selectedDeviceClass}
+            onSelectedIdxChange={setSelectedDeviceClass}
           />
         </div>
         <DialogFooter>
@@ -114,25 +88,46 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
               !inputValidation.valid ||
               deviceClasses.length == 0
             }
-            onClick={() => {
-              if (deviceClassSelectRef.current !== null) {
-                const deviceClass = stringToDeviceClass(
-                  deviceClassSelectRef.current.innerText,
-                );
+            onClick={async () => {
+              if (inputFile) {
+                try {
+                  const deviceClass = deviceClasses[selectedDeviceClass];
+                  if (!deviceClass) {
+                    throw new Error("No device class selected");
+                  }
 
-                const deviceClasses =
-                  inputValidation?.udr?.e173doc.deviceClasses;
-                if (
-                  deviceClasses &&
-                  deviceClass.id in deviceClasses &&
-                  deviceClass.version in deviceClasses[deviceClass.id]
-                ) {
-                  importDeviceClassEditor(
+                  // Get the device class definition from the archive
+                  let deviceClassDefinition;
+                  if (inputValidation?.archive) {
+                    deviceClassDefinition = await getDeviceClassFromArchive(
+                      inputFile,
+                      deviceClass,
+                    );
+                  } else {
+                    deviceClassDefinition = await getDeviceClassFromDocument(
+                      inputFile,
+                      deviceClass,
+                    );
+                  }
+
+                  if (!deviceClassDefinition) {
+                    throw new Error("Error loading device class");
+                  }
+
+                  // Import the device class
+                  await importDeviceClassEditor(
                     deviceClass.id,
-                    inputValidation!.udr!.e173doc.deviceClasses![
-                      deviceClass.id
-                    ]![deviceClass.version]!,
+                    deviceClass.version,
+                    deviceClassDefinition,
+                    inputValidation?.archive
+                      ? {
+                          archive: inputValidation.archive,
+                          archiveFile: inputFile,
+                        }
+                      : undefined,
                   );
+                } catch (error) {
+                  toast(`Error importing device class: ${error}`);
                 }
               }
 
@@ -150,37 +145,20 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
   );
 };
 
-function validateInputFile(fileContent?: string): InputValidationResult {
-  if (fileContent === undefined) {
-    return { valid: false, feedbackKind: FeedbackKind.UnableToReadFile };
-  }
-
-  try {
-    const udr = importUdr(fileContent);
-    return { valid: true, udr };
-  } catch (e) {
-    const err = e as E173Error;
-    const path = err.path ? ` (at ${err.path})` : undefined;
-    return {
-      valid: false,
-      feedbackKind: FeedbackKind.ValidationFailed,
-      feedback: `${err.type}: ${err.description}${path}`,
-    };
-  }
-}
-
 interface AdditionalDialogElementsProps {
   inputFile: File | null;
-  inputValidation: InputValidationResult | undefined;
-  deviceClasses: DeviceClass[];
-  deviceClassSelectRef: RefObject<HTMLSpanElement | null>;
+  inputValidation: UdrImportResult | undefined;
+  deviceClasses: DeviceClassToImport[];
+  selectedIdx: number;
+  onSelectedIdxChange: (newIdx: number) => void;
 }
 
 const AdditionalDialogElements = ({
   inputFile,
   inputValidation,
   deviceClasses,
-  deviceClassSelectRef,
+  selectedIdx,
+  onSelectedIdxChange,
 }: AdditionalDialogElementsProps) => {
   if (inputFile) {
     if (inputValidation === undefined) {
@@ -197,7 +175,8 @@ const AdditionalDialogElements = ({
         return (
           <DeviceClassSelect
             deviceClasses={deviceClasses}
-            ref={deviceClassSelectRef}
+            selectedIdx={selectedIdx}
+            onSelectedIdxChange={onSelectedIdxChange}
           />
         );
       } else {
@@ -215,11 +194,16 @@ const AdditionalDialogElements = ({
 };
 
 interface DeviceClassSelectProps {
-  deviceClasses: DeviceClass[];
-  ref: RefObject<HTMLSpanElement | null>;
+  deviceClasses: DeviceClassToImport[];
+  selectedIdx: number;
+  onSelectedIdxChange: (newIdx: number) => void;
 }
 
-const DeviceClassSelect = ({ deviceClasses, ref }: DeviceClassSelectProps) => {
+const DeviceClassSelect = ({
+  deviceClasses,
+  selectedIdx,
+  onSelectedIdxChange,
+}: DeviceClassSelectProps) => {
   if (deviceClasses.length === 0) {
     return (
       <Alert variant="destructive">
@@ -231,19 +215,20 @@ const DeviceClassSelect = ({ deviceClasses, ref }: DeviceClassSelectProps) => {
     return (
       <>
         Select Device Class to import:
-        <Select>
-          <SelectTrigger>
-            <SelectValue
-              className="overflow-hidden"
-              placeholder="Select a device class..."
-              ref={ref}
-            />
+        <Select
+          value={deviceClasses[selectedIdx]?.id ?? null}
+          onValueChange={(id) => {
+            onSelectedIdxChange(deviceClasses.findIndex((dc) => dc.id === id));
+          }}
+        >
+          <SelectTrigger className="overflow-hidden max-w-sm">
+            <SelectValue placeholder="Select a device class..." />
           </SelectTrigger>
           <SelectContent>
             {deviceClasses.map((dc, index) => {
               const dcString = deviceClassToString(dc);
               return (
-                <SelectItem key={index} value={dcString}>
+                <SelectItem key={index} value={dc.id}>
                   {dcString}
                 </SelectItem>
               );
@@ -282,6 +267,16 @@ const ValidationFailure = ({
           </AlertDescription>
         </Alert>
       );
+    case FeedbackKind.ArchiveParsingFailed:
+      return (
+        <Alert variant="destructive">
+          <ExclamationCircleIcon />
+          <AlertTitle>Failed to parse UDR archive.</AlertTitle>
+          <AlertDescription>
+            <Textarea value={feedback} readOnly />
+          </AlertDescription>
+        </Alert>
+      );
     default:
       return (
         <Alert variant="destructive">
@@ -294,15 +289,10 @@ const ValidationFailure = ({
   }
 };
 
-function deviceClassToString(dc?: DeviceClass): string {
+function deviceClassToString(dc?: DeviceClassToImport): string {
   if (dc) {
     return `${dc.id} (${dc.version})`;
   } else {
     return "";
   }
-}
-
-function stringToDeviceClass(str: string): DeviceClass {
-  const match = str.match(/([^\s]+) \(([^)]+)\)/);
-  return { id: match![1], version: match![2] };
 }

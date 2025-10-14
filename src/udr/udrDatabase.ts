@@ -8,6 +8,7 @@ import {
   Unit,
   DeviceLibrary,
   DefinitionLocalization,
+  ResourceClass,
 } from "e173";
 import core from "e173/libraries/core/draft-2024-1/library.json";
 import intensityColor from "e173/libraries/intensity-color/draft-2024-1/library.json";
@@ -37,9 +38,12 @@ export type ParameterClassWithId = ParameterClass & ItemClassWithId;
 
 export type StructureClassWithId = StructureClass & ItemClassWithId;
 
+export type ResourceClassWithId = ResourceClass & ItemClassWithId;
+
 interface ItemClassDatabase {
   parameters: ParameterClassWithId[];
   structures: StructureClassWithId[];
+  resources: ResourceClassWithId[];
 }
 
 interface LibraryDatabase {
@@ -60,6 +64,15 @@ export interface ResolvedParameterClass {
   description?: string;
   dataType: DataType;
   unit?: Unit;
+}
+
+export interface ResolvedResourceClass {
+  libraryId?: string;
+  libraryVersion?: string;
+  id: string;
+  name: string;
+  description?: string;
+  mediaType?: string[];
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -222,6 +235,65 @@ export function lookupStructureClass(
     : undefined;
 }
 
+export function lookupResourceClass(
+  database: Readonly<UdrDatabase>,
+  libraryId: string,
+  libraryVersion: string,
+  classId: string,
+): ResolvedResourceClass | undefined {
+  const library = database.libraries[libraryId]?.[libraryVersion];
+  if (!library) {
+    return undefined;
+  }
+
+  const cls = library.resourceClasses?.[classId];
+
+  if (cls) {
+    // TODO: use current localization
+    const localizedName =
+      library.localizations?.["en-US"]?.strings?.[cls["@name"]];
+    const localizedDesc = cls["@description"]
+      ? library.localizations?.["en-US"]?.strings?.[cls["@description"]]
+      : undefined;
+
+    return {
+      id: classId,
+      libraryId,
+      libraryVersion,
+      name: localizedName || cls["@name"],
+      description: localizedDesc || cls["@description"],
+      mediaType: cls.mediaType,
+    };
+  } else {
+    return undefined;
+  }
+}
+
+export function lookupDeviceResourceClass(
+  deviceLibrary: DeviceLibrary,
+  deviceLocalizations: Record<string, DefinitionLocalization>,
+  classId: string,
+): ResolvedResourceClass | undefined {
+  const cls = deviceLibrary.resourceClasses?.[classId];
+
+  if (cls) {
+    // TODO: use current localization
+    const localizedName = deviceLocalizations["en-US"]?.strings?.[cls["@name"]];
+    const localizedDesc = cls["@description"]
+      ? deviceLocalizations["en-US"]?.strings?.[cls["@description"]]
+      : undefined;
+
+    return {
+      id: classId,
+      name: localizedName || cls["@name"],
+      description: localizedDesc || cls["@description"],
+      mediaType: cls.mediaType,
+    };
+  } else {
+    return undefined;
+  }
+}
+
 export function getLibraryFriendlyName(library: LibraryWithId): string {
   return (
     library.localizations?.["en-US"]?.strings?.[library["@description"]] ||
@@ -268,7 +340,11 @@ export function loadLibrariesFromDocument(
 
   // TODO: Verify localizations
 
-  let itemDb: ItemClassDatabase = { parameters: [], structures: [] };
+  let itemDb: ItemClassDatabase = {
+    parameters: [],
+    structures: [],
+    resources: [],
+  };
   for (const [libraryId, libraryVersionCollection] of Object.entries(
     libraries,
   )) {
@@ -277,12 +353,17 @@ export function loadLibrariesFromDocument(
         parameters: transformItemClasses(
           libraryId,
           version,
-          library.parameterClasses,
+          library.parameterClasses || {},
         ),
         structures: transformItemClasses(
           libraryId,
           version,
-          library.structureClasses,
+          library.structureClasses || {},
+        ),
+        resources: transformItemClasses(
+          libraryId,
+          version,
+          library.resourceClasses || {},
         ),
       });
     }
@@ -339,5 +420,6 @@ function concatItemClasses(
   return {
     parameters: existingDb.parameters.concat(newDb.parameters),
     structures: existingDb.structures.concat(newDb.structures),
+    resources: existingDb.resources.concat(newDb.resources),
   };
 }

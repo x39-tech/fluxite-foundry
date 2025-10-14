@@ -1,7 +1,7 @@
 import { Unit } from "e173";
 import { getDataTypeFriendlyName } from "udr/util/enums";
 import { ResolvedParameterClass } from "udr/udrDatabase";
-import { SimplePropsTable } from "./SimplePropsTable";
+import { SimplePropsTable } from "components/SimplePropsTable";
 
 interface Props {
   paramClass: ResolvedParameterClass;

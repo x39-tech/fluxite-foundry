@@ -1,3 +1,5 @@
+// DEPRECATED: Use ListItemsEditor
+
 import {
   Disclosure,
   DisclosureButton,

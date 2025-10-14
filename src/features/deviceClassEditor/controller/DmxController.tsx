@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "components/scn-ui/Select";
-import { TextEditorField } from "components/EditorFields/TextEditorField";
+import { TextEditorField } from "components/EditorFields/DeprecatedTextEditorField";
 import { useDarkMode } from "app/store";
 import {
   calculateDmxValue,

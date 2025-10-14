@@ -2,8 +2,8 @@ import { SimplePropsTable } from "components/SimplePropsTable";
 import {
   OptionalTextEditorTableRow,
   TextEditorTableRow,
-} from "components/EditorFields/TextEditorField";
-import { SelectTableRow } from "components/EditorFields/SelectField";
+} from "components/EditorFields/DeprecatedTextEditorField";
+import { SelectTableRow } from "components/EditorFields/DeprecatedSelectField";
 import { Category, Subcategory } from "e173";
 import builderInfo from "e173/extras/draft-2024-1/_builder.json";
 import { TagInputTableRow } from "components/EditorFields/TagInputField";

@@ -1,24 +1,26 @@
 import { nanoid } from "nanoid";
 import { useShallow } from "zustand/shallow";
+import JSZip from "jszip";
 import { useAppPersistentStore, updateAppPersistentState } from "app/store";
 import {
   AppPersistentState,
   DeviceClassEditorState,
   EditorType,
-  OpenEditor,
   OpenEditors,
 } from "app/state";
 
-import { DeviceClass, EstaDmx } from "e173";
+import { DeviceClass, E173Archive, EstaDmx, Resource } from "e173";
 import { getDefaultWindowLayout, getUniqueItemId } from "utils/utils";
 import { getDefaultDeviceClass } from "udr/udr";
 import {
   getCurrentEditor,
   updateDmxController,
 } from "features/deviceClassEditor/state";
+import { assetStorage } from "app/assetStorage";
 
-interface OpenEditorWithName extends OpenEditor {
-  name: string;
+export interface ArchiveToImport {
+  archiveFile: File;
+  archive: E173Archive;
 }
 
 // ---------------------------------------------------------------------------
@@ -38,25 +40,6 @@ export function useDeviceClassEditors(): {
 export function useEditorNames(): string[] {
   return useAppPersistentStore(
     useShallow((state) => getOpenEditorModelNames(state)),
-  );
-}
-
-export function useOpenDeviceClassEditorsWithNames(): OpenEditorWithName[] {
-  return useAppPersistentStore(
-    useShallow((state) =>
-      state.openEditors.editors.reduce((accum: OpenEditorWithName[], value) => {
-        if (value.type == EditorType.DEVICE_CLASS) {
-          const editorState = state.deviceClassEditors[value.id];
-          if (editorState) {
-            accum.push({
-              ...value,
-              name: editorState.basicData.info.model.name,
-            });
-          }
-        }
-        return accum;
-      }, []),
-    ),
   );
 }
 
@@ -89,13 +72,27 @@ export function setSelectedEditor(index: number) {
   });
 }
 
-export function importDeviceClassEditor(id: string, deviceClass: DeviceClass) {
+export async function importDeviceClassEditor(
+  id: string,
+  version: string,
+  deviceClass: DeviceClass,
+  archive?: ArchiveToImport,
+) {
+  const newDeviceClass = archive
+    ? await getImportedDeviceClassEditorWithAssets(
+        id,
+        version,
+        deviceClass,
+        archive,
+      )
+    : getImportedDeviceClassEditor(id, version, deviceClass);
+
   updateAppPersistentState((state) => {
     const deviceClassEditors = state.deviceClassEditors;
     const openEditors = state.openEditors;
 
     const newId = nanoid();
-    deviceClassEditors[newId] = getImportedDeviceClassEditor(id, deviceClass);
+    deviceClassEditors[newId] = newDeviceClass;
     openEditors.editors.push({ type: EditorType.DEVICE_CLASS, id: newId });
     openEditors.selectedEditor = openEditors.editors.length - 1;
 
@@ -150,12 +147,14 @@ function getNewDeviceClassEditor(
 
   return getImportedDeviceClassEditor(
     deviceClassId,
+    "1.0.0",
     getDefaultDeviceClass(deviceClassId),
   );
 }
 
 function getImportedDeviceClassEditor(
   id: string,
+  version: string,
   udr: DeviceClass,
 ): DeviceClassEditorState {
   let dmx: EstaDmx | undefined = undefined;
@@ -172,6 +171,7 @@ function getImportedDeviceClassEditor(
 
   return {
     deviceClassId: id,
+    deviceClassVersion: version,
     basicData: {
       ...udr,
     },
@@ -193,10 +193,80 @@ function getImportedDeviceClassEditor(
         return { id: nanoid(), udrId: id };
       }),
     },
+    resources: {
+      resources: udr.resources || {},
+      itemEditorLayout: Object.keys(udr.resources || {}).map((id) => {
+        return { id: nanoid(), udrId: id };
+      }),
+      resourceAssets: {}, // TODO: load assets
+    },
     dmx: {
       udr: dmx ? dmx : { chunks: {} },
     },
     localizations: udr.localizations || {},
     windowLayout: getDefaultWindowLayout(),
   };
+}
+
+async function getImportedDeviceClassEditorWithAssets(
+  id: string,
+  version: string,
+  udr: DeviceClass,
+  archive: ArchiveToImport,
+) {
+  const editor = getImportedDeviceClassEditor(id, version, udr);
+  editor.resources.resourceAssets = await loadResourceAssets(
+    id,
+    version,
+    archive,
+    editor.resources.resources,
+  );
+  return editor;
+}
+
+async function loadResourceAssets(
+  id: string,
+  version: string,
+  archive: ArchiveToImport,
+  resources: Record<string, Resource>,
+): Promise<Record<string, string>> {
+  const resourceAssets: Record<string, string> = {};
+
+  let zip;
+  try {
+    zip = await JSZip.loadAsync(archive.archiveFile);
+  } catch (_e) {
+    return resourceAssets;
+  }
+
+  const assetsDir =
+    archive.archive.e173archive.deviceClasses?.[id]?.[version]?.assetsDirectory;
+  if (!assetsDir) {
+    return resourceAssets;
+  }
+
+  for (const resource of Object.values(resources)) {
+    if (resource.default) {
+      try {
+        const filePath = `${assetsDir}/${resource.default}`;
+
+        const zipFile = zip.file(filePath);
+        if (!zipFile) {
+          throw new Error("Resource file did not exist in archive");
+        }
+
+        const fileContent = await zipFile.async("arraybuffer");
+        const assetId = await assetStorage.storeAsset(
+          fileContent,
+          resource.mediaType,
+        );
+        resourceAssets[resource.default] = assetId;
+      } catch (_e) {
+        // TODO error handling
+        continue;
+      }
+    }
+  }
+
+  return resourceAssets;
 }

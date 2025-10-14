@@ -1,6 +1,6 @@
 import { Chunk, Condition } from "e173";
 import { TrashIcon } from "@heroicons/react/24/solid";
-import { TextEditorField } from "components/EditorFields/TextEditorField";
+import { TextEditorField } from "components/EditorFields/DeprecatedTextEditorField";
 import {
   Select,
   SelectContent,

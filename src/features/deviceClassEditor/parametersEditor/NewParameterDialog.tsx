@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { CheckIcon } from "@heroicons/react/24/solid";
 import { Button } from "components/scn-ui/Button";
-import { TextEditorTableRow } from "components/EditorFields/TextEditorField";
-import { ParameterClassDisplay } from "components/ParameterClassDisplay";
+import { TextEditorTableRow } from "components/EditorFields/DeprecatedTextEditorField";
 import { SimplePropsTable } from "components/SimplePropsTable";
-import { ParameterClassSelector } from "components/ItemClassSelector";
+import { ItemClassSelector } from "components/ItemClassSelector";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "components/scn-ui/Dialog";
+import { ParameterClassDisplay } from "./ParameterClassDisplay";
 import { validateNewItemId } from "utils/inputValidation";
 import { lookupParameterClass, ParameterClassWithId } from "udr/udrDatabase";
 import { useUdrDatabase } from "app/store";
@@ -63,9 +63,14 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
             <tr>
               <td id="class-label">Class</td>
               <td>
-                <ParameterClassSelector
+                <ItemClassSelector
                   selectedClass={newItemClass}
                   aria-labelledby="class-label"
+                  librarySelector={(library) =>
+                    (library.parameterClasses &&
+                      Object.entries(library.parameterClasses)) ||
+                    []
+                  }
                   onSelectedClassChanged={setNewItemClass}
                   tooltipRenderer={renderItemClassTooltip}
                   database={database}

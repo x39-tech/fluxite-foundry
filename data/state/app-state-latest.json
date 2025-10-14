@@ -20,17 +20,9 @@
         },
         "openEditors": {
           "$ref": "#/definitions/OpenEditors"
-        },
-        "udrDatabase": {
-          "$ref": "#/definitions/UdrDatabase"
         }
       },
-      "required": [
-        "appSettings",
-        "openEditors",
-        "deviceClassEditors",
-        "udrDatabase"
-      ],
+      "required": ["appSettings", "openEditors", "deviceClassEditors"],
       "type": "object"
     },
     "AppSettings": {
@@ -171,6 +163,9 @@
         "deviceClassId": {
           "type": "string"
         },
+        "deviceClassVersion": {
+          "type": "string"
+        },
         "deviceLibrary": {
           "$ref": "#/definitions/DeviceLibrary"
         },
@@ -192,6 +187,9 @@
         "parameters": {
           "$ref": "#/definitions/ParametersEditorState"
         },
+        "resources": {
+          "$ref": "#/definitions/ResourcesEditorState"
+        },
         "structures": {
           "$ref": "#/definitions/StructuresEditorState"
         },
@@ -201,11 +199,13 @@
       },
       "required": [
         "deviceClassId",
+        "deviceClassVersion",
         "basicData",
         "libraries",
         "deviceLibrary",
         "parameters",
         "structures",
+        "resources",
         "dmx",
         "localizations",
         "windowLayout"
@@ -234,6 +234,12 @@
         "parameterClasses": {
           "additionalProperties": {
             "$ref": "#/definitions/ParameterClass"
+          },
+          "type": "object"
+        },
+        "resourceClasses": {
+          "additionalProperties": {
+            "$ref": "#/definitions/ResourceClass"
           },
           "type": "object"
         },
@@ -557,54 +563,6 @@
       "required": ["id", "udrId"],
       "type": "object"
     },
-    "Library": {
-      "additionalProperties": false,
-      "properties": {
-        "@description": {
-          "type": "string"
-        },
-        "author": {
-          "type": "string"
-        },
-        "localizations": {
-          "additionalProperties": {
-            "$ref": "#/definitions/DefinitionLocalization"
-          },
-          "type": "object"
-        },
-        "parameterClasses": {
-          "additionalProperties": {
-            "$ref": "#/definitions/ParameterClass"
-          },
-          "type": "object"
-        },
-        "publishDate": {
-          "type": "string"
-        },
-        "serializerClasses": {
-          "additionalProperties": {
-            "$ref": "#/definitions/SerializerClass"
-          },
-          "type": "object"
-        },
-        "structureClasses": {
-          "additionalProperties": {
-            "$ref": "#/definitions/StructureClass"
-          },
-          "type": "object"
-        }
-      },
-      "required": [
-        "@description",
-        "publishDate",
-        "author",
-        "parameterClasses",
-        "structureClasses",
-        "serializerClasses",
-        "localizations"
-      ],
-      "type": "object"
-    },
     "Lifetime": {
       "enum": ["static", "persistent", "runtime"],
       "type": "string"
@@ -833,6 +791,87 @@
       "required": ["itemEditorLayout", "parameters"],
       "type": "object"
     },
+    "Resource": {
+      "additionalProperties": false,
+      "properties": {
+        "access": {
+          "items": {
+            "$ref": "#/definitions/Access"
+          },
+          "type": "array"
+        },
+        "assetId": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        },
+        "default": {
+          "type": "string"
+        },
+        "importPath": {
+          "type": "string"
+        },
+        "library": {
+          "type": "string"
+        },
+        "lifetime": {
+          "$ref": "#/definitions/Lifetime"
+        },
+        "mediaType": {
+          "type": "string"
+        },
+        "provenance": {
+          "type": "string"
+        }
+      },
+      "required": ["class", "access", "lifetime"],
+      "type": "object"
+    },
+    "ResourceClass": {
+      "additionalProperties": false,
+      "properties": {
+        "@description": {
+          "type": "string"
+        },
+        "@name": {
+          "type": "string"
+        },
+        "mediaType": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": ["@name", "mediaType"],
+      "type": "object"
+    },
+    "ResourcesEditorState": {
+      "additionalProperties": false,
+      "properties": {
+        "itemEditorLayout": {
+          "items": {
+            "$ref": "#/definitions/ItemEditor"
+          },
+          "type": "array"
+        },
+        "resourceAssets": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "resources": {
+          "additionalProperties": {
+            "$ref": "#/definitions/Resource"
+          },
+          "type": "object"
+        }
+      },
+      "required": ["itemEditorLayout", "resources", "resourceAssets"],
+      "type": "object"
+    },
     "SerializerClass": {
       "additionalProperties": false,
       "properties": {
@@ -985,22 +1024,6 @@
         "other"
       ],
       "type": "string"
-    },
-    "UdrDatabase": {
-      "additionalProperties": false,
-      "properties": {
-        "libraries": {
-          "additionalProperties": {
-            "additionalProperties": {
-              "$ref": "#/definitions/Library"
-            },
-            "type": "object"
-          },
-          "type": "object"
-        }
-      },
-      "required": ["libraries"],
-      "type": "object"
     },
     "Unit": {
       "additionalProperties": false,

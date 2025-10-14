@@ -1,45 +1,36 @@
-import { Checkbox, Field, Label } from "@headlessui/react";
+import { useId } from "react";
+import { Checkbox } from "./scn-ui/Checkbox";
+import { Label } from "./scn-ui/Label";
+import { cn } from "utils/utils";
 
 export interface CheckboxProps {
-  label: string;
   checked: boolean;
   onChange: (checked: boolean) => void;
   disabled?: boolean;
   className?: string;
+  children: string;
 }
 
 export const LabeledCheckbox = ({
-  label,
   checked,
   onChange,
   disabled = false,
   className = "",
+  children,
 }: CheckboxProps) => {
+  const id = useId();
+
   return (
-    <Field
-      className={`flex items-center gap-2 ${className}`}
-      disabled={disabled}
-    >
+    <div className={cn("flex items-center gap-1", className)}>
       <Checkbox
+        id={id}
         checked={checked}
-        onChange={onChange}
         disabled={disabled}
-        className="group size-4 rounded border bg-white data-checked:bg-blue-500"
-      >
-        <svg
-          className="stroke-white opacity-0 group-data-checked:opacity-100"
-          viewBox="0 0 14 14"
-          fill="none"
-        >
-          <path
-            d="M3 8L6 11L11 3.5"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </Checkbox>
-      <Label>{label}</Label>
-    </Field>
+        onCheckedChange={(checked) =>
+          typeof checked === "boolean" && onChange(checked)
+        }
+      />
+      <Label htmlFor={id}>{children}</Label>
+    </div>
   );
 };

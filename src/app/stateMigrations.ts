@@ -1,6 +1,7 @@
-import { loadDefaultLibraries } from "udr/udrDatabase";
 import { AppPersistentState } from "./state";
 import { getDefaultWindowLayout } from "utils/utils";
+
+export const CURRENT_STATE_VERSION = 7;
 
 export function migrateState(persistedState: unknown, version: number): object {
   if (typeof persistedState !== "object" || persistedState === null) {
@@ -16,6 +17,9 @@ export function migrateState(persistedState: unknown, version: number): object {
     // fallthrough
     case 5:
       state = migrate5To6(state);
+    // fallthrough
+    case 6:
+      state = migrate6To7(state);
       break;
     default:
       return getDefaultState();
@@ -56,6 +60,37 @@ function migrate5To6(stateV5: object): object {
   };
 }
 
+// V7:
+// - Added resources to device class editors
+// - Added deviceClassVersion to device class editors
+// - Moved udrDatabase to runtime state
+function migrate6To7(stateV6: object): object {
+  // @ts-expect-error We don't have any type for older states right now
+  const { udrDatabase, ...rest } = stateV6;
+
+  return {
+    ...rest,
+    deviceClassEditors: Object.fromEntries(
+      // @ts-expect-error We don't have any type for older states right now
+      Object.entries(stateV6.deviceClassEditors).map(([id, editor]) => {
+        return [
+          id,
+          {
+            // @ts-expect-error We don't have any type for older states right now
+            ...editor,
+            deviceClassVersion: "1.0.0",
+            resources: {
+              itemEditorLayout: [],
+              resources: {},
+              resourceAssets: {},
+            },
+          },
+        ];
+      }),
+    ),
+  };
+}
+
 export function getDefaultState(): AppPersistentState {
   return {
     appSettings: {
@@ -66,7 +101,6 @@ export function getDefaultState(): AppPersistentState {
       selectedEditor: -1,
     },
     deviceClassEditors: {},
-    udrDatabase: loadDefaultLibraries(),
   };
 }
 

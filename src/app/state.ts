@@ -8,6 +8,7 @@ import {
   ParameterDatabase,
   Structure,
   Error as E173Error,
+  Resource,
 } from "e173";
 import { UdrDatabase } from "udr/udrDatabase";
 
@@ -47,7 +48,6 @@ export interface AppPersistentStateUnvalidated {
   appSettings: AppSettings;
   openEditors: OpenEditors;
   deviceClassEditors: { [key: string]: DeviceClassEditorState };
-  udrDatabase: UdrDatabase;
 }
 
 export interface OpenEditors {
@@ -70,11 +70,13 @@ export interface AppSettings {
 
 export interface DeviceClassEditorState {
   deviceClassId: string;
+  deviceClassVersion: string;
   basicData: BasicData;
   libraries: Record<string, string>;
   deviceLibrary: DeviceLibrary;
   parameters: ParametersEditorState;
   structures: StructuresEditorState;
+  resources: ResourcesEditorState;
   dmx: DmxSerializerState;
   localizations: Record<string, DefinitionLocalization>;
   windowLayout: FlexLayout.IJsonRowNode;
@@ -98,6 +100,12 @@ export interface StructuresEditorState {
   structures: Record<string, Structure>;
 }
 
+export interface ResourcesEditorState {
+  itemEditorLayout: Array<ItemEditor>;
+  resources: Record<string, Resource>;
+  resourceAssets: Record<string, string>;
+}
+
 export interface ItemEditor {
   id: string;
   udrId: string;
@@ -113,6 +121,7 @@ export interface DmxSerializerState {
 
 export interface AppRuntimeState {
   dmxController: DmxController;
+  udrDatabase: UdrDatabase;
 }
 
 export type DmxController =

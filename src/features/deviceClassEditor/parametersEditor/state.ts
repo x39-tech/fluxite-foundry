@@ -99,9 +99,9 @@ export function changeParameterId(id: string, newId: string) {
     delete paramState.parameters[id];
 
     // Update UI paramState
-    paramState.itemEditorLayout.forEach((siEditorparamState) => {
-      if (siEditorparamState.udrId === id) {
-        siEditorparamState.udrId = newId;
+    paramState.itemEditorLayout.forEach((editor) => {
+      if (editor.udrId === id) {
+        editor.udrId = newId;
       }
     });
   });

@@ -1,4 +1,3 @@
-import { ComponentProps } from "react";
 import {
   Select,
   SelectContent,
@@ -6,12 +5,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "components/scn-ui/Select";
-import { cn } from "utils/utils";
 
 interface SelectFieldProps {
   values: string[];
   displayValues?: string[];
-  selectedValue?: string;
+  selectedValue: string;
   onSelectionChanged: (newValue: string) => void;
 }
 
@@ -20,15 +18,13 @@ export const SelectField = ({
   displayValues,
   selectedValue,
   onSelectionChanged,
-  className,
-  ...props
-}: SelectFieldProps & ComponentProps<typeof SelectTrigger>) => {
+}: SelectFieldProps) => {
   return (
     <Select
       onValueChange={(newValue) => onSelectionChanged(newValue)}
       value={selectedValue}
     >
-      <SelectTrigger className={cn("w-xs bg-background", className)} {...props}>
+      <SelectTrigger>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

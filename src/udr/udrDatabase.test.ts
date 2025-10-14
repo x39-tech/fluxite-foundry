@@ -35,6 +35,7 @@ const testDoc: E173Document = {
             },
           },
           serializerClasses: {},
+          resourceClasses: {},
           localizations: {},
         },
       },

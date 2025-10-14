@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { TextEditorField } from "./TextEditorField";
+import { TextEditorField } from "./DeprecatedTextEditorField";
 
 describe("TextEditorField", () => {
   it("renders with default value", () => {
