@@ -30,9 +30,12 @@
       "properties": {
         "darkMode": {
           "type": "boolean"
+        },
+        "orgId": {
+          "$ref": "#/definitions/OrgId"
         }
       },
-      "required": ["darkMode"],
+      "required": ["darkMode", "orgId"],
       "type": "object"
     },
     "BasicData": {
@@ -184,6 +187,9 @@
           },
           "type": "object"
         },
+        "orgId": {
+          "$ref": "#/definitions/OrgId"
+        },
         "parameters": {
           "$ref": "#/definitions/ParametersEditorState"
         },
@@ -198,6 +204,7 @@
         }
       },
       "required": [
+        "orgId",
         "deviceClassId",
         "deviceClassVersion",
         "basicData",
@@ -690,6 +697,38 @@
       },
       "required": ["editors", "selectedEditor"],
       "type": "object"
+    },
+    "OrgId": {
+      "anyOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "type": {
+              "const": "user",
+              "type": "string"
+            }
+          },
+          "required": ["type", "id"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "type": {
+              "const": "org",
+              "type": "string"
+            }
+          },
+          "required": ["type", "id"],
+          "type": "object"
+        }
+      ]
     },
     "Parameter": {
       "additionalProperties": false,

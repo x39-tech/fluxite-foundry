@@ -11,6 +11,7 @@ import {
   Resource,
 } from "e173";
 import { UdrDatabase } from "udr/udrDatabase";
+import { OrgId } from "utils/utils";
 
 // ---------------------------------------------------------------------------
 // Persistent State
@@ -66,9 +67,11 @@ export interface OpenEditor {
 
 export interface AppSettings {
   darkMode: boolean;
+  orgId: OrgId;
 }
 
 export interface DeviceClassEditorState {
+  orgId: OrgId;
   deviceClassId: string;
   deviceClassVersion: string;
   basicData: BasicData;

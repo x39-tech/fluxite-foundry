@@ -7,6 +7,12 @@ import {
   DeviceClass,
 } from "e173";
 import JSZip from "jszip";
+import {
+  buildQualifiedId,
+  EntityType,
+  OrgId,
+  parseQualifiedId,
+} from "utils/utils";
 
 export enum FeedbackKind {
   UnableToReadFile,
@@ -15,6 +21,7 @@ export enum FeedbackKind {
 }
 
 export interface DeviceClassToImport {
+  orgId: OrgId;
   id: string;
   version: string;
   fileName: string;
@@ -154,7 +161,18 @@ function extractDeviceClasses(
   return Object.entries(udr.e173doc.deviceClasses).reduce(
     (accum, [key, value]) => {
       for (const version of Object.keys(value)) {
-        accum.push({ id: key, version, fileName });
+        const idResult = parseQualifiedId(key);
+        if (!idResult) {
+          // TODO handle error
+          continue;
+        }
+        const [entityType, orgId, id] = idResult;
+        if (entityType != EntityType.Dev) {
+          // TODO handle error
+          continue;
+        }
+
+        accum.push({ orgId, id, fileName, version });
       }
       return accum;
     },
@@ -177,8 +195,10 @@ export async function getDeviceClassFromArchive(
     const content = await jsonFile.async("string");
     const udr = importUdr(content);
 
-    if (udr.e173doc.deviceClasses?.[dc.id]?.[dc.version]) {
-      return udr.e173doc.deviceClasses[dc.id][dc.version];
+    const qualifiedId = buildQualifiedId(EntityType.Dev, dc.orgId, dc.id);
+
+    if (udr.e173doc.deviceClasses?.[qualifiedId]?.[dc.version]) {
+      return udr.e173doc.deviceClasses[qualifiedId][dc.version];
     }
     return null;
   } catch (_e) {
@@ -194,8 +214,10 @@ export async function getDeviceClassFromDocument(
     const content = await readFileToString(docFile);
     const udr = importUdr(content);
 
-    if (udr.e173doc.deviceClasses?.[dc.id]?.[dc.version]) {
-      return udr.e173doc.deviceClasses[dc.id][dc.version];
+    const qualifiedId = buildQualifiedId(EntityType.Dev, dc.orgId, dc.id);
+
+    if (udr.e173doc.deviceClasses?.[qualifiedId]?.[dc.version]) {
+      return udr.e173doc.deviceClasses[qualifiedId][dc.version];
     }
     return null;
   } catch (_e) {

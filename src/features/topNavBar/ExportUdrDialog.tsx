@@ -1,5 +1,8 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { E173Archive, E173Document } from "e173";
+import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
+import { toast } from "sonner";
+import JSZip from "jszip";
 import { LabeledCheckbox } from "components/LabeledCheckbox";
 import { Button } from "components/scn-ui/Button";
 import {
@@ -12,7 +15,6 @@ import {
 import { Label } from "components/scn-ui/Label";
 import { FieldSet } from "components/FieldSet";
 import { SelectField } from "components/EditorFields/SelectField";
-import { AppInput } from "components/AppInput";
 import { useDeviceClassEditors, useOpenEditors } from "./state";
 import { DeviceClassEditorState, EditorType, OpenEditor } from "app/state";
 import {
@@ -20,10 +22,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "components/scn-ui/Tooltip";
-import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
-import { toast } from "sonner";
-import JSZip from "jszip";
 import { assetStorage } from "app/assetStorage";
+import { buildQualifiedId, EntityType } from "utils/utils";
 
 interface OpenEditorWithName extends OpenEditor {
   name: string;
@@ -58,17 +58,10 @@ export const ExportUdrDialog = ({ isOpen, onClose }: Props) => {
   const [selectedEditorId, setSelectedEditorId] = useState(
     editorsWithNames.length !== 0 ? editorsWithNames[0].id : undefined,
   );
-  const selectedEditor = editorsWithNames.find(
-    (editor) => editor.id === selectedEditorId,
-  );
-  const [deviceClassId, setDeviceClassId] = useState(
-    deviceClassEditors[selectedEditor?.id ?? ""]?.deviceClassId ?? "",
-  );
   const [prettyPrint, setPrettyPrint] = useState(true);
   const [createArchive, setCreateArchive] = useState(true);
 
   const devClassSelId = useId();
-  const devClassIdId = useId();
 
   const [fileDownloadUrl, setFileDownloadUrl] = useState<string | undefined>(
     undefined,
@@ -83,7 +76,10 @@ export const ExportUdrDialog = ({ isOpen, onClose }: Props) => {
     }
   }, [fileDownloadUrl]);
 
-  const downloadFileName = `${deviceClassId || "my-device"}.${createArchive ? "fca" : "fcd"}`;
+  const editor = selectedEditorId
+    ? deviceClassEditors[selectedEditorId]
+    : undefined;
+  const downloadFileName = `${editor?.deviceClassId || "my-device"}.${createArchive ? "fca" : "fcd"}`;
 
   const createAndDownload = async () => {
     const editor = deviceClassEditors[selectedEditorId!];
@@ -94,8 +90,11 @@ export const ExportUdrDialog = ({ isOpen, onClose }: Props) => {
       return;
     }
 
-    const fullId = `org.esta.e173.user.${crypto.randomUUID()}.dev.${deviceClassId || "my-device"}`;
-
+    const fullId = buildQualifiedId(
+      EntityType.Dev,
+      editor.orgId,
+      editor.deviceClassId,
+    );
     const doc = createDocument(editor, fullId);
 
     let blob;
@@ -138,17 +137,7 @@ export const ExportUdrDialog = ({ isOpen, onClose }: Props) => {
               selectedValue={selectedEditorId}
               onSelectionChanged={(value) => {
                 setSelectedEditorId(value);
-                setDeviceClassId(
-                  deviceClassEditors[value]?.deviceClassId ?? "",
-                );
               }}
-            />
-          </FieldSet>
-          <FieldSet>
-            <Label htmlFor={devClassIdId}>Device Class ID</Label>
-            <AppInput
-              value={deviceClassId}
-              onChange={(e) => setDeviceClassId(e.target.value)}
             />
           </FieldSet>
           <LabeledCheckbox checked={prettyPrint} onChange={setPrettyPrint}>

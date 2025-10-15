@@ -1,6 +1,7 @@
 import { nanoid } from "nanoid";
 import { useShallow } from "zustand/shallow";
 import JSZip from "jszip";
+import { DeviceClass, E173Archive, EstaDmx, Resource } from "e173";
 import { useAppPersistentStore, updateAppPersistentState } from "app/store";
 import {
   AppPersistentState,
@@ -8,9 +9,7 @@ import {
   EditorType,
   OpenEditors,
 } from "app/state";
-
-import { DeviceClass, E173Archive, EstaDmx, Resource } from "e173";
-import { getDefaultWindowLayout, getUniqueItemId } from "utils/utils";
+import { OrgId, getDefaultWindowLayout, getUniqueItemId } from "utils/utils";
 import { getDefaultDeviceClass } from "udr/udr";
 import {
   getCurrentEditor,
@@ -73,6 +72,7 @@ export function setSelectedEditor(index: number) {
 }
 
 export async function importDeviceClassEditor(
+  orgId: OrgId,
   id: string,
   version: string,
   deviceClass: DeviceClass,
@@ -80,12 +80,13 @@ export async function importDeviceClassEditor(
 ) {
   const newDeviceClass = archive
     ? await getImportedDeviceClassEditorWithAssets(
+        orgId,
         id,
         version,
         deviceClass,
         archive,
       )
-    : getImportedDeviceClassEditor(id, version, deviceClass);
+    : getImportedDeviceClassEditor(orgId, id, version, deviceClass);
 
   updateAppPersistentState((state) => {
     const deviceClassEditors = state.deviceClassEditors;
@@ -143,9 +144,12 @@ function getOpenEditorModelNames(state: AppPersistentState): string[] {
 function getNewDeviceClassEditor(
   existingEditorIds: string[],
 ): DeviceClassEditorState {
+  // TODO: This only needs to be unique among the same OrgId now
   const deviceClassId = getUniqueItemId(existingEditorIds, "super-light");
+  const orgId = useAppPersistentStore.getState().appSettings.orgId;
 
   return getImportedDeviceClassEditor(
+    orgId,
     deviceClassId,
     "1.0.0",
     getDefaultDeviceClass(deviceClassId),
@@ -153,6 +157,7 @@ function getNewDeviceClassEditor(
 }
 
 function getImportedDeviceClassEditor(
+  orgId: OrgId,
   id: string,
   version: string,
   udr: DeviceClass,
@@ -170,6 +175,7 @@ function getImportedDeviceClassEditor(
   }
 
   return {
+    orgId,
     deviceClassId: id,
     deviceClassVersion: version,
     basicData: {
@@ -198,7 +204,7 @@ function getImportedDeviceClassEditor(
       itemEditorLayout: Object.keys(udr.resources || {}).map((id) => {
         return { id: nanoid(), udrId: id };
       }),
-      resourceAssets: {}, // TODO: load assets
+      resourceAssets: {},
     },
     dmx: {
       udr: dmx ? dmx : { chunks: {} },
@@ -209,12 +215,13 @@ function getImportedDeviceClassEditor(
 }
 
 async function getImportedDeviceClassEditorWithAssets(
+  orgId: OrgId,
   id: string,
   version: string,
   udr: DeviceClass,
   archive: ArchiveToImport,
 ) {
-  const editor = getImportedDeviceClassEditor(id, version, udr);
+  const editor = getImportedDeviceClassEditor(orgId, id, version, udr);
   editor.resources.resourceAssets = await loadResourceAssets(
     id,
     version,

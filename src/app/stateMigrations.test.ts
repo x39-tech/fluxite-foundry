@@ -1,55 +1,258 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { getDefaultWindowLayout } from "utils/utils";
 import { migrateState } from "./stateMigrations";
 
-test("Migrates from state v4", () => {
-  const migrated = migrateState(
-    {
-      udrDatabase: {
-        itemClasses: {
-          parameters: [
+const MOCK_UUID = "12345678-1234-5678-1234-567812345678";
+
+describe("stateMigrations", () => {
+  beforeEach(() => {
+    vi.spyOn(crypto, "randomUUID").mockReturnValue(MOCK_UUID);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("Migrates from state v4", () => {
+    const migrated = migrateState(
+      {
+        udrDatabase: {
+          itemClasses: {
+            parameters: [
+              {
+                foo: "bar",
+              },
+            ],
+            structures: [{ foo: "bar" }],
+          },
+          libraries: {
+            "org.esta.intensity-color": {
+              "1.0.0": {
+                "@description": "esta_intensity-color_library",
+                publishDate: "1970-01-01T00:00:00Z",
+                author: "ESTA",
+                parameterClasses: {},
+              },
+            },
+          },
+        },
+        deviceClassEditors: {
+          foo: {
+            deviceClassId: "foo",
+            basicData: { foo: "bar1" },
+            libraries: { foo: "bar2" },
+            deviceLibrary: { foo: "bar3" },
+            parameters: { foo: "bar4" },
+            structures: { foo: "bar5" },
+            dmx: { foo: "bar6" },
+            localizations: { foo: "bar7" },
+            windowLayout: { foo: "bar8" },
+          },
+          baz: {
+            deviceClassId: "foo",
+            basicData: { foo: "baz1" },
+            libraries: { foo: "baz2" },
+            deviceLibrary: { foo: "baz3" },
+            parameters: { foo: "baz4" },
+            structures: { foo: "baz5" },
+            dmx: { foo: "baz6" },
+            localizations: { foo: "baz7" },
+            windowLayout: { foo: "baz8" },
+          },
+        },
+        appSettings: {
+          darkMode: true,
+        },
+        openEditors: {
+          editors: [
             {
-              foo: "bar",
+              type: "deviceClass",
+              id: "foo",
+            },
+            {
+              type: "deviceClass",
+              id: "baz",
             },
           ],
-          structures: [{ foo: "bar" }],
+          selectedEditor: 0,
         },
-        libraries: {
-          "org.esta.intensity-color": {
-            "1.0.0": {
-              "@description": "esta_intensity-color_library",
-              publishDate: "1970-01-01T00:00:00Z",
-              author: "ESTA",
-              parameterClasses: {},
+      },
+      4,
+    );
+
+    // @ts-expect-error Dealing with unknown types
+    migrated.deviceClassEditors.foo.windowLayout = removeIdFields(
+      // @ts-expect-error Dealing with unknown types
+      migrated.deviceClassEditors.foo.windowLayout,
+    );
+    // @ts-expect-error Dealing with unknown types
+    migrated.deviceClassEditors.baz.windowLayout = removeIdFields(
+      // @ts-expect-error Dealing with unknown types
+      migrated.deviceClassEditors.baz.windowLayout,
+    );
+
+    expect(migrated).toEqual({
+      deviceClassEditors: {
+        foo: {
+          deviceClassId: "foo",
+          deviceClassVersion: "1.0.0",
+          basicData: { foo: "bar1" },
+          libraries: { foo: "bar2" },
+          deviceLibrary: { foo: "bar3" },
+          parameters: { foo: "bar4" },
+          structures: { foo: "bar5" },
+          resources: {
+            itemEditorLayout: [],
+            resources: {},
+            resourceAssets: {},
+          },
+          dmx: { foo: "bar6" },
+          localizations: { foo: "bar7" },
+          windowLayout: removeIdFields(getDefaultWindowLayout()),
+          orgId: { type: "user", id: MOCK_UUID },
+        },
+        baz: {
+          deviceClassId: "foo",
+          deviceClassVersion: "1.0.0",
+          basicData: { foo: "baz1" },
+          libraries: { foo: "baz2" },
+          deviceLibrary: { foo: "baz3" },
+          parameters: { foo: "baz4" },
+          structures: { foo: "baz5" },
+          resources: {
+            itemEditorLayout: [],
+            resources: {},
+            resourceAssets: {},
+          },
+          dmx: { foo: "baz6" },
+          localizations: { foo: "baz7" },
+          windowLayout: removeIdFields(getDefaultWindowLayout()),
+          orgId: { type: "user", id: MOCK_UUID },
+        },
+      },
+      appSettings: {
+        darkMode: true,
+        orgId: { type: "user", id: MOCK_UUID },
+      },
+      openEditors: {
+        editors: [
+          {
+            type: "deviceClass",
+            id: "foo",
+          },
+          {
+            type: "deviceClass",
+            id: "baz",
+          },
+        ],
+        selectedEditor: 0,
+      },
+    });
+  });
+
+  it("Migrates from state v5", () => {
+    const migrated = migrateState(
+      {
+        udrDatabase: {
+          foo: "bar",
+        },
+        deviceClassEditors: {
+          foo: {
+            deviceClassId: "foo",
+            basicData: { foo: "bar1" },
+            libraries: { foo: "bar2" },
+            deviceLibrary: { foo: "bar3" },
+            parameters: { foo: "bar4" },
+            structures: { foo: "bar5" },
+            dmx: { foo: "bar6" },
+            localizations: { foo: "bar7" },
+            windowLayout: { foo: "bar8" },
+          },
+          baz: {
+            deviceClassId: "foo",
+            basicData: { foo: "baz1" },
+            libraries: { foo: "baz2" },
+            deviceLibrary: { foo: "baz3" },
+            parameters: { foo: "baz4" },
+            structures: { foo: "baz5" },
+            dmx: { foo: "baz6" },
+            localizations: { foo: "baz7" },
+            windowLayout: { foo: "baz8" },
+          },
+        },
+        appSettings: {
+          darkMode: true,
+        },
+        openEditors: {
+          editors: [
+            {
+              type: "deviceClass",
+              id: "foo",
             },
-          },
+            {
+              type: "deviceClass",
+              id: "baz",
+            },
+          ],
+          selectedEditor: 0,
         },
       },
+      5,
+    );
+
+    // @ts-expect-error Dealing with unknown types
+    migrated.deviceClassEditors.foo.windowLayout = removeIdFields(
+      // @ts-expect-error Dealing with unknown types
+      migrated.deviceClassEditors.foo.windowLayout,
+    );
+    // @ts-expect-error Dealing with unknown types
+    migrated.deviceClassEditors.baz.windowLayout = removeIdFields(
+      // @ts-expect-error Dealing with unknown types
+      migrated.deviceClassEditors.baz.windowLayout,
+    );
+
+    expect(migrated).toEqual({
       deviceClassEditors: {
         foo: {
           deviceClassId: "foo",
+          deviceClassVersion: "1.0.0",
           basicData: { foo: "bar1" },
           libraries: { foo: "bar2" },
           deviceLibrary: { foo: "bar3" },
           parameters: { foo: "bar4" },
           structures: { foo: "bar5" },
+          resources: {
+            itemEditorLayout: [],
+            resources: {},
+            resourceAssets: {},
+          },
           dmx: { foo: "bar6" },
           localizations: { foo: "bar7" },
-          windowLayout: { foo: "bar8" },
+          windowLayout: removeIdFields(getDefaultWindowLayout()),
+          orgId: { type: "user", id: MOCK_UUID },
         },
         baz: {
           deviceClassId: "foo",
+          deviceClassVersion: "1.0.0",
           basicData: { foo: "baz1" },
           libraries: { foo: "baz2" },
           deviceLibrary: { foo: "baz3" },
           parameters: { foo: "baz4" },
           structures: { foo: "baz5" },
+          resources: {
+            itemEditorLayout: [],
+            resources: {},
+            resourceAssets: {},
+          },
           dmx: { foo: "baz6" },
           localizations: { foo: "baz7" },
-          windowLayout: { foo: "baz8" },
+          windowLayout: removeIdFields(getDefaultWindowLayout()),
+          orgId: { type: "user", id: MOCK_UUID },
         },
       },
       appSettings: {
         darkMode: true,
+        orgId: { type: "user", id: MOCK_UUID },
       },
       openEditors: {
         editors: [
@@ -64,109 +267,101 @@ test("Migrates from state v4", () => {
         ],
         selectedEditor: 0,
       },
-    },
-    4,
-  );
-
-  // @ts-expect-error Dealing with unknown types
-  migrated.deviceClassEditors.foo.windowLayout = removeIdFields(
-    // @ts-expect-error Dealing with unknown types
-    migrated.deviceClassEditors.foo.windowLayout,
-  );
-  // @ts-expect-error Dealing with unknown types
-  migrated.deviceClassEditors.baz.windowLayout = removeIdFields(
-    // @ts-expect-error Dealing with unknown types
-    migrated.deviceClassEditors.baz.windowLayout,
-  );
-
-  expect(migrated).toEqual({
-    deviceClassEditors: {
-      foo: {
-        deviceClassId: "foo",
-        deviceClassVersion: "1.0.0",
-        basicData: { foo: "bar1" },
-        libraries: { foo: "bar2" },
-        deviceLibrary: { foo: "bar3" },
-        parameters: { foo: "bar4" },
-        structures: { foo: "bar5" },
-        resources: {
-          itemEditorLayout: [],
-          resources: {},
-          resourceAssets: {},
-        },
-        dmx: { foo: "bar6" },
-        localizations: { foo: "bar7" },
-        windowLayout: removeIdFields(getDefaultWindowLayout()),
-      },
-      baz: {
-        deviceClassId: "foo",
-        deviceClassVersion: "1.0.0",
-        basicData: { foo: "baz1" },
-        libraries: { foo: "baz2" },
-        deviceLibrary: { foo: "baz3" },
-        parameters: { foo: "baz4" },
-        structures: { foo: "baz5" },
-        resources: {
-          itemEditorLayout: [],
-          resources: {},
-          resourceAssets: {},
-        },
-        dmx: { foo: "baz6" },
-        localizations: { foo: "baz7" },
-        windowLayout: removeIdFields(getDefaultWindowLayout()),
-      },
-    },
-    appSettings: {
-      darkMode: true,
-    },
-    openEditors: {
-      editors: [
-        {
-          type: "deviceClass",
-          id: "foo",
-        },
-        {
-          type: "deviceClass",
-          id: "baz",
-        },
-      ],
-      selectedEditor: 0,
-    },
+    });
   });
-});
 
-test("Migrates from state v5", () => {
-  const migrated = migrateState(
-    {
-      udrDatabase: {
-        foo: "bar",
+  it("migrates from state v6", () => {
+    const migrated = migrateState(
+      {
+        udrDatabase: {
+          foo: "bar",
+        },
+        deviceClassEditors: {
+          foo: {
+            deviceClassId: "foo",
+            basicData: { foo: "bar1" },
+            libraries: { foo: "bar2" },
+            deviceLibrary: { foo: "bar3" },
+            parameters: { foo: "bar4" },
+            structures: { foo: "bar5" },
+            dmx: { foo: "bar6" },
+            localizations: { foo: "bar7" },
+            windowLayout: { foo: "bar8" },
+          },
+          baz: {
+            deviceClassId: "foo",
+            basicData: { foo: "baz1" },
+            libraries: { foo: "baz2" },
+            deviceLibrary: { foo: "baz3" },
+            parameters: { foo: "baz4" },
+            structures: { foo: "baz5" },
+            dmx: { foo: "baz6" },
+            localizations: { foo: "baz7" },
+            windowLayout: { foo: "baz8" },
+          },
+        },
+        appSettings: {
+          darkMode: true,
+        },
+        openEditors: {
+          editors: [
+            {
+              type: "deviceClass",
+              id: "foo",
+            },
+            {
+              type: "deviceClass",
+              id: "baz",
+            },
+          ],
+          selectedEditor: 0,
+        },
       },
+      6,
+    );
+
+    expect(migrated).toEqual({
       deviceClassEditors: {
         foo: {
           deviceClassId: "foo",
+          deviceClassVersion: "1.0.0",
           basicData: { foo: "bar1" },
           libraries: { foo: "bar2" },
           deviceLibrary: { foo: "bar3" },
           parameters: { foo: "bar4" },
           structures: { foo: "bar5" },
+          resources: {
+            itemEditorLayout: [],
+            resources: {},
+            resourceAssets: {},
+          },
           dmx: { foo: "bar6" },
           localizations: { foo: "bar7" },
           windowLayout: { foo: "bar8" },
+          orgId: { type: "user", id: MOCK_UUID },
         },
         baz: {
           deviceClassId: "foo",
+          deviceClassVersion: "1.0.0",
           basicData: { foo: "baz1" },
           libraries: { foo: "baz2" },
           deviceLibrary: { foo: "baz3" },
           parameters: { foo: "baz4" },
           structures: { foo: "baz5" },
+          resources: {
+            itemEditorLayout: [],
+            resources: {},
+            resourceAssets: {},
+          },
           dmx: { foo: "baz6" },
           localizations: { foo: "baz7" },
           windowLayout: { foo: "baz8" },
+          orgId: { type: "user", id: MOCK_UUID },
         },
       },
       appSettings: {
         darkMode: true,
+        orgId: { type: "user", id: MOCK_UUID },
       },
       openEditors: {
         editors: [
@@ -181,109 +376,110 @@ test("Migrates from state v5", () => {
         ],
         selectedEditor: 0,
       },
-    },
-    5,
-  );
-
-  // @ts-expect-error Dealing with unknown types
-  migrated.deviceClassEditors.foo.windowLayout = removeIdFields(
-    // @ts-expect-error Dealing with unknown types
-    migrated.deviceClassEditors.foo.windowLayout,
-  );
-  // @ts-expect-error Dealing with unknown types
-  migrated.deviceClassEditors.baz.windowLayout = removeIdFields(
-    // @ts-expect-error Dealing with unknown types
-    migrated.deviceClassEditors.baz.windowLayout,
-  );
-
-  expect(migrated).toEqual({
-    deviceClassEditors: {
-      foo: {
-        deviceClassId: "foo",
-        deviceClassVersion: "1.0.0",
-        basicData: { foo: "bar1" },
-        libraries: { foo: "bar2" },
-        deviceLibrary: { foo: "bar3" },
-        parameters: { foo: "bar4" },
-        structures: { foo: "bar5" },
-        resources: {
-          itemEditorLayout: [],
-          resources: {},
-          resourceAssets: {},
-        },
-        dmx: { foo: "bar6" },
-        localizations: { foo: "bar7" },
-        windowLayout: removeIdFields(getDefaultWindowLayout()),
-      },
-      baz: {
-        deviceClassId: "foo",
-        deviceClassVersion: "1.0.0",
-        basicData: { foo: "baz1" },
-        libraries: { foo: "baz2" },
-        deviceLibrary: { foo: "baz3" },
-        parameters: { foo: "baz4" },
-        structures: { foo: "baz5" },
-        resources: {
-          itemEditorLayout: [],
-          resources: {},
-          resourceAssets: {},
-        },
-        dmx: { foo: "baz6" },
-        localizations: { foo: "baz7" },
-        windowLayout: removeIdFields(getDefaultWindowLayout()),
-      },
-    },
-    appSettings: {
-      darkMode: true,
-    },
-    openEditors: {
-      editors: [
-        {
-          type: "deviceClass",
-          id: "foo",
-        },
-        {
-          type: "deviceClass",
-          id: "baz",
-        },
-      ],
-      selectedEditor: 0,
-    },
+    });
   });
-});
 
-test("migrates from state v6", () => {
-  const migrated = migrateState(
-    {
-      udrDatabase: {
-        foo: "bar",
+  it("migrates from state v7", () => {
+    const migrated = migrateState(
+      {
+        deviceClassEditors: {
+          foo: {
+            deviceClassId: "foo",
+            deviceClassVersion: "1.0.0",
+            basicData: { foo: "bar1" },
+            libraries: { foo: "bar2" },
+            deviceLibrary: { foo: "bar3" },
+            parameters: { foo: "bar4" },
+            structures: { foo: "bar5" },
+            resources: {
+              itemEditorLayout: [],
+              resources: {},
+              resourceAssets: {},
+            },
+            dmx: { foo: "bar6" },
+            localizations: { foo: "bar7" },
+            windowLayout: { foo: "bar8" },
+          },
+          baz: {
+            deviceClassId: "baz",
+            deviceClassVersion: "2.0.0",
+            basicData: { foo: "baz1" },
+            libraries: { foo: "baz2" },
+            deviceLibrary: { foo: "baz3" },
+            parameters: { foo: "baz4" },
+            structures: { foo: "baz5" },
+            resources: {
+              itemEditorLayout: [],
+              resources: {},
+              resourceAssets: {},
+            },
+            dmx: { foo: "baz6" },
+            localizations: { foo: "baz7" },
+            windowLayout: { foo: "baz8" },
+          },
+        },
+        appSettings: {
+          darkMode: true,
+        },
+        openEditors: {
+          editors: [
+            {
+              type: "deviceClass",
+              id: "foo",
+            },
+            {
+              type: "deviceClass",
+              id: "baz",
+            },
+          ],
+          selectedEditor: 1,
+        },
       },
+      7,
+    );
+
+    expect(migrated).toEqual({
       deviceClassEditors: {
         foo: {
           deviceClassId: "foo",
+          deviceClassVersion: "1.0.0",
           basicData: { foo: "bar1" },
           libraries: { foo: "bar2" },
           deviceLibrary: { foo: "bar3" },
           parameters: { foo: "bar4" },
           structures: { foo: "bar5" },
+          resources: {
+            itemEditorLayout: [],
+            resources: {},
+            resourceAssets: {},
+          },
           dmx: { foo: "bar6" },
           localizations: { foo: "bar7" },
           windowLayout: { foo: "bar8" },
+          orgId: { type: "user", id: MOCK_UUID },
         },
         baz: {
-          deviceClassId: "foo",
+          deviceClassId: "baz",
+          deviceClassVersion: "2.0.0",
           basicData: { foo: "baz1" },
           libraries: { foo: "baz2" },
           deviceLibrary: { foo: "baz3" },
           parameters: { foo: "baz4" },
           structures: { foo: "baz5" },
+          resources: {
+            itemEditorLayout: [],
+            resources: {},
+            resourceAssets: {},
+          },
           dmx: { foo: "baz6" },
           localizations: { foo: "baz7" },
           windowLayout: { foo: "baz8" },
+          orgId: { type: "user", id: MOCK_UUID },
         },
       },
       appSettings: {
         darkMode: true,
+        orgId: { type: "user", id: MOCK_UUID },
       },
       openEditors: {
         editors: [
@@ -296,65 +492,9 @@ test("migrates from state v6", () => {
             id: "baz",
           },
         ],
-        selectedEditor: 0,
+        selectedEditor: 1,
       },
-    },
-    6,
-  );
-
-  expect(migrated).toEqual({
-    deviceClassEditors: {
-      foo: {
-        deviceClassId: "foo",
-        deviceClassVersion: "1.0.0",
-        basicData: { foo: "bar1" },
-        libraries: { foo: "bar2" },
-        deviceLibrary: { foo: "bar3" },
-        parameters: { foo: "bar4" },
-        structures: { foo: "bar5" },
-        resources: {
-          itemEditorLayout: [],
-          resources: {},
-          resourceAssets: {},
-        },
-        dmx: { foo: "bar6" },
-        localizations: { foo: "bar7" },
-        windowLayout: { foo: "bar8" },
-      },
-      baz: {
-        deviceClassId: "foo",
-        deviceClassVersion: "1.0.0",
-        basicData: { foo: "baz1" },
-        libraries: { foo: "baz2" },
-        deviceLibrary: { foo: "baz3" },
-        parameters: { foo: "baz4" },
-        structures: { foo: "baz5" },
-        resources: {
-          itemEditorLayout: [],
-          resources: {},
-          resourceAssets: {},
-        },
-        dmx: { foo: "baz6" },
-        localizations: { foo: "baz7" },
-        windowLayout: { foo: "baz8" },
-      },
-    },
-    appSettings: {
-      darkMode: true,
-    },
-    openEditors: {
-      editors: [
-        {
-          type: "deviceClass",
-          id: "foo",
-        },
-        {
-          type: "deviceClass",
-          id: "baz",
-        },
-      ],
-      selectedEditor: 0,
-    },
+    });
   });
 });
 

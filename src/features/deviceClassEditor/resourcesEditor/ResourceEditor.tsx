@@ -49,8 +49,7 @@ export const ResourceEditor = ({ id }: Props) => {
   useEffect(() => {
     if (
       resource &&
-      resourceClass &&
-      resourceClass.mediaType &&
+      resourceClass?.mediaType &&
       (!resource.mediaType ||
         !resourceClass.mediaType.includes(resource.mediaType))
     ) {

@@ -1,7 +1,7 @@
 import { AppPersistentState } from "./state";
 import { getDefaultWindowLayout } from "utils/utils";
 
-export const CURRENT_STATE_VERSION = 7;
+export const CURRENT_STATE_VERSION = 8;
 
 export function migrateState(persistedState: unknown, version: number): object {
   if (typeof persistedState !== "object" || persistedState === null) {
@@ -20,6 +20,9 @@ export function migrateState(persistedState: unknown, version: number): object {
     // fallthrough
     case 6:
       state = migrate6To7(state);
+    // fallthrough
+    case 7:
+      state = migrate7To8(state);
       break;
     default:
       return getDefaultState();
@@ -91,10 +94,37 @@ function migrate6To7(stateV6: object): object {
   };
 }
 
+function migrate7To8(stateV7: object): object {
+  const userId = crypto.randomUUID();
+
+  return {
+    ...stateV7,
+    appSettings: {
+      // @ts-expect-error We don't have any type for older states right now
+      ...stateV7.appSettings,
+      orgId: { type: "user", id: userId },
+    },
+    deviceClassEditors: Object.fromEntries(
+      // @ts-expect-error We don't have any type for older states right now
+      Object.entries(stateV7.deviceClassEditors).map(([id, editor]) => {
+        return [
+          id,
+          {
+            // @ts-expect-error We don't have any type for older states right now
+            ...editor,
+            orgId: { type: "user", id: userId },
+          },
+        ];
+      }),
+    ),
+  };
+}
+
 export function getDefaultState(): AppPersistentState {
   return {
     appSettings: {
       darkMode: getDefaultDarkModePreference(),
+      orgId: { type: "user", id: crypto.randomUUID() },
     },
     openEditors: {
       editors: [],

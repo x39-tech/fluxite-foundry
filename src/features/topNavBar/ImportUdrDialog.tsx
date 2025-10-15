@@ -116,6 +116,7 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
 
                   // Import the device class
                   await importDeviceClassEditor(
+                    deviceClass.orgId,
                     deviceClass.id,
                     deviceClass.version,
                     deviceClassDefinition,
