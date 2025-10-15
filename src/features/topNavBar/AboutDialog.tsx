@@ -41,7 +41,7 @@ export const AboutDialog = ({ isOpen, onClose }: Props) => {
             <a href={TSP_WORKING_GROUPS_LINK}>
               joining the Control Protocols Working Group
             </a>{" "}
-            to participate in the development of UDR.
+            to participate in the development of the Fluxite standards suite.
           </p>
           <p>{APP_COPYRIGHT}</p>
           <p>License:</p>

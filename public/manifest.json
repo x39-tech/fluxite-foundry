@@ -1,11 +1,11 @@
 {
-  "short_name": "UDR Builder",
-  "name": "Device builder for the ESTA UDR standard",
+  "short_name": "Fluxite Foundry",
+  "name": "Device builder for the ESTA Fluxite Codex standard",
   "icons": [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
     }
   ],
   "start_url": ".",

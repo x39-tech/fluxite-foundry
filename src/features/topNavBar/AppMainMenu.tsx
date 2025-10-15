@@ -73,7 +73,7 @@ export const AppMainMenu = () => {
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setAboutDialogIsOpen(true)}>
             <QuestionMarkCircleIcon className="size-5" />
             {`About ${APP_NAME}`}
           </DropdownMenuItem>
