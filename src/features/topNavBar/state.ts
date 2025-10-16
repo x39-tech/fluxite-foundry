@@ -206,6 +206,12 @@ function getImportedDeviceClassEditor(
       }),
       resourceAssets: {},
     },
+    commands: {
+      commands: udr.commands || {},
+      itemEditorLayout: Object.keys(udr.commands || {}).map((id) => {
+        return { id: nanoid(), udrId: id };
+      }),
+    },
     dmx: {
       udr: dmx ? dmx : { chunks: {} },
     },

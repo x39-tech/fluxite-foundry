@@ -4,11 +4,15 @@ import {
   StructureClass,
   importUdr,
   Error as E173Error,
-  DataType,
-  Unit,
   DeviceLibrary,
   DefinitionLocalization,
   ResourceClass,
+  CommandClass,
+  CommandArgument,
+  CommandReturnValue,
+  EnumChoice,
+  Command,
+  EnumInstanceChoices,
 } from "e173";
 import core from "e173/libraries/core/draft-2024-1/library.json";
 import intensityColor from "e173/libraries/intensity-color/draft-2024-1/library.json";
@@ -40,10 +44,13 @@ export type StructureClassWithId = StructureClass & ItemClassWithId;
 
 export type ResourceClassWithId = ResourceClass & ItemClassWithId;
 
+export type CommandClassWithId = CommandClass & ItemClassWithId;
+
 interface ItemClassDatabase {
   parameters: ParameterClassWithId[];
   structures: StructureClassWithId[];
   resources: ResourceClassWithId[];
+  commands: CommandClassWithId[];
 }
 
 interface LibraryDatabase {
@@ -56,23 +63,66 @@ export interface UdrDatabase {
   libraries: LibraryDatabase;
 }
 
-export interface ResolvedParameterClass {
+export interface ResolvedParameterClass
+  extends Omit<ParameterClass, "@name" | "@description"> {
   libraryId?: string;
   libraryVersion?: string;
   id: string;
   name: string;
   description?: string;
-  dataType: DataType;
-  unit?: Unit;
 }
 
-export interface ResolvedResourceClass {
+export interface ResolvedResourceClass
+  extends Omit<ResourceClass, "@name" | "@description"> {
   libraryId?: string;
   libraryVersion?: string;
   id: string;
   name: string;
   description?: string;
-  mediaType?: string[];
+}
+
+export interface ResolvedCommandClass
+  extends Omit<
+    CommandClass,
+    "@name" | "@description" | "arguments" | "returns"
+  > {
+  libraryId?: string;
+  libraryVersion?: string;
+  id: string;
+  name: string;
+  description?: string;
+  arguments?: Record<string, LocalizedCommandArgument>;
+  returns?: Record<string, LocalizedCommandReturnValue>;
+}
+
+export interface LocalizedCommandArgument
+  extends Omit<CommandArgument, "@name" | "@description" | "choices"> {
+  name: string;
+  description?: string;
+  choices?: LocalizedEnumChoice[];
+}
+
+export interface LocalizedCommandReturnValue
+  extends Omit<CommandReturnValue, "@name" | "@description" | "choices"> {
+  name: string;
+  description?: string;
+  choices?: LocalizedEnumChoice[];
+}
+
+export interface LocalizedEnumChoice extends Omit<EnumChoice, "@name"> {
+  name: string;
+}
+
+export interface LocalizedEnumInstanceChoices
+  extends Omit<EnumInstanceChoices, "additional"> {
+  additional?: LocalizedEnumChoice[];
+}
+
+export interface LocalizedCommand
+  extends Omit<Command, "@friendlyName" | "argumentChoices" | "returnChoices"> {
+  friendlyName?: string;
+  argumentChoices?: Record<string, LocalizedEnumInstanceChoices>;
+  returnChoices?: Record<string, LocalizedEnumInstanceChoices>;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -294,6 +344,117 @@ export function lookupDeviceResourceClass(
   }
 }
 
+// TODO: see if these functions can be combined / genericized
+export function lookupCommandClass(
+  database: Readonly<UdrDatabase>,
+  libraryId: string,
+  libraryVersion: string,
+  classId: string,
+): ResolvedCommandClass | undefined {
+  const library = database.libraries[libraryId]?.[libraryVersion];
+  if (!library) {
+    return undefined;
+  }
+
+  const cls = library.commandClasses?.[classId];
+
+  if (cls) {
+    // TODO: use current localization
+    const localizedName =
+      library.localizations?.["en-US"]?.strings?.[cls["@name"]];
+    const localizedDesc = cls["@description"]
+      ? library.localizations?.["en-US"]?.strings?.[cls["@description"]]
+      : undefined;
+
+    return {
+      ...cls,
+      id: classId,
+      libraryId,
+      libraryVersion,
+      name: localizedName || cls["@name"],
+      description: localizedDesc || cls["@description"],
+      arguments: resolveCommandArguments(cls.arguments, library.localizations),
+      returns: resolveCommandReturnValues(cls.returns, library.localizations),
+    };
+  } else {
+    return undefined;
+  }
+}
+
+export function lookupDeviceCommandClass(
+  deviceLibrary: DeviceLibrary,
+  deviceLocalizations: Record<string, DefinitionLocalization>,
+  classId: string,
+): ResolvedCommandClass | undefined {
+  const cls = deviceLibrary.commandClasses?.[classId];
+
+  if (cls) {
+    // TODO: use current localization
+    const localizedName = deviceLocalizations["en-US"]?.strings?.[cls["@name"]];
+    const localizedDesc = cls["@description"]
+      ? deviceLocalizations["en-US"]?.strings?.[cls["@description"]]
+      : undefined;
+
+    return {
+      ...cls,
+      id: classId,
+      name: localizedName || cls["@name"],
+      description: localizedDesc || cls["@description"],
+      arguments: resolveCommandArguments(cls.arguments, deviceLocalizations),
+      returns: resolveCommandReturnValues(cls.returns, deviceLocalizations),
+    };
+  } else {
+    return undefined;
+  }
+}
+
+export function getLocalizedCommand(
+  command: Command,
+  localizations: Record<string, DefinitionLocalization>,
+): LocalizedCommand {
+  // TODO use current localization
+  const localizedName = command["@friendlyName"]
+    ? localizations["en-US"]?.strings?.[command["@friendlyName"]]
+    : undefined;
+
+  const argumentChoices = command.argumentChoices
+    ? Object.fromEntries(
+        Object.entries(command.argumentChoices).map(([id, instanceChoices]) => {
+          const localizedInstanceChoices = {
+            excluded: instanceChoices.excluded,
+            additional: instanceChoices.additional
+              ? localizeEnumChoices(instanceChoices.additional, localizations)
+              : undefined,
+          };
+
+          return [id, localizedInstanceChoices];
+        }),
+      )
+    : undefined;
+
+  const returnChoices = command.returnChoices
+    ? Object.fromEntries(
+        Object.entries(command.returnChoices).map(([id, instanceChoices]) => {
+          const localizedInstanceChoices = {
+            excluded: instanceChoices.excluded,
+            additional: instanceChoices.additional
+              ? localizeEnumChoices(instanceChoices.additional, localizations)
+              : undefined,
+          };
+
+          return [id, localizedInstanceChoices];
+        }),
+      )
+    : undefined;
+
+  return {
+    ...command,
+    friendlyName: localizedName,
+    argumentChoices,
+    returnChoices,
+  };
+}
+
 export function getLibraryFriendlyName(library: LibraryWithId): string {
   return (
     library.localizations?.["en-US"]?.strings?.[library["@description"]] ||
@@ -344,6 +505,7 @@ export function loadLibrariesFromDocument(
     parameters: [],
     structures: [],
     resources: [],
+    commands: [],
   };
   for (const [libraryId, libraryVersionCollection] of Object.entries(
     libraries,
@@ -364,6 +526,11 @@ export function loadLibrariesFromDocument(
           libraryId,
           version,
           library.resourceClasses || {},
+        ),
+        commands: transformItemClasses(
+          libraryId,
+          version,
+          library.commandClasses || {},
         ),
       });
     }
@@ -421,5 +588,88 @@ function concatItemClasses(
     parameters: existingDb.parameters.concat(newDb.parameters),
     structures: existingDb.structures.concat(newDb.structures),
     resources: existingDb.resources.concat(newDb.resources),
+    commands: existingDb.commands.concat(newDb.commands),
   };
+}
+
+function resolveCommandArguments(
+  cmdArgs?: Record<string, CommandArgument>,
+  localizations?: Record<string, DefinitionLocalization>,
+): Record<string, LocalizedCommandArgument> | undefined {
+  return cmdArgs
+    ? Object.fromEntries(
+        Object.entries(cmdArgs).map(([id, arg]) => {
+          const {
+            "@name": nameId,
+            "@description": descId,
+            choices,
+            ...toReturn
+          } = arg;
+
+          const localizedName = localizations?.["en-US"]?.strings?.[nameId];
+          const localizedDesc = descId
+            ? localizations?.["en-US"]?.strings?.[descId]
+            : undefined;
+
+          return [
+            id,
+            {
+              ...toReturn,
+              name: localizedName || nameId,
+              description: localizedDesc || descId,
+              choices: localizeEnumChoices(choices, localizations),
+            },
+          ];
+        }),
+      )
+    : undefined;
+}
+
+function resolveCommandReturnValues(
+  retVals?: Record<string, CommandReturnValue>,
+  localizations?: Record<string, DefinitionLocalization>,
+): Record<string, LocalizedCommandReturnValue> | undefined {
+  return retVals
+    ? Object.fromEntries(
+        Object.entries(retVals).map(([id, retVal]) => {
+          const {
+            "@name": nameId,
+            "@description": descId,
+            choices,
+            ...toReturn
+          } = retVal;
+
+          const localizedName = localizations?.["en-US"]?.strings?.[nameId];
+          const localizedDesc = descId
+            ? localizations?.["en-US"]?.strings?.[descId]
+            : undefined;
+
+          return [
+            id,
+            {
+              ...toReturn,
+              name: localizedName || nameId,
+              description: localizedDesc || descId,
+              choices: localizeEnumChoices(choices, localizations),
+            },
+          ];
+        }),
+      )
+    : undefined;
+}
+
+function localizeEnumChoices(
+  choices?: EnumChoice[],
+  localizations?: Record<string, DefinitionLocalization>,
+): LocalizedEnumChoice[] | undefined {
+  return choices
+    ? choices.map((choice) => {
+        const localizedName =
+          localizations?.["en-US"]?.strings?.[choice["@name"]];
+        return {
+          name: localizedName || choice["@name"],
+          id: choice.id,
+        };
+      })
+    : undefined;
 }

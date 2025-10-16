@@ -1,7 +1,7 @@
-import { Unit } from "e173";
 import { getDataTypeFriendlyName } from "udr/util/enums";
 import { ResolvedParameterClass } from "udr/udrDatabase";
 import { SimplePropsTable } from "components/SimplePropsTable";
+import { unitToString } from "utils/utils";
 
 interface Props {
   paramClass: ResolvedParameterClass;
@@ -31,15 +31,3 @@ export const ParameterClassDisplay = ({ paramClass }: Props) => {
     </SimplePropsTable>
   );
 };
-
-function unitToString(unit: Unit | undefined): string {
-  if (unit) {
-    if (unit.exponent) {
-      return `${unit.name} ^ ${unit.exponent}`;
-    } else {
-      return unit.name;
-    }
-  } else {
-    return "N/A";
-  }
-}

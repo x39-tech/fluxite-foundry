@@ -1,7 +1,7 @@
 import { AppPersistentState } from "./state";
 import { getDefaultWindowLayout } from "utils/utils";
 
-export const CURRENT_STATE_VERSION = 8;
+export const CURRENT_STATE_VERSION = 9;
 
 export function migrateState(persistedState: unknown, version: number): object {
   if (typeof persistedState !== "object" || persistedState === null) {
@@ -23,6 +23,9 @@ export function migrateState(persistedState: unknown, version: number): object {
     // fallthrough
     case 7:
       state = migrate7To8(state);
+    // fallthrough
+    case 8:
+      state = migrate8To9(state);
       break;
     default:
       return getDefaultState();
@@ -94,6 +97,8 @@ function migrate6To7(stateV6: object): object {
   };
 }
 
+// V8:
+// - Added an app-level org ID as well as org IDs for each device class editor
 function migrate7To8(stateV7: object): object {
   const userId = crypto.randomUUID();
 
@@ -113,6 +118,30 @@ function migrate7To8(stateV7: object): object {
             // @ts-expect-error We don't have any type for older states right now
             ...editor,
             orgId: { type: "user", id: userId },
+          },
+        ];
+      }),
+    ),
+  };
+}
+
+// V9:
+// - Added commands to device class editors
+function migrate8To9(stateV8: object): object {
+  return {
+    ...stateV8,
+    deviceClassEditors: Object.fromEntries(
+      // @ts-expect-error We don't have any type for older states right now
+      Object.entries(stateV8.deviceClassEditors).map(([id, editor]) => {
+        return [
+          id,
+          {
+            // @ts-expect-error We don't have any type for older states right now
+            ...editor,
+            commands: {
+              itemEditorLayout: [],
+              commands: {},
+            },
           },
         ];
       }),

@@ -136,13 +136,13 @@ export function changeResourceId(id: string, newId: string) {
       return;
     }
 
-    const existingParam = resState.resources[id];
-    if (!existingParam) {
+    const existingRes = resState.resources[id];
+    if (!existingRes) {
       return;
     }
 
     // Update UDR
-    resState.resources[newId] = existingParam;
+    resState.resources[newId] = existingRes;
     delete resState.resources[id];
 
     // Update UI resState

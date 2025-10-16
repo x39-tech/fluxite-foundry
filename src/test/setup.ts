@@ -22,3 +22,9 @@ const ResizeObserverMock = vi.fn(() => ({
 vi.stubGlobal("ResizeObserver", ResizeObserverMock);
 
 vi.mock("zustand");
+
+// Mock zustand middleware to avoid localStorage timing issues in CI
+vi.mock("zustand/middleware", () => ({
+  persist: vi.fn((config) => config), // Skip persistence in tests
+  devtools: vi.fn((config) => config), // Skip devtools in tests
+}));

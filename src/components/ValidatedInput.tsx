@@ -3,7 +3,7 @@ import { ExclamationCircleIcon } from "@heroicons/react/16/solid";
 import { InputValidationResult } from "utils/inputValidation";
 import { Popover, PopoverAnchor, PopoverContent } from "./scn-ui/Popover";
 import { Alert, AlertDescription } from "./scn-ui/Alert";
-import { AppInput } from "./AppInput";
+import { AppInput, AppInputProps } from "./AppInput";
 
 interface Props {
   value: string;
@@ -12,6 +12,7 @@ interface Props {
   validator?: (value: string) => InputValidationResult;
   confirmOnEnterKey?: boolean;
   cancelOnEscapeKey?: boolean;
+  popoverSide?: "top" | "right" | "bottom" | "left";
 }
 
 export const ValidatedInput = ({
@@ -22,9 +23,10 @@ export const ValidatedInput = ({
   validator,
   confirmOnEnterKey = true,
   cancelOnEscapeKey = true,
+  popoverSide,
   className,
   ...props
-}: React.ComponentProps<"input"> & Props) => {
+}: AppInputProps & Props) => {
   const [currentValue, setCurrentValue] = useState(value);
   const [validationResult, setValidationResult] =
     useState<InputValidationResult>({ isValid: true });
@@ -107,7 +109,11 @@ export const ValidatedInput = ({
           {...props}
         />
       </PopoverAnchor>
-      <PopoverContent asChild onOpenAutoFocus={(e) => e.preventDefault()}>
+      <PopoverContent
+        asChild
+        side={popoverSide}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <Alert variant="destructive">
           <ExclamationCircleIcon />
           <AlertDescription>

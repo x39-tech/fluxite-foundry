@@ -1,5 +1,4 @@
 import { useEffect, useId } from "react";
-import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
 import { Access, Lifetime } from "e173";
 import {
   changeResourceId,
@@ -18,12 +17,8 @@ import { validateNewItemId } from "utils/inputValidation";
 import { AppInput } from "components/AppInput";
 import { LabeledCheckbox } from "components/LabeledCheckbox";
 import { SelectField } from "components/EditorFields/SelectField";
+import { ItemClassDisplay } from "components/ItemClassDisplay";
 import { getLifetimeFriendlyName } from "udr/util/enums";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "components/scn-ui/Tooltip";
 import { ResourceClassDisplay } from "./ResourceClassDisplay";
 import { AssetId, ResourceDefaultValue } from "./ResourceDefaultValue";
 
@@ -106,26 +101,20 @@ export const ResourceEditor = ({ id }: Props) => {
         </FieldSet>
         <FieldSet>
           <Label htmlFor={classId}>Class</Label>
-          <div className="relative flex flex-col">
-            <AppInput disabled value={resource.class} />
-            <Tooltip>
-              <TooltipTrigger className="absolute right-2 top-2">
-                <QuestionMarkCircleIcon className="size-5 opacity-50" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <ResourceClassDisplay resourceClass={resourceClass} />
-              </TooltipContent>
-            </Tooltip>
-          </div>
+          <ItemClassDisplay
+            id={classId}
+            value={resource.class}
+            tooltipRenderer={() => (
+              <ResourceClassDisplay resourceClass={resourceClass} />
+            )}
+          />
         </FieldSet>
         <FieldSet>
           <Label htmlFor={idId}>ID</Label>
           <ValidatedInput
             id={idId}
             value={id}
-            onConfirm={(newValue) => {
-              changeResourceId(id, newValue);
-            }}
+            onConfirm={(newValue) => changeResourceId(id, newValue)}
             validator={(input) =>
               validateNewItemId(
                 input,

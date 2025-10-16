@@ -4,6 +4,7 @@ import { DeviceInfoEditor } from "./deviceInfoEditor/DeviceInfoEditor";
 import { DmxEditor } from "./dmxEditor/DmxEditor";
 import { DmxController } from "./controller/DmxController";
 import { ResourcesEditor } from "./resourcesEditor/ResourcesEditor";
+import { CommandsEditor } from "./commandsEditor/CommandsEditor";
 
 interface EditorWidget {
   name: string;
@@ -36,6 +37,11 @@ export const WIDGETS: Record<string, EditorWidget> = {
     name: "Resources",
     description: "Create and edit resources (e.g. assets) for the device class",
     factory: () => <ResourcesEditor />,
+  },
+  commandsEditor: {
+    name: "Commands",
+    description: "Create and edit commands for the device class",
+    factory: () => <CommandsEditor />,
   },
 };
 

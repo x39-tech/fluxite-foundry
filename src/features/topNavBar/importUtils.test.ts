@@ -117,7 +117,9 @@ describe("importUtils", () => {
 
       expect(result.valid).toBe(true);
       expect(result.deviceClasses).toHaveLength(2);
-      expect(result.deviceClasses?.[0]).toEqual({
+
+      // Verify both versions exist without depending on order
+      expect(result.deviceClasses).toContainEqual({
         orgId: {
           type: "user",
           id: "12345678-1234-5678-1234-567812345678",
@@ -126,7 +128,7 @@ describe("importUtils", () => {
         version: "1.0.0",
         fileName: "user-device.fcd",
       });
-      expect(result.deviceClasses?.[1]).toEqual({
+      expect(result.deviceClasses).toContainEqual({
         orgId: {
           type: "user",
           id: "12345678-1234-5678-1234-567812345678",

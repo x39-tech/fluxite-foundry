@@ -9,6 +9,7 @@ import {
   Structure,
   Error as E173Error,
   Resource,
+  Command,
 } from "e173";
 import { UdrDatabase } from "udr/udrDatabase";
 import { OrgId } from "utils/utils";
@@ -80,6 +81,7 @@ export interface DeviceClassEditorState {
   parameters: ParametersEditorState;
   structures: StructuresEditorState;
   resources: ResourcesEditorState;
+  commands: CommandsEditorState;
   dmx: DmxSerializerState;
   localizations: Record<string, DefinitionLocalization>;
   windowLayout: FlexLayout.IJsonRowNode;
@@ -107,6 +109,11 @@ export interface ResourcesEditorState {
   itemEditorLayout: Array<ItemEditor>;
   resources: Record<string, Resource>;
   resourceAssets: Record<string, string>;
+}
+
+export interface CommandsEditorState {
+  itemEditorLayout: Array<ItemEditor>;
+  commands: Record<string, Command>;
 }
 
 export interface ItemEditor {

@@ -1,5 +1,5 @@
-import { Label } from "components/scn-ui/Label";
 import { useId } from "react";
+import { Label } from "components/scn-ui/Label";
 import { ResolvedResourceClass } from "udr/udrDatabase";
 
 interface Props {

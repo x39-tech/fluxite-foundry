@@ -3,7 +3,29 @@
 import { ComponentProps } from "react";
 import { cn } from "utils/utils";
 import { Input } from "./scn-ui/Input";
+import { cva, VariantProps } from "class-variance-authority";
 
-export const AppInput = ({ className, ...props }: ComponentProps<"input">) => {
-  return <Input className={cn("bg-background w-xs", className)} {...props} />;
+const inputVariants = cva("bg-background", {
+  variants: {
+    sizeVariant: {
+      sm: "w-xs",
+      unspecified: "",
+    },
+  },
+  defaultVariants: {
+    sizeVariant: "sm",
+  },
+});
+
+export type AppInputProps = ComponentProps<"input"> &
+  VariantProps<typeof inputVariants>;
+
+export const AppInput = ({
+  sizeVariant,
+  className,
+  ...props
+}: AppInputProps) => {
+  const cls = cn(inputVariants({ sizeVariant, className }));
+
+  return <Input className={cls} {...props} />;
 };

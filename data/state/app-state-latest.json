@@ -95,6 +95,137 @@
       "required": ["offsets", "mappingGroups"],
       "type": "object"
     },
+    "Command": {
+      "additionalProperties": false,
+      "properties": {
+        "@friendlyName": {
+          "type": "string"
+        },
+        "argumentChoices": {
+          "additionalProperties": {
+            "$ref": "#/definitions/EnumInstanceChoices"
+          },
+          "type": "object"
+        },
+        "class": {
+          "type": "string"
+        },
+        "completionNotification": {
+          "type": "boolean"
+        },
+        "library": {
+          "type": "string"
+        },
+        "returnChoices": {
+          "additionalProperties": {
+            "$ref": "#/definitions/EnumInstanceChoices"
+          },
+          "type": "object"
+        }
+      },
+      "required": ["class", "completionNotification"],
+      "type": "object"
+    },
+    "CommandArgument": {
+      "additionalProperties": false,
+      "properties": {
+        "@description": {
+          "type": "string"
+        },
+        "@name": {
+          "type": "string"
+        },
+        "choices": {
+          "items": {
+            "$ref": "#/definitions/EnumChoice"
+          },
+          "type": "array"
+        },
+        "dataType": {
+          "$ref": "#/definitions/DataType"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "unit": {
+          "$ref": "#/definitions/Unit"
+        }
+      },
+      "required": ["@name", "dataType", "required"],
+      "type": "object"
+    },
+    "CommandClass": {
+      "additionalProperties": false,
+      "properties": {
+        "@description": {
+          "type": "string"
+        },
+        "@name": {
+          "type": "string"
+        },
+        "arguments": {
+          "additionalProperties": {
+            "$ref": "#/definitions/CommandArgument"
+          },
+          "type": "object"
+        },
+        "returns": {
+          "additionalProperties": {
+            "$ref": "#/definitions/CommandReturnValue"
+          },
+          "type": "object"
+        }
+      },
+      "required": ["@name"],
+      "type": "object"
+    },
+    "CommandReturnValue": {
+      "additionalProperties": false,
+      "properties": {
+        "@description": {
+          "type": "string"
+        },
+        "@name": {
+          "type": "string"
+        },
+        "choices": {
+          "items": {
+            "$ref": "#/definitions/EnumChoice"
+          },
+          "type": "array"
+        },
+        "dataType": {
+          "$ref": "#/definitions/DataType"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "unit": {
+          "$ref": "#/definitions/Unit"
+        }
+      },
+      "required": ["@name", "dataType", "required"],
+      "type": "object"
+    },
+    "CommandsEditorState": {
+      "additionalProperties": false,
+      "properties": {
+        "commands": {
+          "additionalProperties": {
+            "$ref": "#/definitions/Command"
+          },
+          "type": "object"
+        },
+        "itemEditorLayout": {
+          "items": {
+            "$ref": "#/definitions/ItemEditor"
+          },
+          "type": "array"
+        }
+      },
+      "required": ["itemEditorLayout", "commands"],
+      "type": "object"
+    },
     "Compatibility": {
       "additionalProperties": false,
       "properties": {
@@ -136,7 +267,7 @@
       "type": "string"
     },
     "DataType": {
-      "enum": ["number", "string", "binary", "boolean", "uuid"],
+      "enum": ["number", "enum", "string", "binary", "boolean", "uuid"],
       "type": "string"
     },
     "DefinitionLocalization": {
@@ -162,6 +293,9 @@
       "properties": {
         "basicData": {
           "$ref": "#/definitions/BasicData"
+        },
+        "commands": {
+          "$ref": "#/definitions/CommandsEditorState"
         },
         "deviceClassId": {
           "type": "string"
@@ -213,6 +347,7 @@
         "parameters",
         "structures",
         "resources",
+        "commands",
         "dmx",
         "localizations",
         "windowLayout"
@@ -238,6 +373,12 @@
     "DeviceLibrary": {
       "additionalProperties": false,
       "properties": {
+        "commandClasses": {
+          "additionalProperties": {
+            "$ref": "#/definitions/CommandClass"
+          },
+          "type": "object"
+        },
         "parameterClasses": {
           "additionalProperties": {
             "$ref": "#/definitions/ParameterClass"
@@ -278,6 +419,37 @@
     "EditorType": {
       "const": "deviceClass",
       "type": "string"
+    },
+    "EnumChoice": {
+      "additionalProperties": false,
+      "properties": {
+        "@name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "@name"],
+      "type": "object"
+    },
+    "EnumInstanceChoices": {
+      "additionalProperties": false,
+      "properties": {
+        "additional": {
+          "items": {
+            "$ref": "#/definitions/EnumChoice"
+          },
+          "type": "array"
+        },
+        "excluded": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
     },
     "EstaDmx": {
       "additionalProperties": false,
@@ -745,6 +917,9 @@
         "atomicIdentifier": {
           "type": "string"
         },
+        "choices": {
+          "$ref": "#/definitions/EnumInstanceChoices"
+        },
         "class": {
           "type": "string"
         },
@@ -797,6 +972,12 @@
         },
         "@name": {
           "type": "string"
+        },
+        "choices": {
+          "items": {
+            "$ref": "#/definitions/EnumChoice"
+          },
+          "type": "array"
         },
         "dataType": {
           "$ref": "#/definitions/DataType"

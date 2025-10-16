@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from "clsx";
+import { Unit } from "e173";
 import { IJsonRowNode } from "flexlayout-react";
 import { nanoid } from "nanoid";
 import { twMerge } from "tailwind-merge";
@@ -182,4 +183,16 @@ export function buildQualifiedId(
 
   // Build the qualified ID: org-id.entity-type.identifier
   return `${orgIdString}.${entityTypeString}.${id}`;
+}
+
+export function unitToString(unit?: Unit): string {
+  if (unit) {
+    if (unit.exponent) {
+      return `${unit.name} ^ ${unit.exponent}`;
+    } else {
+      return unit.name;
+    }
+  } else {
+    return "N/A";
+  }
 }
