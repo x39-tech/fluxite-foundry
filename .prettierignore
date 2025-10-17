@@ -3,3 +3,5 @@ node-modules/
 
 src/generated/
 src/e173/
+
+tools/sacn-server/

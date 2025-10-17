@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import {
   DataType,
@@ -278,6 +279,14 @@ export const DmxController = () => {
             const ws = new WebSocket(`ws://${serverConnection.addressAndPort}`);
             ws.onopen = () => {
               setServerConnection({ ...serverConnection, active: true });
+            };
+            ws.onclose = () => {
+              toast(`DMX server connection closed`);
+              setServerConnection({ ...serverConnection, active: false });
+            };
+            ws.onerror = () => {
+              toast(`DMX server connection failed`);
+              setServerConnection({ ...serverConnection, active: false });
             };
             websocketConnRef.current = ws;
           }}

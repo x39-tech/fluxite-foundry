@@ -17,7 +17,7 @@ const compat = new FlatCompat({
 });
 
 export default defineConfig([
-  globalIgnores(["**/dist/", "**/node_modules/"]),
+  globalIgnores(["**/dist/", "**/node_modules/", "tools/sacn-server/"]),
   {
     extends: compat.extends(
       "eslint:recommended",
