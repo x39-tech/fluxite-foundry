@@ -9,6 +9,7 @@ import {
   useCurrentEditorPart,
   useCurrentEditorPartShallow,
 } from "../state";
+import { LocalizedEnumChoice } from "udr/udrDatabase";
 
 // ---------------------------------------------------------------------------
 // Read
@@ -43,7 +44,7 @@ export function useParameter(id: string): Parameter | undefined {
 // ---------------------------------------------------------------------------
 
 export function createNewParameter(
-  library: string,
+  library: string | undefined,
   paramClass: string,
   id: string,
   friendlyName: string,
@@ -55,12 +56,18 @@ export function createNewParameter(
       return;
     }
 
+    const nameKey = setNewLocalizationString(
+      editor,
+      `parameter_${id}`,
+      friendlyName,
+    );
+
     paramState.parameters[id] = {
       library,
       class: paramClass,
       access: [ParameterAccess.ReadActual, ParameterAccess.Write],
       lifetime: Lifetime.Runtime,
-      "@friendlyName": friendlyName,
+      "@friendlyName": nameKey,
     };
 
     paramState.itemEditorLayout.push({
@@ -101,6 +108,63 @@ export function modifyParameterFriendlyName(id: string, newName: string) {
       );
       param["@friendlyName"] = newKey;
     }
+  });
+}
+
+export function modifyParameterEnumChoice(
+  id: string,
+  choiceIndex: number,
+  updatedChoice: LocalizedEnumChoice,
+) {
+  updateCurrentEditor((editor) => {
+    const param = editor.parameters.parameters[id];
+    if (!param) {
+      return;
+    }
+
+    param.choices ||= {};
+    param.choices.additional ||= [];
+    const additionalList = param.choices.additional;
+
+    if (choiceIndex < 0) {
+      // New choice
+      const newKey = setNewLocalizationString(
+        editor,
+        `param_${id}_${updatedChoice.id}`,
+        updatedChoice.name,
+      );
+      additionalList.push({ id: updatedChoice.id, "@name": newKey });
+    } else if (choiceIndex < additionalList.length) {
+      modifyLocalizationString(
+        editor,
+        additionalList[choiceIndex]["@name"],
+        updatedChoice.name,
+      );
+      additionalList[choiceIndex].id = updatedChoice.id;
+    }
+  });
+}
+
+export function removeParameterEnumChoice(id: string, choiceIndex: number) {
+  updateCurrentEditor((editor) => {
+    const param = editor.parameters.parameters[id];
+    if (!param) {
+      return;
+    }
+
+    const additionalList = param.choices?.additional;
+
+    if (!additionalList) {
+      return;
+    }
+
+    const existingChoice = additionalList[choiceIndex];
+    if (!existingChoice) {
+      return;
+    }
+
+    delete editor.localizations["en-US"]?.strings?.[existingChoice["@name"]];
+    additionalList.splice(choiceIndex, 1);
   });
 }
 

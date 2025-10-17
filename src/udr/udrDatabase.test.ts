@@ -73,6 +73,7 @@ describe("class lookup", () => {
       description: expectedItem["@description"],
       dataType: expectedItem.dataType,
       unit: expectedItem.unit,
+      choices: undefined,
     });
   });
 

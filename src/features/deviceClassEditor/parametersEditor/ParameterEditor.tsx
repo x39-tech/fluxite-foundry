@@ -39,7 +39,9 @@ import {
   changeParameterId,
   deleteParameter,
   modifyParameter,
+  modifyParameterEnumChoice,
   modifyParameterFriendlyName,
+  removeParameterEnumChoice,
   useParameter,
   useParameterIds,
 } from "./state";
@@ -48,6 +50,7 @@ import {
   useDeviceLocalizations,
   useLibraries,
 } from "../state";
+import { EnumChoicesEditor } from "components/EnumChoicesEditor";
 
 interface Props {
   id: string;
@@ -117,7 +120,7 @@ enum ParameterInstantiationType {
 }
 
 function getInstantiationProperties(
-  udr: Parameter,
+  udr: LocalizedParameter,
   modifyParam: ParameterModifier,
 ): JSX.Element {
   return (
@@ -199,7 +202,7 @@ function getInstantiationProperties(
 }
 
 function getMinMaxDefaultProperties(
-  udr: Parameter,
+  udr: LocalizedParameter,
   modifyParam: ParameterModifier,
 ): JSX.Element {
   return (
@@ -242,6 +245,50 @@ function getMinMaxDefaultProperties(
         }
       />
     </>
+  );
+}
+
+function getEnumChoicesProperties(
+  id: string,
+  param: LocalizedParameter,
+  paramClass: ResolvedParameterClass,
+  modifyParam: ParameterModifier,
+) {
+  return (
+    <tr>
+      <td className="align-middle">Enum Choices</td>
+      <td>
+        <EnumChoicesEditor
+          forName={param.friendlyName || id}
+          classChoices={paramClass.choices || []}
+          instanceChoices={param.choices}
+          onExclusionChanged={(choiceId, excluded) =>
+            modifyParam((draft) => {
+              draft.choices ||= {};
+              draft.choices.excluded ||= [];
+
+              const excludedList = draft.choices.excluded;
+
+              if (excluded) {
+                if (!excludedList.includes(choiceId)) {
+                  excludedList.push(choiceId);
+                }
+              } else {
+                draft.choices.excluded = excludedList.filter(
+                  (value) => value !== choiceId,
+                );
+              }
+            })
+          }
+          onInstanceChoiceRemoved={(choiceIndex) =>
+            removeParameterEnumChoice(id, choiceIndex)
+          }
+          onInstanceChoiceUpdated={(choiceIndex, updatedChoice) =>
+            modifyParameterEnumChoice(id, choiceIndex, updatedChoice)
+          }
+        />
+      </td>
+    </tr>
   );
 }
 
@@ -337,6 +384,8 @@ function getParameterPropsTable(
       ) : (
         <></>
       )}
+      {paramClass.dataType === DataType.Enum &&
+        getEnumChoicesProperties(id, param, paramClass, modifyParam)}
     </SimplePropsTable>
   );
 }

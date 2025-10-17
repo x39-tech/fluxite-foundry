@@ -65,12 +65,13 @@ export interface UdrDatabase {
 }
 
 export interface ResolvedParameterClass
-  extends Omit<ParameterClass, "@name" | "@description"> {
+  extends Omit<ParameterClass, "@name" | "@description" | "choices"> {
   libraryId?: string;
   libraryVersion?: string;
   id: string;
   name: string;
   description?: string;
+  choices?: LocalizedEnumChoice[];
 }
 
 export interface ResolvedResourceClass
@@ -119,8 +120,10 @@ export interface LocalizedEnumInstanceChoices
   additional?: LocalizedEnumChoice[];
 }
 
-export interface LocalizedParameter extends Omit<Parameter, "@friendlyName"> {
+export interface LocalizedParameter
+  extends Omit<Parameter, "@friendlyName" | "choices"> {
   friendlyName?: string;
+  choices?: LocalizedEnumInstanceChoices;
 }
 
 export interface LocalizedCommand
@@ -229,6 +232,10 @@ export function lookupParameterClass(
       ? library.localizations?.["en-US"]?.strings?.[cls["@description"]]
       : undefined;
 
+    const localizedChoices = cls.choices
+      ? localizeEnumChoices(cls.choices, library.localizations)
+      : undefined;
+
     return {
       id: classId,
       libraryId,
@@ -237,6 +244,7 @@ export function lookupParameterClass(
       description: localizedDesc || cls["@description"],
       unit: cls.unit,
       dataType: cls.dataType,
+      choices: localizedChoices,
     };
   } else {
     return undefined;
@@ -257,12 +265,17 @@ export function lookupDeviceParameterClass(
       ? deviceLocalizations["en-US"]?.strings?.[cls["@description"]]
       : undefined;
 
+    const localizedChoices = cls.choices
+      ? localizeEnumChoices(cls.choices, deviceLocalizations)
+      : undefined;
+
     return {
       id: classId,
       name: localizedName || cls["@name"],
       description: localizedDesc || cls["@description"],
       unit: cls.unit,
       dataType: cls.dataType,
+      choices: localizedChoices,
     };
   } else {
     return undefined;
@@ -417,13 +430,25 @@ export function getLocalizedParameter(
   param: Parameter,
   localizations: Record<string, DefinitionLocalization>,
 ): LocalizedParameter {
-  const localizedName = param["@friendlyName"]
-    ? localizations["en-US"]?.strings?.[param["@friendlyName"]]
+  const { "@friendlyName": friendlyNameKey, choices, ...rest } = param;
+
+  const localizedName = friendlyNameKey
+    ? localizations["en-US"]?.strings?.[friendlyNameKey]
+    : undefined;
+
+  const localizedChoices = choices
+    ? {
+        excluded: choices.excluded,
+        additional: choices.additional
+          ? localizeEnumChoices(choices.additional, localizations)
+          : undefined,
+      }
     : undefined;
 
   return {
-    ...param,
+    ...rest,
     friendlyName: localizedName || param["@friendlyName"],
+    choices: localizedChoices,
   };
 }
 
