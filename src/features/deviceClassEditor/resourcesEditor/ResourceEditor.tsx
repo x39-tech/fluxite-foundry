@@ -32,13 +32,7 @@ export const ResourceEditor = ({ id }: Props) => {
   const resourceClass = useResourceClass(resource);
   const assetId = useResourceAssetId(resource);
 
-  const libraryId = useId();
-  const classId = useId();
-  const idId = useId();
-  const accessId = useId();
-  const lifetimeId = useId();
-  const mediaTypeId = useId();
-  const defaultValueId = useId();
+  const idPrefix = useId();
 
   // Constrain the value of the resource's mediaType to those permitted by its class, if present
   useEffect(() => {
@@ -73,9 +67,9 @@ export const ResourceEditor = ({ id }: Props) => {
   if (resourceClass.mediaType) {
     mediaType = (
       <FieldSet>
-        <Label htmlFor={mediaTypeId}>Media Type</Label>
+        <Label htmlFor={`${idPrefix}-mediaType`}>Media Type</Label>
         <SelectField
-          id={mediaTypeId}
+          id={`${idPrefix}-mediaType`}
           values={resourceClass.mediaType}
           displayValues={resourceClass.mediaType}
           selectedValue={resource.mediaType || resourceClass.mediaType[0]}
@@ -96,13 +90,17 @@ export const ResourceEditor = ({ id }: Props) => {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap gap-4">
         <FieldSet>
-          <Label htmlFor={libraryId}>Library</Label>
-          <AppInput disabled value={resource.library || "Device Library"} />
+          <Label htmlFor={`${idPrefix}-library`}>Library</Label>
+          <AppInput
+            id={`${idPrefix}-class`}
+            disabled
+            value={resource.library || "Device Library"}
+          />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={classId}>Class</Label>
+          <Label htmlFor={`${idPrefix}-class`}>Class</Label>
           <ItemClassDisplay
-            id={classId}
+            id={`${idPrefix}-class`}
             value={resource.class}
             tooltipRenderer={() => (
               <ResourceClassDisplay resourceClass={resourceClass} />
@@ -110,9 +108,9 @@ export const ResourceEditor = ({ id }: Props) => {
           />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={idId}>ID</Label>
+          <Label htmlFor={`${idPrefix}-id`}>ID</Label>
           <ValidatedInput
-            id={idId}
+            id={`${idPrefix}-id`}
             value={id}
             onConfirm={(newValue) => changeResourceId(id, newValue)}
             validator={(input) =>
@@ -124,9 +122,9 @@ export const ResourceEditor = ({ id }: Props) => {
           />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={accessId}>Access</Label>
+          <Label htmlFor={`${idPrefix}-access`}>Access</Label>
           <AccessCheckboxes
-            id={accessId}
+            id={`${idPrefix}-access`}
             access={resource.access}
             lifetime={resource.lifetime}
             onAccessChanged={(newAccess) =>
@@ -137,9 +135,9 @@ export const ResourceEditor = ({ id }: Props) => {
           />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={lifetimeId}>Lifetime</Label>
+          <Label htmlFor={`${idPrefix}-lifetime`}>Lifetime</Label>
           <SelectField
-            id={lifetimeId}
+            id={`${idPrefix}-lifetime`}
             values={Object.values(Lifetime)}
             displayValues={Object.values(Lifetime).map(getLifetimeFriendlyName)}
             selectedValue={resource.lifetime}
@@ -158,9 +156,9 @@ export const ResourceEditor = ({ id }: Props) => {
         {mediaType}
       </div>
       <FieldSet>
-        <Label htmlFor={defaultValueId}>Default Value</Label>
+        <Label htmlFor={`${idPrefix}-defaultValue`}>Default Value</Label>
         <ResourceDefaultValue
-          id={defaultValueId}
+          id={`${idPrefix}-defaultValue`}
           assetId={defaultValId}
           mediaType={resource.mediaType}
           onChange={async (newAssetId) =>

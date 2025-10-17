@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Draft, produceWithPatches } from "immer";
+import { Draft, produceWithPatches, WritableDraft } from "immer";
 import * as FlexLayout from "flexlayout-react";
 import { useShallow } from "zustand/react/shallow";
 import {
@@ -27,6 +27,7 @@ import {
   lookupParameterClass,
   ResolvedParameterClass,
 } from "udr/udrDatabase";
+import { getUniqueItemId } from "utils/utils";
 
 // ---------------------------------------------------------------------------
 // Read
@@ -188,6 +189,10 @@ export function setWindowLayout(model: FlexLayout.IJsonModel) {
   updateCurrentEditor((editor) => (editor.windowLayout = model.layout));
 }
 
+// ---------------------------------------------------------------------------
+// Write
+// ---------------------------------------------------------------------------
+
 export function updateDmxController(editor: DeviceClassEditorState) {
   if (editor.dmx.udr) {
     try {
@@ -247,4 +252,36 @@ export function exportDeviceClass(editor: DeviceClassEditorState): DeviceClass {
   }
 
   return deviceClass;
+}
+
+export function modifyLocalizationString(
+  editor: WritableDraft<DeviceClassEditorState>,
+  id: string,
+  localizedString: string,
+) {
+  // TODO use current locale
+  const locale = "en-US";
+  const localizationStrings = editor.localizations[locale]?.strings;
+  if (!localizationStrings || !localizationStrings[id]) {
+    return;
+  }
+  localizationStrings[id] = localizedString;
+}
+
+export function setNewLocalizationString(
+  editor: WritableDraft<DeviceClassEditorState>,
+  id: string,
+  localizedString: string,
+): string {
+  // TODO use current locale
+  const locale = "en-US";
+  editor.localizations[locale] ||= {};
+  editor.localizations[locale].strings ||= {};
+  const localizationStrings = editor.localizations[locale].strings;
+  const newLocalizationKey = getUniqueItemId(
+    Object.keys(localizationStrings),
+    `${id}`,
+  );
+  localizationStrings[newLocalizationKey] = localizedString;
+  return newLocalizationKey;
 }

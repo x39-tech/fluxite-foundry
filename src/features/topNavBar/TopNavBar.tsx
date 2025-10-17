@@ -41,7 +41,7 @@ export const TopNavBar = () => {
         <div className="pl-3 flex gap-1 items-center">
           {appIconSvg}
           <div className="text-lg">
-            <span className="font-bold">FLUXITE</span>{" "}
+            <span className="font-bold text-primary">FLUXITE</span>{" "}
             <span className="text-muted-foreground">Foundry</span>
           </div>
         </div>

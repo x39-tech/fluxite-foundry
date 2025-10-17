@@ -3,6 +3,8 @@ import { Draft } from "immer";
 import { ItemEditor, ParametersEditorState } from "app/state";
 import { Lifetime, Parameter, ParameterAccess } from "e173";
 import {
+  modifyLocalizationString,
+  setNewLocalizationString,
   updateCurrentEditor,
   useCurrentEditorPart,
   useCurrentEditorPartShallow,
@@ -79,6 +81,26 @@ export function modifyParameter(
     }
 
     recipe(param);
+  });
+}
+
+export function modifyParameterFriendlyName(id: string, newName: string) {
+  updateCurrentEditor((editor) => {
+    const param = editor.parameters.parameters[id];
+    if (!param) {
+      return;
+    }
+
+    if (param["@friendlyName"]) {
+      modifyLocalizationString(editor, param["@friendlyName"], newName);
+    } else {
+      const newKey = setNewLocalizationString(
+        editor,
+        `parameter_${id}`,
+        newName,
+      );
+      param["@friendlyName"] = newKey;
+    }
   });
 }
 

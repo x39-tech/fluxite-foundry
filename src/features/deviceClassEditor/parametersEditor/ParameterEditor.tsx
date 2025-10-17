@@ -28,7 +28,9 @@ import {
   validateStringIsNumberOrEmpty,
 } from "utils/inputValidation";
 import {
+  LocalizedParameter,
   ResolvedParameterClass,
+  getLocalizedParameter,
   lookupDeviceParameterClass,
   lookupParameterClass,
 } from "udr/udrDatabase";
@@ -37,6 +39,7 @@ import {
   changeParameterId,
   deleteParameter,
   modifyParameter,
+  modifyParameterFriendlyName,
   useParameter,
   useParameterIds,
 } from "./state";
@@ -55,14 +58,16 @@ type ParameterModifier = (fn: (draft: Draft<Parameter>) => void) => void;
 export const ParameterEditor = ({ id }: Props) => {
   const database = useUdrDatabase();
   const parameterIds = useParameterIds();
-  const param = useParameter(id);
+  const unlocalizedParam = useParameter(id);
   const libraries = useLibraries();
   const deviceLibrary = useDeviceLibrary();
   const deviceLocalizations = useDeviceLocalizations();
 
-  if (!param) {
+  if (!unlocalizedParam) {
     return <RenderError />;
   }
+
+  const param = getLocalizedParameter(unlocalizedParam, deviceLocalizations);
 
   let paramClass: ResolvedParameterClass | undefined = undefined;
   if (param.library) {
@@ -87,7 +92,7 @@ export const ParameterEditor = ({ id }: Props) => {
 
   return (
     <ItemEditor
-      title={param["@friendlyName"] ? param["@friendlyName"]! : id}
+      title={param.friendlyName || id}
       onDelete={() => deleteParameter(id)}
     >
       <div className="flex flex-col">
@@ -242,7 +247,7 @@ function getMinMaxDefaultProperties(
 
 function getParameterPropsTable(
   id: string,
-  param: Parameter,
+  param: LocalizedParameter,
   modifyParam: ParameterModifier,
   paramClass: ResolvedParameterClass,
   existingItemIds: string[],
@@ -281,10 +286,8 @@ function getParameterPropsTable(
       />
       <TextEditorTableRow
         label="Display Name"
-        value={param["@friendlyName"]}
-        onValueChanged={(newValue) =>
-          modifyParam((draft) => (draft["@friendlyName"] = newValue))
-        }
+        value={param.friendlyName}
+        onValueChanged={(newValue) => modifyParameterFriendlyName(id, newValue)}
       />
       <tr>
         <td>Access</td>

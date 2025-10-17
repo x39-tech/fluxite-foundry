@@ -1,5 +1,4 @@
-import { getByText, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { getByText, screen } from "@testing-library/react";
 
 export function getEditorTableRow(
   labelText: string,
@@ -31,24 +30,4 @@ export function getEditorTableRowSecondCol(
     throw Error(`No second column found for row with label ${labelText}`);
   }
   return tdElement;
-}
-
-export async function changeConfirmableInputField(
-  user: ReturnType<typeof userEvent.setup>,
-  container: HTMLElement,
-  newValue: string,
-) {
-  const inputElement = container.querySelector("input");
-  if (!inputElement) {
-    throw Error("No input element found");
-  }
-
-  await user.clear(inputElement);
-  await user.type(inputElement, newValue);
-  await user.keyboard("{Enter}");
-
-  // Wait for the input to have the new value after confirmation
-  await waitFor(() => {
-    expect(inputElement).toHaveValue(newValue);
-  });
 }

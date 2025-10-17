@@ -10,6 +10,8 @@ import {
   ResolvedCommandClass,
 } from "udr/udrDatabase";
 import {
+  modifyLocalizationString,
+  setNewLocalizationString,
   updateCurrentEditor,
   useCurrentEditorPart,
   useCurrentEditorPartShallow,
@@ -17,7 +19,6 @@ import {
   useDeviceLocalizations,
   useLibraries,
 } from "../state";
-import { getUniqueItemId } from "utils/utils";
 import { collectLocalizableKeys } from "utils/localizationUtils";
 
 // ---------------------------------------------------------------------------
@@ -270,38 +271,6 @@ export function deleteCommand(id: string) {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function modifyLocalizationString(
-  editor: WritableDraft<DeviceClassEditorState>,
-  id: string,
-  localizedString: string,
-) {
-  // TODO use current locale
-  const locale = "en-US";
-  const localizationStrings = editor.localizations[locale]?.strings;
-  if (!localizationStrings || !localizationStrings[id]) {
-    return;
-  }
-  localizationStrings[id] = localizedString;
-}
-
-function setNewLocalizationString(
-  editor: WritableDraft<DeviceClassEditorState>,
-  id: string,
-  localizedString: string,
-): string {
-  // TODO use current locale
-  const locale = "en-US";
-  editor.localizations[locale] ||= {};
-  editor.localizations[locale].strings ||= {};
-  const localizationStrings = editor.localizations[locale].strings;
-  const newLocalizationKey = getUniqueItemId(
-    Object.keys(localizationStrings),
-    `${id}`,
-  );
-  localizationStrings[newLocalizationKey] = localizedString;
-  return newLocalizationKey;
-}
 
 function deleteLocalizationStrings(
   editor: WritableDraft<DeviceClassEditorState>,

@@ -1,60 +1,69 @@
-import { getByRole, render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DeviceInfoEditor } from "./DeviceInfoEditor";
 import { createDeviceClassEditor } from "features/topNavBar/state";
-import {
-  changeConfirmableInputField,
-  getEditorTableRow,
-  getEditorTableRowSecondCol,
-} from "test/utils";
 import { Category } from "e173";
+import { expect } from "vitest";
+
+// Helper function to change a ValidatedInput field value
+async function changeConfirmableInputField(
+  user: ReturnType<typeof userEvent.setup>,
+  inputElement: HTMLElement,
+  newValue: string,
+) {
+  await user.clear(inputElement);
+  await user.type(inputElement, newValue);
+  await user.keyboard("{Enter}");
+
+  // Wait for the input to have the new value after confirmation
+  await waitFor(() => {
+    expect(inputElement).toHaveValue(newValue);
+  });
+}
 
 beforeEach(() => {
   createDeviceClassEditor();
 });
 
 test("renders all manufacturer information fields", () => {
-  const { container } = render(<DeviceInfoEditor />);
+  render(<DeviceInfoEditor />);
 
   expect(screen.getByText("Manufacturer Information")).toBeInTheDocument();
-  expect(getEditorTableRow("Manufacturer Name", container)).toBeInTheDocument();
-  expect(getEditorTableRow("Manufacturer URL", container)).toBeInTheDocument();
-  expect(
-    getEditorTableRow("Manufacturer ESTA ID", container),
-  ).toBeInTheDocument();
+  expect(screen.getByLabelText("Manufacturer Name")).toBeInTheDocument();
+  expect(screen.getByLabelText("Manufacturer URL")).toBeInTheDocument();
+  expect(screen.getByLabelText("Manufacturer ESTA ID")).toBeInTheDocument();
 });
 
 test("renders all model information fields", () => {
-  const { container } = render(<DeviceInfoEditor />);
+  render(<DeviceInfoEditor />);
 
   expect(screen.getByText("Model Information")).toBeInTheDocument();
-  expect(getEditorTableRow("Model Name", container)).toBeInTheDocument();
-  expect(getEditorTableRow("Category", container)).toBeInTheDocument();
-  expect(getEditorTableRow("Subcategory", container)).toBeInTheDocument();
+  expect(screen.getByLabelText("Model Name")).toBeInTheDocument();
+  expect(screen.getByLabelText("Category")).toBeInTheDocument();
+  expect(screen.getByLabelText("Subcategory")).toBeInTheDocument();
 });
 
 test("renders compatibility section", () => {
-  const { container } = render(<DeviceInfoEditor />);
+  render(<DeviceInfoEditor />);
 
   expect(screen.getByText("Compatibility")).toBeInTheDocument();
-  expect(getEditorTableRow("Firmware Versions", container)).toBeInTheDocument();
+  expect(screen.getByLabelText("Firmware Versions")).toBeInTheDocument();
 });
 
-test("renders UDR device class information section", () => {
-  const { container } = render(<DeviceInfoEditor />);
+test("renders device class information section", () => {
+  render(<DeviceInfoEditor />);
 
-  expect(screen.getByText("UDR Device Class Information")).toBeInTheDocument();
-  expect(getEditorTableRow("Description", container)).toBeInTheDocument();
-  expect(getEditorTableRow("Author", container)).toBeInTheDocument();
-  expect(getEditorTableRow("Publish Date", container)).toBeInTheDocument();
+  expect(screen.getByText("Device Class Information")).toBeInTheDocument();
+  expect(screen.getByLabelText("Description")).toBeInTheDocument();
+  expect(screen.getByLabelText("Author")).toBeInTheDocument();
+  expect(screen.getByLabelText("Publish Date")).toBeInTheDocument();
 });
 
 test("category field has valid options", async () => {
   const user = userEvent.setup();
-  const { container } = render(<DeviceInfoEditor />);
+  render(<DeviceInfoEditor />);
 
-  const categoryRow = getEditorTableRow("Category", container);
-  const categorySelect = getByRole(categoryRow, "combobox");
+  const categorySelect = screen.getByLabelText("Category");
   expect(categorySelect).toBeInTheDocument();
 
   // Focus and use keyboard to open the dropdown (more reliable in tests)
@@ -75,10 +84,9 @@ test("category field has valid options", async () => {
 
 test("subcategory field has options", async () => {
   const user = userEvent.setup();
-  const { container } = render(<DeviceInfoEditor />);
+  render(<DeviceInfoEditor />);
 
-  const subcategoryRow = getEditorTableRow("Subcategory", container);
-  const subcategorySelect = getByRole(subcategoryRow, "combobox");
+  const subcategorySelect = screen.getByLabelText("Subcategory");
   expect(subcategorySelect).toBeInTheDocument();
 
   // Focus and use keyboard to open the dropdown
@@ -95,34 +103,29 @@ test("subcategory field has options", async () => {
 
 test("can change manufacturer name field", async () => {
   const user = userEvent.setup();
-  const { container } = render(<DeviceInfoEditor />);
+  render(<DeviceInfoEditor />);
 
-  const tdElement = getEditorTableRowSecondCol("Manufacturer Name", container);
-  expect(tdElement).toBeInTheDocument();
+  const input = screen.getByLabelText("Manufacturer Name");
+  expect(input).toBeInTheDocument();
 
-  if (tdElement) {
-    await changeConfirmableInputField(user, tdElement, "New Manufacturer Name");
-  }
+  await changeConfirmableInputField(user, input, "New Manufacturer Name");
 });
 
 test("can change model name field", async () => {
   const user = userEvent.setup();
-  const { container } = render(<DeviceInfoEditor />);
+  render(<DeviceInfoEditor />);
 
-  const tdElement = getEditorTableRowSecondCol("Model Name", container);
-  expect(tdElement).toBeInTheDocument();
+  const input = screen.getByLabelText("Model Name");
+  expect(input).toBeInTheDocument();
 
-  if (tdElement) {
-    await changeConfirmableInputField(user, tdElement, "New Model Name");
-  }
+  await changeConfirmableInputField(user, input, "New Model Name");
 });
 
 test("can change category field", async () => {
   const user = userEvent.setup();
-  const { container } = render(<DeviceInfoEditor />);
+  render(<DeviceInfoEditor />);
 
-  const categoryRow = getEditorTableRow("Category", container);
-  const categorySelect = getByRole(categoryRow, "combobox");
+  const categorySelect = screen.getByLabelText("Category");
   expect(categorySelect).toBeInTheDocument();
 
   const initialValue = categorySelect.textContent;
@@ -148,10 +151,9 @@ test("can change category field", async () => {
 
 test("can change subcategory field", async () => {
   const user = userEvent.setup();
-  const { container } = render(<DeviceInfoEditor />);
+  render(<DeviceInfoEditor />);
 
-  const subcategoryRow = getEditorTableRow("Subcategory", container);
-  const subcategorySelect = getByRole(subcategoryRow, "combobox");
+  const subcategorySelect = screen.getByLabelText("Subcategory");
   expect(subcategorySelect).toBeInTheDocument();
 
   const initialValue = subcategorySelect.textContent;
@@ -177,78 +179,59 @@ test("can change subcategory field", async () => {
 
 test("can change description field", async () => {
   const user = userEvent.setup();
-  const { container } = render(<DeviceInfoEditor />);
+  render(<DeviceInfoEditor />);
 
-  const tdElement = getEditorTableRowSecondCol("Description", container);
-  expect(tdElement).toBeInTheDocument();
+  const input = screen.getByLabelText("Description");
+  expect(input).toBeInTheDocument();
 
-  if (tdElement) {
-    await changeConfirmableInputField(
-      user,
-      tdElement,
-      "New Device Description",
-    );
-  }
+  await changeConfirmableInputField(user, input, "New Device Description");
 });
 
 test("can change author field", async () => {
   const user = userEvent.setup();
-  const { container } = render(<DeviceInfoEditor />);
+  render(<DeviceInfoEditor />);
 
-  const tdElement = getEditorTableRowSecondCol("Author", container);
-  expect(tdElement).toBeInTheDocument();
+  const input = screen.getByLabelText("Author");
+  expect(input).toBeInTheDocument();
 
-  if (tdElement) {
-    await changeConfirmableInputField(user, tdElement, "New Author Name");
-  }
+  await changeConfirmableInputField(user, input, "New Author Name");
 });
 
 test("can change publish date field", async () => {
   const user = userEvent.setup();
-  const { container } = render(<DeviceInfoEditor />);
+  render(<DeviceInfoEditor />);
 
-  const tdElement = getEditorTableRowSecondCol("Publish Date", container);
-  expect(tdElement).toBeInTheDocument();
+  const input = screen.getByLabelText("Publish Date");
+  expect(input).toBeInTheDocument();
 
-  if (tdElement) {
-    await changeConfirmableInputField(user, tdElement, "New Publish Date");
-  }
+  await changeConfirmableInputField(user, input, "New Publish Date");
 });
 
 test("can change manufacturer URL field", async () => {
   const user = userEvent.setup();
-  const { container } = render(<DeviceInfoEditor />);
+  render(<DeviceInfoEditor />);
 
-  const tdElement = getEditorTableRowSecondCol("Manufacturer URL", container);
-  expect(tdElement).toBeInTheDocument();
+  const input = screen.getByLabelText("Manufacturer URL");
+  expect(input).toBeInTheDocument();
 
-  if (tdElement) {
-    await changeConfirmableInputField(user, tdElement, "https://example.com");
-  }
+  await changeConfirmableInputField(user, input, "https://example.com");
 });
 
 test("can change manufacturer ESTA ID field", async () => {
   const user = userEvent.setup();
-  const { container } = render(<DeviceInfoEditor />);
+  render(<DeviceInfoEditor />);
 
-  const tdElement = getEditorTableRowSecondCol(
-    "Manufacturer ESTA ID",
-    container,
-  );
-  expect(tdElement).toBeInTheDocument();
+  const input = screen.getByLabelText("Manufacturer ESTA ID");
+  expect(input).toBeInTheDocument();
 
-  if (tdElement) {
-    await changeConfirmableInputField(user, tdElement, "12345");
-  }
+  await changeConfirmableInputField(user, input, "12345");
 });
 
 test("can add firmware versions using tag input", async () => {
   const user = userEvent.setup();
-  const { container } = render(<DeviceInfoEditor />);
+  render(<DeviceInfoEditor />);
 
-  const firmwareVersionsRow = getEditorTableRow("Firmware Versions", container);
-
-  const input = getByRole(firmwareVersionsRow, "textbox");
+  const input = screen.getByLabelText("Firmware Versions");
   expect(input).toBeInTheDocument();
 
   await user.type(input, "v1.0.0");
@@ -259,11 +242,9 @@ test("can add firmware versions using tag input", async () => {
 
 test("can add multiple firmware versions", async () => {
   const user = userEvent.setup();
-  const { container } = render(<DeviceInfoEditor />);
+  render(<DeviceInfoEditor />);
 
-  const firmwareVersionsRow = getEditorTableRow("Firmware Versions", container);
-
-  const input = getByRole(firmwareVersionsRow, "textbox");
+  const input = screen.getByLabelText("Firmware Versions");
   expect(input).toBeInTheDocument();
 
   // Add first version

@@ -14,7 +14,7 @@ export function getDefaultDeviceClass(deviceClassId: string): DeviceClass {
   const modelName = toTitleCase(deviceClassId.replaceAll("-", " "));
 
   return {
-    "@description": `A really cool device from ${DEFAULT_COMPANY}`,
+    "@description": "device_class_description",
     publishDate: dayjs().format("YYYY-MM-DD"),
     author: DEFAULT_AUTHOR,
     history: {},
@@ -38,11 +38,19 @@ export function getDefaultDeviceClass(deviceClassId: string): DeviceClass {
       "main-dimmer": {
         library: "org.esta.lib.intensity-color",
         class: "intensity/dimmer",
-        "@friendlyName": "Main Dimmer",
+        "@friendlyName": "parameter_main-dimmer",
         access: [ParameterAccess.ReadActual, ParameterAccess.Write],
         lifetime: Lifetime.Runtime,
         minimum: 0,
         maximum: 1,
+      },
+    },
+    localizations: {
+      "en-US": {
+        strings: {
+          device_class_description: `A really cool device from ${DEFAULT_COMPANY}`,
+          "parameter_main-dimmer": "Main Dimmer",
+        },
       },
     },
   };

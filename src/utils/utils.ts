@@ -196,3 +196,20 @@ export function unitToString(unit?: Unit): string {
     return "N/A";
   }
 }
+
+// Helper type to extract only the keys of T where the value is optional
+type OptionalKeys<T> = {
+  [K in keyof T]: undefined extends T[K] ? K : never;
+}[keyof T];
+
+export function assignOrDelete<T, K extends OptionalKeys<T>>(
+  obj: T,
+  property: K,
+  value: T[K],
+) {
+  if (value !== undefined) {
+    obj[property] = value;
+  } else {
+    delete obj[property];
+  }
+}

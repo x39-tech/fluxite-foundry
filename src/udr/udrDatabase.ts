@@ -13,6 +13,7 @@ import {
   EnumChoice,
   Command,
   EnumInstanceChoices,
+  Parameter,
 } from "e173";
 import core from "e173/libraries/core/draft-2024-1/library.json";
 import intensityColor from "e173/libraries/intensity-color/draft-2024-1/library.json";
@@ -116,6 +117,10 @@ export interface LocalizedEnumChoice extends Omit<EnumChoice, "@name"> {
 export interface LocalizedEnumInstanceChoices
   extends Omit<EnumInstanceChoices, "additional"> {
   additional?: LocalizedEnumChoice[];
+}
+
+export interface LocalizedParameter extends Omit<Parameter, "@friendlyName"> {
+  friendlyName?: string;
 }
 
 export interface LocalizedCommand
@@ -408,6 +413,20 @@ export function lookupDeviceCommandClass(
   }
 }
 
+export function getLocalizedParameter(
+  param: Parameter,
+  localizations: Record<string, DefinitionLocalization>,
+): LocalizedParameter {
+  const localizedName = param["@friendlyName"]
+    ? localizations["en-US"]?.strings?.[param["@friendlyName"]]
+    : undefined;
+
+  return {
+    ...param,
+    friendlyName: localizedName || param["@friendlyName"],
+  };
+}
+
 export function getLocalizedCommand(
   command: Command,
   localizations: Record<string, DefinitionLocalization>,
@@ -449,7 +468,7 @@ export function getLocalizedCommand(
 
   return {
     ...command,
-    friendlyName: localizedName,
+    friendlyName: localizedName || command["@friendlyName"],
     argumentChoices,
     returnChoices,
   };

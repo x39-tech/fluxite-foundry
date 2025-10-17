@@ -1,4 +1,4 @@
-import { TagInput } from "components/TagInput";
+import { TagInput, TagInputProps } from "components/TagInput";
 
 interface TagInputFieldProps {
   className?: string;
@@ -10,7 +10,9 @@ export const TagInputField = ({
   className,
   values,
   onValuesChanged,
-}: TagInputFieldProps) => {
+  ...props
+}: TagInputFieldProps &
+  Omit<TagInputProps, "className" | "values" | "onValueChanged">) => {
   return (
     <TagInput
       className={className}
@@ -18,6 +20,7 @@ export const TagInputField = ({
       onValuesChange={(values) => {
         onValuesChanged(values.map((value) => value as string));
       }}
+      {...props}
     />
   );
 };
