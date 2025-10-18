@@ -138,7 +138,7 @@ impl SacnPacket {
 /// Calculate the multicast address for a given universe
 /// E1.31 uses 239.255.0.0 through 239.255.255.255
 pub fn multicast_addr_for_universe(universe: u16) -> std::net::Ipv4Addr {
-    let high_byte = ((universe - 1) / 256) as u8;
-    let low_byte = ((universe - 1) % 256) as u8;
+    let high_byte = ((universe) / 256) as u8;
+    let low_byte = ((universe) % 256) as u8;
     std::net::Ipv4Addr::new(239, 255, high_byte, low_byte)
 }

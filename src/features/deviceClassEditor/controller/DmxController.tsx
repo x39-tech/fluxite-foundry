@@ -99,7 +99,7 @@ export const DmxController = () => {
 
       websocketConnRef.current.send(
         JSON.stringify({
-          universe: 2,
+          universe: 1,
           offset: 0,
           slots,
         } as WebSocketPayload),
