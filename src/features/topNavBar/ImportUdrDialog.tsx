@@ -19,7 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "components/scn-ui/Select";
+import { Label } from "components/scn-ui/Label";
 import { AppInput } from "components/AppInput";
+import { FieldSet } from "components/FieldSet";
 import {
   validateInputFile,
   UdrImportResult,
@@ -56,23 +58,27 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
           <DialogTitle>Import UDR</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center gap-2">
-          <AppInput
-            type="file"
-            accept=".fca,.fcd"
-            onChange={(event) => {
-              const file = event.currentTarget.files?.item(0) ?? null;
-              setInputFile(file);
+          <FieldSet>
+            <Label htmlFor="import-file">Select UDR file to import</Label>
+            <AppInput
+              id="import-file"
+              type="file"
+              accept=".fca,.fcd"
+              onChange={(event) => {
+                const file = event.currentTarget.files?.item(0) ?? null;
+                setInputFile(file);
 
-              if (file !== null) {
-                validateInputFile(file).then((value) => {
-                  setInputValidation(value);
-                  if (value.deviceClasses && value.deviceClasses.length > 0) {
-                    setSelectedDeviceClass(0);
-                  }
-                });
-              }
-            }}
-          />
+                if (file !== null) {
+                  validateInputFile(file).then((value) => {
+                    setInputValidation(value);
+                    if (value.deviceClasses && value.deviceClasses.length > 0) {
+                      setSelectedDeviceClass(0);
+                    }
+                  });
+                }
+              }}
+            />
+          </FieldSet>
           <AdditionalDialogElements
             inputFile={inputFile}
             inputValidation={inputValidation}

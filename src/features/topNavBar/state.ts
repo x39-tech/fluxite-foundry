@@ -9,7 +9,13 @@ import {
   EditorType,
   OpenEditors,
 } from "app/state";
-import { OrgId, getDefaultWindowLayout, getUniqueItemId } from "utils/utils";
+import {
+  EntityType,
+  OrgId,
+  buildQualifiedId,
+  getDefaultWindowLayout,
+  getUniqueItemId,
+} from "utils/utils";
 import { getDefaultDeviceClass } from "udr/udr";
 import {
   getCurrentEditor,
@@ -228,8 +234,10 @@ async function getImportedDeviceClassEditorWithAssets(
   archive: ArchiveToImport,
 ) {
   const editor = getImportedDeviceClassEditor(orgId, id, version, udr);
+
+  const qualifiedId = buildQualifiedId(EntityType.Dev, orgId, id);
   editor.resources.resourceAssets = await loadResourceAssets(
-    id,
+    qualifiedId,
     version,
     archive,
     editor.resources.resources,
@@ -238,7 +246,7 @@ async function getImportedDeviceClassEditorWithAssets(
 }
 
 async function loadResourceAssets(
-  id: string,
+  qualifiedId: string,
   version: string,
   archive: ArchiveToImport,
   resources: Record<string, Resource>,
@@ -253,7 +261,8 @@ async function loadResourceAssets(
   }
 
   const assetsDir =
-    archive.archive.e173archive.deviceClasses?.[id]?.[version]?.assetsDirectory;
+    archive.archive.e173archive.deviceClasses?.[qualifiedId]?.[version]
+      ?.assetsDirectory;
   if (!assetsDir) {
     return resourceAssets;
   }
