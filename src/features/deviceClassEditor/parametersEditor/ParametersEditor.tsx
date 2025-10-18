@@ -3,7 +3,6 @@ import { AddItemSection } from "components/AddItemSection";
 import { NewParameterDialog } from "./NewParameterDialog";
 import { ParameterEditor } from "./ParameterEditor";
 import { useParameterEditors } from "./state";
-import "./ParametersEditor.scss";
 
 export const ParametersEditor = () => {
   const editorStates = useParameterEditors();
@@ -12,7 +11,7 @@ export const ParametersEditor = () => {
     useState(false);
 
   const parameterEditors = editorStates.map((editor) => (
-    <ParameterEditor key={editor.id} id={editor.udrId} />
+    <ParameterEditor key={editor} paramId={editor} />
   ));
 
   return (

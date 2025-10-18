@@ -1,7 +1,15 @@
-import { Condition, Mapping } from "e173";
-import { DmxController, DmxSerializerState } from "app/state";
+import { DmxController } from "app/runtimeState";
+import {
+  DmxChunkRefCondition,
+  DmxCondition,
+  DmxConditionGroup,
+  DmxMapping,
+  DmxMappingGroup,
+  DmxSerializerState,
+  EntityId,
+} from "app/persistentState";
 import { updateCurrentEditor, useCurrentEditorPart } from "../state";
-import { getUniqueItemId } from "utils/utils";
+import { newEntityId, selectWithIds } from "app/stateUtils";
 import { useAppRuntimeStore } from "app/store";
 
 // ---------------------------------------------------------------------------
@@ -9,7 +17,7 @@ import { useAppRuntimeStore } from "app/store";
 // ---------------------------------------------------------------------------
 
 export function useDmxSerializer(): DmxSerializerState | undefined {
-  return useCurrentEditorPart((state) => state.dmx);
+  return useCurrentEditorPart((state) => state.dmxSerializer);
 }
 
 export function useDmxController(): DmxController {
@@ -17,12 +25,56 @@ export function useDmxController(): DmxController {
 }
 
 // ---------------------------------------------------------------------------
-// Write
+// Helpers
+// ---------------------------------------------------------------------------
+
+function getOrCreateDmxSerializer(
+  editor: Parameters<Parameters<typeof updateCurrentEditor>[0]>[0],
+): DmxSerializerState {
+  if (!editor.dmxSerializer) {
+    editor.dmxSerializer = { chunks: {}, mappingGroups: {}, conditions: {} };
+  }
+  return editor.dmxSerializer;
+}
+
+export function getMappingGroupsForChunk(
+  dmx: DmxSerializerState,
+  chunkId: EntityId,
+): (DmxMappingGroup & { id: EntityId })[] {
+  return selectWithIds(dmx.mappingGroups, (mg) => mg.chunkId === chunkId).sort(
+    (a, b) => a.index - b.index,
+  );
+}
+
+export function getConditionsForMappingGroup(
+  dmx: DmxSerializerState,
+  mappingGroupId: EntityId,
+): (DmxCondition & { id: EntityId })[] {
+  return selectWithIds(
+    dmx.conditions,
+    (cond) =>
+      cond.parent.type === "mappingGroup" && cond.parent.id === mappingGroupId,
+  );
+}
+
+export function getChildConditions(
+  dmx: DmxSerializerState,
+  parentConditionId: EntityId,
+): (DmxCondition & { id: EntityId })[] {
+  return selectWithIds(
+    dmx.conditions,
+    (cond) =>
+      cond.parent.type === "condition" && cond.parent.id === parentConditionId,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Write - Chunks
 // ---------------------------------------------------------------------------
 
 export function addDmxChunk() {
   updateCurrentEditor((editor) => {
-    const dmx = editor.dmx.udr;
+    const dmx = getOrCreateDmxSerializer(editor);
 
     const offsetsInUse = Object.values(dmx.chunks).reduce((acc, chunk) => {
       acc.push(...chunk.offsets);
@@ -38,34 +90,93 @@ export function addDmxChunk() {
     }
 
     const offsetToUse = lastOffset + 1;
-    const chunkIds = Object.keys(dmx.chunks);
-    const newChunkId = getUniqueItemId(chunkIds, `chunk${offsetToUse}`);
+    const newChunkId = newEntityId();
 
     dmx.chunks[newChunkId] = {
       offsets: [offsetToUse],
-      mappingGroups: [
-        {
-          mappings: [],
-        },
-      ],
+    };
+
+    // Create a default mapping group for the new chunk
+    const newMappingGroupId = newEntityId();
+    dmx.mappingGroups[newMappingGroupId] = {
+      chunkId: newChunkId,
+      index: 0,
+      mappings: [],
     };
   });
 }
 
-export function removeDmxChunk(chunkId: string) {
+export function removeDmxChunk(chunkId: EntityId) {
   updateCurrentEditor((editor) => {
-    delete editor.dmx.udr.chunks[chunkId];
+    const dmx = editor.dmxSerializer;
+    if (!dmx) return;
+
+    // Find and remove all mapping groups for this chunk
+    const mappingGroupIds = selectWithIds(
+      dmx.mappingGroups,
+      (mg) => mg.chunkId === chunkId,
+    ).map((mg) => mg.id);
+
+    for (const mgId of mappingGroupIds) {
+      // Remove all conditions for this mapping group (and their children)
+      removeConditionsForMappingGroup(dmx, mgId);
+      delete dmx.mappingGroups[mgId];
+    }
+
+    // Also remove any conditions that reference this chunk
+    const conditionsToRemove = selectWithIds(
+      dmx.conditions,
+      (cond) => cond.conditionType === "chunkRef" && cond.chunkId === chunkId,
+    ).map((cond) => cond.id);
+
+    for (const condId of conditionsToRemove) {
+      removeConditionAndChildren(dmx, condId);
+    }
+
+    delete dmx.chunks[chunkId];
   });
 }
 
-export function changeDmxChunkOffsets(chunkId: string, newOffsets: string[]) {
+function removeConditionsForMappingGroup(
+  dmx: DmxSerializerState,
+  mappingGroupId: EntityId,
+) {
+  const conditionIds = selectWithIds(
+    dmx.conditions,
+    (cond) =>
+      cond.parent.type === "mappingGroup" && cond.parent.id === mappingGroupId,
+  ).map((cond) => cond.id);
+
+  for (const condId of conditionIds) {
+    removeConditionAndChildren(dmx, condId);
+  }
+}
+
+function removeConditionAndChildren(
+  dmx: DmxSerializerState,
+  conditionId: EntityId,
+) {
+  // First remove all children
+  const childIds = selectWithIds(
+    dmx.conditions,
+    (cond) =>
+      cond.parent.type === "condition" && cond.parent.id === conditionId,
+  ).map((cond) => cond.id);
+
+  for (const childId of childIds) {
+    removeConditionAndChildren(dmx, childId);
+  }
+
+  delete dmx.conditions[conditionId];
+}
+
+export function changeDmxChunkOffsets(chunkId: EntityId, newOffsets: string[]) {
   updateCurrentEditor((editor) => {
-    const dmx = editor.dmx.udr;
+    const dmx = editor.dmxSerializer;
+    if (!dmx) return;
 
     const chunk = dmx.chunks[chunkId];
-    if (!chunk) {
-      return;
-    }
+    if (!chunk) return;
 
     try {
       const newOffsetsInt = newOffsets.map((o) => parseInt(o));
@@ -74,8 +185,8 @@ export function changeDmxChunkOffsets(chunkId: string, newOffsets: string[]) {
           throw new Error("Invalid offset");
         }
 
-        for (const [curChunkId, chunk] of Object.entries(dmx.chunks)) {
-          if (curChunkId !== chunkId && chunk.offsets.includes(offset)) {
+        for (const [curChunkId, curChunk] of Object.entries(dmx.chunks)) {
+          if (curChunkId !== chunkId && curChunk.offsets.includes(offset)) {
             throw new Error("Offset already in use");
           }
         }
@@ -90,157 +201,210 @@ export function changeDmxChunkOffsets(chunkId: string, newOffsets: string[]) {
   });
 }
 
-export function addParameterMappingGroup(chunkId: string) {
-  updateCurrentEditor((editor) => {
-    const chunk = editor.dmx.udr.chunks[chunkId];
-    if (!chunk) {
-      return;
-    }
+// ---------------------------------------------------------------------------
+// Write - Mapping Groups
+// ---------------------------------------------------------------------------
 
-    chunk.mappingGroups.push({ mappings: [] });
+export function addParameterMappingGroup(chunkId: EntityId) {
+  updateCurrentEditor((editor) => {
+    const dmx = editor.dmxSerializer;
+    if (!dmx || !dmx.chunks[chunkId]) return;
+
+    const existingGroups = getMappingGroupsForChunk(dmx, chunkId);
+    const nextIndex =
+      existingGroups.length > 0
+        ? Math.max(...existingGroups.map((mg) => mg.index)) + 1
+        : 0;
+
+    const newMappingGroupId = newEntityId();
+    dmx.mappingGroups[newMappingGroupId] = {
+      chunkId,
+      index: nextIndex,
+      mappings: [],
+    };
   });
 }
 
-export function removeParameterMappingGroup(chunkId: string, index: number) {
-  updateCurrentEditor((editor) => {
-    const chunk = editor.dmx.udr.chunks[chunkId];
-    if (!chunk) {
-      return;
-    }
-
-    chunk.mappingGroups.splice(index, 1);
-  });
-}
-
-export function addParameterMapping(
-  chunkId: string,
-  mappingGroupIndex: number,
+export function removeParameterMappingGroup(
+  chunkId: EntityId,
+  mappingGroupId: EntityId,
 ) {
   updateCurrentEditor((editor) => {
-    const chunk = editor.dmx.udr.chunks[chunkId];
-    if (!chunk) {
-      return;
-    }
+    const dmx = editor.dmxSerializer;
+    if (!dmx) return;
 
-    chunk.mappingGroups[mappingGroupIndex].mappings.push({
-      mappedParam: Object.keys(editor.parameters.parameters)[0] || "",
+    const mg = dmx.mappingGroups[mappingGroupId];
+    if (!mg || mg.chunkId !== chunkId) return;
+
+    // Remove all conditions for this mapping group
+    removeConditionsForMappingGroup(dmx, mappingGroupId);
+
+    delete dmx.mappingGroups[mappingGroupId];
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Write - Parameter Mappings
+// ---------------------------------------------------------------------------
+
+export function addParameterMapping(mappingGroupId: EntityId) {
+  updateCurrentEditor((editor) => {
+    const dmx = editor.dmxSerializer;
+    if (!dmx) return;
+
+    const mappingGroup = dmx.mappingGroups[mappingGroupId];
+    if (!mappingGroup) return;
+
+    const firstParam = Object.values(editor.parameters)[0];
+    if (!firstParam) return;
+
+    const mappedParam =
+      firstParam.count !== undefined && firstParam.count > 1
+        ? { codexId: firstParam.codexId, index: 0 }
+        : { codexId: firstParam.codexId };
+
+    mappingGroup.mappings.push({
+      mappedParam,
       ranges: [],
     });
   });
 }
 
 export function updateParameterMapping(
-  chunkId: string,
-  mappingGroupIndex: number,
+  mappingGroupId: EntityId,
   mappingIndex: number,
-  newValue: Mapping,
+  newValue: DmxMapping,
 ) {
   updateCurrentEditor((editor) => {
-    const chunk = editor.dmx.udr.chunks[chunkId];
-    if (!chunk) {
-      return;
-    }
+    const dmx = editor.dmxSerializer;
+    if (!dmx) return;
 
-    chunk.mappingGroups[mappingGroupIndex].mappings[mappingIndex] = newValue;
+    const mappingGroup = dmx.mappingGroups[mappingGroupId];
+    if (!mappingGroup) return;
+
+    mappingGroup.mappings[mappingIndex] = newValue;
   });
 }
 
 export function removeParameterMapping(
-  chunkId: string,
-  mappingGroupIndex: number,
+  mappingGroupId: EntityId,
   mappingIndex: number,
 ) {
   updateCurrentEditor((editor) => {
-    const chunk = editor.dmx.udr.chunks[chunkId];
-    if (!chunk) {
-      return;
-    }
+    const dmx = editor.dmxSerializer;
+    if (!dmx) return;
 
-    chunk.mappingGroups[mappingGroupIndex].mappings.splice(mappingIndex, 1);
+    const mappingGroup = dmx.mappingGroups[mappingGroupId];
+    if (!mappingGroup) return;
+
+    mappingGroup.mappings.splice(mappingIndex, 1);
   });
 }
 
-export function addCondition(chunkId: string, mappingGroupIndex: number) {
+// ---------------------------------------------------------------------------
+// Write - Conditions
+// ---------------------------------------------------------------------------
+
+export function addCondition(
+  mappingGroupId: EntityId,
+  parentChunkId: EntityId,
+) {
   updateCurrentEditor((editor) => {
-    const dmx = editor.dmx.udr;
-    if (!dmx) {
-      return;
-    }
+    const dmx = editor.dmxSerializer;
+    if (!dmx) return;
 
+    const mappingGroup = dmx.mappingGroups[mappingGroupId];
+    if (!mappingGroup) return;
+
+    // Find another chunk to reference (can't reference our own chunk)
     const otherChunkIds = Object.keys(dmx.chunks).filter(
-      (otherChunkId) => otherChunkId != chunkId,
+      (id) => id !== parentChunkId,
+    ) as EntityId[];
+
+    if (otherChunkIds.length === 0) return;
+
+    // Check if there's already a top-level group condition for this mapping group
+    const existingConditions = getConditionsForMappingGroup(
+      dmx,
+      mappingGroupId,
     );
-    // Can't add a condition if there are no other chunks to reference
-    if (otherChunkIds.length === 0) {
-      return;
-    }
 
-    const chunk = dmx.chunks[chunkId];
-    if (!chunk) {
-      return;
-    }
+    if (existingConditions.length === 0) {
+      // No conditions yet - create a group with one chunkRef child
+      const groupConditionId = newEntityId();
+      const chunkRefConditionId = newEntityId();
 
-    const newCondition: Condition = {
-      chunk: otherChunkIds[0],
-      chunkStart: 0,
-      chunkEnd: 255,
-    };
-    const mappingGroup = chunk.mappingGroups[mappingGroupIndex];
+      const groupCondition: DmxConditionGroup = {
+        conditionType: "group",
+        parent: { type: "mappingGroup", id: mappingGroupId },
+        match: "any",
+      };
 
-    if (mappingGroup.conditions && mappingGroup.conditions.length > 0) {
-      const condition = mappingGroup.conditions[0];
-      if (
-        condition.conditions &&
-        !condition.chunk &&
-        !condition.chunkStart &&
-        !condition.chunkEnd &&
-        condition.match
-      ) {
-        condition.conditions.push(newCondition);
-        mappingGroup.conditions.splice(1);
-      }
+      const chunkRefCondition: DmxChunkRefCondition = {
+        conditionType: "chunkRef",
+        parent: { type: "condition", id: groupConditionId },
+        chunkId: otherChunkIds[0],
+        chunkStart: 0,
+        chunkEnd: 255,
+      };
+
+      dmx.conditions[groupConditionId] = groupCondition;
+      dmx.conditions[chunkRefConditionId] = chunkRefCondition;
     } else {
-      mappingGroup.conditions = [
-        {
-          match: "any",
-          conditions: [newCondition],
-        },
-      ];
+      // Find the group condition and add a new child to it
+      const groupConditionWithId = existingConditions.find(
+        (cond) => cond.conditionType === "group",
+      );
+
+      if (groupConditionWithId) {
+        const chunkRefConditionId = newEntityId();
+        const chunkRefCondition: DmxChunkRefCondition = {
+          conditionType: "chunkRef",
+          parent: { type: "condition", id: groupConditionWithId.id },
+          chunkId: otherChunkIds[0],
+          chunkStart: 0,
+          chunkEnd: 255,
+        };
+        dmx.conditions[chunkRefConditionId] = chunkRefCondition;
+      }
     }
   });
 }
 
 export function updateCondition(
-  chunkId: string,
-  mappingGroupIndex: number,
-  conditionIndex: number,
-  newCondition: Condition,
+  conditionId: EntityId,
+  newCondition: DmxCondition,
 ) {
   updateCurrentEditor((editor) => {
-    const chunk = editor.dmx.udr.chunks[chunkId];
-    if (!chunk) {
-      return;
-    }
+    const dmx = editor.dmxSerializer;
+    if (!dmx) return;
 
-    chunk.mappingGroups[mappingGroupIndex].conditions![conditionIndex] =
-      newCondition;
+    if (!dmx.conditions[conditionId]) return;
+
+    dmx.conditions[conditionId] = newCondition;
   });
 }
 
-export function removeCondition(
-  chunkId: string,
-  mappingGroupIndex: number,
-  conditionIndex: number,
+export function updateConditionMatch(
+  conditionId: EntityId,
+  match: "any" | "all",
 ) {
   updateCurrentEditor((editor) => {
-    const chunk = editor.dmx.udr.chunks[chunkId];
-    if (!chunk) {
-      return;
-    }
+    const dmx = editor.dmxSerializer;
+    if (!dmx) return;
 
-    chunk.mappingGroups[mappingGroupIndex].conditions!.splice(
-      conditionIndex,
-      1,
-    );
+    const condition = dmx.conditions[conditionId];
+    if (!condition || condition.conditionType !== "group") return;
+
+    condition.match = match;
+  });
+}
+
+export function removeCondition(conditionId: EntityId) {
+  updateCurrentEditor((editor) => {
+    const dmx = editor.dmxSerializer;
+    if (!dmx) return;
+
+    removeConditionAndChildren(dmx, conditionId);
   });
 }

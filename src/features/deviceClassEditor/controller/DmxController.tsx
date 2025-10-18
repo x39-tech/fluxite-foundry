@@ -1,13 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import {
-  DataType,
-  ParameterCluster,
-  ParameterCombo,
-  Unit,
-  UnitName,
-} from "e173";
+import { DataType, ParameterCluster, ParameterCombo, UnitName } from "e173";
+import { CodexId, FCUnit } from "app/persistentState";
 import { useParametersWithClasses } from "../state";
 import { useDmxController } from "../dmxEditor/state";
 import { Button } from "components/scn-ui/Button";
@@ -127,10 +122,14 @@ export const DmxController = () => {
           controller.
         </p>
       );
-    case "error":
+    case "error": {
+      const pathText = dmxController.error.path
+        ? ` (at ${dmxController.error.path})`
+        : "";
       return (
-        <p>{`Error compiling DMX test controller: ${dmxController.error.type}: ${dmxController.error.description}`}</p>
+        <p>{`Error compiling DMX test controller: ${dmxController.error.type}: ${dmxController.error.description}${pathText}`}</p>
       );
+    }
   }
 
   const dmxDisplayData = Object.entries(
@@ -306,12 +305,12 @@ export const DmxController = () => {
 
                 const paramName = parsedParam[1];
                 const param = dmxController.db.parameters[paramName];
-                const paramClass = paramClasses[paramName];
+                const paramClass = paramClasses[CodexId(paramName)];
                 if (!paramClass) {
                   return <></>;
                 }
 
-                if (paramClass.dataType == DataType.Number) {
+                if (paramClass.paramClass.dataType == DataType.Number) {
                   if ("minimum" in param && "maximum" in param) {
                     const min = param.minimum as number;
                     const max = param.maximum as number;
@@ -322,7 +321,7 @@ export const DmxController = () => {
                       <div key={index} className="flex items-center py-2">
                         <span className="mx-4">
                           {parameter}
-                          {getUnitString(paramClass.unit)}
+                          {getUnitString(paramClass.paramClass.unit)}
                         </span>
                         <div className="grow" />
                         <Slider
@@ -345,7 +344,7 @@ export const DmxController = () => {
                     );
                   }
                   return <></>;
-                } else if (paramClass.dataType == DataType.Boolean) {
+                } else if (paramClass.paramClass.dataType == DataType.Boolean) {
                   return <></>;
                 } else {
                   return <></>;
@@ -380,7 +379,7 @@ const SI_PREFIXES: { [key: number]: string } = {
   "24": "yotta",
 };
 
-function getUnitString(unit: Unit | undefined): string {
+function getUnitString(unit: FCUnit | undefined): string {
   if (!unit) {
     return "";
   }

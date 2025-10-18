@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { parseQualifiedId, buildQualifiedId, EntityType } from "./utils";
+import {
+  parseQualifiedId,
+  buildQualifiedId,
+  EntityType,
+  parseParameterReference,
+  serializeParameterReference,
+} from "./utils";
+import { CodexId } from "app/persistentState";
 
 describe("parseQualifiedId", () => {
   describe("valid qualified IDs with organization IDs", () => {
@@ -284,5 +291,116 @@ describe("parseQualifiedId and buildQualifiedId round-trip", () => {
     const [idType, orgId, id] = parsed!;
     const rebuilt = buildQualifiedId(idType, orgId, id);
     expect(rebuilt).toBe(original);
+  });
+});
+
+describe("parseParameterReference", () => {
+  it("should parse a simple parameter ID without index", () => {
+    const result = parseParameterReference("frame");
+    expect(result).toEqual({ codexId: CodexId("frame") });
+  });
+
+  it("should parse a parameter ID with index 0", () => {
+    const result = parseParameterReference("frame[0]");
+    expect(result).toEqual({ codexId: CodexId("frame"), index: 0 });
+  });
+
+  it("should parse a parameter ID with index 1", () => {
+    const result = parseParameterReference("frame[1]");
+    expect(result).toEqual({ codexId: CodexId("frame"), index: 1 });
+  });
+
+  it("should parse a parameter ID with larger index", () => {
+    const result = parseParameterReference("wheel[15]");
+    expect(result).toEqual({ codexId: CodexId("wheel"), index: 15 });
+  });
+
+  it("should handle parameter IDs with hyphens", () => {
+    const result = parseParameterReference("my-param[2]");
+    expect(result).toEqual({ codexId: CodexId("my-param"), index: 2 });
+  });
+
+  it("should handle parameter IDs with underscores", () => {
+    const result = parseParameterReference("my_param[3]");
+    expect(result).toEqual({ codexId: CodexId("my_param"), index: 3 });
+  });
+
+  it("should handle parameter IDs with dots", () => {
+    const result = parseParameterReference("my.param[4]");
+    expect(result).toEqual({ codexId: CodexId("my.param"), index: 4 });
+  });
+
+  it("should handle malformed input by treating it as codexId", () => {
+    const result = parseParameterReference("frame][1");
+    expect(result).toEqual({ codexId: CodexId("frame][1") });
+  });
+});
+
+describe("serializeParameterReference", () => {
+  it("should serialize a parameter reference without index", () => {
+    const result = serializeParameterReference({ codexId: CodexId("frame") });
+    expect(result).toBe("frame");
+  });
+
+  it("should serialize a parameter reference with index 0", () => {
+    const result = serializeParameterReference({
+      codexId: CodexId("frame"),
+      index: 0,
+    });
+    expect(result).toBe("frame[0]");
+  });
+
+  it("should serialize a parameter reference with index 1", () => {
+    const result = serializeParameterReference({
+      codexId: CodexId("frame"),
+      index: 1,
+    });
+    expect(result).toBe("frame[1]");
+  });
+
+  it("should serialize a parameter reference with larger index", () => {
+    const result = serializeParameterReference({
+      codexId: CodexId("wheel"),
+      index: 15,
+    });
+    expect(result).toBe("wheel[15]");
+  });
+
+  it("should handle parameter IDs with special characters", () => {
+    const result = serializeParameterReference({
+      codexId: CodexId("my-complex.param_id"),
+      index: 2,
+    });
+    expect(result).toBe("my-complex.param_id[2]");
+  });
+});
+
+describe("parseParameterReference and serializeParameterReference round-trip", () => {
+  it("should round-trip a simple parameter ID", () => {
+    const original = "frame";
+    const parsed = parseParameterReference(original);
+    const serialized = serializeParameterReference(parsed);
+    expect(serialized).toBe(original);
+  });
+
+  it("should round-trip a parameter ID with index 0", () => {
+    const original = "frame[0]";
+    const parsed = parseParameterReference(original);
+    const serialized = serializeParameterReference(parsed);
+    expect(serialized).toBe(original);
+  });
+
+  it("should round-trip a parameter ID with index", () => {
+    const original = "wheel[5]";
+    const parsed = parseParameterReference(original);
+    const serialized = serializeParameterReference(parsed);
+    expect(serialized).toBe(original);
+  });
+
+  it("should round-trip a complex parameter ID with index", () => {
+    const original = "my-complex.param_id[12]";
+    const parsed = parseParameterReference(original);
+    const serialized = serializeParameterReference(parsed);
+    expect(serialized).toBe(original);
   });
 });

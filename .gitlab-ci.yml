@@ -34,12 +34,12 @@ test:
   script:
     - npm run test
 
-check_state_migration:
+check_state_immutability:
   stage: build
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   script:
-    - npx --yes ts-json-schema-generator@1.5.0 --path 'src/app/state.ts' --type 'AppPersistentStateUnvalidated' --tsconfig tsconfig.json > data/state/app-state-latest.json
-    - npm run format
-    - git diff --exit-code
+    - ./scripts/check-state-immutability.sh
 
 lint:
   stage: build

@@ -1,84 +1,103 @@
 import { Draft } from "immer";
-import { nanoid } from "nanoid";
-import { Access, Lifetime, Resource } from "e173";
-import { useUdrDatabase } from "app/store";
-import { ItemEditor } from "app/state";
+import { useCurrentLocale, useUdrDatabase } from "app/store";
 import { assetStorage } from "app/assetStorage";
-import {
-  lookupDeviceResourceClass,
-  lookupResourceClass,
-  ResolvedResourceClass,
-} from "udr/udrDatabase";
+import { CodexId, EntityId, Resource, Unlocalized } from "app/persistentState";
+import { ItemEditor } from "utils/utils";
+import { newEntityId } from "app/stateUtils";
 import {
   updateCurrentEditor,
   useCurrentEditorPart,
   useCurrentEditorPartShallow,
-  useDeviceLibrary,
-  useDeviceLocalizations,
-  useLibraries,
 } from "../state";
+import {
+  lookupDeviceResourceClass,
+  lookupResourceClass,
+  ResolvedResourceClass,
+} from "../stateTransformations";
 
 // ---------------------------------------------------------------------------
 // Read
 // ---------------------------------------------------------------------------
 
-export function useResourceIds(): string[] {
+export function useResourceCodexIds(): string[] {
   const ids = useCurrentEditorPartShallow((state) =>
-    Object.keys(state.resources.resources),
+    Object.values(state.resources).map((res) => res.codexId),
   );
   return ids ?? [];
 }
 
 export function useResourceEditors(): ItemEditor[] {
-  const editors = useCurrentEditorPartShallow((state) =>
-    state.resources.itemEditorLayout.filter(
-      (editor) => editor.udrId in state.resources.resources,
-    ),
-  );
-  return editors ?? [];
+  const editorIds =
+    useCurrentEditorPartShallow((state) => state.resourceEditors) || [];
+  const codexIds =
+    useCurrentEditorPartShallow((state) =>
+      editorIds.map((id) =>
+        state.resources[id] ? state.resources[id].codexId : null,
+      ),
+    ) || [];
+
+  return editorIds.reduce<ItemEditor[]>((acc, id, index) => {
+    if (codexIds[index]) {
+      acc.push({
+        id,
+        codexId: codexIds[index],
+      });
+    }
+    return acc;
+  }, []);
 }
 
-export function useResource(id: string): Resource | undefined {
-  return useCurrentEditorPart((state) => state.resources.resources[id]);
-}
+export function useResourceInfo(
+  id: EntityId,
+): { resource: Resource; resourceClass?: ResolvedResourceClass } | undefined {
+  const editorPart = useCurrentEditorPartShallow((editor) => {
+    return [
+      editor.resources[id],
+      editor.libraries,
+      editor.resourceClasses,
+      editor.localizations,
+    ] as const;
+  });
+  if (!editorPart) return undefined;
 
-export function useResourceClass(
-  resource?: Resource,
-): ResolvedResourceClass | undefined {
+  const [resource, libraries, deviceResourceClasses, localizations] =
+    editorPart;
   const database = useUdrDatabase();
-  const libraries = useLibraries();
-  const deviceLibrary = useDeviceLibrary();
-  const deviceLocalizations = useDeviceLocalizations();
+  const locale = useCurrentLocale();
 
-  if (!resource) {
-    return undefined;
-  }
-
-  if (resource.library) {
-    const libraryVersion = libraries?.[resource.library];
+  let resourceClass = undefined;
+  if (resource.class.type === "imported") {
+    const libraryVersion = libraries?.[resource.class.library];
     if (!libraryVersion) {
       return undefined;
     }
 
-    return lookupResourceClass(
+    resourceClass = lookupResourceClass(
       database,
-      resource.library,
+      resource.class.codexId,
+      resource.class.library,
       libraryVersion,
-      resource.class,
+      locale,
     );
   } else {
-    return lookupDeviceResourceClass(
-      deviceLibrary,
-      deviceLocalizations,
-      resource.class,
+    resourceClass = lookupDeviceResourceClass(
+      deviceResourceClasses,
+      localizations,
+      resource.class.id,
+      locale,
     );
   }
+
+  return {
+    resource,
+    resourceClass,
+  };
 }
 
 export function useResourceAssetId(resource?: Resource): string | undefined {
   return useCurrentEditorPart((state) => {
     if (resource && resource.default) {
-      return state.resources.resourceAssets[resource.default];
+      return state.resourceAssets[resource.default];
     }
     return undefined;
   });
@@ -90,37 +109,41 @@ export function useResourceAssetId(resource?: Resource): string | undefined {
 
 export function createNewResource(
   library: string,
-  cls: string,
-  id: string,
+  resourceClass: CodexId,
+  codexId: CodexId,
   _friendlyName: string,
 ) {
   updateCurrentEditor((editor) => {
-    const resourceState = editor.resources;
-
-    if (id in resourceState.resources) {
+    if (
+      Object.values(editor.resources).some((res) => res.codexId === codexId)
+    ) {
       return;
     }
 
-    resourceState.resources[id] = {
-      library,
-      class: cls,
-      access: [Access.Read, Access.Write],
-      lifetime: Lifetime.Runtime,
+    const resId = newEntityId();
+
+    editor.resources[resId] = {
+      codexId,
+      // TODO handle device resource classes
+      class: {
+        type: "imported",
+        codexId: resourceClass,
+        library,
+      },
+      access: ["read", "write"],
+      lifetime: "runtime",
     };
 
-    resourceState.itemEditorLayout.push({
-      id: nanoid(),
-      udrId: id,
-    });
+    editor.resourceEditors.push(resId);
   });
 }
 
 export function modifyResource(
-  id: string,
-  recipe: (state: Draft<Resource>) => void,
+  id: EntityId,
+  recipe: (state: Draft<Unlocalized<Resource>>) => void,
 ) {
   updateCurrentEditor((editor) => {
-    const resource = editor.resources.resources[id];
+    const resource = editor.resources[id];
     if (!resource) {
       return;
     }
@@ -129,43 +152,18 @@ export function modifyResource(
   });
 }
 
-export function changeResourceId(id: string, newId: string) {
+export function deleteResource(id: EntityId) {
   updateCurrentEditor((editor) => {
-    const resState = editor.resources;
-    if (newId in resState.resources) {
-      return;
-    }
-
-    const existingRes = resState.resources[id];
-    if (!existingRes) {
-      return;
-    }
-
-    // Update UDR
-    resState.resources[newId] = existingRes;
-    delete resState.resources[id];
-
-    // Update UI resState
-    resState.itemEditorLayout.forEach((editor) => {
-      if (editor.udrId === id) {
-        editor.udrId = newId;
-      }
-    });
-  });
-}
-
-export function deleteResource(id: string) {
-  updateCurrentEditor((editor) => {
-    const resourceState = editor.resources;
-    delete resourceState.resources[id];
-    resourceState.itemEditorLayout = resourceState.itemEditorLayout.filter(
-      (value) => value.udrId !== id,
+    // TODO remove asset IDs
+    delete editor.resources[id];
+    editor.resourceEditors = editor.resourceEditors.filter(
+      (value) => value !== id,
     );
   });
 }
 
 export async function updateResourceAsset(
-  resourceId: string,
+  resourceId: EntityId,
   oldAssetId?: string,
   newAssetId?: string,
 ) {
@@ -174,19 +172,19 @@ export async function updateResourceAsset(
   }
 
   updateCurrentEditor((editor) => {
-    const resource = editor.resources.resources[resourceId];
+    const resource = editor.resources[resourceId];
     if (!resource) {
       return;
     }
 
     if (resource.default) {
-      delete editor.resources.resourceAssets[resource.default];
+      delete editor.resourceAssets[resource.default];
     }
 
     if (newAssetId) {
       const fileName = getFileName(newAssetId, resource.mediaType);
       resource.default = fileName;
-      editor.resources.resourceAssets[fileName] = newAssetId;
+      editor.resourceAssets[fileName] = newAssetId;
     } else {
       resource.default = undefined;
     }

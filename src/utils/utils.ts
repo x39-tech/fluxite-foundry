@@ -1,8 +1,18 @@
 import { clsx, type ClassValue } from "clsx";
-import { Unit } from "e173";
 import { IJsonRowNode } from "flexlayout-react";
 import { nanoid } from "nanoid";
 import { twMerge } from "tailwind-merge";
+import {
+  CodexId,
+  EntityId,
+  FCUnit,
+  ParameterReference,
+} from "app/persistentState";
+
+export interface ItemEditor {
+  id: EntityId;
+  codexId: CodexId;
+}
 
 export function getUniqueItemId(
   existingItemIds: string[],
@@ -185,7 +195,7 @@ export function buildQualifiedId(
   return `${orgIdString}.${entityTypeString}.${id}`;
 }
 
-export function unitToString(unit?: Unit): string {
+export function unitToString(unit?: FCUnit): string {
   if (unit) {
     if (unit.exponent) {
       return `${unit.name} ^ ${unit.exponent}`;
@@ -212,4 +222,49 @@ export function assignOrDelete<T, K extends OptionalKeys<T>>(
   } else {
     delete obj[property];
   }
+}
+
+// ---------------------------------------------------------------------------
+// ParameterReference Helpers
+// ---------------------------------------------------------------------------
+
+// Regex to match parameter reference syntax: "paramId" or "paramId[index]"
+const PARAM_REF_REGEX = /^([^[\]]+)(?:\[(\d+)\])?$/;
+
+/**
+ * Parses a parameter reference string from Fluxite Codex format.
+ * Examples:
+ *   "frame" -> { codexId: "frame" }
+ *   "frame[0]" -> { codexId: "frame", index: 0 }
+ *   "frame[1]" -> { codexId: "frame", index: 1 }
+ */
+export function parseParameterReference(refString: string): ParameterReference {
+  const match = refString.match(PARAM_REF_REGEX);
+  if (!match) {
+    // If the regex doesn't match, treat the entire string as the codexId
+    return { codexId: CodexId(refString) };
+  }
+
+  const codexId = CodexId(match[1]);
+  const indexStr = match[2];
+
+  if (indexStr !== undefined) {
+    return { codexId, index: parseInt(indexStr, 10) };
+  }
+
+  return { codexId };
+}
+
+/**
+ * Serializes a ParameterReference to Fluxite Codex format string.
+ * Examples:
+ *   { codexId: "frame" } -> "frame"
+ *   { codexId: "frame", index: 0 } -> "frame[0]"
+ *   { codexId: "frame", index: 1 } -> "frame[1]"
+ */
+export function serializeParameterReference(ref: ParameterReference): string {
+  if (ref.index !== undefined) {
+    return `${ref.codexId}[${ref.index}]`;
+  }
+  return ref.codexId;
 }

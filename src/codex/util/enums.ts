@@ -1,4 +1,5 @@
-import { Access, Lifetime, DataType, ParameterAccess } from "e173";
+import { Access, Lifetime, ParameterAccess } from "e173";
+import { fcDataTypes, FCDataType } from "app/persistentState";
 
 const accessFriendlyNames: FriendlyNameMap<Access> = {
   [Access.Read]: "Read",
@@ -30,18 +31,18 @@ export function getLifetimeFriendlyName(key: Lifetime): string {
   return lifetimeFriendlyNames[key] || key;
 }
 
-const dataTypeFriendlyNames = Object.values(DataType).reduce(
+const dataTypeFriendlyNames = Object.values(fcDataTypes).reduce(
   (previousValue, currentValue) => {
-    if (currentValue === DataType.Uuid) {
+    if (currentValue === fcDataTypes.UUID) {
       return { [currentValue]: currentValue.toUpperCase(), ...previousValue };
     } else {
       return { [currentValue]: toTitleCase(currentValue), ...previousValue };
     }
   },
   {},
-) as FriendlyNameMap<DataType>;
+) as FriendlyNameMap<FCDataType>;
 
-export function getDataTypeFriendlyName(key: DataType): string {
+export function getDataTypeFriendlyName(key: FCDataType): string {
   return dataTypeFriendlyNames[key] || key;
 }
 

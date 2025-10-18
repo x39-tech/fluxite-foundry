@@ -22,6 +22,7 @@ import {
 import { Label } from "components/scn-ui/Label";
 import { AppInput } from "components/AppInput";
 import { FieldSet } from "components/FieldSet";
+import { importDeviceClassEditor } from "features/deviceClassEditor/import";
 import {
   validateInputFile,
   UdrImportResult,
@@ -30,7 +31,6 @@ import {
   getDeviceClassFromArchive,
   getDeviceClassFromDocument,
 } from "./importUtils";
-import { importDeviceClassEditor } from "./state";
 
 interface Props {
   isOpen: boolean;

@@ -1,17 +1,19 @@
 import { create } from "zustand";
 import { persist, devtools } from "zustand/middleware";
 import { produce } from "immer";
-import { AppPersistentState, AppRuntimeState } from "./state";
-import { loadDefaultLibraries, UdrDatabase } from "udr/udrDatabase";
+import { AppRuntimeState } from "./runtimeState";
+import { loadDefaultLibraries, CodexDatabase } from "codex/codexDatabase";
 import {
   getCurrentEditor,
   updateDmxController,
 } from "features/deviceClassEditor/state";
 import {
-  CURRENT_STATE_VERSION,
+  VERSION as STATE_VERSION,
   getDefaultState,
   migrateState,
-} from "./stateMigrations";
+  AppPersistentState,
+  Theme,
+} from "./persistentState";
 
 // ---------------------------------------------------------------------------
 // Read
@@ -25,8 +27,8 @@ export const useAppPersistentStore = create<AppPersistentState>()(
   persist(
     devtools(() => getDefaultState(), { name: "ff-persistent-state" }),
     {
-      name: "ff-persistent-state",
-      version: CURRENT_STATE_VERSION,
+      name: "ff-persistent-state-gen2",
+      version: STATE_VERSION,
       migrate: migrateState,
       onRehydrateStorage: () => {
         return (state, error) => {
@@ -42,12 +44,37 @@ export const useAppPersistentStore = create<AppPersistentState>()(
   ),
 );
 
-export function useUdrDatabase(): UdrDatabase {
+export function useUdrDatabase(): CodexDatabase {
   return useAppRuntimeStore((state) => state.udrDatabase);
 }
 
+export function useTheme(): Theme {
+  return useAppPersistentStore((state) => state.appSettings.theme);
+}
+
+export function useSystemDarkModePreference(): boolean {
+  return useAppRuntimeStore((state) => state.systemDarkModePreference);
+}
+
+/**
+ * Returns whether dark mode is currently active.
+ * This is computed from the theme setting:
+ * - "dark" → true
+ * - "light" → false
+ * - "system" → matches system preference (reactive to OS changes)
+ */
 export function useDarkMode(): boolean {
-  return useAppPersistentStore((state) => state.appSettings.darkMode);
+  const theme = useTheme();
+  const systemPreference = useSystemDarkModePreference();
+
+  if (theme === "system") {
+    return systemPreference;
+  }
+  return theme === "dark";
+}
+
+export function useCurrentLocale(): string {
+  return useAppPersistentStore((state) => state.appSettings.locale);
 }
 
 // ---------------------------------------------------------------------------
@@ -66,9 +93,15 @@ export function updateAppRuntimeState(
   useAppRuntimeStore.setState(produce(recipe));
 }
 
-export function setDarkMode(darkMode: boolean) {
+export function setTheme(theme: Theme) {
   updateAppPersistentState((state) => {
-    state.appSettings.darkMode = darkMode;
+    state.appSettings.theme = theme;
+  });
+}
+
+export function setSystemDarkModePreference(isDark: boolean) {
+  updateAppRuntimeState((state) => {
+    state.systemDarkModePreference = isDark;
   });
 }
 
@@ -76,11 +109,19 @@ export function setDarkMode(darkMode: boolean) {
 // Helpers
 // ---------------------------------------------------------------------------
 
+function getSystemDarkModePreference(): boolean {
+  if (typeof window !== "undefined" && window.matchMedia) {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+  return false;
+}
+
 function getDefaultRuntimeState(): AppRuntimeState {
   return {
     dmxController: {
       state: "not-created",
     },
     udrDatabase: loadDefaultLibraries(),
+    systemDarkModePreference: getSystemDarkModePreference(),
   };
 }

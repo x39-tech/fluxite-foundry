@@ -13,10 +13,12 @@ import {
 } from "components/scn-ui/Dialog";
 import { ParameterClassDisplay } from "./ParameterClassDisplay";
 import { validateNewItemId } from "utils/inputValidation";
-import { lookupParameterClass, ParameterClassWithId } from "udr/udrDatabase";
-import { useUdrDatabase } from "app/store";
+import { useCurrentLocale, useUdrDatabase } from "app/store";
 import { getUniqueItemId } from "utils/utils";
-import { createNewParameter, useParameterIds } from "./state";
+import { createNewParameter, useParameterCodexIds } from "./state";
+import { lookupParameterClass } from "../stateTransformations";
+import { ItemClassWithId } from "codex/codexDatabase";
+import { CodexId } from "app/persistentState";
 
 interface Props {
   isOpen: boolean;
@@ -25,11 +27,12 @@ interface Props {
 
 export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
   const database = useUdrDatabase();
-  const parameterIds = useParameterIds();
+  const parameterIds = useParameterCodexIds();
+  const locale = useCurrentLocale();
 
-  const [newItemClass, setNewItemClass] = useState<
-    ParameterClassWithId | undefined
-  >(undefined);
+  const [newItemClass, setNewItemClass] = useState<ItemClassWithId | undefined>(
+    undefined,
+  );
   const [newItemId, setNewItemId] = useState(getUniqueItemId(parameterIds));
   const [newItemFriendlyName, setNewItemFriendlyName] = useState("My New Item");
 
@@ -41,13 +44,18 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
     }
   }, [isOpen]);
 
-  const renderItemClassTooltip = (item: ParameterClassWithId) => {
-    // TODO clean up
+  const renderItemClassTooltip = (item: ItemClassWithId) => {
+    if (item.type === "local") {
+      // TODO: handle
+      return <></>;
+    }
+
     const resolvedClass = lookupParameterClass(
       database,
+      item.codexId,
       item.libraryId,
       item.libraryVersion,
-      item.id,
+      locale,
     );
     return <ParameterClassDisplay paramClass={resolvedClass!} />;
   };
@@ -98,10 +106,13 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
             onClick={() => {
               if (newItemClass) {
                 createNewParameter(
-                  newItemClass.libraryId,
-                  newItemClass.id,
-                  newItemId,
+                  newItemClass.type === "imported"
+                    ? newItemClass.libraryId
+                    : undefined,
+                  newItemClass.codexId,
+                  CodexId(newItemId),
                   newItemFriendlyName,
+                  locale,
                 );
               }
 

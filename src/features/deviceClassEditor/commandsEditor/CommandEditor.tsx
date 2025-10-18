@@ -1,5 +1,6 @@
 import { useEffect, useId } from "react";
 import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
+import { ExclamationTriangleIcon } from "@heroicons/react/16/solid";
 import { FieldSet } from "components/FieldSet";
 import { Label } from "components/scn-ui/Label";
 import { AppInput } from "components/AppInput";
@@ -15,50 +16,61 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "components/scn-ui/Tooltip";
-import { getLocalizedCommand } from "udr/udrDatabase";
+import { Alert, AlertDescription, AlertTitle } from "components/scn-ui/Alert";
 import { unitToString } from "utils/utils";
 import { validateNewItemId } from "utils/inputValidation";
+import { useCurrentLocale } from "app/store";
+import { CodexId, EntityId, EnumChoiceParent } from "app/persistentState";
 import {
-  changeCommandId,
-  EnumChoiceLocation,
   modifyCommand,
-  modifyCommandEnumChoice,
-  modifyCommandFriendlyName,
-  removeCommandEnumChoice,
-  useCommand,
-  useCommandClass,
-  useCommandIds,
+  modifyCommandLocalizedValue,
+  useCommandCodexIds,
+  useCommandInfo,
 } from "./state";
-import { useDeviceLocalizations } from "../state";
 
 interface Props {
-  id: string;
+  id: EntityId;
 }
 
 export const CommandEditor = ({ id }: Props) => {
-  const commandIds = useCommandIds();
-  const unlocalizedCommand = useCommand(id);
-  const commandClass = useCommandClass(unlocalizedCommand);
-  const localizations = useDeviceLocalizations();
+  const commandCodexIds = useCommandCodexIds();
+  const commandInfo = useCommandInfo(id);
+  const locale = useCurrentLocale();
 
   const idPrefix = useId();
 
   const commandHasReturnValues =
-    commandClass?.returns && Object.values(commandClass?.returns).length > 0;
+    commandInfo?.commandClass?.returnValues &&
+    Object.values(commandInfo.commandClass.returnValues).length > 0;
 
   // Completion Notification must be true if the command class has a return value
   useEffect(() => {
-    if (unlocalizedCommand && commandHasReturnValues) {
+    if (commandInfo?.command && commandHasReturnValues) {
       modifyCommand(id, (command) => (command.completionNotification = true));
     }
-  }, [commandClass]);
+  }, [commandInfo?.commandClass, commandHasReturnValues, id]);
 
-  if (!unlocalizedCommand || !commandClass) {
-    // TODO: better user feedback here
+  if (!commandInfo) {
     return <RenderError />;
   }
 
-  const command = getLocalizedCommand(unlocalizedCommand, localizations);
+  const { command, commandClass, instanceArgEnumChoices } = commandInfo;
+
+  if (!commandClass) {
+    return (
+      <Alert>
+        <ExclamationTriangleIcon />
+        <AlertTitle>
+          <span>
+            Class <code>{command.class.codexId}</code> not found.
+          </span>
+        </AlertTitle>
+        <AlertDescription>
+          This may be an indication of invalid UDR.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -68,14 +80,18 @@ export const CommandEditor = ({ id }: Props) => {
           <AppInput
             id={`${idPrefix}-library`}
             disabled
-            value={command.library || "Device Library"}
+            value={
+              command.class.type === "imported"
+                ? command.class.library
+                : "Device Library"
+            }
           />
         </FieldSet>
         <FieldSet>
           <Label htmlFor={`${idPrefix}-class`}>Class</Label>
           <ItemClassDisplay
             id={`${idPrefix}-class`}
-            value={command.class}
+            value={command.class.codexId}
             tooltipRenderer={() => (
               <CommandClassDisplay commandClass={commandClass} />
             )}
@@ -85,12 +101,14 @@ export const CommandEditor = ({ id }: Props) => {
           <Label htmlFor={`${idPrefix}-id`}>ID</Label>
           <ValidatedInput
             id={`${idPrefix}-id`}
-            value={id}
-            onConfirm={(newValue) => changeCommandId(id, newValue)}
+            value={command.codexId}
+            onConfirm={(newValue) =>
+              modifyCommand(id, (draft) => (draft.codexId = CodexId(newValue)))
+            }
             validator={(input) =>
               validateNewItemId(
                 input,
-                commandIds.filter((value) => value !== id),
+                commandCodexIds.filter((value) => value !== command.codexId),
               )
             }
           />
@@ -99,8 +117,10 @@ export const CommandEditor = ({ id }: Props) => {
           <Label htmlFor={`${idPrefix}-friendlyName`}>Display Name</Label>
           <ValidatedInput
             id={`${idPrefix}-friendlyName`}
-            value={command.friendlyName || ""}
-            onConfirm={(newValue) => modifyCommandFriendlyName(id, newValue)}
+            value={command.friendlyName?.value || ""}
+            onConfirm={(newValue) =>
+              modifyCommandLocalizedValue(id, "friendlyName", newValue, locale)
+            }
           />
         </FieldSet>
         <LabeledCheckbox
@@ -121,115 +141,118 @@ export const CommandEditor = ({ id }: Props) => {
         <ItemGroup id={`${idPrefix}-arguments`}>
           {commandClass.arguments &&
             Object.entries(commandClass.arguments).map(
-              ([argId, argument], index) => (
-                <div key={index} className="flex flex-col gap-1">
-                  <div className="text-sm ml-2">{argId}</div>
-                  <Item variant="outline" className="items-start">
-                    <FieldSet>
-                      <Label>Name</Label>
-                      <div className="text-sm flex gap-1">
-                        {argument.name}
-                        {argument.description && (
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <QuestionMarkCircleIcon className="size-5 opacity-50" />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              {argument.description}
-                            </TooltipContent>
-                          </Tooltip>
-                        )}
-                      </div>
-                    </FieldSet>
-                    <FieldSet>
-                      <Label id={`${idPrefix}-arg-${argId}-dataType`}>
-                        Data Type
-                      </Label>
-                      <div
-                        aria-labelledby={`${idPrefix}-arg-${argId}-dataType`}
-                        className="text-sm"
-                      >
-                        {argument.dataType}
-                      </div>
-                    </FieldSet>
-                    <FieldSet>
-                      <Label id={`${idPrefix}-arg-${argId}-required`}>
-                        Required
-                      </Label>
-                      <div
-                        aria-labelledby={`${idPrefix}-arg-${argId}-required`}
-                      >
-                        {argument.required ? "Yes" : "No"}
-                      </div>
-                    </FieldSet>
-                    {argument.unit && (
+              ([argId, argument], index) => {
+                const argCodexId = CodexId(argId);
+                const parent: EnumChoiceParent =
+                  command.class.type === "imported"
+                    ? {
+                        type: "cmdArg",
+                        id: argCodexId,
+                        idType: "imported",
+                        cmdId: id,
+                      }
+                    : {
+                        type: "cmdArg",
+                        id: command.class.id,
+                        idType: "local",
+                        cmdId: id,
+                      };
+
+                return (
+                  <div key={index} className="flex flex-col gap-1">
+                    <div className="text-sm ml-2">{argId}</div>
+                    <Item variant="outline" className="items-start">
                       <FieldSet>
-                        <Label id={`${idPrefix}-arg-${argId}-unit`}>Unit</Label>
-                        <div
-                          aria-labelledby={`${idPrefix}-arg-${argId}-unit`}
-                          className="text-sm"
-                        >
-                          {unitToString(argument.unit)}
+                        <Label>Name</Label>
+                        <div className="text-sm flex gap-1">
+                          {argument.name.value}
+                          {argument.descripton && (
+                            <Tooltip>
+                              <TooltipTrigger>
+                                <QuestionMarkCircleIcon className="size-5 opacity-50" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {argument.descripton.value}
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
                         </div>
                       </FieldSet>
-                    )}
-                    {argument.choices && (
                       <FieldSet>
-                        <Label htmlFor={`${idPrefix}-arg-${argId}-choices`}>
-                          Enum Choices
+                        <Label id={`${idPrefix}-arg-${argId}-dataType`}>
+                          Data Type
                         </Label>
-                        <EnumChoicesEditor
-                          id={`${idPrefix}-arg-${argId}-choices`}
-                          forName={argument.name}
-                          classChoices={argument.choices}
-                          instanceChoices={command.argumentChoices?.[argId]}
-                          onExclusionChanged={(choiceId, excluded) =>
-                            modifyCommand(id, (draft) => {
-                              draft.argumentChoices ||= {};
-                              draft.argumentChoices[argId] ||= { excluded: [] };
-                              draft.argumentChoices[argId].excluded ||= [];
-
-                              const excludedList =
-                                draft.argumentChoices[argId].excluded;
-
-                              if (excluded) {
-                                if (!excludedList.includes(choiceId)) {
-                                  excludedList.push(choiceId);
-                                }
-                              } else {
-                                draft.argumentChoices[argId].excluded =
-                                  excludedList.filter(
-                                    (value) => value !== choiceId,
-                                  );
-                              }
-                            })
-                          }
-                          onInstanceChoiceRemoved={(choiceIndex) =>
-                            removeCommandEnumChoice(
-                              id,
-                              argId,
-                              choiceIndex,
-                              EnumChoiceLocation.Argument,
-                            )
-                          }
-                          onInstanceChoiceUpdated={(
-                            choiceIndex,
-                            updatedChoice,
-                          ) =>
-                            modifyCommandEnumChoice(
-                              id,
-                              argId,
-                              choiceIndex,
-                              updatedChoice,
-                              EnumChoiceLocation.Argument,
-                            )
-                          }
-                        />
+                        <div
+                          aria-labelledby={`${idPrefix}-arg-${argId}-dataType`}
+                          className="text-sm"
+                        >
+                          {argument.dataType}
+                        </div>
                       </FieldSet>
-                    )}
-                  </Item>
-                </div>
-              ),
+                      <FieldSet>
+                        <Label id={`${idPrefix}-arg-${argId}-required`}>
+                          Required
+                        </Label>
+                        <div
+                          aria-labelledby={`${idPrefix}-arg-${argId}-required`}
+                        >
+                          {argument.required ? "Yes" : "No"}
+                        </div>
+                      </FieldSet>
+                      {argument.unit && (
+                        <FieldSet>
+                          <Label id={`${idPrefix}-arg-${argId}-unit`}>
+                            Unit
+                          </Label>
+                          <div
+                            aria-labelledby={`${idPrefix}-arg-${argId}-unit`}
+                            className="text-sm"
+                          >
+                            {unitToString(argument.unit)}
+                          </div>
+                        </FieldSet>
+                      )}
+                      {argument.choices && argument.choices.length > 0 && (
+                        <FieldSet>
+                          <Label htmlFor={`${idPrefix}-arg-${argId}-choices`}>
+                            Enum Choices
+                          </Label>
+                          <EnumChoicesEditor
+                            id={`${idPrefix}-arg-${argId}-choices`}
+                            forName={argument.name.value}
+                            parent={parent}
+                            classChoices={argument.choices}
+                            instanceChoices={instanceArgEnumChoices[argCodexId]}
+                            exclusions={command.argEnumExclusions?.[argCodexId]}
+                            onExclusionChanged={(choiceId, excluded) =>
+                              modifyCommand(id, (draft) => {
+                                draft.argEnumExclusions ||= {};
+                                draft.argEnumExclusions[argCodexId] ||= [];
+
+                                const excludedList =
+                                  draft.argEnumExclusions[argCodexId];
+
+                                if (excluded) {
+                                  if (
+                                    !excludedList.includes(CodexId(choiceId))
+                                  ) {
+                                    excludedList.push(CodexId(choiceId));
+                                  }
+                                } else {
+                                  draft.argEnumExclusions[argCodexId] =
+                                    excludedList.filter(
+                                      (value) => value !== choiceId,
+                                    );
+                                }
+                              })
+                            }
+                          />
+                        </FieldSet>
+                      )}
+                    </Item>
+                  </div>
+                );
+              },
             )}
         </ItemGroup>
       </FieldSet>

@@ -1,10 +1,23 @@
 import { render, screen, within } from "@testing-library/react";
+import { renderHook } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DataType } from "e173";
 import { ParameterEditor } from "./ParameterEditor";
 import { createDeviceClassEditor } from "features/topNavBar/state";
-import { createNewParameter } from "./state";
+import { createNewParameter, useParameters } from "./state";
 import { updateCurrentEditor } from "../state";
+import {
+  LocalizationKey,
+  EntityId,
+  CodexId,
+  LocalizationDbSchema,
+} from "app/persistentState";
+
+// Helper to get the current hook value
+function getHookValue<T>(hook: () => T): T {
+  const { result } = renderHook(hook);
+  return result.current;
+}
 
 // Helper to expand a parameter editor
 async function expandParameter(parameterName: string) {
@@ -15,6 +28,26 @@ async function expandParameter(parameterName: string) {
   await user.click(expandButton);
 }
 
+// Helper to create a parameter and return its EntityId
+function createParameterAndGetId(
+  library: string | undefined,
+  paramClass: CodexId,
+  codexId: CodexId,
+  friendlyName: string,
+  locale: string,
+): EntityId {
+  createNewParameter(library, paramClass, codexId, friendlyName, locale);
+  const params = getHookValue(useParameters);
+  // Find the parameter with the matching codexId
+  const paramEntry = Object.entries(params || {}).find(
+    ([_, param]) => param.codexId === codexId,
+  );
+  if (!paramEntry) {
+    throw new Error(`Parameter with codexId ${codexId} not found`);
+  }
+  return EntityId(paramEntry[0]);
+}
+
 beforeEach(() => {
   createDeviceClassEditor();
 });
@@ -23,34 +56,57 @@ describe("Enum Parameter Editing", () => {
   test("renders enum choices editor for enum parameters", async () => {
     // Create an enum parameter class
     updateCurrentEditor((editor) => {
-      editor.localizations["en-US"] ||= { strings: {} };
-      const strings = editor.localizations["en-US"].strings!;
+      const classNameKey = LocalizationKey("test_enum_class_name");
+      editor.localizations[classNameKey] = {
+        strings: LocalizationDbSchema.parse({ "en-US": "Test Enum" }),
+        items: [],
+      };
 
-      strings["choice1_name"] = "Choice 1";
-      strings["choice2_name"] = "Choice 2";
-      strings["test_enum_name"] = "Test Enum";
-
-      editor.deviceLibrary.parameterClasses = {
-        TestEnumClass: {
-          "@name": "test_enum_name",
-          dataType: DataType.Enum,
-          choices: [
-            { id: "choice1", "@name": "choice1_name" },
-            { id: "choice2", "@name": "choice2_name" },
-          ],
+      const classId = EntityId("TestEnumClass");
+      editor.parameterClasses[classId] = {
+        codexId: CodexId("TestEnumClass"),
+        dataType: DataType.Enum,
+        localized: {
+          name: classNameKey,
         },
+      };
+
+      // Add enum choices for the class
+      const choice1Key = LocalizationKey("choice1_name");
+      const choice2Key = LocalizationKey("choice2_name");
+      editor.localizations[choice1Key] = {
+        strings: LocalizationDbSchema.parse({ "en-US": "Choice 1" }),
+        items: [],
+      };
+      editor.localizations[choice2Key] = {
+        strings: LocalizationDbSchema.parse({ "en-US": "Choice 2" }),
+        items: [],
+      };
+
+      editor.enumChoices[EntityId("choice1")] = {
+        parent: { type: "paramClass", id: classId },
+        codexId: CodexId("choice1"),
+        index: 0,
+        localized: { name: choice1Key },
+      };
+      editor.enumChoices[EntityId("choice2")] = {
+        parent: { type: "paramClass", id: classId },
+        codexId: CodexId("choice2"),
+        index: 1,
+        localized: { name: choice2Key },
       };
     });
 
     // Add a parameter using that class
-    createNewParameter(
+    const paramId = createParameterAndGetId(
       undefined,
-      "TestEnumClass",
-      "test-param",
+      CodexId("TestEnumClass"),
+      CodexId("test-param"),
       "Test Enum Parameter",
+      "en-US",
     );
 
-    render(<ParameterEditor id="test-param" />);
+    render(<ParameterEditor paramId={paramId} />);
     await expandParameter("Test Enum Parameter");
 
     // Verify enum choices editor is rendered
@@ -60,28 +116,32 @@ describe("Enum Parameter Editing", () => {
   test("does not render enum choices editor for non-enum parameters", async () => {
     // Create a number parameter class
     updateCurrentEditor((editor) => {
-      editor.localizations["en-US"] ||= { strings: {} };
-      const strings = editor.localizations["en-US"].strings!;
+      const classNameKey = LocalizationKey("test_number_class_name");
+      editor.localizations[classNameKey] = {
+        strings: LocalizationDbSchema.parse({ "en-US": "Test Number" }),
+        items: [],
+      };
 
-      strings["test_number_name"] = "Test Number";
-
-      editor.deviceLibrary.parameterClasses = {
-        TestNumberClass: {
-          "@name": "test_number_name",
-          dataType: DataType.Number,
+      const classId = EntityId("TestNumberClass");
+      editor.parameterClasses[classId] = {
+        codexId: CodexId("TestNumberClass"),
+        dataType: DataType.Number,
+        localized: {
+          name: classNameKey,
         },
       };
     });
 
     // Add a parameter using that class
-    createNewParameter(
+    const paramId = createParameterAndGetId(
       undefined,
-      "TestNumberClass",
-      "test-param",
+      CodexId("TestNumberClass"),
+      CodexId("test-param"),
       "Test Number Parameter",
+      "en-US",
     );
 
-    render(<ParameterEditor id="test-param" />);
+    render(<ParameterEditor paramId={paramId} />);
     await expandParameter("Test Number Parameter");
 
     // Verify enum choices editor is NOT rendered
@@ -93,30 +153,68 @@ describe("Enum Parameter Editing", () => {
 
     // Create an enum parameter class with choices
     updateCurrentEditor((editor) => {
-      editor.localizations["en-US"] ||= { strings: {} };
-      const strings = editor.localizations["en-US"].strings!;
+      const classNameKey = LocalizationKey("test_enum_class_name");
+      editor.localizations[classNameKey] = {
+        strings: LocalizationDbSchema.parse({ "en-US": "Test Enum" }),
+        items: [],
+      };
 
-      strings["choice1_name"] = "Choice 1";
-      strings["choice2_name"] = "Choice 2";
-      strings["choice3_name"] = "Choice 3";
-      strings["test_enum_name"] = "Test Enum";
-
-      editor.deviceLibrary.parameterClasses = {
-        TestEnumClass: {
-          "@name": "test_enum_name",
-          dataType: DataType.Enum,
-          choices: [
-            { id: "choice1", "@name": "choice1_name" },
-            { id: "choice2", "@name": "choice2_name" },
-            { id: "choice3", "@name": "choice3_name" },
-          ],
+      const classId = EntityId("TestEnumClass");
+      editor.parameterClasses[classId] = {
+        codexId: CodexId("TestEnumClass"),
+        dataType: DataType.Enum,
+        localized: {
+          name: classNameKey,
         },
+      };
+
+      // Add enum choices for the class
+      const choice1Key = LocalizationKey("choice1_name");
+      const choice2Key = LocalizationKey("choice2_name");
+      const choice3Key = LocalizationKey("choice3_name");
+
+      editor.localizations[choice1Key] = {
+        strings: LocalizationDbSchema.parse({ "en-US": "Choice 1" }),
+        items: [],
+      };
+      editor.localizations[choice2Key] = {
+        strings: LocalizationDbSchema.parse({ "en-US": "Choice 2" }),
+        items: [],
+      };
+      editor.localizations[choice3Key] = {
+        strings: LocalizationDbSchema.parse({ "en-US": "Choice 3" }),
+        items: [],
+      };
+
+      editor.enumChoices[EntityId("choice1")] = {
+        parent: { type: "paramClass", id: classId },
+        codexId: CodexId("choice1"),
+        index: 0,
+        localized: { name: choice1Key },
+      };
+      editor.enumChoices[EntityId("choice2")] = {
+        parent: { type: "paramClass", id: classId },
+        codexId: CodexId("choice2"),
+        index: 1,
+        localized: { name: choice2Key },
+      };
+      editor.enumChoices[EntityId("choice3")] = {
+        parent: { type: "paramClass", id: classId },
+        codexId: CodexId("choice3"),
+        index: 2,
+        localized: { name: choice3Key },
       };
     });
 
-    createNewParameter(undefined, "TestEnumClass", "test-param", "Test Enum");
+    const paramId = createParameterAndGetId(
+      undefined,
+      CodexId("TestEnumClass"),
+      CodexId("test-param"),
+      "Test Enum",
+      "en-US",
+    );
 
-    render(<ParameterEditor id="test-param" />);
+    render(<ParameterEditor paramId={paramId} />);
     await expandParameter("Test Enum");
 
     // Open the View dropdown to see the choices
@@ -133,28 +231,57 @@ describe("Enum Parameter Editing", () => {
     const user = userEvent.setup();
 
     updateCurrentEditor((editor) => {
-      editor.localizations["en-US"] ||= { strings: {} };
-      const strings = editor.localizations["en-US"].strings!;
+      const classNameKey = LocalizationKey("test_enum_class_name");
+      editor.localizations[classNameKey] = {
+        strings: LocalizationDbSchema.parse({ "en-US": "Test Enum" }),
+        items: [],
+      };
 
-      strings["choice1_name"] = "Choice 1";
-      strings["choice2_name"] = "Choice 2";
-      strings["test_enum_name"] = "Test Enum";
-
-      editor.deviceLibrary.parameterClasses = {
-        TestEnumClass: {
-          "@name": "test_enum_name",
-          dataType: DataType.Enum,
-          choices: [
-            { id: "choice1", "@name": "choice1_name" },
-            { id: "choice2", "@name": "choice2_name" },
-          ],
+      const classId = EntityId("TestEnumClass");
+      editor.parameterClasses[classId] = {
+        codexId: CodexId("TestEnumClass"),
+        dataType: DataType.Enum,
+        localized: {
+          name: classNameKey,
         },
+      };
+
+      // Add enum choices for the class
+      const choice1Key = LocalizationKey("choice1_name");
+      const choice2Key = LocalizationKey("choice2_name");
+
+      editor.localizations[choice1Key] = {
+        strings: LocalizationDbSchema.parse({ "en-US": "Choice 1" }),
+        items: [],
+      };
+      editor.localizations[choice2Key] = {
+        strings: LocalizationDbSchema.parse({ "en-US": "Choice 2" }),
+        items: [],
+      };
+
+      editor.enumChoices[EntityId("choice1")] = {
+        parent: { type: "paramClass", id: classId },
+        codexId: CodexId("choice1"),
+        index: 0,
+        localized: { name: choice1Key },
+      };
+      editor.enumChoices[EntityId("choice2")] = {
+        parent: { type: "paramClass", id: classId },
+        codexId: CodexId("choice2"),
+        index: 1,
+        localized: { name: choice2Key },
       };
     });
 
-    createNewParameter(undefined, "TestEnumClass", "test-param", "Test Enum");
+    const paramId = createParameterAndGetId(
+      undefined,
+      CodexId("TestEnumClass"),
+      CodexId("test-param"),
+      "Test Enum",
+      "en-US",
+    );
 
-    render(<ParameterEditor id="test-param" />);
+    render(<ParameterEditor paramId={paramId} />);
     await expandParameter("Test Enum");
 
     // Click the Modify button to open the dialog
@@ -181,24 +308,45 @@ describe("Enum Parameter Editing", () => {
     const user = userEvent.setup();
 
     updateCurrentEditor((editor) => {
-      editor.localizations["en-US"] ||= { strings: {} };
-      const strings = editor.localizations["en-US"].strings!;
+      const classNameKey = LocalizationKey("test_enum_class_name");
+      editor.localizations[classNameKey] = {
+        strings: LocalizationDbSchema.parse({ "en-US": "Test Enum" }),
+        items: [],
+      };
 
-      strings["choice1_name"] = "Choice 1";
-      strings["test_enum_name"] = "Test Enum";
-
-      editor.deviceLibrary.parameterClasses = {
-        TestEnumClass: {
-          "@name": "test_enum_name",
-          dataType: DataType.Enum,
-          choices: [{ id: "choice1", "@name": "choice1_name" }],
+      const classId = EntityId("TestEnumClass");
+      editor.parameterClasses[classId] = {
+        codexId: CodexId("TestEnumClass"),
+        dataType: DataType.Enum,
+        localized: {
+          name: classNameKey,
         },
+      };
+
+      // Add one enum choice for the class
+      const choice1Key = LocalizationKey("choice1_name");
+      editor.localizations[choice1Key] = {
+        strings: LocalizationDbSchema.parse({ "en-US": "Choice 1" }),
+        items: [],
+      };
+
+      editor.enumChoices[EntityId("choice1")] = {
+        parent: { type: "paramClass", id: classId },
+        codexId: CodexId("choice1"),
+        index: 0,
+        localized: { name: choice1Key },
       };
     });
 
-    createNewParameter(undefined, "TestEnumClass", "test-param", "Test Enum");
+    const paramId = createParameterAndGetId(
+      undefined,
+      CodexId("TestEnumClass"),
+      CodexId("test-param"),
+      "Test Enum",
+      "en-US",
+    );
 
-    render(<ParameterEditor id="test-param" />);
+    render(<ParameterEditor paramId={paramId} />);
     await expandParameter("Test Enum");
 
     // Click the Modify button to open the dialog
@@ -220,27 +368,31 @@ describe("Enum Parameter Editing", () => {
 describe("Parameter Basic Properties", () => {
   test("renders parameter ID and display name", async () => {
     updateCurrentEditor((editor) => {
-      editor.localizations["en-US"] ||= { strings: {} };
-      const strings = editor.localizations["en-US"].strings!;
+      const classNameKey = LocalizationKey("test_class_name");
+      editor.localizations[classNameKey] = {
+        strings: LocalizationDbSchema.parse({ "en-US": "Test Class" }),
+        items: [],
+      };
 
-      strings["test_class_name"] = "Test Class";
-
-      editor.deviceLibrary.parameterClasses = {
-        TestClass: {
-          "@name": "test_class_name",
-          dataType: DataType.Number,
+      const classId = EntityId("TestClass");
+      editor.parameterClasses[classId] = {
+        codexId: CodexId("TestClass"),
+        dataType: DataType.Number,
+        localized: {
+          name: classNameKey,
         },
       };
     });
 
-    createNewParameter(
+    const paramId = createParameterAndGetId(
       undefined,
-      "TestClass",
-      "test-param-id",
+      CodexId("TestClass"),
+      CodexId("test-param-id"),
       "Test Parameter Name",
+      "en-US",
     );
 
-    render(<ParameterEditor id="test-param-id" />);
+    render(<ParameterEditor paramId={paramId} />);
     await expandParameter("Test Parameter Name");
 
     expect(screen.getByDisplayValue("test-param-id")).toBeInTheDocument();
@@ -249,22 +401,31 @@ describe("Parameter Basic Properties", () => {
 
   test("renders library information", async () => {
     updateCurrentEditor((editor) => {
-      editor.localizations["en-US"] ||= { strings: {} };
-      const strings = editor.localizations["en-US"].strings!;
+      const classNameKey = LocalizationKey("test_class_name");
+      editor.localizations[classNameKey] = {
+        strings: LocalizationDbSchema.parse({ "en-US": "Test Class" }),
+        items: [],
+      };
 
-      strings["test_class_name"] = "Test Class";
-
-      editor.deviceLibrary.parameterClasses = {
-        TestClass: {
-          "@name": "test_class_name",
-          dataType: DataType.Number,
+      const classId = EntityId("TestClass");
+      editor.parameterClasses[classId] = {
+        codexId: CodexId("TestClass"),
+        dataType: DataType.Number,
+        localized: {
+          name: classNameKey,
         },
       };
     });
 
-    createNewParameter(undefined, "TestClass", "test-param", "Test");
+    const paramId = createParameterAndGetId(
+      undefined,
+      CodexId("TestClass"),
+      CodexId("test-param"),
+      "Test",
+      "en-US",
+    );
 
-    render(<ParameterEditor id="test-param" />);
+    render(<ParameterEditor paramId={paramId} />);
     await expandParameter("Test");
 
     // Should show "Device Library" for parameters without a library
@@ -273,22 +434,31 @@ describe("Parameter Basic Properties", () => {
 
   test("renders parameter class", async () => {
     updateCurrentEditor((editor) => {
-      editor.localizations["en-US"] ||= { strings: {} };
-      const strings = editor.localizations["en-US"].strings!;
+      const classNameKey = LocalizationKey("test_class_name");
+      editor.localizations[classNameKey] = {
+        strings: LocalizationDbSchema.parse({ "en-US": "Test Class" }),
+        items: [],
+      };
 
-      strings["test_class_name"] = "Test Class";
-
-      editor.deviceLibrary.parameterClasses = {
-        TestClass: {
-          "@name": "test_class_name",
-          dataType: DataType.Number,
+      const classId = EntityId("TestClass");
+      editor.parameterClasses[classId] = {
+        codexId: CodexId("TestClass"),
+        dataType: DataType.Number,
+        localized: {
+          name: classNameKey,
         },
       };
     });
 
-    createNewParameter(undefined, "TestClass", "test-param", "Test");
+    const paramId = createParameterAndGetId(
+      undefined,
+      CodexId("TestClass"),
+      CodexId("test-param"),
+      "Test",
+      "en-US",
+    );
 
-    render(<ParameterEditor id="test-param" />);
+    render(<ParameterEditor paramId={paramId} />);
     await expandParameter("Test");
 
     expect(screen.getByText("TestClass")).toBeInTheDocument();
@@ -298,27 +468,31 @@ describe("Parameter Basic Properties", () => {
 describe("Min/Max/Default for Number Parameters", () => {
   test("renders min/max/default fields for number parameters", async () => {
     updateCurrentEditor((editor) => {
-      editor.localizations["en-US"] ||= { strings: {} };
-      const strings = editor.localizations["en-US"].strings!;
+      const classNameKey = LocalizationKey("number_class_name");
+      editor.localizations[classNameKey] = {
+        strings: LocalizationDbSchema.parse({ "en-US": "Number Class" }),
+        items: [],
+      };
 
-      strings["number_class_name"] = "Number Class";
-
-      editor.deviceLibrary.parameterClasses = {
-        NumberClass: {
-          "@name": "number_class_name",
-          dataType: DataType.Number,
+      const classId = EntityId("NumberClass");
+      editor.parameterClasses[classId] = {
+        codexId: CodexId("NumberClass"),
+        dataType: DataType.Number,
+        localized: {
+          name: classNameKey,
         },
       };
     });
 
-    createNewParameter(
+    const paramId = createParameterAndGetId(
       undefined,
-      "NumberClass",
-      "number-param",
+      CodexId("NumberClass"),
+      CodexId("number-param"),
       "Number Param",
+      "en-US",
     );
 
-    render(<ParameterEditor id="number-param" />);
+    render(<ParameterEditor paramId={paramId} />);
     await expandParameter("Number Param");
 
     expect(screen.getByText("Minimum Value")).toBeInTheDocument();
@@ -328,23 +502,31 @@ describe("Min/Max/Default for Number Parameters", () => {
 
   test("does not render min/max/default fields for enum parameters", async () => {
     updateCurrentEditor((editor) => {
-      editor.localizations["en-US"] ||= { strings: {} };
-      const strings = editor.localizations["en-US"].strings!;
+      const classNameKey = LocalizationKey("enum_class_name");
+      editor.localizations[classNameKey] = {
+        strings: LocalizationDbSchema.parse({ "en-US": "Enum Class" }),
+        items: [],
+      };
 
-      strings["enum_class_name"] = "Enum Class";
-
-      editor.deviceLibrary.parameterClasses = {
-        EnumClass: {
-          "@name": "enum_class_name",
-          dataType: DataType.Enum,
-          choices: [],
+      const classId = EntityId("EnumClass");
+      editor.parameterClasses[classId] = {
+        codexId: CodexId("EnumClass"),
+        dataType: DataType.Enum,
+        localized: {
+          name: classNameKey,
         },
       };
     });
 
-    createNewParameter(undefined, "EnumClass", "enum-param", "Enum Param");
+    const paramId = createParameterAndGetId(
+      undefined,
+      CodexId("EnumClass"),
+      CodexId("enum-param"),
+      "Enum Param",
+      "en-US",
+    );
 
-    render(<ParameterEditor id="enum-param" />);
+    render(<ParameterEditor paramId={paramId} />);
     await expandParameter("Enum Param");
 
     expect(screen.queryByText("Minimum Value")).not.toBeInTheDocument();

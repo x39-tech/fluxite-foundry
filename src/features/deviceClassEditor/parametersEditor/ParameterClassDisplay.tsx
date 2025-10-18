@@ -1,6 +1,6 @@
-import { getDataTypeFriendlyName } from "udr/util/enums";
-import { ResolvedParameterClass } from "udr/udrDatabase";
+import { getDataTypeFriendlyName } from "codex/util/enums";
 import { SimplePropsTable } from "components/SimplePropsTable";
+import { ResolvedParameterClass } from "../stateTransformations";
 import { unitToString } from "utils/utils";
 
 interface Props {
@@ -9,14 +9,14 @@ interface Props {
 
 export const ParameterClassDisplay = ({ paramClass }: Props) => {
   return (
-    <SimplePropsTable name={paramClass.name} className="w-sm">
+    <SimplePropsTable name={paramClass.name.value} className="w-sm">
       <tr>
         <td>Description</td>
-        <td>{paramClass.description}</td>
+        <td>{paramClass.description?.value}</td>
       </tr>
       <tr>
         <td>ID</td>
-        <td>{paramClass.id}</td>
+        <td>{paramClass.codexId}</td>
       </tr>
       <tr>
         <td>Data Type</td>

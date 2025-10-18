@@ -1,9 +1,5 @@
 import { useId } from "react";
 import {
-  LocalizedEnumChoice,
-  LocalizedEnumInstanceChoices,
-} from "udr/udrDatabase";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -33,36 +29,48 @@ import { SmallIconButton } from "./SmallIconButton";
 import { TrashIcon } from "@heroicons/react/24/solid";
 import { getUniqueItemId } from "utils/utils";
 import { PlusIcon } from "@heroicons/react/24/outline";
+import {
+  LocalizedClassEnumChoice,
+  LocalizedInstanceEnumChoice,
+} from "features/deviceClassEditor/stateTransformations";
+import { useCurrentLocale } from "app/store";
+import {
+  addEnumChoice,
+  deleteEnumChoice,
+  modifyEnumChoice,
+  modifyEnumChoiceLocalizedValue,
+} from "features/deviceClassEditor/state";
+import { CodexId, EnumChoiceParent } from "app/persistentState";
 
 interface Props {
   id?: string;
   forName: string;
-  classChoices: LocalizedEnumChoice[];
-  instanceChoices?: LocalizedEnumInstanceChoices;
+  parent: EnumChoiceParent;
+  classChoices: LocalizedClassEnumChoice[];
+  instanceChoices?: LocalizedInstanceEnumChoice[];
+  exclusions?: string[];
   onExclusionChanged: (choiceId: string, excluded: boolean) => void;
-  // Added or changed
-  onInstanceChoiceUpdated: (index: number, choice: LocalizedEnumChoice) => void;
-  onInstanceChoiceRemoved: (index: number) => void;
 }
 
-interface ClassDisplayChoice extends LocalizedEnumChoice {
+interface ClassDisplayChoice extends LocalizedClassEnumChoice {
   removed: boolean;
 }
 
 export const EnumChoicesEditor = ({
   id,
   forName,
+  parent,
   classChoices,
   instanceChoices,
+  exclusions,
   onExclusionChanged,
-  onInstanceChoiceUpdated,
-  onInstanceChoiceRemoved,
 }: Props) => {
   const idPrefix = useId();
+  const locale = useCurrentLocale();
 
   const classDisplayChoices: ClassDisplayChoice[] = classChoices.map(
     (choice) => {
-      if (instanceChoices?.excluded?.includes(choice.id)) {
+      if (exclusions?.includes(choice.codexId)) {
         return { ...choice, removed: true };
       } else {
         return { ...choice, removed: false };
@@ -70,9 +78,7 @@ export const EnumChoicesEditor = ({
     },
   );
 
-  const instanceChoiceIds = instanceChoices?.additional?.map(
-    (choice) => choice.id,
-  );
+  const instanceChoiceIds = instanceChoices?.map((choice) => choice.codexId);
 
   return (
     <div id={id} className="flex gap-2">
@@ -91,15 +97,15 @@ export const EnumChoicesEditor = ({
               key={index}
               className={`pointer-events-none ${choice.removed && "text-muted-foreground line-through"}`}
             >
-              {index}: {choice.name}
+              {index}: {choice.name.value}
             </DropdownMenuItem>
           ))}
           <DropdownMenuItem className="text-muted-foreground text-xs font-medium pointer-events-none">
             From Instance
           </DropdownMenuItem>
-          {instanceChoices?.additional?.map((choice, index) => (
+          {instanceChoices?.map((choice, index) => (
             <DropdownMenuItem key={index} className="pointer-events-none">
-              {classDisplayChoices.length + index}: {choice.name}
+              {classDisplayChoices.length + index}: {choice.name.value}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
@@ -127,38 +133,38 @@ export const EnumChoicesEditor = ({
                     key={index}
                     className={choice.removed ? "text-muted-foreground" : ""}
                   >
-                    <TableCell className="pl-5">{choice.id}</TableCell>
-                    <TableCell className="pl-5">{choice.name}</TableCell>
+                    <TableCell className="pl-5">{choice.codexId}</TableCell>
+                    <TableCell className="pl-5">{choice.name.value}</TableCell>
                     <TableCell className="w-[32px]">
                       <Checkbox
                         checked={!choice.removed}
                         onCheckedChange={(checked) =>
                           typeof checked === "boolean" &&
-                          onExclusionChanged(choice.id, !checked)
+                          onExclusionChanged(choice.codexId, !checked)
                         }
                       />
                     </TableCell>
                   </TableRow>
                 ))}
-                {instanceChoices?.additional?.map((choice, index) => {
+                {instanceChoices?.map((choice, index) => {
                   return (
                     <TableRow key={index}>
                       <TableCell>
                         <ValidatedInput
                           sizeVariant="unspecified"
                           popoverSide="left"
-                          value={choice.id}
+                          value={choice.codexId}
                           onConfirm={(value) =>
-                            onInstanceChoiceUpdated(index, {
-                              id: value,
-                              name: choice.name,
-                            })
+                            modifyEnumChoice(
+                              choice.id,
+                              (draft) => (draft.codexId = CodexId(value)),
+                            )
                           }
                           validator={(value) =>
                             validateNewItemId(
                               value,
                               (instanceChoiceIds || []).filter(
-                                (value) => value !== choice.id,
+                                (value) => value !== choice.codexId,
                               ),
                             )
                           }
@@ -168,18 +174,20 @@ export const EnumChoicesEditor = ({
                         <ValidatedInput
                           sizeVariant="unspecified"
                           popoverSide="left"
-                          value={choice.name}
+                          value={choice.name.value || ""}
                           onConfirm={(value) =>
-                            onInstanceChoiceUpdated(index, {
-                              id: choice.id,
-                              name: value,
-                            })
+                            modifyEnumChoiceLocalizedValue(
+                              choice.id,
+                              "name",
+                              value,
+                              locale,
+                            )
                           }
                         />
                       </TableCell>
                       <TableCell className="w-[32px]">
                         <SmallIconButton
-                          onClick={() => onInstanceChoiceRemoved(index)}
+                          onClick={() => deleteEnumChoice(choice.id)}
                         >
                           <TrashIcon className="size-5 fill-red-500" />
                         </SmallIconButton>
@@ -199,10 +207,13 @@ export const EnumChoicesEditor = ({
                           instanceChoiceIds || [],
                           "new-choice",
                         );
-                        onInstanceChoiceUpdated(-1, {
-                          id: newId,
-                          name: "New Choice",
-                        });
+                        addEnumChoice(
+                          parent,
+                          CodexId(newId),
+                          "New Choice",
+                          undefined,
+                          locale,
+                        );
                       }}
                     >
                       <PlusIcon className="size-5" />

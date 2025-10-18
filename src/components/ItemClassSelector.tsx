@@ -6,14 +6,15 @@ import {
 } from "@heroicons/react/24/solid";
 import { Library } from "e173";
 import {
-  ItemClass,
+  ImportedItemClass,
   ItemClassWithId,
-  UdrDatabase,
+  LocalItemClassWithId,
+  CodexDatabase,
   getItemClassName,
   getItemClassNameOrId,
   getLibraryFriendlyName,
   getNewestVersionOfEachLibrary,
-} from "udr/udrDatabase";
+} from "codex/codexDatabase";
 import {
   Popover,
   PopoverContent,
@@ -34,30 +35,39 @@ import {
 } from "components/scn-ui/Tooltip";
 import { Button, ButtonProps } from "components/scn-ui/Button";
 import { useTextWidth } from "hooks/useTextWidth";
+import { useCurrentLocale } from "app/store";
+import { useLocalizations } from "features/deviceClassEditor/state";
+import { CodexId } from "app/persistentState";
 
-interface ItemClassSelectorProps<T extends ItemClass> extends ButtonProps {
-  selectedClass?: T & ItemClassWithId;
-  librarySelector: (library: Library) => [string, T][];
+interface ItemClassSelectorProps extends ButtonProps {
+  selectedClass?: ItemClassWithId;
+  localItems?: LocalItemClassWithId[];
+  librarySelector: (library: Library) => [string, ImportedItemClass][];
   "aria-labelledby"?: string;
-  onSelectedClassChanged: (newClass?: T & ItemClassWithId) => void;
-  tooltipRenderer: (item: T & ItemClassWithId) => JSX.Element;
-  database: UdrDatabase;
+  onSelectedClassChanged: (newClass?: ItemClassWithId) => void;
+  tooltipRenderer: (item: ItemClassWithId) => JSX.Element;
+  database: CodexDatabase;
 }
 
-export function ItemClassSelector<T extends ItemClass>({
+// TODO: handle local items
+export function ItemClassSelector({
   selectedClass,
   librarySelector,
   onSelectedClassChanged,
   tooltipRenderer,
   database,
   ...props
-}: ItemClassSelectorProps<T>) {
+}: ItemClassSelectorProps) {
   const [open, setOpen] = useState(false);
+  const locale = useCurrentLocale();
+  const localizations = useLocalizations();
 
   const libraries = useMemo(
     () =>
       getNewestVersionOfEachLibrary(database).sort((a, b) =>
-        getLibraryFriendlyName(a).localeCompare(getLibraryFriendlyName(b)),
+        getLibraryFriendlyName(a, locale).value.localeCompare(
+          getLibraryFriendlyName(b, locale).value,
+        ),
       ),
     [database],
   );
@@ -67,13 +77,19 @@ export function ItemClassSelector<T extends ItemClass>({
     () =>
       libraries.flatMap((library) =>
         librarySelector(library).map(([id, cls]) => {
-          const itemClassWithId = {
+          const itemClassWithId: ItemClassWithId = {
             ...cls,
-            id,
+            type: "imported",
+            codexId: CodexId(id),
             libraryId: library.id,
             libraryVersion: library.version,
           };
-          return getItemClassNameOrId(database, itemClassWithId);
+          return getItemClassNameOrId(
+            itemClassWithId,
+            database,
+            localizations,
+            locale,
+          ).value;
         }),
       ),
     [libraries, database],
@@ -97,12 +113,13 @@ export function ItemClassSelector<T extends ItemClass>({
         .map((library) => (
           <CommandGroup
             key={library.id}
-            heading={getLibraryFriendlyName(library)}
+            heading={getLibraryFriendlyName(library, locale).value}
           >
             {librarySelector(library).map(([id, cls]) => {
-              const itemClassWithId = {
+              const itemClassWithId: ItemClassWithId = {
                 ...cls,
-                id,
+                type: "imported",
+                codexId: CodexId(id),
                 libraryId: library.id,
                 libraryVersion: library.version,
               };
@@ -114,7 +131,7 @@ export function ItemClassSelector<T extends ItemClass>({
                       value={id}
                       onSelect={() => {
                         onSelectedClassChanged(
-                          id === selectedClass?.id
+                          id === selectedClass?.codexId
                             ? undefined
                             : itemClassWithId,
                         );
@@ -123,9 +140,18 @@ export function ItemClassSelector<T extends ItemClass>({
                       className="flex"
                     >
                       <CheckIcon
-                        className={id === selectedClass?.id ? "" : "opacity-0"}
+                        className={
+                          id === selectedClass?.codexId ? "" : "opacity-0"
+                        }
                       />
-                      {getItemClassName(database, itemClassWithId)}
+                      {
+                        getItemClassName(
+                          itemClassWithId,
+                          database,
+                          localizations,
+                          locale,
+                        )?.value
+                      }
                       <div className="flex-grow" />
                       <span className="text-gray-500 dark:text-gray-400">
                         {id}
@@ -165,7 +191,12 @@ export function ItemClassSelector<T extends ItemClass>({
           >
             <ListBulletIcon />
             {selectedClass
-              ? getItemClassNameOrId(database, selectedClass)
+              ? getItemClassNameOrId(
+                  selectedClass,
+                  database,
+                  localizations,
+                  locale,
+                ).value
               : placeholderText}
             <div className="flex-grow" />
             <ChevronDownIcon />

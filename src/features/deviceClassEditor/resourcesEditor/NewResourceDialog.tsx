@@ -1,9 +1,8 @@
 import { useEffect, useId, useState } from "react";
 import { CheckIcon } from "@heroicons/react/24/solid";
-import { useUdrDatabase } from "app/store";
+import { useCurrentLocale, useUdrDatabase } from "app/store";
 import { getUniqueItemId } from "utils/utils";
 import { validateNewItemId } from "utils/inputValidation";
-import { lookupResourceClass, ResourceClassWithId } from "udr/udrDatabase";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +16,10 @@ import { ItemClassSelector } from "components/ItemClassSelector";
 import { ValidatedInput } from "components/ValidatedInput";
 import { FieldSet } from "components/FieldSet";
 import { ResourceClassDisplay } from "./ResourceClassDisplay";
-import { createNewResource, useResourceIds } from "./state";
+import { createNewResource, useResourceCodexIds } from "./state";
+import { ItemClassWithId } from "codex/codexDatabase";
+import { lookupResourceClass } from "../stateTransformations";
+import { CodexId } from "app/persistentState";
 
 interface Props {
   isOpen: boolean;
@@ -26,15 +28,14 @@ interface Props {
 
 export const NewResourceDialog = ({ isOpen, onClose }: Props) => {
   const database = useUdrDatabase();
-  const resourceIds = useResourceIds();
+  const resourceIds = useResourceCodexIds();
+  const locale = useCurrentLocale();
 
-  const classSelectorId = useId();
-  const idId = useId();
-  const friendlyNameId = useId();
+  const idPrefix = useId();
 
-  const [newItemClass, setNewItemClass] = useState<
-    ResourceClassWithId | undefined
-  >(undefined);
+  const [newItemClass, setNewItemClass] = useState<ItemClassWithId | undefined>(
+    undefined,
+  );
   const [newItemId, setNewItemId] = useState(getUniqueItemId(resourceIds));
   const [newItemFriendlyName, setNewItemFriendlyName] = useState("My New Item");
 
@@ -46,13 +47,18 @@ export const NewResourceDialog = ({ isOpen, onClose }: Props) => {
     }
   }, [isOpen]);
 
-  const renderItemClassTooltip = (item: ResourceClassWithId) => {
-    // TODO clean up
+  const renderItemClassTooltip = (item: ItemClassWithId) => {
+    if (item.type === "local") {
+      // TODO: handle
+      return <></>;
+    }
+
     const resolvedClass = lookupResourceClass(
       database,
+      item.codexId,
       item.libraryId,
       item.libraryVersion,
-      item.id,
+      locale,
     );
     return <ResourceClassDisplay resourceClass={resolvedClass!} />;
   };
@@ -65,9 +71,9 @@ export const NewResourceDialog = ({ isOpen, onClose }: Props) => {
         </DialogHeader>
         <div className="flex flex-col gap-4">
           <FieldSet>
-            <Label htmlFor={classSelectorId}>Class</Label>
+            <Label htmlFor={`${idPrefix}-class`}>Class</Label>
             <ItemClassSelector
-              id={classSelectorId}
+              id={`${idPrefix}-class`}
               selectedClass={newItemClass}
               librarySelector={(library) =>
                 (library.resourceClasses &&
@@ -80,18 +86,18 @@ export const NewResourceDialog = ({ isOpen, onClose }: Props) => {
             />
           </FieldSet>
           <FieldSet>
-            <Label htmlFor={idId}>ID</Label>
+            <Label htmlFor={`${idPrefix}-id`}>ID</Label>
             <ValidatedInput
-              id={idId}
+              id={`${idPrefix}-id`}
               value={newItemId}
               onConfirm={setNewItemId}
               validator={(input) => validateNewItemId(input, resourceIds)}
             />
           </FieldSet>
           <FieldSet>
-            <Label htmlFor={friendlyNameId}>Display Name</Label>
+            <Label htmlFor={`${idPrefix}-friendlyName`}>Display Name</Label>
             <ValidatedInput
-              id={friendlyNameId}
+              id={`${idPrefix}-friendlyName`}
               value={newItemFriendlyName}
               onConfirm={setNewItemFriendlyName}
             />
@@ -102,11 +108,12 @@ export const NewResourceDialog = ({ isOpen, onClose }: Props) => {
             aria-label="Add"
             disabled={!newItemClass}
             onClick={() => {
-              if (newItemClass) {
+              if (newItemClass && newItemClass.type === "imported") {
+                // TODO: handle local classes
                 createNewResource(
                   newItemClass.libraryId,
-                  newItemClass.id,
-                  newItemId,
+                  newItemClass.codexId,
+                  CodexId(newItemId),
                   newItemFriendlyName,
                 );
               }

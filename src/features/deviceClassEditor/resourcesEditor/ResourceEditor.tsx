@@ -1,13 +1,11 @@
 import { useEffect, useId } from "react";
-import { Access, Lifetime } from "e173";
+import { capitalCase } from "change-case";
 import {
-  changeResourceId,
   modifyResource,
   updateResourceAsset,
-  useResource,
   useResourceAssetId,
-  useResourceClass,
-  useResourceIds,
+  useResourceCodexIds,
+  useResourceInfo,
 } from "./state";
 import { RenderError } from "components/RenderError";
 import { FieldSet } from "components/FieldSet";
@@ -18,19 +16,25 @@ import { AppInput } from "components/AppInput";
 import { LabeledCheckbox } from "components/LabeledCheckbox";
 import { SelectField } from "components/EditorFields/SelectField";
 import { ItemClassDisplay } from "components/ItemClassDisplay";
-import { getLifetimeFriendlyName } from "udr/util/enums";
 import { ResourceClassDisplay } from "./ResourceClassDisplay";
 import { AssetId, ResourceDefaultValue } from "./ResourceDefaultValue";
+import {
+  Access,
+  accesses,
+  CodexId,
+  EntityId,
+  Lifetime,
+  lifetimes,
+} from "app/persistentState";
 
 interface Props {
-  id: string;
+  id: EntityId;
 }
 
 export const ResourceEditor = ({ id }: Props) => {
-  const resourceIds = useResourceIds();
-  const resource = useResource(id);
-  const resourceClass = useResourceClass(resource);
-  const assetId = useResourceAssetId(resource);
+  const resInfo = useResourceInfo(id);
+  const resourceCodexIds = useResourceCodexIds();
+  const assetId = useResourceAssetId(resInfo?.resource);
 
   const idPrefix = useId();
 
@@ -47,7 +51,18 @@ export const ResourceEditor = ({ id }: Props) => {
         (resource) => (resource.mediaType = resourceClass.mediaType![0]),
       );
     }
-  }, [resourceClass]);
+  }, [resInfo?.resourceClass]);
+
+  if (!resInfo) {
+    return <RenderError />;
+  }
+
+  const { resource, resourceClass } = resInfo;
+
+  // TODO: Class not found message if class is not found
+  if (!resourceClass) {
+    return <RenderError />;
+  }
 
   let defaultValId: AssetId;
   if (assetId) {
@@ -56,11 +71,6 @@ export const ResourceEditor = ({ id }: Props) => {
     defaultValId = { state: "missing" };
   } else {
     defaultValId = { state: "none" };
-  }
-
-  if (!resource || !resourceClass) {
-    // TODO: better user feedback here
-    return <RenderError />;
   }
 
   let mediaType = <></>;
@@ -94,14 +104,18 @@ export const ResourceEditor = ({ id }: Props) => {
           <AppInput
             id={`${idPrefix}-class`}
             disabled
-            value={resource.library || "Device Library"}
+            value={
+              resource.class.type === "imported"
+                ? resource.class.library
+                : "Device Library"
+            }
           />
         </FieldSet>
         <FieldSet>
           <Label htmlFor={`${idPrefix}-class`}>Class</Label>
           <ItemClassDisplay
             id={`${idPrefix}-class`}
-            value={resource.class}
+            value={resource.class.codexId}
             tooltipRenderer={() => (
               <ResourceClassDisplay resourceClass={resourceClass} />
             )}
@@ -111,12 +125,14 @@ export const ResourceEditor = ({ id }: Props) => {
           <Label htmlFor={`${idPrefix}-id`}>ID</Label>
           <ValidatedInput
             id={`${idPrefix}-id`}
-            value={id}
-            onConfirm={(newValue) => changeResourceId(id, newValue)}
+            value={resource.codexId}
+            onConfirm={(newValue) =>
+              modifyResource(id, (draft) => (draft.codexId = CodexId(newValue)))
+            }
             validator={(input) =>
               validateNewItemId(
                 input,
-                resourceIds.filter((value) => value !== id),
+                resourceCodexIds.filter((value) => value !== resource.codexId),
               )
             }
           />
@@ -138,15 +154,17 @@ export const ResourceEditor = ({ id }: Props) => {
           <Label htmlFor={`${idPrefix}-lifetime`}>Lifetime</Label>
           <SelectField
             id={`${idPrefix}-lifetime`}
-            values={Object.values(Lifetime)}
-            displayValues={Object.values(Lifetime).map(getLifetimeFriendlyName)}
+            values={Object.values(lifetimes)}
+            displayValues={Object.values(lifetimes).map((val) =>
+              capitalCase(val),
+            )}
             selectedValue={resource.lifetime}
             onSelectionChanged={(newValue) =>
               modifyResource(id, (draft) => {
                 draft.lifetime = newValue as Lifetime;
-                if (newValue === Lifetime.Static) {
+                if (newValue === lifetimes.STATIC) {
                   draft.access = draft.access.filter(
-                    (value) => value === Access.Read,
+                    (value) => value === accesses.READ,
                   );
                 }
               })
@@ -197,15 +215,15 @@ const AccessCheckboxes = ({
   return (
     <div id={id} className="flex w-xs h-9 items-center gap-4 px-1">
       <LabeledCheckbox
-        checked={access.includes(Access.Read)}
-        onChange={(checked) => updateAccess(checked, Access.Read)}
+        checked={access.includes(accesses.READ)}
+        onChange={(checked) => updateAccess(checked, accesses.READ)}
       >
         Read
       </LabeledCheckbox>
       <LabeledCheckbox
-        disabled={lifetime === Lifetime.Static}
-        checked={access.includes(Access.Write)}
-        onChange={(checked) => updateAccess(checked, Access.Write)}
+        disabled={lifetime === lifetimes.STATIC}
+        checked={access.includes(accesses.WRITE)}
+        onChange={(checked) => updateAccess(checked, accesses.WRITE)}
       >
         Write
       </LabeledCheckbox>

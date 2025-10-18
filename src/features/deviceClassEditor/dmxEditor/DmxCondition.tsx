@@ -1,4 +1,8 @@
-import { Chunk, Condition } from "e173";
+import {
+  DmxChunkRefCondition,
+  DmxCondition,
+  EntityId,
+} from "app/persistentState";
 import { TrashIcon } from "@heroicons/react/24/solid";
 import { TextEditorField } from "components/EditorFields/DeprecatedTextEditorField";
 import {
@@ -10,59 +14,54 @@ import {
 } from "components/scn-ui/Select";
 import { StringSelector } from "components/StringSelector";
 import { SmallIconButton } from "components/SmallIconButton";
+import {
+  getChildConditions,
+  removeCondition,
+  updateCondition,
+  updateConditionMatch,
+  useDmxSerializer,
+} from "./state";
 
-// TODO: support arbitrarily nested conditions
-
-interface DmxConditionProps {
-  condition: Condition;
-  parentChunkId: string;
-  chunks: Record<string, Chunk>;
-  onUpdate: (condition: Condition) => void;
-  onRemove: () => void;
+interface DmxConditionTreeProps {
+  conditionId: EntityId;
+  condition: DmxCondition;
+  parentChunkId: EntityId;
 }
 
-export const DmxCondition = ({
+export const DmxConditionTree = ({
+  conditionId,
   condition,
-  chunks,
   parentChunkId,
-  onUpdate,
-  onRemove,
-}: DmxConditionProps) => {
-  if (
-    condition.chunk !== undefined &&
-    condition.chunkStart !== undefined &&
-    condition.chunkEnd !== undefined
-  ) {
+}: DmxConditionTreeProps) => {
+  const dmx = useDmxSerializer();
+
+  if (condition.conditionType === "chunkRef") {
     return (
-      <DmxMappingCondition
-        chunkId={condition.chunk}
+      <DmxChunkRefConditionView
+        conditionId={conditionId}
+        condition={condition}
         parentChunkId={parentChunkId}
-        chunks={chunks}
-        dmxStart={condition.chunkStart}
-        dmxEnd={condition.chunkEnd}
-        onUpdate={onUpdate}
-        onRemove={onRemove}
       />
     );
-  } else if (
-    condition.conditions !== undefined &&
-    condition.match !== undefined
-  ) {
+  } else if (condition.conditionType === "group") {
+    const childConditions = dmx ? getChildConditions(dmx, conditionId) : [];
+
     return (
       <div className="flex flex-col items-start">
-        {condition.conditions.map((subCondition, index) => {
-          const sep = [<></>];
+        {childConditions.map((childCondition, index) => {
+          const elements = [];
 
-          if (index == 1) {
+          if (index === 1) {
             // First separator is a selector
-            sep.push(
+            elements.push(
               <Select
+                key={`sep-${index}`}
                 value={condition.match === "any" ? "OR" : "AND"}
                 onValueChange={(value) => {
-                  onUpdate({
-                    ...condition,
-                    match: value == "OR" ? "any" : "all",
-                  });
+                  updateConditionMatch(
+                    conditionId,
+                    value === "OR" ? "any" : "all",
+                  );
                 }}
               >
                 <SelectTrigger className="m-2">
@@ -75,75 +74,56 @@ export const DmxCondition = ({
               </Select>,
             );
           } else if (index > 1) {
-            sep.push(
-              <div key={(index - 1) * 2 + 1} className="m-2 font-bold">
-                {condition.match == "any" ? "OR" : "AND"}
+            elements.push(
+              <div key={`sep-${index}`} className="m-2 font-bold">
+                {condition.match === "any" ? "OR" : "AND"}
               </div>,
             );
           }
 
-          sep.push(
-            <div>
-              <DmxCondition
-                key={index * 2}
-                condition={subCondition}
-                chunks={chunks}
+          elements.push(
+            <div key={childCondition.id}>
+              <DmxConditionTree
+                conditionId={childCondition.id}
+                condition={childCondition}
                 parentChunkId={parentChunkId}
-                onUpdate={(newSubCondition) =>
-                  onUpdate({
-                    ...condition,
-                    conditions: [
-                      ...condition.conditions!.slice(0, index),
-                      newSubCondition,
-                      ...condition.conditions!.slice(index + 1),
-                    ],
-                  })
-                }
-                onRemove={() => {
-                  onUpdate({
-                    ...condition,
-                    conditions: condition.conditions!.filter((_, i) => {
-                      return i != index;
-                    }),
-                  });
-                }}
               />
             </div>,
           );
 
-          return sep;
+          return elements;
         })}
       </div>
     );
-  } else {
-    return <>Invalid condition data</>;
   }
+
+  return <>Invalid condition data</>;
 };
 
-interface DmxMappingConditionProps {
-  chunkId: string;
-  parentChunkId: string;
-  chunks: Record<string, Chunk>;
-  dmxStart: number;
-  dmxEnd: number;
-  onUpdate: (condition: Condition) => void;
-  onRemove: () => void;
+interface DmxChunkRefConditionViewProps {
+  conditionId: EntityId;
+  condition: DmxChunkRefCondition;
+  parentChunkId: EntityId;
 }
 
-const DmxMappingCondition = ({
-  chunkId,
+const DmxChunkRefConditionView = ({
+  conditionId,
+  condition,
   parentChunkId,
-  chunks,
-  dmxStart,
-  dmxEnd,
-  onUpdate,
-  onRemove,
-}: DmxMappingConditionProps) => {
-  const availableChunkIds = Object.keys(chunks).filter(
-    (chunkId) => chunkId != parentChunkId,
-  );
+}: DmxChunkRefConditionViewProps) => {
+  const dmx = useDmxSerializer();
+
+  if (!dmx) {
+    return null;
+  }
+
+  const availableChunkIds = Object.keys(dmx.chunks).filter(
+    (id) => id !== parentChunkId,
+  ) as EntityId[];
+
   const displayNames = availableChunkIds.map((chunkId) => {
-    return `Slot ${chunks[chunkId].offsets.join(", ")}`;
+    const chunk = dmx.chunks[chunkId];
+    return chunk ? `Slot ${chunk.offsets.join(", ")}` : chunkId;
   });
 
   return (
@@ -151,25 +131,23 @@ const DmxMappingCondition = ({
       <StringSelector
         items={availableChunkIds}
         displayNames={displayNames}
-        selectedItem={chunkId}
+        selectedItem={condition.chunkId}
         placeholderText="Select a slot..."
-        onSelectedItemChanged={(newValue) =>
-          onUpdate({
-            chunk: newValue,
-            chunkStart: dmxStart,
-            chunkEnd: dmxEnd,
+        onSelectedItemChanged={(newChunkId) =>
+          updateCondition(conditionId, {
+            ...condition,
+            chunkId: newChunkId as EntityId,
           })
         }
       />
       <span className="mx-2">is between</span>
       <TextEditorField
-        value={dmxStart.toString()}
+        value={condition.chunkStart.toString()}
         onValueChanged={(newValue) => {
           try {
-            onUpdate({
-              chunk: chunkId,
+            updateCondition(conditionId, {
+              ...condition,
               chunkStart: parseInt(newValue),
-              chunkEnd: dmxEnd,
             });
           } catch (_) {
             // No update
@@ -178,12 +156,11 @@ const DmxMappingCondition = ({
       />
       <span className="mx-2">and</span>
       <TextEditorField
-        value={dmxEnd.toString()}
+        value={condition.chunkEnd.toString()}
         onValueChanged={(newValue) => {
           try {
-            onUpdate({
-              chunk: chunkId,
-              chunkStart: dmxStart,
+            updateCondition(conditionId, {
+              ...condition,
               chunkEnd: parseInt(newValue),
             });
           } catch (_) {
@@ -193,7 +170,7 @@ const DmxMappingCondition = ({
       />
       <SmallIconButton
         className="mx-1"
-        onClick={onRemove}
+        onClick={() => removeCondition(conditionId)}
         aria-label="Delete condition"
       >
         <TrashIcon />

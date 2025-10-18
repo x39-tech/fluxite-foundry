@@ -1,6 +1,6 @@
 import { useId } from "react";
 import { Label } from "components/scn-ui/Label";
-import { ResolvedCommandClass } from "udr/udrDatabase";
+import { ResolvedCommandClass } from "../stateTransformations";
 
 interface Props {
   commandClass: ResolvedCommandClass;
@@ -17,13 +17,13 @@ export const CommandClassDisplay = ({ commandClass }: Props) => {
       <div>
         <Label htmlFor={descId}>Description</Label>
         <div className={textClass} id={descId}>
-          {commandClass.description}
+          {commandClass.description?.value}
         </div>
       </div>
       <div>
         <Label htmlFor={idId}>ID</Label>
         <div className={textClass} id={idId}>
-          {commandClass.id}
+          {commandClass.codexId}
         </div>
       </div>
     </div>

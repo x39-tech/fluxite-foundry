@@ -1,8 +1,7 @@
 import { cloneElement, Fragment, useState } from "react";
 import { AdjustmentsHorizontalIcon } from "@heroicons/react/24/outline";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
-import { ItemEditor } from "app/state";
-import { cn } from "utils/utils";
+import { cn, ItemEditor } from "utils/utils";
 import { Toggle } from "./scn-ui/Toggle";
 import { Button } from "./scn-ui/Button";
 import { Separator } from "./scn-ui/Separator";
@@ -61,7 +60,7 @@ export const ListItemsEditor = ({
                   pressed={idx == selectedEditorIndex}
                   onClick={() => setSelectedEditorIndex(idx)}
                 >
-                  {editor.udrId}
+                  {editor.codexId}
                 </Toggle>
                 <Button
                   size="icon"
@@ -96,7 +95,7 @@ export const ListItemsEditor = ({
             return (
               <Fragment key={idx}>
                 <CollapsedItemEditor
-                  id={editor.udrId}
+                  id={editor.codexId}
                   index={idx}
                   onClick={() => setSelectedEditorIndex(idx)}
                   className="my-4"
@@ -116,7 +115,7 @@ export const ListItemsEditor = ({
                   <div className="flex gap-4 items-center">
                     <ItemEditorIcon index={idx} />
                     <div className="text-xl font-semibold pb-1">
-                      {getEditorTitle?.(editor) || editor.udrId}
+                      {getEditorTitle?.(editor) || editor.codexId}
                     </div>
                   </div>
                   {getActiveEditor(editor, idx)}
@@ -138,7 +137,7 @@ export const ListItemsEditor = ({
                     <Separator />
                   </div>
                   <CollapsedItemEditor
-                    id={editor.udrId}
+                    id={editor.codexId}
                     index={idx}
                     onClick={() => setSelectedEditorIndex(idx)}
                     className="mb-2 mt-4"
@@ -149,7 +148,7 @@ export const ListItemsEditor = ({
               return (
                 <Fragment key={idx}>
                   <CollapsedItemEditor
-                    id={editor.udrId}
+                    id={editor.codexId}
                     index={idx}
                     onClick={() => setSelectedEditorIndex(idx)}
                     className="mt-2 mb-4"

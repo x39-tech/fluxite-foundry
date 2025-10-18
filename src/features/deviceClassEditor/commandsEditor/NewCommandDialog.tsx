@@ -1,6 +1,6 @@
 import { useEffect, useId, useState } from "react";
 import { CheckIcon } from "@heroicons/react/24/solid";
-import { useUdrDatabase } from "app/store";
+import { useCurrentLocale, useUdrDatabase } from "app/store";
 import { getUniqueItemId } from "utils/utils";
 import { validateNewItemId } from "utils/inputValidation";
 import {
@@ -15,9 +15,11 @@ import { ItemClassSelector } from "components/ItemClassSelector";
 import { Label } from "components/scn-ui/Label";
 import { ValidatedInput } from "components/ValidatedInput";
 import { Button } from "components/scn-ui/Button";
-import { CommandClassWithId, lookupCommandClass } from "udr/udrDatabase";
-import { createNewCommand, useCommandIds } from "./state";
+import { ItemClassWithId } from "codex/codexDatabase";
+import { CodexId } from "app/persistentState";
+import { createNewCommand, useCommandCodexIds } from "./state";
 import { CommandClassDisplay } from "./CommandClassDisplay";
+import { lookupCommandClass } from "../stateTransformations";
 
 interface Props {
   isOpen: boolean;
@@ -26,33 +28,39 @@ interface Props {
 
 export const NewCommandDialog = ({ isOpen, onClose }: Props) => {
   const database = useUdrDatabase();
-  const commandIds = useCommandIds();
+  const commandCodexIds = useCommandCodexIds();
+  const locale = useCurrentLocale();
 
   const classSelectorId = useId();
   const idId = useId();
   const friendlyNameId = useId();
 
-  const [newItemClass, setNewItemClass] = useState<
-    CommandClassWithId | undefined
-  >(undefined);
-  const [newItemId, setNewItemId] = useState(getUniqueItemId(commandIds));
+  const [newItemClass, setNewItemClass] = useState<ItemClassWithId | undefined>(
+    undefined,
+  );
+  const [newItemId, setNewItemId] = useState(getUniqueItemId(commandCodexIds));
   const [newItemFriendlyName, setNewItemFriendlyName] = useState("My New Item");
 
   // Flush relevant parts of the state when the dialog was just opened
   useEffect(() => {
     if (isOpen) {
-      setNewItemId(getUniqueItemId(commandIds));
+      setNewItemId(getUniqueItemId(commandCodexIds));
       setNewItemFriendlyName("My New Item");
     }
   }, [isOpen]);
 
-  const renderItemClassTooltip = (item: CommandClassWithId) => {
-    // TODO clean up
+  const renderItemClassTooltip = (item: ItemClassWithId) => {
+    if (item.type === "local") {
+      // TODO: handle local command classes
+      return <></>;
+    }
+
     const resolvedClass = lookupCommandClass(
       database,
+      item.codexId,
       item.libraryId,
       item.libraryVersion,
-      item.id,
+      locale,
     );
     return <CommandClassDisplay commandClass={resolvedClass!} />;
   };
@@ -85,7 +93,7 @@ export const NewCommandDialog = ({ isOpen, onClose }: Props) => {
               id={idId}
               value={newItemId}
               onConfirm={setNewItemId}
-              validator={(input) => validateNewItemId(input, commandIds)}
+              validator={(input) => validateNewItemId(input, commandCodexIds)}
             />
           </FieldSet>
           <FieldSet>
@@ -104,10 +112,13 @@ export const NewCommandDialog = ({ isOpen, onClose }: Props) => {
             onClick={() => {
               if (newItemClass) {
                 createNewCommand(
-                  newItemClass.libraryId,
-                  newItemClass.id,
-                  newItemId,
+                  newItemClass.type === "imported"
+                    ? newItemClass.libraryId
+                    : undefined,
+                  newItemClass.codexId,
+                  CodexId(newItemId),
                   newItemFriendlyName,
+                  locale,
                 );
               }
 

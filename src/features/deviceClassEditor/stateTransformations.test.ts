@@ -1,10 +1,11 @@
 import { DataType, E173Document, UnitName } from "e173";
 import {
-  getEmptyUdrDatabase,
+  getEmptyCodexDatabase,
   loadLibrariesFromDocument,
-  lookupParameterClass,
-} from "./udrDatabase";
+} from "codex/codexDatabase";
+import { lookupParameterClass } from "./stateTransformations";
 import { beforeEach, describe, expect, test } from "vitest";
+import { CodexId } from "app/persistentState";
 
 const testDoc: E173Document = {
   e173doc: {
@@ -36,7 +37,14 @@ const testDoc: E173Document = {
           },
           serializerClasses: {},
           resourceClasses: {},
-          localizations: {},
+          localizations: {
+            "en-US": {
+              strings: {
+                parameter_1: "Parameter One",
+                parameter_1_desc: "The first parameter",
+              },
+            },
+          },
         },
       },
     },
@@ -46,10 +54,10 @@ const testDoc: E173Document = {
 };
 
 describe("class lookup", () => {
-  let database = getEmptyUdrDatabase();
+  let database = getEmptyCodexDatabase();
 
   beforeEach(() => {
-    database = getEmptyUdrDatabase();
+    database = getEmptyCodexDatabase();
     expect(loadLibrariesFromDocument(testDoc, database)).toBe(true);
   });
 
@@ -61,40 +69,51 @@ describe("class lookup", () => {
     expect(
       lookupParameterClass(
         database,
+        CodexId("parameter1"),
         "org.test.lib.test_lib",
         "1.0.0",
-        "parameter1",
+        "en-US",
       ),
     ).toStrictEqual({
-      id: "parameter1",
+      codexId: "parameter1",
       libraryId: "org.test.lib.test_lib",
       libraryVersion: "1.0.0",
-      name: expectedItem["@name"],
-      description: expectedItem["@description"],
+      name: {
+        desiredLocale: "en-US",
+        locale: "en-US",
+        value: "Parameter One",
+      },
+      description: {
+        desiredLocale: "en-US",
+        locale: "en-US",
+        value: "The first parameter",
+      },
       dataType: expectedItem.dataType,
       unit: expectedItem.unit,
-      choices: undefined,
+      choices: [],
     });
   });
 
   test("parameter class lookup is successful with an identifier containing slashes", () => {
     const itemClass = lookupParameterClass(
       database,
+      CodexId("category/parameter2"),
       "org.test.lib.test_lib",
       "1.0.0",
-      "category/parameter2",
+      "en-US",
     );
     expect(itemClass).toBeTruthy();
-    expect(itemClass!.id).toBe("category/parameter2");
+    expect(itemClass!.codexId).toBe("category/parameter2");
   });
 
   test("parameter class lookup returns undefined when given a parameter ID that doesn't exist", () => {
     expect(
       lookupParameterClass(
         database,
+        CodexId("undefined-parameter"),
         "org.test.lib.test_lib",
         "1.0.0",
-        "undefined-parameter",
+        "en-US",
       ),
     ).toBe(undefined);
   });

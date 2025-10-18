@@ -1,58 +1,100 @@
 import { Draft } from "immer";
 import {
-  modifyLocalizationString,
+  addNewItemLocalization,
   updateCurrentEditor,
-  useCurrentEditorPart,
+  useCurrentEditorPartShallow,
 } from "../state";
-import { BasicData } from "app/state";
-import { DefinitionLocalization } from "e173";
+import {
+  DeviceClassBasicData,
+  LocalizationReferencedItem,
+  Unlocalized,
+} from "app/persistentState";
+import { localize, LocalizedString } from "utils/localizationUtils";
+import { useCurrentLocale } from "app/store";
 
-export interface LocalizedBasicData extends Omit<BasicData, "@description"> {
-  description: string;
+export interface LocalizedBasicData extends Unlocalized<DeviceClassBasicData> {
+  description: LocalizedString;
 }
 
 // ---------------------------------------------------------------------------
 // Read
 // ---------------------------------------------------------------------------
 
-export function useBasicData(): BasicData | undefined {
-  return useCurrentEditorPart((state) => state.basicData);
+export function useBasicData(): LocalizedBasicData | undefined {
+  const locale = useCurrentLocale();
+  const editorPart = useCurrentEditorPartShallow((editor) => {
+    return [editor.basicData, editor.localizations] as const;
+  });
+
+  if (!editorPart) {
+    return undefined;
+  }
+
+  const [basicData, localizations] = editorPart;
+
+  const description = localize(
+    localizations,
+    basicData.localized.description,
+    locale,
+  );
+
+  return {
+    ...basicData,
+    description,
+  };
 }
 
 // ---------------------------------------------------------------------------
 // Write
 // ---------------------------------------------------------------------------
 
-export function modifyBasicData(recipe: (state: Draft<BasicData>) => void) {
+export function modifyBasicData(
+  recipe: (state: Draft<Unlocalized<DeviceClassBasicData>>) => void,
+) {
   updateCurrentEditor((editor) => {
     recipe(editor.basicData);
   });
 }
 
-export function modifyBasicDataDescription(newDescription: string) {
+const BASIC_DATA_LOCALIZED_INFO: Record<
+  keyof DeviceClassBasicData["localized"],
+  {
+    itemType: LocalizationReferencedItem["itemType"];
+    constructKey: () => string;
+  }
+> = {
+  description: {
+    itemType: "devClassDesc",
+    constructKey: () => `devClass_description`,
+  },
+};
+
+export function modifyBasicDataLocalizedValue(
+  key: keyof DeviceClassBasicData["localized"],
+  newValue: string,
+  locale: string,
+) {
   updateCurrentEditor((editor) => {
-    modifyLocalizationString(
-      editor,
-      editor.basicData["@description"],
-      newDescription,
-    );
+    const basicData = editor.basicData;
+    const localization = basicData.localized[key]
+      ? editor.localizations[basicData.localized[key]]
+      : undefined;
+
+    const info = BASIC_DATA_LOCALIZED_INFO[key];
+
+    if (!localization) {
+      const locKey = addNewItemLocalization(
+        editor,
+        info.constructKey(),
+        {
+          itemType: "devClassDesc",
+        },
+        locale,
+        newValue,
+      );
+      basicData.localized[key] = locKey;
+    } else {
+      localization.strings[locale] = newValue;
+    }
   });
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-export function getLocalizedBasicData(
-  basicData: BasicData,
-  localizations: Record<string, DefinitionLocalization>,
-): LocalizedBasicData {
-  const { "@description": descId, ...rest } = basicData;
-
-  const localizedName = localizations["en-US"]?.strings?.[descId];
-
-  return {
-    ...rest,
-    description: localizedName || descId,
-  };
 }

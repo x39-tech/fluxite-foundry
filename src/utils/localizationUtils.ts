@@ -1,3 +1,6 @@
+import { Localization, LocalizationKey } from "app/persistentState";
+import { DefinitionLocalization } from "e173";
+
 /**
  * Recursively collects all values from keys that start with '@' in an object.
  *
@@ -57,4 +60,74 @@ export function collectLocalizableKeys(
   }
 
   return keys;
+}
+
+// If locale is missing that means the value is a localization key which can
+// be displayed as a fallback
+export interface LocalizedString {
+  value: string;
+  locale?: string;
+  desiredLocale: string;
+}
+
+export function localize(
+  db: Record<LocalizationKey, Localization>,
+  key: LocalizationKey,
+  desiredLocale: string,
+): LocalizedString {
+  const strings = db?.[key]?.strings;
+
+  if (strings) {
+    const desired = strings[desiredLocale];
+    if (desired) {
+      return {
+        value: desired,
+        locale: desiredLocale,
+        desiredLocale,
+      };
+    }
+
+    const fallback = strings["en-US"];
+    if (fallback) {
+      return {
+        value: fallback,
+        locale: "en-US",
+        desiredLocale,
+      };
+    }
+  }
+
+  return {
+    desiredLocale,
+    value: key,
+  };
+}
+
+export function fcLocalize(
+  db: Record<string, DefinitionLocalization> | undefined,
+  stringKey: string,
+  desiredLocale: string,
+): LocalizedString {
+  const desired = db?.[desiredLocale]?.strings?.[stringKey];
+  if (desired) {
+    return {
+      value: desired,
+      locale: desiredLocale,
+      desiredLocale,
+    };
+  }
+
+  const fallback = db?.["en-US"]?.strings?.[stringKey];
+  if (fallback) {
+    return {
+      value: fallback,
+      locale: "en-US",
+      desiredLocale,
+    };
+  }
+
+  return {
+    desiredLocale,
+    value: stringKey,
+  };
 }

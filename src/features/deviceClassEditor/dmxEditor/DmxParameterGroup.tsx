@@ -3,7 +3,7 @@ import {
   FunnelIcon,
   TrashIcon,
 } from "@heroicons/react/24/solid";
-import { Chunk, MappingGroup } from "e173";
+import { DmxMappingGroup, EntityId } from "app/persistentState";
 import { SmallIconButton } from "components/SmallIconButton";
 import {
   Tooltip,
@@ -13,29 +13,31 @@ import {
 import {
   addCondition,
   addParameterMapping,
-  removeCondition,
+  getConditionsForMappingGroup,
   removeParameterMapping,
   removeParameterMappingGroup,
-  updateCondition,
   updateParameterMapping,
+  useDmxSerializer,
 } from "./state";
 import { DmxParameterMapping } from "./DmxParameterMapping";
-import { DmxCondition } from "./DmxCondition";
+import { DmxConditionTree } from "./DmxCondition";
 
 interface DmxParameterGroupProps {
-  chunks: Record<string, Chunk>;
-  chunkId: string;
-  index: number;
-  mappingGroup: MappingGroup;
+  chunkId: EntityId;
+  mappingGroupId: EntityId;
+  mappingGroup: DmxMappingGroup;
 }
 
 export const DmxParameterGroup = ({
-  chunks,
   chunkId,
-  index: groupIndex,
+  mappingGroupId,
   mappingGroup,
 }: DmxParameterGroupProps) => {
-  const chunksArray = Object.entries(chunks);
+  const dmx = useDmxSerializer();
+  const chunksCount = dmx ? Object.keys(dmx.chunks).length : 0;
+  const conditions = dmx
+    ? getConditionsForMappingGroup(dmx, mappingGroupId)
+    : [];
 
   return (
     <div className="bg-gray-300 dark:bg-gray-700 my-2 p-1 rounded-lg">
@@ -43,7 +45,7 @@ export const DmxParameterGroup = ({
         <div className="font-bold mx-2 my-1">Parameter Group</div>
         <div className="grow" />
         <SmallIconButton
-          onClick={() => removeParameterMappingGroup(chunkId, groupIndex)}
+          onClick={() => removeParameterMappingGroup(chunkId, mappingGroupId)}
         >
           <TrashIcon />
         </SmallIconButton>
@@ -53,22 +55,18 @@ export const DmxParameterGroup = ({
           key={index}
           mapping={mapping}
           onUpdate={(newMapping) => {
-            updateParameterMapping(chunkId, groupIndex, index, newMapping);
+            updateParameterMapping(mappingGroupId, index, newMapping);
           }}
-          onRemove={() => removeParameterMapping(chunkId, groupIndex, index)}
+          onRemove={() => removeParameterMapping(mappingGroupId, index)}
         />
       ))}
       <div className="font-bold m-2">Conditions</div>
-      {(mappingGroup.conditions || []).map((condition, index) => (
-        <DmxCondition
-          key={index}
+      {conditions.map((condition) => (
+        <DmxConditionTree
+          key={condition.id}
+          conditionId={condition.id}
           condition={condition}
-          chunks={chunks}
           parentChunkId={chunkId}
-          onUpdate={(newCondition) => {
-            updateCondition(chunkId, groupIndex, index, newCondition);
-          }}
-          onRemove={() => removeCondition(chunkId, groupIndex, index)}
         />
       ))}
       <div className="flex items-center my-1">
@@ -76,7 +74,7 @@ export const DmxParameterGroup = ({
         <Tooltip>
           <TooltipTrigger asChild>
             <SmallIconButton
-              onClick={() => addParameterMapping(chunkId, groupIndex)}
+              onClick={() => addParameterMapping(mappingGroupId)}
             >
               <CalculatorIcon />
             </SmallIconButton>
@@ -86,8 +84,8 @@ export const DmxParameterGroup = ({
         <Tooltip>
           <TooltipTrigger asChild>
             <SmallIconButton
-              disabled={chunksArray.length <= 1}
-              onClick={() => addCondition(chunkId, groupIndex)}
+              disabled={chunksCount <= 1}
+              onClick={() => addCondition(mappingGroupId, chunkId)}
             >
               <FunnelIcon />
             </SmallIconButton>

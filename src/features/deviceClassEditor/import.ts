@@ -1,0 +1,861 @@
+import JSZip from "jszip";
+import { Condition, DeviceClass, E173Archive, EstaDmx } from "e173";
+import { newEntityId, optionalLocalizationKey } from "app/stateUtils";
+import { updateAppPersistentState, useAppPersistentStore } from "app/store";
+import {
+  buildQualifiedId,
+  EntityType,
+  getDefaultWindowLayout,
+  getUniqueItemId,
+  OrgId,
+  parseParameterReference,
+} from "utils/utils";
+import { updateDmxController } from "./state";
+import {
+  ClassReference,
+  CodexId,
+  DeviceClassEditorState,
+  DmxChunkRefCondition,
+  DmxConditionGroup,
+  DmxConditionParent,
+  DmxSerializerState,
+  Command,
+  EntityId,
+  LocalizationDbSchema,
+  LocalizationKey,
+  LocalizationReferencedItem,
+  Resource,
+} from "app/persistentState";
+import { getDefaultDeviceClass } from "codex/codex";
+import { assetStorage } from "app/assetStorage";
+
+export interface ArchiveToImport {
+  archiveFile: File;
+  archive: E173Archive;
+}
+
+export async function importDeviceClassEditor(
+  orgId: OrgId,
+  id: string,
+  version: string,
+  deviceClass: DeviceClass,
+  archive?: ArchiveToImport,
+) {
+  const newDeviceClass = archive
+    ? await getImportedDeviceClassEditorWithAssets(
+        orgId,
+        id,
+        version,
+        deviceClass,
+        archive,
+      )
+    : getImportedDeviceClassEditor(orgId, id, version, deviceClass);
+
+  updateAppPersistentState((state) => {
+    const deviceClassEditors = state.deviceClassEditors;
+    const openEditors = state.openEditors;
+
+    const newId = newEntityId();
+    deviceClassEditors[newId] = newDeviceClass;
+    openEditors.editors.push({ type: "deviceClass", id: newId });
+    openEditors.selectedEditor = openEditors.editors.length - 1;
+
+    updateDmxController(deviceClassEditors[newId]);
+  });
+}
+
+export function getNewDeviceClassEditor(
+  existingEditorIds: string[],
+): DeviceClassEditorState {
+  // TODO: This only needs to be unique among the same OrgId now
+  const deviceClassId = getUniqueItemId(existingEditorIds, "super-light");
+  const orgId = useAppPersistentStore.getState().appSettings.orgId;
+
+  return getImportedDeviceClassEditor(
+    orgId,
+    deviceClassId,
+    "1.0.0",
+    getDefaultDeviceClass(deviceClassId),
+  );
+}
+
+type LocalCommandClasses = Record<
+  CodexId,
+  {
+    id: EntityId;
+    args: Record<CodexId, EntityId>;
+    returns: Record<CodexId, EntityId>;
+  }
+>;
+
+export function getImportedDeviceClassEditor(
+  orgId: OrgId,
+  id: string,
+  version: string,
+  codexClass: DeviceClass,
+): DeviceClassEditorState {
+  let dmx: EstaDmx | undefined = undefined;
+
+  if (codexClass.serializers) {
+    for (const value of Object.values(codexClass.serializers)) {
+      // TODO remove hardcoded values
+      if (value.library == "org.esta.lib.core" && value.class == "esta-dmx") {
+        // It is validated by the E1.73 library
+        dmx = value.default as EstaDmx;
+      }
+    }
+  }
+
+  const editor: DeviceClassEditorState = {
+    orgId,
+    deviceClassId: id,
+    deviceClassVersion: version,
+    basicData: {
+      publishDate: codexClass.publishDate,
+      author: codexClass.author,
+      history: codexClass.history,
+      manufacturerName: codexClass.info.manufacturer.name,
+      manufacturerUrl: codexClass.info.manufacturer.url,
+      manufacturerEstaId: codexClass.info.manufacturer.estaId,
+      modelName: codexClass.info.model.name,
+      modelCategory: codexClass.info.model.category,
+      modelSubcategory: codexClass.info.model.subcategory,
+      compatibleFirmwareVersions:
+        codexClass.info.compatibility?.firmwareVersions,
+      localized: {
+        description: LocalizationKey(codexClass["@description"]),
+      },
+    },
+    libraries: codexClass.libraries,
+    parameterClasses: {},
+    structureClasses: {},
+    serializerClasses: {},
+    resourceClasses: {},
+    commandClasses: {},
+    parameterEditors: [],
+    parameters: {},
+    resourceEditors: [],
+    resources: {},
+    resourceAssets: {},
+    commandEditors: [],
+    commands: {},
+    commandClassArguments: {},
+    commandClassReturnValues: {},
+    enumChoices: {},
+    localizations: {},
+    windowLayout: JSON.stringify(getDefaultWindowLayout()),
+  };
+
+  const localParamClasses = {};
+  const localResourceClasses = {};
+  const localCommandClasses = {};
+
+  importLocalizations(codexClass, editor);
+  importParameterClasses(codexClass, editor, localParamClasses);
+  importStructureClasses(codexClass, editor);
+  importSerializerClasses(codexClass, editor);
+  importResourceClasses(codexClass, editor, localResourceClasses);
+  importCommandClasses(codexClass, editor, localCommandClasses);
+  importParameters(codexClass, editor, localParamClasses);
+  importResources(codexClass, editor, localResourceClasses);
+  importCommands(codexClass, editor, localCommandClasses);
+
+  if (dmx) {
+    editor.dmxSerializer = convertEstaDmxToEditorState(dmx);
+  }
+
+  return editor;
+}
+
+function importLocalizations(
+  imported: DeviceClass,
+  editor: DeviceClassEditorState,
+) {
+  for (const [langId, localization] of Object.entries(
+    imported.localizations || {},
+  )) {
+    for (const [keyStr, str] of Object.entries(localization.strings || {})) {
+      const key = LocalizationKey(keyStr);
+      editor.localizations[key] ||= {
+        strings: LocalizationDbSchema.parse({}),
+        items: [],
+      };
+      editor.localizations[key].strings[langId] = str;
+    }
+  }
+}
+
+function importParameterClasses(
+  imported: DeviceClass,
+  editor: DeviceClassEditorState,
+  localParamClasses: Record<CodexId, EntityId>,
+) {
+  for (const [id, cls] of Object.entries(
+    imported.deviceLibrary?.parameterClasses || {},
+  )) {
+    const codexId = CodexId(id);
+    const classId = newEntityId();
+    editor.parameterClasses[classId] = {
+      codexId,
+      dataType: cls.dataType,
+      unit: cls.unit,
+      localized: {
+        name: LocalizationKey(cls["@name"]),
+        description: optionalLocalizationKey(cls["@description"]),
+      },
+    };
+    localParamClasses[codexId] = classId;
+
+    addLocalizationReference(classId, "paramClassName", cls["@name"], editor);
+    addLocalizationReference(
+      classId,
+      "paramClassDesc",
+      cls["@description"],
+      editor,
+    );
+
+    for (const [index, choice] of (cls.choices || []).entries()) {
+      const choiceId = newEntityId();
+      editor.enumChoices[choiceId] = {
+        parent: {
+          type: "paramClass",
+          id: classId,
+        },
+        codexId: CodexId(choice.id),
+        index,
+        localized: {
+          name: LocalizationKey(choice["@name"]),
+          // TODO: description
+        },
+      };
+      addLocalizationReference(choiceId, "enumName", choice["@name"], editor);
+      // TODO: description
+    }
+  }
+}
+
+function importStructureClasses(
+  imported: DeviceClass,
+  editor: DeviceClassEditorState,
+) {
+  for (const [id, cls] of Object.entries(
+    imported.deviceLibrary?.structureClasses || {},
+  )) {
+    const codexId = CodexId(id);
+    const classId = newEntityId();
+    editor.structureClasses[classId] = {
+      codexId,
+      multipleAllowed: cls.multipleAllowed,
+      localized: {
+        name: LocalizationKey(cls["@name"]),
+        description: optionalLocalizationKey(cls["@description"]),
+      },
+    };
+
+    addLocalizationReference(classId, "structClassName", cls["@name"], editor);
+    addLocalizationReference(
+      classId,
+      "structClassDesc",
+      cls["@description"],
+      editor,
+    );
+  }
+}
+
+function importSerializerClasses(
+  imported: DeviceClass,
+  editor: DeviceClassEditorState,
+) {
+  for (const [id, cls] of Object.entries(
+    imported.deviceLibrary?.serializerClasses || {},
+  )) {
+    const codexId = CodexId(id);
+    const classId = newEntityId();
+    editor.serializerClasses[classId] = {
+      codexId,
+      localized: {
+        name: LocalizationKey(cls["@name"]),
+        description: optionalLocalizationKey(cls["@description"]),
+      },
+    };
+
+    addLocalizationReference(classId, "serClassName", cls["@name"], editor);
+    addLocalizationReference(
+      classId,
+      "serClassDesc",
+      cls["@description"],
+      editor,
+    );
+  }
+}
+
+function importResourceClasses(
+  imported: DeviceClass,
+  editor: DeviceClassEditorState,
+  localResourceClasses: Record<string, string>,
+) {
+  for (const [id, cls] of Object.entries(
+    imported.deviceLibrary?.resourceClasses || {},
+  )) {
+    const codexId = CodexId(id);
+    const classId = newEntityId();
+    editor.resourceClasses[classId] = {
+      codexId,
+      mediaType: cls.mediaType,
+      localized: {
+        name: LocalizationKey(cls["@name"]),
+        description: optionalLocalizationKey(cls["@description"]),
+      },
+    };
+    localResourceClasses[id] = classId;
+
+    addLocalizationReference(classId, "resClassName", cls["@name"], editor);
+    addLocalizationReference(
+      classId,
+      "resClassDesc",
+      cls["@description"],
+      editor,
+    );
+  }
+}
+
+function importCommandClasses(
+  imported: DeviceClass,
+  editor: DeviceClassEditorState,
+  localCommandClasses: LocalCommandClasses,
+) {
+  for (const [id, cls] of Object.entries(
+    imported.deviceLibrary?.commandClasses || {},
+  )) {
+    const classId = newEntityId();
+    const codexId = CodexId(id);
+    editor.commandClasses[classId] = {
+      codexId,
+      localized: {
+        name: LocalizationKey(cls["@name"]),
+        description: optionalLocalizationKey(cls["@description"]),
+      },
+    };
+    localCommandClasses[codexId] = {
+      id: classId,
+      args: {},
+      returns: {},
+    };
+
+    addLocalizationReference(classId, "cmdClassName", cls["@name"], editor);
+    addLocalizationReference(
+      classId,
+      "cmdClassDesc",
+      cls["@description"],
+      editor,
+    );
+
+    for (const [argCodexIdStr, arg] of Object.entries(cls.arguments || {})) {
+      const argCodexId = CodexId(argCodexIdStr);
+      const argId = newEntityId();
+      editor.commandClassArguments[argId] = {
+        parentId: classId,
+        codexId: argCodexId,
+        dataType: arg.dataType,
+        unit: arg.unit,
+        required: arg.required,
+        localized: {
+          name: LocalizationKey(arg["@name"]),
+          description: optionalLocalizationKey(arg["@description"]),
+        },
+      };
+      localCommandClasses[codexId].args[argCodexId] = argId;
+
+      addLocalizationReference(argId, "cmdArgName", cls["@name"], editor);
+      addLocalizationReference(
+        argId,
+        "cmdArgDesc",
+        cls["@description"],
+        editor,
+      );
+
+      for (const [index, choice] of (arg.choices || []).entries()) {
+        const choiceId = newEntityId();
+        editor.enumChoices[choiceId] = {
+          parent: {
+            type: "cmdClassArg",
+            id: argId,
+          },
+          codexId: CodexId(choice.id),
+          index,
+          localized: {
+            name: LocalizationKey(choice["@name"]),
+            // TODO description
+          },
+        };
+        addLocalizationReference(
+          choiceId,
+          "cmdEnumName",
+          choice["@name"],
+          editor,
+        );
+        // TODO description
+      }
+    }
+
+    for (const [retCodexIdStr, ret] of Object.entries(cls.returns || {})) {
+      const retCodexId = CodexId(retCodexIdStr);
+      const retId = newEntityId();
+      editor.commandClassReturnValues[retId] = {
+        parentId: classId,
+        codexId: retCodexId,
+        dataType: ret.dataType,
+        unit: ret.unit,
+        required: ret.required,
+        localized: {
+          name: LocalizationKey(ret["@name"]),
+          description: optionalLocalizationKey(ret["@description"]),
+        },
+      };
+      localCommandClasses[codexId].returns[retCodexId] = retId;
+
+      addLocalizationReference(retId, "cmdRetName", cls["@name"], editor);
+      addLocalizationReference(
+        retId,
+        "cmdRetDesc",
+        cls["@description"],
+        editor,
+      );
+
+      for (const [index, choice] of (ret.choices || []).entries()) {
+        const choiceId = newEntityId();
+        editor.enumChoices[choiceId] = {
+          parent: {
+            type: "cmdClassRet",
+            id: retId,
+          },
+          codexId: CodexId(choice.id),
+          index,
+          localized: {
+            name: LocalizationKey(choice["@name"]),
+            // TODO description
+          },
+        };
+        addLocalizationReference(
+          choiceId,
+          "cmdEnumName",
+          choice["@name"],
+          editor,
+        );
+        // TODO description
+      }
+    }
+  }
+}
+
+function importParameters(
+  imported: DeviceClass,
+  editor: DeviceClassEditorState,
+  localParamClasses: Record<string, string>,
+) {
+  for (const [id, param] of Object.entries(imported.parameters || {})) {
+    const classRef: ClassReference = param.library
+      ? {
+          type: "imported",
+          library: param.library,
+          codexId: CodexId(param.class),
+        }
+      : {
+          type: "local",
+          codexId: CodexId(param.class),
+          id: EntityId(localParamClasses[param.class]),
+        };
+
+    const paramId = newEntityId();
+    editor.parameters[paramId] = {
+      codexId: CodexId(id),
+      class: classRef,
+      count: param.count,
+      access: param.access,
+      lifetime: param.lifetime,
+      enumExclusions: param.choices?.excluded,
+      atomicIdentifier: param.atomicIdentifier,
+      minimum: param.minimum,
+      maximum: param.maximum,
+      minimumModifier: param.minimumModifier,
+      maximumModifier: param.maximumModifier,
+      dynamicMinimum: param.dynamicMinimum,
+      dynamicMaximum: param.dynamicMaximum,
+      default: param.default,
+      wrapping: param.wrapping,
+      localized: {
+        friendlyName: optionalLocalizationKey(param["@friendlyName"]),
+      },
+    };
+    editor.parameterEditors.push(paramId);
+
+    addLocalizationReference(
+      paramId,
+      "paramName",
+      param["@friendlyName"],
+      editor,
+    );
+
+    for (const [index, choice] of (param.choices?.additional || []).entries()) {
+      const choiceId = newEntityId();
+      editor.enumChoices[choiceId] = {
+        parent: {
+          type: "paramAdditional",
+          id: paramId,
+        },
+        codexId: CodexId(choice.id),
+        index,
+        localized: {
+          name: LocalizationKey(choice["@name"]),
+          // TODO description
+        },
+      };
+      addLocalizationReference(choiceId, "enumName", choice["@name"], editor);
+      // TODO description
+    }
+  }
+}
+
+function importResources(
+  imported: DeviceClass,
+  editor: DeviceClassEditorState,
+  localResourceClasses: Record<CodexId, EntityId>,
+) {
+  for (const [id, resource] of Object.entries(imported.resources || {})) {
+    const classRef: ClassReference = resource.library
+      ? {
+          type: "imported",
+          library: resource.library,
+          codexId: CodexId(resource.class),
+        }
+      : {
+          type: "local",
+          codexId: CodexId(resource.class),
+          id: localResourceClasses[CodexId(resource.class)],
+        };
+
+    const resId = newEntityId();
+    editor.resources[resId] = {
+      codexId: CodexId(id),
+      class: classRef,
+      access: resource.access,
+      lifetime: resource.lifetime,
+      mediaType: resource.mediaType,
+      assetId: resource.assetId,
+      importPath: resource.importPath,
+      provenance: resource.provenance,
+      default: resource.default,
+    };
+    editor.resourceEditors.push(resId);
+  }
+}
+
+function importCommands(
+  imported: DeviceClass,
+  editor: DeviceClassEditorState,
+  localCommandClasses: LocalCommandClasses,
+) {
+  for (const [id, cmd] of Object.entries(imported.commands || {})) {
+    const classCodexId = CodexId(cmd.class);
+    const classRef: ClassReference = cmd.library
+      ? {
+          type: "imported",
+          library: cmd.library,
+          codexId: classCodexId,
+        }
+      : {
+          type: "local",
+          codexId: classCodexId,
+          id: localCommandClasses[classCodexId].id,
+        };
+
+    const cmdId = newEntityId();
+    const newCmd: Command = {
+      codexId: CodexId(id),
+      class: classRef,
+      completionNotification: cmd.completionNotification,
+      localized: {
+        friendlyName: optionalLocalizationKey(cmd["@friendlyName"]),
+      },
+    };
+
+    for (const [argId, choices] of Object.entries(cmd.argumentChoices || {})) {
+      const argCodexId = CodexId(argId);
+
+      if (choices.excluded) {
+        newCmd.argEnumExclusions ||= {};
+        newCmd.argEnumExclusions[argCodexId] = choices.excluded.map(CodexId);
+      }
+      for (const [index, choice] of (choices.additional || []).entries()) {
+        const choiceId = newEntityId();
+        editor.enumChoices[choiceId] = {
+          parent:
+            classRef.type === "local"
+              ? {
+                  type: "cmdArg",
+                  idType: "local",
+                  id: localCommandClasses[classCodexId].args[argCodexId],
+                  cmdId,
+                }
+              : {
+                  type: "cmdArg",
+                  idType: "imported",
+                  id: argCodexId,
+                  cmdId,
+                },
+          codexId: CodexId(choice.id),
+          index,
+          localized: {
+            name: LocalizationKey(choice["@name"]),
+            // TODO description
+          },
+        };
+        addLocalizationReference(choiceId, "enumName", choice["@name"], editor);
+        // TODO description
+      }
+    }
+
+    for (const [retId, choices] of Object.entries(cmd.returnChoices || {})) {
+      const retCodexId = CodexId(retId);
+
+      if (choices.excluded) {
+        newCmd.returnEnumExclusions ||= {};
+        newCmd.returnEnumExclusions[retCodexId] = choices.excluded.map(CodexId);
+      }
+      for (const [index, choice] of (choices.additional || []).entries()) {
+        const choiceId = newEntityId();
+        editor.enumChoices[choiceId] = {
+          parent:
+            classRef.type === "local"
+              ? {
+                  type: "cmdRet",
+                  idType: "local",
+                  id: localCommandClasses[classCodexId].returns[retCodexId],
+                  cmdId,
+                }
+              : {
+                  type: "cmdRet",
+                  idType: "imported",
+                  id: retCodexId,
+                  cmdId,
+                },
+          codexId: CodexId(choice.id),
+          index,
+          localized: {
+            name: LocalizationKey(choice["@name"]),
+            // TODO description
+          },
+        };
+        addLocalizationReference(choiceId, "enumName", choice["@name"], editor);
+        // TODO description
+      }
+    }
+
+    editor.commands[cmdId] = newCmd;
+    editor.commandEditors.push(cmdId);
+    addLocalizationReference(cmdId, "cmdName", cmd["@friendlyName"], editor);
+  }
+}
+
+function addLocalizationReference(
+  itemId: EntityId,
+  itemType: LocalizationReferencedItem["itemType"],
+  locKey: string | undefined,
+  editor: DeviceClassEditorState,
+) {
+  if (!locKey) {
+    return;
+  }
+
+  const locDb = editor.localizations[LocalizationKey(locKey)];
+  if (!locDb) {
+    return;
+  }
+
+  locDb.items.push({
+    itemId,
+    itemType,
+  });
+}
+
+async function getImportedDeviceClassEditorWithAssets(
+  orgId: OrgId,
+  id: string,
+  version: string,
+  udr: DeviceClass,
+  archive: ArchiveToImport,
+) {
+  const editor = getImportedDeviceClassEditor(orgId, id, version, udr);
+
+  const qualifiedId = buildQualifiedId(EntityType.Dev, orgId, id);
+  editor.resourceAssets = await loadResourceAssets(
+    qualifiedId,
+    version,
+    archive,
+    editor.resources,
+  );
+  return editor;
+}
+
+async function loadResourceAssets(
+  qualifiedId: string,
+  version: string,
+  archive: ArchiveToImport,
+  resources: Record<string, Resource>,
+): Promise<Record<string, string>> {
+  const resourceAssets: Record<string, string> = {};
+
+  let zip;
+  try {
+    zip = await JSZip.loadAsync(archive.archiveFile);
+  } catch (_e) {
+    return resourceAssets;
+  }
+
+  const assetsDir =
+    archive.archive.e173archive.deviceClasses?.[qualifiedId]?.[version]
+      ?.assetsDirectory;
+  if (!assetsDir) {
+    return resourceAssets;
+  }
+
+  for (const resource of Object.values(resources)) {
+    if (resource.default) {
+      try {
+        const filePath = `${assetsDir}/${resource.default}`;
+
+        const zipFile = zip.file(filePath);
+        if (!zipFile) {
+          throw new Error("Resource file did not exist in archive");
+        }
+
+        const fileContent = await zipFile.async("arraybuffer");
+        const assetId = await assetStorage.storeAsset(
+          fileContent,
+          resource.mediaType,
+        );
+        resourceAssets[resource.default] = assetId;
+      } catch (_e) {
+        // TODO error handling
+        continue;
+      }
+    }
+  }
+
+  return resourceAssets;
+}
+
+// ---------------------------------------------------------------------------
+// DMX Conversion
+// ---------------------------------------------------------------------------
+
+function convertEstaDmxToEditorState(estaDmx: EstaDmx): DmxSerializerState {
+  const result: DmxSerializerState = {
+    chunks: {},
+    mappingGroups: {},
+    conditions: {},
+  };
+
+  // Build a map from old chunk IDs to new EntityIds
+  // IMPORTANT: Build the entire map first before processing any conditions,
+  // to avoid forward reference issues where conditions reference chunks
+  // that haven't been added to the map yet.
+  const chunkIdMap: Record<string, EntityId> = {};
+
+  // First pass: Create all chunks and build the ID map
+  for (const [oldChunkId, chunk] of Object.entries(estaDmx.chunks)) {
+    const newChunkId = newEntityId();
+    chunkIdMap[oldChunkId] = newChunkId;
+
+    result.chunks[newChunkId] = {
+      offsets: chunk.offsets,
+    };
+  }
+
+  // Second pass: Process mapping groups and conditions
+  // Now all chunks are in the map, so conditions can safely reference them
+  for (const [oldChunkId, chunk] of Object.entries(estaDmx.chunks)) {
+    const newChunkId = chunkIdMap[oldChunkId];
+
+    // Convert mapping groups for this chunk
+    chunk.mappingGroups.forEach((mg, index) => {
+      const mappingGroupId = newEntityId();
+      result.mappingGroups[mappingGroupId] = {
+        chunkId: newChunkId,
+        index,
+        mappings: mg.mappings.map((m) => ({
+          mappedParam: parseParameterReference(m.mappedParam),
+          ranges: m.ranges,
+          unmappedParams: m.unmappedParams?.map((up) => ({
+            parameter: parseParameterReference(up.parameter),
+            start: up.start,
+            end: up.end,
+          })),
+        })),
+      };
+
+      // Convert conditions for this mapping group
+      if (mg.conditions && mg.conditions.length > 0) {
+        convertConditionsToNormalized(
+          mg.conditions,
+          { type: "mappingGroup", id: mappingGroupId },
+          chunkIdMap,
+          result,
+        );
+      }
+    });
+  }
+
+  return result;
+}
+
+function convertConditionsToNormalized(
+  conditions: Condition[],
+  parent: DmxConditionParent,
+  chunkIdMap: Record<string, EntityId>,
+  result: DmxSerializerState,
+) {
+  for (const condition of conditions) {
+    if (condition.match !== undefined && condition.conditions !== undefined) {
+      // This is a group condition
+      const groupConditionId = newEntityId();
+      const groupCondition: DmxConditionGroup = {
+        conditionType: "group",
+        parent,
+        match: condition.match,
+      };
+      result.conditions[groupConditionId] = groupCondition;
+
+      // Recursively convert child conditions
+      convertConditionsToNormalized(
+        condition.conditions,
+        { type: "condition", id: groupConditionId },
+        chunkIdMap,
+        result,
+      );
+    } else if (
+      condition.chunk !== undefined &&
+      condition.chunkStart !== undefined &&
+      condition.chunkEnd !== undefined
+    ) {
+      // This is a chunk reference condition
+      const chunkRefConditionId = newEntityId();
+      const referencedChunkId = chunkIdMap[condition.chunk];
+
+      if (!referencedChunkId) {
+        throw new Error(
+          `Chunk reference condition references non-existent chunk: "${condition.chunk}". Available chunks: ${Object.keys(chunkIdMap).join(", ")}`,
+        );
+      }
+
+      const chunkRefCondition: DmxChunkRefCondition = {
+        conditionType: "chunkRef",
+        parent,
+        chunkId: referencedChunkId,
+        chunkStart: condition.chunkStart,
+        chunkEnd: condition.chunkEnd,
+      };
+      result.conditions[chunkRefConditionId] = chunkRefCondition;
+    }
+  }
+}

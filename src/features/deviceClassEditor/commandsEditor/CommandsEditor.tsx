@@ -13,10 +13,10 @@ export const CommandsEditor = () => {
       <ListItemsEditor
         editors={editorStates}
         itemType="Command"
-        getEditorTitle={(editor) => editor.udrId}
+        getEditorTitle={(editor) => editor.codexId}
         onAddItem={() => setNewResourceDialogIsOpen(true)}
-        onDeleteItem={(editor) => deleteCommand(editor.udrId)}
-        renderActiveEditor={(editor) => <CommandEditor id={editor.udrId} />}
+        onDeleteItem={(editor) => deleteCommand(editor.id)}
+        renderActiveEditor={(editor) => <CommandEditor id={editor.id} />}
       />
       <NewCommandDialog
         isOpen={newResourceDialogIsOpen}

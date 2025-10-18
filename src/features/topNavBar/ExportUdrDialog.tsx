@@ -16,7 +16,12 @@ import { Label } from "components/scn-ui/Label";
 import { FieldSet } from "components/FieldSet";
 import { SelectField } from "components/EditorFields/SelectField";
 import { useDeviceClassEditors, useOpenEditors } from "./state";
-import { DeviceClassEditorState, EditorType, OpenEditor } from "app/state";
+import {
+  DeviceClassEditorState,
+  editorTypes,
+  EntityId,
+  OpenEditor,
+} from "app/persistentState";
 import {
   Tooltip,
   TooltipContent,
@@ -24,6 +29,7 @@ import {
 } from "components/scn-ui/Tooltip";
 import { assetStorage } from "app/assetStorage";
 import { buildQualifiedId, EntityType } from "utils/utils";
+import { exportDeviceClass } from "features/deviceClassEditor/export";
 
 interface OpenEditorWithName extends OpenEditor {
   name: string;
@@ -41,12 +47,12 @@ export const ExportUdrDialog = ({ isOpen, onClose }: Props) => {
 
   const editorsWithNames = openEditors.editors.reduce(
     (accum: OpenEditorWithName[], value) => {
-      if (value.type == EditorType.DEVICE_CLASS) {
+      if (value.type == editorTypes.DEVICE_CLASS) {
         const editorState = deviceClassEditors[value.id];
         if (editorState) {
           accum.push({
             ...value,
-            name: editorState.basicData.info.model.name,
+            name: editorState.basicData.modelName,
           });
         }
       }
@@ -90,23 +96,12 @@ export const ExportUdrDialog = ({ isOpen, onClose }: Props) => {
       return;
     }
 
-    const fullId = buildQualifiedId(
-      EntityType.Dev,
-      editor.orgId,
-      editor.deviceClassId,
-    );
-    const doc = createDocument(editor, fullId);
+    const doc = createDocument(editor);
 
     let blob;
 
     if (createArchive) {
-      blob = await createFluxiteCodexArchive(
-        doc,
-        editor,
-        fullId,
-        "1.0.0",
-        prettyPrint,
-      );
+      blob = await createFluxiteCodexArchive(doc, editor, prettyPrint);
     } else {
       blob = new Blob([
         prettyPrint ? JSON.stringify(doc, null, 2) : JSON.stringify(doc),
@@ -136,7 +131,7 @@ export const ExportUdrDialog = ({ isOpen, onClose }: Props) => {
               displayValues={editorsWithNames.map(({ name }) => name)}
               selectedValue={selectedEditorId}
               onSelectionChanged={(value) => {
-                setSelectedEditorId(value);
+                setSelectedEditorId(EntityId(value));
               }}
             />
           </FieldSet>
@@ -184,28 +179,18 @@ export const ExportUdrDialog = ({ isOpen, onClose }: Props) => {
   );
 };
 
-function createDocument(
-  editor: DeviceClassEditorState,
-  deviceClassId: string,
-): E173Document {
+function createDocument(editor: DeviceClassEditorState): E173Document {
+  const id = buildQualifiedId(
+    EntityType.Dev,
+    editor.orgId,
+    editor.deviceClassId,
+  );
+
   return {
     e173doc: {
       deviceClasses: {
-        [deviceClassId]: {
-          // TODO version
-          "1.0.0": {
-            libraries: editor.libraries,
-            deviceLibrary: editor.deviceLibrary
-              ? editor.deviceLibrary
-              : undefined,
-            ...editor.basicData,
-            parameters: editor.parameters.parameters,
-            structures: editor.structures.structures,
-            resources: editor.resources.resources,
-            localizations: editor.localizations
-              ? editor.localizations
-              : undefined,
-          },
+        [id]: {
+          [editor.deviceClassVersion]: exportDeviceClass(editor),
         },
       },
     },
@@ -217,17 +202,20 @@ function createDocument(
 async function createFluxiteCodexArchive(
   doc: E173Document,
   editor: DeviceClassEditorState,
-  deviceClassId: string,
-  deviceClassVersion: string,
   prettyPrint: boolean,
 ): Promise<Blob | null> {
+  const deviceClassId = buildQualifiedId(
+    EntityType.Dev,
+    editor.orgId,
+    editor.deviceClassId,
+  );
   const assetsDirName = `${deviceClassId}-assets`;
 
   const archive: E173Archive = {
     e173archive: {
       deviceClasses: {
         [deviceClassId]: {
-          [deviceClassVersion]: {
+          [editor.deviceClassVersion]: {
             assetsDirectory: assetsDirName,
           },
         },
@@ -254,10 +242,10 @@ async function createFluxiteCodexArchive(
     return null;
   }
 
-  for (const [id, resource] of Object.entries(editor.resources.resources)) {
-    if (resource.default && editor.resources.resourceAssets[resource.default]) {
+  for (const [id, resource] of Object.entries(editor.resources)) {
+    if (resource.default && editor.resourceAssets[resource.default]) {
       const asset = await assetStorage.getAsset(
-        editor.resources.resourceAssets[resource.default],
+        editor.resourceAssets[resource.default],
       );
       if (!asset) {
         toast(`Error creating archive: couldn't load resource asset for ${id}`);

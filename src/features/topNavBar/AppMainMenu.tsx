@@ -2,35 +2,28 @@ import { useState } from "react";
 import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
-  CheckIcon,
   EllipsisHorizontalIcon,
-  MoonIcon,
   QuestionMarkCircleIcon,
 } from "@heroicons/react/24/solid";
 import { CogIcon } from "@heroicons/react/24/outline";
 import { APP_NAME } from "appInfo";
-import { setDarkMode, useDarkMode } from "app/store";
 import { AboutDialog } from "./AboutDialog";
 import { ImportUdrDialog } from "./ImportUdrDialog";
 import { ExportUdrDialog } from "./ExportUdrDialog";
+import { SettingsDialog } from "./SettingsDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "components/scn-ui/DropdownMenu";
 import { Button } from "components/scn-ui/Button";
 
 export const AppMainMenu = () => {
-  const darkMode = useDarkMode();
-
   const [importUdrDialogIsOpen, setImportUdrDialogIsOpen] = useState(false);
   const [exportUdrDialogIsOpen, setExportUdrDialogIsOpen] = useState(false);
+  const [settingsDialogIsOpen, setSettingsDialogIsOpen] = useState(false);
   const [aboutDialogIsOpen, setAboutDialogIsOpen] = useState(false);
 
   return (
@@ -56,23 +49,10 @@ export const AppMainMenu = () => {
             Export UDR...
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger className="flex gap-2">
-              <CogIcon className="size-5" />
-              Settings
-            </DropdownMenuSubTrigger>
-            <DropdownMenuPortal>
-              <DropdownMenuSubContent>
-                <DropdownMenuItem onClick={() => setDarkMode(!darkMode)}>
-                  <MoonIcon className="size-5" />
-                  Dark Mode
-                  <CheckIcon
-                    className={`size-5 ${darkMode ? "visible" : "invisible"}`}
-                  />
-                </DropdownMenuItem>
-              </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-          </DropdownMenuSub>
+          <DropdownMenuItem onClick={() => setSettingsDialogIsOpen(true)}>
+            <CogIcon className="size-5" />
+            Settings...
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setAboutDialogIsOpen(true)}>
             <QuestionMarkCircleIcon className="size-5" />
             {`About ${APP_NAME}`}
@@ -89,6 +69,12 @@ export const AppMainMenu = () => {
         <ExportUdrDialog
           isOpen={true}
           onClose={() => setExportUdrDialogIsOpen(false)}
+        />
+      )}
+      {settingsDialogIsOpen && (
+        <SettingsDialog
+          isOpen={true}
+          onClose={() => setSettingsDialogIsOpen(false)}
         />
       )}
       {aboutDialogIsOpen && (

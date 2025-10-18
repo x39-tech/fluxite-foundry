@@ -1,310 +1,107 @@
-import { JSX } from "react";
-import { Draft } from "immer";
-import { Parameter, Lifetime, DataType, ParameterAccess } from "e173";
+import { useId } from "react";
+import { capitalCase } from "change-case";
+import { DataType } from "e173";
 import { ExclamationTriangleIcon } from "@heroicons/react/16/solid";
-import {
-  getParamAccessFriendlyName,
-  getLifetimeFriendlyName,
-} from "udr/util/enums";
-import { IntegerInputTableRow } from "components/EditorFields/IntegerInputField";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "components/scn-ui/Tooltip";
 import { SelectTableRow } from "components/EditorFields/DeprecatedSelectField";
-import {
-  OptionalTextEditorTableRow,
-  TextEditorTableRow,
-} from "components/EditorFields/DeprecatedTextEditorField";
+import { TextEditorTableRow } from "components/EditorFields/DeprecatedTextEditorField";
 import { ItemEditor } from "components/ItemEditor/ItemEditor";
 import { SimplePropsTable } from "components/SimplePropsTable";
 import { RenderError } from "components/RenderError";
 import { Alert, AlertDescription, AlertTitle } from "components/scn-ui/Alert";
 import { ParameterClassDisplay } from "./ParameterClassDisplay";
+import { validateNewItemId } from "utils/inputValidation";
 import {
-  validateNewItemId,
-  validateStringIsNumberAndBetweenMinAndMaxOrEmpty,
-  validateStringIsNumberOrEmpty,
-} from "utils/inputValidation";
-import {
-  LocalizedParameter,
-  ResolvedParameterClass,
-  getLocalizedParameter,
-  lookupDeviceParameterClass,
-  lookupParameterClass,
-} from "udr/udrDatabase";
-import { useUdrDatabase } from "app/store";
-import {
-  changeParameterId,
   deleteParameter,
+  LocalizedParameter,
   modifyParameter,
-  modifyParameterEnumChoice,
-  modifyParameterFriendlyName,
-  removeParameterEnumChoice,
-  useParameter,
-  useParameterIds,
+  modifyParameterLocalizedValue,
+  useParameterCodexIds,
+  useParameterInfo,
 } from "./state";
-import {
-  useDeviceLibrary,
-  useDeviceLocalizations,
-  useLibraries,
-} from "../state";
 import { EnumChoicesEditor } from "components/EnumChoicesEditor";
+import { InstantiationProperties } from "./InstantiationProperties";
+import {
+  LocalizedInstanceEnumChoice,
+  ResolvedParameterClass,
+} from "../stateTransformations";
+import {
+  ParameterAccess,
+  Lifetime,
+  lifetimes,
+  EntityId,
+  CodexId,
+} from "app/persistentState";
+import { useCurrentLocale } from "app/store";
+import { MinMaxDefaultProperties } from "./MinMaxDefaultProperties";
 
 interface Props {
-  id: string;
+  paramId: EntityId;
 }
 
-type ParameterModifier = (fn: (draft: Draft<Parameter>) => void) => void;
+export const ParameterEditor = ({ paramId }: Props) => {
+  const paramInfo = useParameterInfo(paramId);
+  const parameterIds = useParameterCodexIds();
 
-export const ParameterEditor = ({ id }: Props) => {
-  const database = useUdrDatabase();
-  const parameterIds = useParameterIds();
-  const unlocalizedParam = useParameter(id);
-  const libraries = useLibraries();
-  const deviceLibrary = useDeviceLibrary();
-  const deviceLocalizations = useDeviceLocalizations();
-
-  if (!unlocalizedParam) {
+  if (!paramInfo) {
     return <RenderError />;
   }
 
-  const param = getLocalizedParameter(unlocalizedParam, deviceLocalizations);
-
-  let paramClass: ResolvedParameterClass | undefined = undefined;
-  if (param.library) {
-    const libraryVersion = libraries?.[param.library];
-    if (!libraryVersion) {
-      return <RenderError />;
-    }
-
-    paramClass = lookupParameterClass(
-      database,
-      param.library,
-      libraryVersion,
-      param.class,
-    );
-  } else {
-    paramClass = lookupDeviceParameterClass(
-      deviceLibrary,
-      deviceLocalizations,
-      param.class,
-    );
-  }
+  const { param, paramClass, instanceEnumChoices } = paramInfo;
 
   return (
     <ItemEditor
-      title={param.friendlyName || id}
-      onDelete={() => deleteParameter(id)}
+      title={param.friendlyName?.value || param.codexId}
+      onDelete={() => deleteParameter(paramId)}
     >
       <div className="flex flex-col">
-        {paramClass
-          ? getParameterPropsTable(
-              id,
-              param,
-              (recipe) => modifyParameter(id, recipe),
-              paramClass,
-              parameterIds,
-            )
-          : getClassNotFoundMessage(param.class)}
+        {paramClass ? (
+          <ParameterPropsTable
+            paramId={paramId}
+            param={param}
+            paramClass={paramClass}
+            instanceEnumChoices={instanceEnumChoices}
+            existingItemIds={parameterIds}
+          />
+        ) : (
+          <ClassNotFoundMessage paramClass={param.class.codexId} />
+        )}
       </div>
     </ItemEditor>
   );
 };
 
-enum ParameterInstantiationType {
-  SINGLE = "Single",
-  MULTIPLE = "Multiple",
-  DYNAMIC = "Dynamic",
+interface ParameterPropsTableProps {
+  paramId: EntityId;
+  param: LocalizedParameter;
+  paramClass: ResolvedParameterClass;
+  instanceEnumChoices: LocalizedInstanceEnumChoice[];
+  existingItemIds: string[];
 }
 
-function getInstantiationProperties(
-  udr: LocalizedParameter,
-  modifyParam: ParameterModifier,
-): JSX.Element {
-  return (
-    <>
-      <SelectTableRow
-        label="Instances"
-        values={Object.values(ParameterInstantiationType)}
-        selectedValue={
-          udr.dynamicMinimum
-            ? ParameterInstantiationType.DYNAMIC
-            : udr.count
-              ? ParameterInstantiationType.MULTIPLE
-              : ParameterInstantiationType.SINGLE
-        }
-        onSelectionChanged={(newValue) =>
-          modifyParam((draft) =>
-            changeInstantiationType(
-              draft,
-              newValue as ParameterInstantiationType,
-            ),
-          )
-        }
-      />
-      {udr.count ? (
-        <IntegerInputTableRow
-          label="Instance Count"
-          value={udr.count ?? null}
-          min={1}
-          onValueChange={(newValue) =>
-            newValue &&
-            modifyParam((draft) => {
-              draft.count = newValue || undefined;
-            })
-          }
-        />
-      ) : (
-        <></>
-      )}
-      {udr.dynamicMinimum ? (
-        <>
-          <IntegerInputTableRow
-            label="Minimum Instance Count"
-            value={udr.dynamicMinimum ?? null}
-            min={1}
-            onValueChange={(newValue) =>
-              newValue &&
-              modifyParam((draft) => {
-                draft.dynamicMinimum = newValue;
-                if (
-                  draft.dynamicMaximum !== undefined &&
-                  draft.dynamicMaximum < newValue
-                ) {
-                  draft.dynamicMaximum = newValue;
-                }
-              })
-            }
-          />
-          <IntegerInputTableRow
-            clearable
-            label="Maximum Instance Count"
-            value={udr.dynamicMaximum ?? null}
-            placeholder="(no maximum)"
-            min={1}
-            onValueChange={(newValue) => {
-              modifyParam((draft) => {
-                draft.dynamicMaximum = newValue || undefined;
-                if (newValue !== null && draft.dynamicMinimum! > newValue) {
-                  draft.dynamicMinimum = newValue;
-                }
-              });
-            }}
-          />
-        </>
-      ) : (
-        <></>
-      )}
-    </>
-  );
-}
+const ParameterPropsTable = ({
+  paramId,
+  param,
+  paramClass,
+  instanceEnumChoices,
+  existingItemIds,
+}: ParameterPropsTableProps) => {
+  const locale = useCurrentLocale();
 
-function getMinMaxDefaultProperties(
-  udr: LocalizedParameter,
-  modifyParam: ParameterModifier,
-): JSX.Element {
-  return (
-    <>
-      <OptionalTextEditorTableRow
-        label="Minimum Value"
-        value={udr.minimum !== undefined ? `${udr.minimum}` : ""}
-        onValueChanged={(newValue) =>
-          modifyParam((draft) => {
-            draft.minimum = parseIfNotUndefined(newValue);
-          })
-        }
-        validator={validateStringIsNumberOrEmpty}
-      />
-      <OptionalTextEditorTableRow
-        label="Maximum Value"
-        value={udr.maximum !== undefined ? `${udr.maximum}` : undefined}
-        onValueChanged={(newValue) =>
-          modifyParam((draft) => {
-            draft.maximum = parseIfNotUndefined(newValue);
-          })
-        }
-        validator={validateStringIsNumberOrEmpty}
-      />
-      <OptionalTextEditorTableRow
-        label="Default Value"
-        value={udr.default !== undefined ? `${udr.default}` : undefined}
-        onValueChanged={(newValue) =>
-          modifyParam((draft) => {
-            draft.default = parseIfNotUndefined(newValue);
-          })
-        }
-        validator={(input) =>
-          validateStringIsNumberAndBetweenMinAndMaxOrEmpty(
-            input,
-            // TODO: Fix to handle booleans
-            udr.minimum as number | undefined,
-            udr.maximum as number | undefined,
-          )
-        }
-      />
-    </>
-  );
-}
-
-function getEnumChoicesProperties(
-  id: string,
-  param: LocalizedParameter,
-  paramClass: ResolvedParameterClass,
-  modifyParam: ParameterModifier,
-) {
-  return (
-    <tr>
-      <td className="align-middle">Enum Choices</td>
-      <td>
-        <EnumChoicesEditor
-          forName={param.friendlyName || id}
-          classChoices={paramClass.choices || []}
-          instanceChoices={param.choices}
-          onExclusionChanged={(choiceId, excluded) =>
-            modifyParam((draft) => {
-              draft.choices ||= {};
-              draft.choices.excluded ||= [];
-
-              const excludedList = draft.choices.excluded;
-
-              if (excluded) {
-                if (!excludedList.includes(choiceId)) {
-                  excludedList.push(choiceId);
-                }
-              } else {
-                draft.choices.excluded = excludedList.filter(
-                  (value) => value !== choiceId,
-                );
-              }
-            })
-          }
-          onInstanceChoiceRemoved={(choiceIndex) =>
-            removeParameterEnumChoice(id, choiceIndex)
-          }
-          onInstanceChoiceUpdated={(choiceIndex, updatedChoice) =>
-            modifyParameterEnumChoice(id, choiceIndex, updatedChoice)
-          }
-        />
-      </td>
-    </tr>
-  );
-}
-
-function getParameterPropsTable(
-  id: string,
-  param: LocalizedParameter,
-  modifyParam: ParameterModifier,
-  paramClass: ResolvedParameterClass,
-  existingItemIds: string[],
-): JSX.Element {
   return (
     <SimplePropsTable className="mb-2">
       <tr>
         <td>Library</td>
         <td>
-          <code>{param.library || "Device Library"}</code>
+          <code>
+            {param.class.type === "imported"
+              ? param.class.library
+              : "Device Library"}
+          </code>
         </td>
       </tr>
       <tr>
@@ -312,7 +109,7 @@ function getParameterPropsTable(
         <td>
           <Tooltip>
             <TooltipTrigger>
-              <code>{param.class}</code>
+              <code>{param.class.codexId}</code>
             </TooltipTrigger>
             <TooltipContent side="right">
               <ParameterClassDisplay paramClass={paramClass} />
@@ -322,82 +119,125 @@ function getParameterPropsTable(
       </tr>
       <TextEditorTableRow
         label="ID"
-        value={id}
-        onValueChanged={(newValue) => changeParameterId(id, newValue)}
+        value={param.codexId}
+        onValueChanged={(newValue) =>
+          modifyParameter(
+            paramId,
+            (draft) => (draft.codexId = CodexId(newValue)),
+          )
+        }
         validator={(input) =>
           validateNewItemId(
             input,
-            existingItemIds.filter((value) => value !== id),
+            existingItemIds.filter((value) => value !== param.codexId),
           )
         }
       />
       <TextEditorTableRow
         label="Display Name"
-        value={param.friendlyName}
-        onValueChanged={(newValue) => modifyParameterFriendlyName(id, newValue)}
+        value={param.friendlyName?.value}
+        onValueChanged={(newValue) =>
+          modifyParameterLocalizedValue(
+            paramId,
+            "friendlyName",
+            newValue,
+            locale,
+          )
+        }
       />
       <tr>
         <td>Access</td>
         <td className="flex flex-row items-center">
-          {getAccessCheckbox(
-            id,
-            ParameterAccess.ReadActual,
-            param.access,
-            modifyParam,
-            false,
-          )}
-          {getAccessCheckbox(
-            id,
-            ParameterAccess.ReadTarget,
-            param.access,
-            modifyParam,
-            param.lifetime === Lifetime.Static,
-          )}
-          {getAccessCheckbox(
-            id,
-            ParameterAccess.Write,
-            param.access,
-            modifyParam,
-            param.lifetime === Lifetime.Static,
-          )}
+          <AccessCheckbox
+            paramId={paramId}
+            access="readActual"
+            paramAccess={param.access}
+            disabled={false}
+          />
+          <AccessCheckbox
+            paramId={paramId}
+            access="readTarget"
+            paramAccess={param.access}
+            disabled={param.lifetime === "static"}
+          />
+          <AccessCheckbox
+            paramId={paramId}
+            access="write"
+            paramAccess={param.access}
+            disabled={param.lifetime === "static"}
+          />
         </td>
       </tr>
       <SelectTableRow
         label="Lifetime"
-        values={Object.values(Lifetime)}
-        displayValues={Object.values(Lifetime).map(getLifetimeFriendlyName)}
+        values={Object.values(lifetimes)}
+        displayValues={Object.values(lifetimes).map((val) => capitalCase(val))}
         selectedValue={param.lifetime}
         onSelectionChanged={(newValue) =>
-          modifyParam((draft) => {
+          modifyParameter(paramId, (draft) => {
             draft.lifetime = newValue as Lifetime;
-            if (newValue === Lifetime.Static) {
+            if (newValue === "static") {
               draft.access = draft.access.filter(
-                (value) => value === ParameterAccess.ReadActual,
+                (value) => value === "readActual",
               );
             }
           })
         }
       />
-      {getInstantiationProperties(param, modifyParam)}
-      {paramClass.dataType === DataType.Number ? (
-        getMinMaxDefaultProperties(param, modifyParam)
-      ) : (
-        <></>
+      <InstantiationProperties paramId={paramId} param={param} />
+      {paramClass.dataType === DataType.Number && (
+        <MinMaxDefaultProperties paramId={paramId} param={param} />
       )}
-      {paramClass.dataType === DataType.Enum &&
-        getEnumChoicesProperties(id, param, paramClass, modifyParam)}
+      {paramClass.dataType === DataType.Enum && (
+        <tr>
+          <td className="align-middle">Enum Choices</td>
+          <td>
+            <EnumChoicesEditor
+              forName={param.friendlyName?.value || param.codexId}
+              parent={{ type: "paramAdditional", id: paramId }}
+              classChoices={paramClass.choices}
+              instanceChoices={instanceEnumChoices}
+              exclusions={param.enumExclusions}
+              onExclusionChanged={(choiceId, excluded) =>
+                modifyParameter(paramId, (draft) => {
+                  draft.enumExclusions ||= [];
+
+                  if (excluded) {
+                    if (!draft.enumExclusions.includes(choiceId)) {
+                      draft.enumExclusions.push(choiceId);
+                    }
+                  } else {
+                    draft.enumExclusions = draft.enumExclusions.filter(
+                      (value) => value !== choiceId,
+                    );
+                    if (!draft.enumExclusions) {
+                      delete draft.enumExclusions;
+                    }
+                  }
+                })
+              }
+            />
+          </td>
+        </tr>
+      )}
     </SimplePropsTable>
   );
+};
+
+interface AccessCheckboxProps {
+  paramId: EntityId;
+  access: ParameterAccess;
+  paramAccess: ParameterAccess[];
+  disabled: boolean;
 }
 
-function getAccessCheckbox(
-  paramId: string,
-  access: ParameterAccess,
-  paramAccess: ParameterAccess[],
-  modifyParam: ParameterModifier,
-  disabled: boolean,
-): JSX.Element {
-  const id = `paramEditor-${paramId}-access${access}`;
+const AccessCheckbox = ({
+  paramId,
+  access,
+  paramAccess,
+  disabled,
+}: AccessCheckboxProps) => {
+  const id = useId();
 
   return (
     <>
@@ -407,7 +247,7 @@ function getAccessCheckbox(
         checked={paramAccess.includes(access)}
         disabled={disabled}
         onChange={(event) =>
-          modifyParam((draft) => {
+          modifyParameter(paramId, (draft) => {
             if (event.target.value && !draft.access.includes(access)) {
               draft.access.push(access);
             } else {
@@ -417,41 +257,23 @@ function getAccessCheckbox(
         }
       />
       <label className="mx-1" htmlFor={id}>
-        {getParamAccessFriendlyName(access)}
+        {capitalCase(access)}
       </label>
     </>
   );
+};
+
+interface ClassNotFoundMessageProps {
+  paramClass: CodexId;
 }
 
-function changeInstantiationType(
-  draft: Draft<Parameter>,
-  newType: ParameterInstantiationType,
-) {
-  switch (newType) {
-    case ParameterInstantiationType.SINGLE:
-      delete draft.dynamicMinimum;
-      delete draft.dynamicMaximum;
-      delete draft.count;
-      break;
-    case ParameterInstantiationType.MULTIPLE:
-      delete draft.dynamicMinimum;
-      delete draft.dynamicMaximum;
-      draft.count = 1;
-      break;
-    case ParameterInstantiationType.DYNAMIC:
-      delete draft.count;
-      draft.dynamicMinimum = 1;
-      break;
-  }
-}
-
-function getClassNotFoundMessage(className: string): JSX.Element {
+const ClassNotFoundMessage = ({ paramClass }: ClassNotFoundMessageProps) => {
   return (
     <Alert>
       <ExclamationTriangleIcon />
       <AlertTitle>
         <span>
-          Class <code>{className}</code> not found.
+          Class <code>{paramClass}</code> not found.
         </span>
       </AlertTitle>
       <AlertDescription>
@@ -459,8 +281,4 @@ function getClassNotFoundMessage(className: string): JSX.Element {
       </AlertDescription>
     </Alert>
   );
-}
-
-function parseIfNotUndefined(value?: string): number | undefined {
-  return value === undefined ? value : parseFloat(value);
-}
+};

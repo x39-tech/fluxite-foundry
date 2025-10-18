@@ -8,24 +8,21 @@ import { ValidatedInput } from "components/ValidatedInput";
 import { SelectField } from "components/EditorFields/SelectField";
 import { TagInput } from "components/TagInput";
 import { assignOrDelete } from "utils/utils";
+import { useCurrentLocale } from "app/store";
 import {
-  getLocalizedBasicData,
   modifyBasicData,
-  modifyBasicDataDescription,
+  modifyBasicDataLocalizedValue,
   useBasicData,
 } from "./state";
-import { useDeviceLocalizations } from "../state";
 
 export const DeviceInfoEditor = () => {
-  const unlocalizedBasicData = useBasicData();
-  const localizations = useDeviceLocalizations();
+  const basicData = useBasicData();
   const idPrefix = useId();
+  const locale = useCurrentLocale();
 
-  if (!unlocalizedBasicData) {
+  if (!basicData) {
     return <RenderError />;
   }
-
-  const basicData = getLocalizedBasicData(unlocalizedBasicData, localizations);
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -37,11 +34,9 @@ export const DeviceInfoEditor = () => {
           </Label>
           <ValidatedInput
             id={`${idPrefix}-manufacturerName`}
-            value={basicData.info.manufacturer.name}
+            value={basicData.manufacturerName}
             onConfirm={(newValue) =>
-              modifyBasicData(
-                (draft) => (draft.info.manufacturer.name = newValue),
-              )
+              modifyBasicData((draft) => (draft.manufacturerName = newValue))
             }
           />
         </FieldSet>
@@ -51,10 +46,10 @@ export const DeviceInfoEditor = () => {
           </Label>
           <ValidatedInput
             id={`${idPrefix}-manufacturerUrl`}
-            value={basicData.info.manufacturer.url || ""}
+            value={basicData.manufacturerUrl || ""}
             onConfirm={(newValue) =>
               modifyBasicData((draft) =>
-                assignOrDelete(draft.info.manufacturer, "url", newValue),
+                assignOrDelete(draft, "manufacturerUrl", newValue),
               )
             }
           />
@@ -65,10 +60,10 @@ export const DeviceInfoEditor = () => {
           </Label>
           <ValidatedInput
             id={`${idPrefix}-manufacturerEstaId`}
-            value={basicData.info.manufacturer.estaId || ""}
+            value={basicData.manufacturerEstaId || ""}
             onConfirm={(newValue) =>
               modifyBasicData((draft) =>
-                assignOrDelete(draft.info.manufacturer, "estaId", newValue),
+                assignOrDelete(draft, "manufacturerEstaId", newValue),
               )
             }
           />
@@ -80,9 +75,9 @@ export const DeviceInfoEditor = () => {
           <Label htmlFor={`${idPrefix}-modelName`}>Model Name</Label>
           <ValidatedInput
             id={`${idPrefix}-modelName`}
-            value={basicData.info.model.name}
+            value={basicData.modelName}
             onConfirm={(newValue) =>
-              modifyBasicData((draft) => (draft.info.model.name = newValue))
+              modifyBasicData((draft) => (draft.modelName = newValue))
             }
           />
         </FieldSet>
@@ -91,11 +86,11 @@ export const DeviceInfoEditor = () => {
           <SelectField
             id={`${idPrefix}-category`}
             values={Object.values(Category)}
-            selectedValue={basicData.info.model.category}
+            selectedValue={basicData.modelCategory}
             onSelectionChanged={(newValue) =>
               modifyBasicData((draft) => {
-                draft.info.model.category = newValue as Category;
-                draft.info.model.subcategory = builderInfo.deviceClass
+                draft.modelCategory = newValue as Category;
+                draft.modelSubcategory = builderInfo.deviceClass
                   .modelCategoriesSubcategories[
                   newValue as Category
                 ][0] as Subcategory;
@@ -109,13 +104,13 @@ export const DeviceInfoEditor = () => {
             id={`${idPrefix}-subcategory`}
             values={
               builderInfo.deviceClass.modelCategoriesSubcategories[
-                basicData.info.model.category
+                basicData.modelCategory
               ]
             }
-            selectedValue={basicData.info.model.subcategory}
+            selectedValue={basicData.modelSubcategory}
             onSelectionChanged={(newValue) =>
               modifyBasicData((draft) => {
-                draft.info.model.subcategory = newValue as Subcategory;
+                draft.modelSubcategory = newValue as Subcategory;
               })
             }
           />
@@ -127,12 +122,10 @@ export const DeviceInfoEditor = () => {
           <Label id={`${idPrefix}-firmwareVersions`}>Firmware Versions</Label>
           <TagInput
             aria-labelledby={`${idPrefix}-firmwareVersions`}
-            values={basicData.info.compatibility?.firmwareVersions || []}
+            values={basicData.compatibleFirmwareVersions || []}
             onValuesChange={(newValue) =>
               modifyBasicData((draft) => {
-                draft.info.compatibility = {
-                  firmwareVersions: newValue,
-                };
+                assignOrDelete(draft, "compatibleFirmwareVersions", newValue);
               })
             }
           />
@@ -144,8 +137,10 @@ export const DeviceInfoEditor = () => {
           <Label htmlFor={`${idPrefix}-description`}>Description</Label>
           <ValidatedInput
             id={`${idPrefix}-description`}
-            value={basicData.description}
-            onConfirm={(newValue) => modifyBasicDataDescription(newValue)}
+            value={basicData.description.value || ""}
+            onConfirm={(newValue) =>
+              modifyBasicDataLocalizedValue("description", newValue, locale)
+            }
           />
         </FieldSet>
         <FieldSet>

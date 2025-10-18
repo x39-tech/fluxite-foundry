@@ -1,6 +1,6 @@
 import { useId } from "react";
 import { Label } from "components/scn-ui/Label";
-import { ResolvedResourceClass } from "udr/udrDatabase";
+import { ResolvedResourceClass } from "../stateTransformations";
 
 interface Props {
   resourceClass: ResolvedResourceClass;
@@ -18,13 +18,13 @@ export const ResourceClassDisplay = ({ resourceClass }: Props) => {
       <div>
         <Label htmlFor={descId}>Description</Label>
         <div className={textClass} id={descId}>
-          {resourceClass.description}
+          {resourceClass.description?.value}
         </div>
       </div>
       <div>
         <Label htmlFor={idId}>ID</Label>
         <div className={textClass} id={idId}>
-          {resourceClass.id}
+          {resourceClass.codexId}
         </div>
       </div>
       {resourceClass.mediaType && (

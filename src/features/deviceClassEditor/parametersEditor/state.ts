@@ -1,42 +1,142 @@
-import { nanoid } from "nanoid";
 import { Draft } from "immer";
-import { ItemEditor, ParametersEditorState } from "app/state";
-import { Lifetime, Parameter, ParameterAccess } from "e173";
 import {
-  modifyLocalizationString,
-  setNewLocalizationString,
+  ClassReference,
+  CodexId,
+  EntityId,
+  LocalizationReferencedItem,
+  Parameter,
+  ParameterClass,
+  Unlocalized,
+} from "app/persistentState";
+import { getWithId, selectWithIds } from "app/stateUtils";
+import { localize, LocalizedString } from "utils/localizationUtils";
+import { useCurrentLocale, useUdrDatabase } from "app/store";
+import {
+  addNewItemLocalization,
+  removeReferencedLocalization,
   updateCurrentEditor,
   useCurrentEditorPart,
   useCurrentEditorPartShallow,
 } from "../state";
-import { LocalizedEnumChoice } from "udr/udrDatabase";
+import {
+  LocalizedInstanceEnumChoice,
+  lookupDeviceParameterClass,
+  lookupParameterClass,
+  ResolvedParameterClass,
+} from "../stateTransformations";
+import { newEntityId } from "app/stateUtils";
+
+export interface LocalizedParameter extends Unlocalized<Parameter> {
+  friendlyName?: LocalizedString;
+}
 
 // ---------------------------------------------------------------------------
 // Read
 // ---------------------------------------------------------------------------
 
-export function useParameters(): ParametersEditorState | undefined {
+export function useParameters(): Record<EntityId, Parameter> | undefined {
   return useCurrentEditorPart((state) => state.parameters);
 }
 
-export function useParameterEditors(): ItemEditor[] {
-  const editors = useCurrentEditorPartShallow((state) =>
-    state.parameters.itemEditorLayout.filter(
-      (editor) => editor.udrId in state.parameters.parameters,
-    ),
-  );
-  return editors ?? [];
+export function useParameterClasses():
+  | Record<EntityId, ParameterClass>
+  | undefined {
+  return useCurrentEditorPart((state) => state.parameterClasses);
 }
 
-export function useParameterIds(): string[] {
+export function useParameterEditors(): EntityId[] {
+  return useCurrentEditorPart((state) => state.parameterEditors) || [];
+}
+
+export function useParameterCodexIds(): CodexId[] {
   const ids = useCurrentEditorPartShallow((state) =>
-    Object.keys(state.parameters.parameters),
+    Object.values(state.parameters).map((param) => param.codexId),
   );
   return ids ?? [];
 }
 
-export function useParameter(id: string): Parameter | undefined {
-  return useCurrentEditorPart((state) => state.parameters.parameters[id]);
+export function useParameterInfo(id: EntityId):
+  | {
+      param: LocalizedParameter;
+      paramClass?: ResolvedParameterClass;
+      instanceEnumChoices: LocalizedInstanceEnumChoice[];
+    }
+  | undefined {
+  const editorPart = useCurrentEditorPartShallow((editor) => {
+    return [
+      editor.parameters[id],
+      editor.libraries,
+      editor.parameterClasses,
+      editor.enumChoices,
+      editor.localizations,
+    ] as const;
+  });
+  const locale = useCurrentLocale();
+  const database = useUdrDatabase();
+
+  if (!editorPart) return undefined;
+
+  const [param, libraries, deviceParamClasses, enumChoices, localizations] =
+    editorPart;
+
+  if (!param) return undefined;
+
+  let paramClass = undefined;
+  if (param.class.type === "imported") {
+    const libraryVersion = libraries[param.class.library];
+    if (!libraryVersion) {
+      return undefined;
+    }
+
+    paramClass = lookupParameterClass(
+      database,
+      param.class.codexId,
+      param.class.library,
+      libraryVersion,
+      locale,
+    );
+  } else {
+    paramClass = lookupDeviceParameterClass(
+      deviceParamClasses,
+      localizations,
+      enumChoices,
+      param.class.id,
+      locale,
+    );
+  }
+
+  const friendlyName = param.localized.friendlyName
+    ? localize(localizations, param.localized.friendlyName, locale)
+    : undefined;
+
+  const localizedParam = {
+    ...param,
+    friendlyName,
+  };
+
+  const paramEnumChoices = selectWithIds(
+    enumChoices,
+    (choice) =>
+      choice.parent.type === "paramAdditional" && choice.parent.id === id,
+  );
+  paramEnumChoices.sort((e1, e2) => e1.index - e2.index);
+
+  return {
+    param: localizedParam,
+    paramClass,
+    instanceEnumChoices: paramEnumChoices.map((choice) => {
+      const name = localize(localizations, choice.localized.name, locale);
+      const description = choice.localized.description
+        ? localize(localizations, choice.localized.description, locale)
+        : undefined;
+
+      return {
+        ...choice,
+        name,
+        description,
+      };
+    }),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -45,44 +145,64 @@ export function useParameter(id: string): Parameter | undefined {
 
 export function createNewParameter(
   library: string | undefined,
-  paramClass: string,
-  id: string,
+  paramClass: CodexId,
+  codexId: CodexId,
   friendlyName: string,
+  locale: string,
 ) {
   updateCurrentEditor((editor) => {
-    const paramState = editor.parameters;
-
-    if (id in paramState.parameters) {
+    if (
+      Object.values(editor.parameters).some(
+        (param) => param.codexId === codexId,
+      )
+    ) {
       return;
     }
 
-    const nameKey = setNewLocalizationString(
+    let classRef: ClassReference;
+    if (library === undefined) {
+      const pc = getWithId(
+        editor.parameterClasses,
+        (cls) => cls.codexId === paramClass,
+      );
+      if (!pc) {
+        return;
+      }
+      classRef = { type: "local", codexId: pc.codexId, id: pc.id };
+    } else {
+      classRef = { type: "imported", codexId: paramClass, library };
+    }
+
+    const paramId = newEntityId();
+
+    const friendlyNameKey = addNewItemLocalization(
       editor,
-      `parameter_${id}`,
+      `param_${codexId}`,
+      { itemId: paramId, itemType: "paramName" },
+      locale,
       friendlyName,
     );
 
-    paramState.parameters[id] = {
-      library,
-      class: paramClass,
-      access: [ParameterAccess.ReadActual, ParameterAccess.Write],
-      lifetime: Lifetime.Runtime,
-      "@friendlyName": nameKey,
+    editor.parameters[paramId] = {
+      codexId,
+      localized: {
+        friendlyName: friendlyNameKey,
+      },
+      class: classRef,
+      access: ["readActual", "write"],
+      lifetime: "runtime",
     };
 
-    paramState.itemEditorLayout.push({
-      id: nanoid(),
-      udrId: id,
-    });
+    editor.parameterEditors.push(paramId);
   });
 }
 
 export function modifyParameter(
-  id: string,
-  recipe: (state: Draft<Parameter>) => void,
+  id: EntityId,
+  recipe: (state: Draft<Unlocalized<Parameter>>) => void,
 ) {
   updateCurrentEditor((editor) => {
-    const param = editor.parameters.parameters[id];
+    const param = editor.parameters[id];
     if (!param) {
       return;
     }
@@ -91,114 +211,87 @@ export function modifyParameter(
   });
 }
 
-export function modifyParameterFriendlyName(id: string, newName: string) {
-  updateCurrentEditor((editor) => {
-    const param = editor.parameters.parameters[id];
-    if (!param) {
-      return;
-    }
+const PARAM_LOCALIZED_INFO: Record<
+  keyof Parameter["localized"],
+  {
+    itemType: LocalizationReferencedItem["itemType"];
+    constructKey: (codexId: string) => string;
+  }
+> = {
+  friendlyName: {
+    itemType: "paramName",
+    constructKey: (codexId) => `param_${codexId}`,
+  },
+};
 
-    if (param["@friendlyName"]) {
-      modifyLocalizationString(editor, param["@friendlyName"], newName);
-    } else {
-      const newKey = setNewLocalizationString(
-        editor,
-        `parameter_${id}`,
-        newName,
-      );
-      param["@friendlyName"] = newKey;
-    }
-  });
-}
-
-export function modifyParameterEnumChoice(
-  id: string,
-  choiceIndex: number,
-  updatedChoice: LocalizedEnumChoice,
+export function modifyParameterLocalizedValue(
+  id: EntityId,
+  key: keyof Parameter["localized"],
+  newValue: string,
+  locale: string,
 ) {
   updateCurrentEditor((editor) => {
-    const param = editor.parameters.parameters[id];
+    const param = editor.parameters[id];
     if (!param) {
       return;
     }
 
-    param.choices ||= {};
-    param.choices.additional ||= [];
-    const additionalList = param.choices.additional;
+    const localization = param.localized[key]
+      ? editor.localizations[param.localized[key]]
+      : undefined;
 
-    if (choiceIndex < 0) {
-      // New choice
-      const newKey = setNewLocalizationString(
+    if (!localization) {
+      const info = PARAM_LOCALIZED_INFO[key];
+      const locKey = addNewItemLocalization(
         editor,
-        `param_${id}_${updatedChoice.id}`,
-        updatedChoice.name,
+        info.constructKey(param.codexId),
+        {
+          itemId: id,
+          itemType: info.itemType,
+        },
+        locale,
+        newValue,
       );
-      additionalList.push({ id: updatedChoice.id, "@name": newKey });
-    } else if (choiceIndex < additionalList.length) {
-      modifyLocalizationString(
-        editor,
-        additionalList[choiceIndex]["@name"],
-        updatedChoice.name,
-      );
-      additionalList[choiceIndex].id = updatedChoice.id;
+      param.localized[key] = locKey;
+    } else {
+      localization.strings[locale] = newValue;
     }
   });
 }
 
-export function removeParameterEnumChoice(id: string, choiceIndex: number) {
+export function deleteParameter(id: EntityId) {
   updateCurrentEditor((editor) => {
-    const param = editor.parameters.parameters[id];
+    const param = editor.parameters[id];
     if (!param) {
       return;
     }
 
-    const additionalList = param.choices?.additional;
+    const enumChoices = selectWithIds(
+      editor.enumChoices,
+      (choice) =>
+        choice.parent.type === "paramAdditional" && choice.parent.id === id,
+    );
 
-    if (!additionalList) {
-      return;
+    for (const choice of enumChoices) {
+      removeReferencedLocalization(editor, choice.localized.name, {
+        itemType: "enumName",
+        itemId: choice.id,
+      });
+      removeReferencedLocalization(editor, choice.localized.description, {
+        itemType: "enumDesc",
+        itemId: choice.id,
+      });
+      delete editor.enumChoices[choice.id];
     }
 
-    const existingChoice = additionalList[choiceIndex];
-    if (!existingChoice) {
-      return;
-    }
-
-    delete editor.localizations["en-US"]?.strings?.[existingChoice["@name"]];
-    additionalList.splice(choiceIndex, 1);
-  });
-}
-
-export function changeParameterId(id: string, newId: string) {
-  updateCurrentEditor((editor) => {
-    const paramState = editor.parameters;
-    if (newId in paramState.parameters) {
-      return;
-    }
-
-    const existingParam = paramState.parameters[id];
-    if (!existingParam) {
-      return;
-    }
-
-    // Update UDR
-    paramState.parameters[newId] = existingParam;
-    delete paramState.parameters[id];
-
-    // Update UI paramState
-    paramState.itemEditorLayout.forEach((editor) => {
-      if (editor.udrId === id) {
-        editor.udrId = newId;
-      }
+    removeReferencedLocalization(editor, param.localized.friendlyName, {
+      itemType: "paramName",
+      itemId: id,
     });
-  });
-}
 
-export function deleteParameter(id: string) {
-  updateCurrentEditor((editor) => {
-    const paramState = editor.parameters;
-    delete paramState.parameters[id];
-    paramState.itemEditorLayout = paramState.itemEditorLayout.filter(
-      (value) => value.udrId !== id,
+    delete editor.parameters[id];
+    editor.parameterEditors = editor.parameterEditors.filter(
+      (value) => value !== id,
     );
   });
 }

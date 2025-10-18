@@ -13,10 +13,10 @@ export const ResourcesEditor = () => {
       <ListItemsEditor
         editors={editorStates}
         itemType="Resource"
-        getEditorTitle={(editor) => editor.udrId}
+        getEditorTitle={(editor) => editor.codexId}
         onAddItem={() => setNewResourceDialogIsOpen(true)}
-        onDeleteItem={(editor) => deleteResource(editor.udrId)}
-        renderActiveEditor={(editor) => <ResourceEditor id={editor.udrId} />}
+        onDeleteItem={(editor) => deleteResource(editor.id)}
+        renderActiveEditor={(editor) => <ResourceEditor id={editor.id} />}
       />
       <NewResourceDialog
         isOpen={newResourceDialogIsOpen}

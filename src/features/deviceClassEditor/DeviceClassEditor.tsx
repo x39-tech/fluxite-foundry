@@ -5,7 +5,6 @@ import {
   TabNode,
   Actions,
   DockLocation,
-  IJsonModel,
 } from "flexlayout-react";
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import { throttle } from "lodash";
@@ -27,12 +26,11 @@ import {
   useCurrentEditorPart,
 } from "./state";
 import { useAppPersistentStore } from "app/store";
+import { getDefaultWindowLayout } from "utils/utils";
 
 export const DeviceClassEditor = () => {
   const currentEditorId = useCurrentEditorId();
-  const editorName = useCurrentEditorPart(
-    (state) => state.basicData.info.model.name,
-  );
+  const editorName = useCurrentEditorPart((state) => state.basicData.modelName);
 
   useEffect(() => {
     document.title = `Editing: ${editorName} -- ${APP_NAME}`;
@@ -58,7 +56,7 @@ export const DeviceClassEditor = () => {
       return undefined;
     }
 
-    const modelJson: IJsonModel = {
+    const model = {
       global: {
         tabEnableRename: false,
         tabSetClassNameTabStrip: "bg-none",
@@ -67,9 +65,19 @@ export const DeviceClassEditor = () => {
         splitterSize: 2,
       },
       borders: [],
-      layout: currentEditor.windowLayout,
     };
-    return Model.fromJson(modelJson);
+
+    try {
+      return Model.fromJson({
+        ...model,
+        layout: JSON.parse(currentEditor.windowLayout),
+      });
+    } catch (_e) {
+      return Model.fromJson({
+        ...model,
+        layout: getDefaultWindowLayout(),
+      });
+    }
   }, [currentEditorId]);
 
   if (!model) {

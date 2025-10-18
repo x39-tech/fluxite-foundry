@@ -1,16 +1,16 @@
-# UDR Builder
+# Fluxite Foundry
 
-UDR Builder is a proof-of-concept web application which implements the upcoming [ESTA](https://tsp.esta.org/tsp/index.html) standard BSR E1.73, Uniform Device Representation. The aim of the UDR Builder application is to provide a continuously updated reference implementation which can edit, control and simulate devices that are defined using the standard format.
+Fluxite Foundry is a proof-of-concept web application which implements the upcoming [ESTA](https://tsp.esta.org/tsp/index.html) standard BSR E1.73, Fluxite Codex. The aim of Fluxite Foundry is to provide a continuously updated reference implementation which can edit, control and simulate devices that are defined using the standard format.
 
 To access documentation and/or participate in development for the standard format itself, please consider [joining the Control Protocols Working Group](https://tsp.esta.org/tsp/working_groups/index.html).
 
 The application is published to GitLab Pages, available [here](https://udr-builder.com). Please feel free to test it out.
 
-The application is currently in an **extremely preliminary state**, even more so than the UDR standard itself. It essentially amounts to a proof-of-concept. There is a long TODO list which will be addressed going forward, and progress will be reported at each quarterly ESTA technical standards program meeting.
+The application is currently in an **extremely preliminary state**, even more so than the Fluxite Codex standard itself. It essentially amounts to a proof-of-concept. There is a long TODO list which will be addressed going forward, and progress will be reported at each quarterly ESTA technical standards program meeting.
 
 ## Contributing
 
-UDR Builder is a [React](https://reactjs.org/) single-page application which uses [Vite](https://vitejs.dev/) for building.
+Fluxite Foundry is a [React](https://reactjs.org/) single-page application which uses [Vite](https://vitejs.dev/) for building.
 
 ### Cloning
 
@@ -19,13 +19,13 @@ UDR Builder is a [React](https://reactjs.org/) single-page application which use
 Make sure the submodules are initialized by providing the proper argument to `git clone`:
 
 ```
-$ git clone --recurse-submodules [repo URL]
+git clone --recurse-submodules [repo URL]
 ```
 
 Or, after a normal clone, make sure to initialize the submodules:
 
 ```
-$ git submodule update --init --recursive
+git submodule update --init --recursive
 ```
 
 ### Developing
@@ -48,7 +48,7 @@ Builds the app for production to the `dist` folder.
 
 #### `npm run preview`
 
-Locally previews the production build in a server. View the page in the browser at `http://localhost:4173` by default.
+Locally previews the production build in a server. View the page in the browser at `http://localhost:5173` by default.
 
 #### `npm run test`
 
@@ -69,3 +69,7 @@ Runs prettier in 'check' mode, typically used in CI.
 #### `npm run format`
 
 Runs prettier to reformat all code.
+
+#### `npm run typecheck`
+
+Run the Typescript compiler on the project.
