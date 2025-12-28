@@ -7,9 +7,6 @@ import {
   ResourceClass,
   CommandClass,
 } from "e173";
-import core from "e173/libraries/core/draft-2024-1/library.json";
-import intensityColor from "e173/libraries/intensity-color/draft-2024-1/library.json";
-import motion from "e173/libraries/motion/draft-2024-1/library.json";
 import {
   CodexId,
   EntityId,
@@ -17,6 +14,13 @@ import {
   LocalizationKey,
 } from "app/persistentState";
 import { fcLocalize, localize, LocalizedString } from "utils/localizationUtils";
+
+import core from "e173/libraries/core/draft-2026-1/library.fcd";
+import intensityColor from "e173/libraries/intensity-color/draft-2026-1/library.fcd";
+import motion from "e173/libraries/motion/draft-2026-1/library.fcd";
+import effect from "e173/libraries/effect/draft-2026-1/library.fcd";
+import shape from "e173/libraries/shape/draft-2026-1/library.fcd";
+import gobo from "e173/libraries/gobo/draft-2026-1/library.fcd";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Public Types
@@ -219,7 +223,14 @@ export function loadLibrariesFromDocument(
   return true;
 }
 
-const DEFAULT_LIBRARY_DOCUMENTS = [core, intensityColor, motion];
+const DEFAULT_LIBRARY_DOCUMENTS = [
+  core,
+  intensityColor,
+  motion,
+  effect,
+  shape,
+  gobo,
+];
 
 export function loadDefaultLibraries(): CodexDatabase {
   const database = getEmptyCodexDatabase();
