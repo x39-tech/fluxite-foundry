@@ -1,5 +1,11 @@
 import * as StateV2 from "./persistentState/v2/state";
 import { MIGRATIONS } from "./persistentStateMigrations";
+import {
+  MigrationReport,
+  MigrationStep,
+  setMigrationReport,
+  generateDiff,
+} from "./migrationReport";
 
 // When creating a new state version:
 // 1. Create a new vN/ directory with state.ts and migrate.ts
@@ -35,60 +41,104 @@ export function migrateState(
   persistedState: unknown,
   fromVersion: number,
 ): AppPersistentState {
+  const steps: MigrationStep[] = [];
+  const initialState = structuredClone(persistedState);
+
+  // Helper to create and store a failed report
+  const failWithReport = (error: string): AppPersistentState => {
+    const report: MigrationReport = {
+      startVersion: fromVersion,
+      endVersion: VERSION,
+      initialState,
+      steps,
+      success: false,
+      error,
+    };
+    setMigrationReport(report);
+    console.error(error);
+    return getDefaultState();
+  };
+
   // Handle edge cases
   if (fromVersion < 1 || fromVersion > VERSION) {
-    console.error(
+    return failWithReport(
       `Unsupported state version ${fromVersion}. Resetting to default state.`,
     );
-    return getDefaultState();
   }
 
   // Already at current version - just validate
   if (fromVersion === VERSION) {
     const result = AppStateSchema.safeParse(persistedState);
     if (!result.success) {
-      console.error(
-        "Persisted state invalid. Resetting to default state.",
-        result.error,
+      return failWithReport(
+        `Persisted state invalid. Resetting to default state. Error: ${result.error.message}`,
       );
-      return getDefaultState();
     }
+    // No migration needed, store an empty report
+    const report: MigrationReport = {
+      startVersion: fromVersion,
+      endVersion: VERSION,
+      initialState,
+      steps: [],
+      success: true,
+    };
+    setMigrationReport(report);
     return result.data;
   }
 
   let state: unknown = persistedState;
+  let previousState: unknown = initialState;
 
   // Run migrations sequentially: v → v+1 → v+2 → ... → VERSION
   for (let v = fromVersion; v < VERSION; v++) {
     const migration = MIGRATIONS[v - 1]; // MIGRATIONS[0] = v1→v2, MIGRATIONS[1] = v2→v3, etc.
 
     if (!migration) {
-      console.error(
+      return failWithReport(
         `Missing migration from v${v} to v${v + 1}. Resetting to default state.`,
       );
-      return getDefaultState();
     }
 
     // Validate input state before first migration
     if (v === fromVersion && !migration.fromSchema.safeParse(state).success) {
-      console.error(
+      return failWithReport(
         `Persisted state doesn't match v${v} schema. Resetting to default state.`,
       );
-      return getDefaultState();
     }
 
+    // Run the migration
     state = migration.migrate(state);
+
+    // Generate diff and record the step
+    const diff = generateDiff(previousState, state);
+    const stateAfter = structuredClone(state);
+    steps.push({
+      fromVersion: v,
+      toVersion: v + 1,
+      description: migration.description,
+      stateAfter,
+      diff,
+    });
+    previousState = stateAfter;
   }
 
   // Validate final result
   const result = AppStateSchema.safeParse(state);
   if (!result.success) {
-    console.error(
-      "Migration produced invalid state. Resetting to default state.",
-      result.error,
+    return failWithReport(
+      `Migration produced invalid state. Resetting to default state. Error: ${result.error.message}`,
     );
-    return getDefaultState();
   }
+
+  // Store successful report
+  const report: MigrationReport = {
+    startVersion: fromVersion,
+    endVersion: VERSION,
+    initialState,
+    steps,
+    success: true,
+  };
+  setMigrationReport(report);
 
   return result.data;
 }

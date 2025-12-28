@@ -10,11 +10,12 @@ import { AppPersistentState as V2State } from "./state";
  *   - false → "light"
  */
 export function migrateV1toV2(state: V1State): V2State {
+  const { darkMode, ...restAppSettings } = state.appSettings;
   return {
     ...state,
     appSettings: {
-      ...state.appSettings,
-      theme: state.appSettings.darkMode ? "dark" : "light",
+      ...restAppSettings,
+      theme: darkMode ? "dark" : "light",
     },
   };
 }

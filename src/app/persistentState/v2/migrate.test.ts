@@ -24,6 +24,7 @@ describe("migrateV1toV2", () => {
     const v2State = migrateV1toV2(v1State);
 
     expect(v2State.appSettings.theme).toBe("dark");
+    expect(v2State.appSettings).not.toHaveProperty("darkMode");
   });
 
   test("migrates darkMode: false to theme: 'light'", () => {
@@ -31,6 +32,7 @@ describe("migrateV1toV2", () => {
     const v2State = migrateV1toV2(v1State);
 
     expect(v2State.appSettings.theme).toBe("light");
+    expect(v2State.appSettings).not.toHaveProperty("darkMode");
   });
 
   test("preserves other appSettings properties", () => {
