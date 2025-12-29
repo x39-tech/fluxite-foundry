@@ -7,6 +7,7 @@ import {
   ResourceClass,
   CommandClass,
 } from "e173";
+import semver from "semver";
 import {
   CodexId,
   EntityId,
@@ -96,8 +97,7 @@ export function getNewestVersionOfEachLibrary(
   for (const [libraryId, versions] of Object.entries(database.libraries)) {
     const versionKeys = Object.keys(versions);
     if (versionKeys.length > 0) {
-      // TODO: proper version sort
-      const newestVersion = versionKeys.sort().reverse()[0];
+      const newestVersion = versionKeys.sort(semver.compare).reverse()[0];
       libraries.push({
         ...versions[newestVersion],
         id: libraryId,

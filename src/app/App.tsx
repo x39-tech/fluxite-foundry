@@ -7,7 +7,7 @@ import { codexDatabaseIsEmpty } from "codex/codexDatabase";
 import { LibraryErrorDialog } from "./libraryErrorDialog";
 import {
   useDarkMode,
-  useUdrDatabase,
+  useCodexDatabase,
   setSystemDarkModePreference,
 } from "./store";
 import { EditorType, editorTypes } from "./persistentState";
@@ -18,7 +18,7 @@ const EDITORS: Record<EditorType, () => JSX.Element> = {
 };
 
 export const App = () => {
-  const database = useUdrDatabase();
+  const database = useCodexDatabase();
   const darkMode = useDarkMode();
   const editors = useOpenEditors();
   const currentEditor = editors.editors[editors.selectedEditor];

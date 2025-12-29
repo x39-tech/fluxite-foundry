@@ -10,7 +10,7 @@ import {
 } from "app/persistentState";
 import { getWithId, selectWithIds } from "app/stateUtils";
 import { localize, LocalizedString } from "utils/localizationUtils";
-import { useCurrentLocale, useUdrDatabase } from "app/store";
+import { useCurrentLocale, useCodexDatabase } from "app/store";
 import {
   addNewItemLocalization,
   removeReferencedLocalization,
@@ -72,7 +72,7 @@ export function useParameterInfo(id: EntityId):
     ] as const;
   });
   const locale = useCurrentLocale();
-  const database = useUdrDatabase();
+  const database = useCodexDatabase();
 
   if (!editorPart) return undefined;
 

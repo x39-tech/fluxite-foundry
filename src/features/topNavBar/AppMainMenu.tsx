@@ -13,10 +13,10 @@ import {
   getMigrationReport,
   openMigrationReportInNewTab,
 } from "app/migrationReport";
-import { APP_NAME } from "appInfo";
+import { APP_NAME } from "consts";
 import { AboutDialog } from "./AboutDialog";
-import { ImportUdrDialog } from "./ImportUdrDialog";
-import { ExportUdrDialog } from "./ExportUdrDialog";
+import { ImportFluxiteCodexDialog } from "./ImportFluxiteCodexDialog";
+import { ExportFluxiteCodexDialog } from "./ExportFluxiteCodexDialog";
 import { SettingsDialog } from "./SettingsDialog";
 import {
   DropdownMenu,
@@ -31,8 +31,8 @@ import {
 import { Button } from "components/scn-ui/Button";
 
 export const AppMainMenu = () => {
-  const [importUdrDialogIsOpen, setImportUdrDialogIsOpen] = useState(false);
-  const [exportUdrDialogIsOpen, setExportUdrDialogIsOpen] = useState(false);
+  const [importDialogIsOpen, setImportDialogIsOpen] = useState(false);
+  const [exportDialogIsOpen, setExportDialogIsOpen] = useState(false);
   const [settingsDialogIsOpen, setSettingsDialogIsOpen] = useState(false);
   const [aboutDialogIsOpen, setAboutDialogIsOpen] = useState(false);
 
@@ -50,13 +50,13 @@ export const AppMainMenu = () => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="start">
-          <DropdownMenuItem onClick={() => setImportUdrDialogIsOpen(true)}>
+          <DropdownMenuItem onClick={() => setImportDialogIsOpen(true)}>
             <ArrowDownTrayIcon className="size-5" />
-            Import UDR...
+            Import Fluxite Codex...
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setExportUdrDialogIsOpen(true)}>
+          <DropdownMenuItem onClick={() => setExportDialogIsOpen(true)}>
             <ArrowUpTrayIcon className="size-5" />
-            Export UDR...
+            Export Fluxite Codex...
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setSettingsDialogIsOpen(true)}>
@@ -94,16 +94,16 @@ export const AppMainMenu = () => {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      {importUdrDialogIsOpen && (
-        <ImportUdrDialog
+      {importDialogIsOpen && (
+        <ImportFluxiteCodexDialog
           isOpen={true}
-          onClose={() => setImportUdrDialogIsOpen(false)}
+          onClose={() => setImportDialogIsOpen(false)}
         />
       )}
-      {exportUdrDialogIsOpen && (
-        <ExportUdrDialog
+      {exportDialogIsOpen && (
+        <ExportFluxiteCodexDialog
           isOpen={true}
-          onClose={() => setExportUdrDialogIsOpen(false)}
+          onClose={() => setExportDialogIsOpen(false)}
         />
       )}
       {settingsDialogIsOpen && (

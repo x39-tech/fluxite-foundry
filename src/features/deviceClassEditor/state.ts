@@ -19,7 +19,7 @@ import {
 import {
   useAppPersistentStore,
   updateAppPersistentState,
-  useUdrDatabase,
+  useCodexDatabase,
   useCurrentLocale,
   updateAppRuntimeState,
 } from "app/store";
@@ -105,7 +105,7 @@ export function useParametersWithClasses(): Record<CodexId, ResolvedParameter> {
     localizations,
   ] = editorPart;
   const locale = useCurrentLocale();
-  const database = useUdrDatabase();
+  const database = useCodexDatabase();
 
   return Object.values(parameters).reduce(
     (acc, param) => {

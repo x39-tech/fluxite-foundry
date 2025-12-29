@@ -15,6 +15,10 @@ import {
   Subcategory,
 } from "e173";
 import { EntityType, OrgId, buildQualifiedId } from "../../src/utils/utils";
+import {
+  CODEX_ARCHIVE_SCHEMA_URL,
+  CODEX_DOC_SCHEMA_URL,
+} from "../../src/consts";
 
 // Helper to create a test image (1x1 red pixel PNG)
 function createTestImage(): ArrayBuffer {
@@ -50,8 +54,7 @@ async function createArchiveWithAssets(
         },
       },
     },
-    $schema:
-      "https://gitlab.com/esta-cpwg/e173/-/raw/main/schemas/draft-2024-1/udr-archive.json",
+    $schema: CODEX_ARCHIVE_SCHEMA_URL,
   };
 
   const e173Doc: E173Document = {
@@ -91,8 +94,7 @@ async function createArchiveWithAssets(
         },
       },
     },
-    $schema:
-      "https://gitlab.com/esta-cpwg/e173/-/raw/main/schemas/draft-2024-1/full/udr-document.json",
+    $schema: CODEX_DOC_SCHEMA_URL,
   };
 
   // Create the archive as a zip file
@@ -140,12 +142,10 @@ test("imports device class archive with assets and displays them in resources ed
   const { TopNavBar } = await import("../../src/features/topNavBar/TopNavBar");
   const { unmount } = render(<TopNavBar />);
 
-  // Click the App Menu button (three dots)
   const appMenuButton = screen.getByRole("button", { name: "App Menu" });
   await user.click(appMenuButton);
 
-  // Click "Import UDR..." menu item
-  const importMenuItem = await screen.findByText("Import UDR...");
+  const importMenuItem = await screen.findByText("Import Fluxite Codex...");
   await user.click(importMenuItem);
 
   // Find the file input and assign the file

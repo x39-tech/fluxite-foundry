@@ -9,7 +9,7 @@ import {
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import { throttle } from "lodash";
 import { nanoid } from "nanoid";
-import { APP_NAME } from "appInfo";
+import { APP_NAME } from "consts";
 import { RenderError } from "components/RenderError";
 import { Button } from "components/scn-ui/Button";
 import {

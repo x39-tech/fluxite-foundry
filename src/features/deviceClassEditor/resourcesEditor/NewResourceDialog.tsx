@@ -1,6 +1,6 @@
 import { useEffect, useId, useState } from "react";
 import { CheckIcon } from "@heroicons/react/24/solid";
-import { useCurrentLocale, useUdrDatabase } from "app/store";
+import { useCurrentLocale, useCodexDatabase } from "app/store";
 import { getUniqueItemId } from "utils/utils";
 import { validateNewItemId } from "utils/inputValidation";
 import {
@@ -27,7 +27,7 @@ interface Props {
 }
 
 export const NewResourceDialog = ({ isOpen, onClose }: Props) => {
-  const database = useUdrDatabase();
+  const database = useCodexDatabase();
   const resourceIds = useResourceCodexIds();
   const locale = useCurrentLocale();
 

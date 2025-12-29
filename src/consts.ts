@@ -7,7 +7,12 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`;
 
-export const REPO_LINK = "https://gitlab.com/esta-cpwg/udr-builder";
+export const REPO_LINK = "https://gitlab.com/esta-cpwg/fluxite-foundry";
 export const REPO_ISSUES_LINK = REPO_LINK + "/-/issues";
 export const TSP_WORKING_GROUPS_LINK =
   "https://tsp.esta.org/tsp/working_groups/index.html";
+
+export const CODEX_DOC_SCHEMA_URL =
+  "https://gitlab.com/esta-cpwg/e173/-/raw/main/schemas/draft-2026-1/full/codex-document.json";
+export const CODEX_ARCHIVE_SCHEMA_URL =
+  "https://gitlab.com/esta-cpwg/e173/-/raw/main/schemas/draft-2026-1/full/codex-archive.json";

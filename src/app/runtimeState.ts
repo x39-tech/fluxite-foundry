@@ -3,7 +3,7 @@ import { CodexDatabase } from "codex/codexDatabase";
 
 export interface AppRuntimeState {
   dmxController: DmxController;
-  udrDatabase: CodexDatabase;
+  codexDatabase: CodexDatabase;
   systemDarkModePreference: boolean;
 }
 

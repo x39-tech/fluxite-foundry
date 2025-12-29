@@ -13,9 +13,7 @@ import {
   getDeviceClassFromArchive,
   FeedbackKind,
 } from "./importUtils";
-
-const SCHEMA_URL =
-  "https://gitlab.com/esta-cpwg/e173/-/raw/main/schemas/draft-2024-1/full/udr-document.json";
+import { CODEX_ARCHIVE_SCHEMA_URL, CODEX_DOC_SCHEMA_URL } from "consts";
 
 // Helper function to create a valid device class for testing
 function createValidDeviceClass(
@@ -59,7 +57,7 @@ function createE173Document(
   deviceClasses: E173Document["e173doc"]["deviceClasses"],
 ): E173Document {
   return {
-    $schema: SCHEMA_URL,
+    $schema: CODEX_DOC_SCHEMA_URL,
     e173doc: {
       deviceClasses,
     },
@@ -80,13 +78,13 @@ describe("importUtils", () => {
     });
 
     it("should handle .fcd files with valid device classes", async () => {
-      const validUdr = createE173Document({
+      const validCodexDoc = createE173Document({
         "org.esta.dev.my-device": {
           "1.0.0": createValidDeviceClass("Test device", "Test Author"),
         },
       });
 
-      const file = new File([JSON.stringify(validUdr)], "test.fcd", {
+      const file = new File([JSON.stringify(validCodexDoc)], "test.fcd", {
         type: "application/json",
       });
       const result = await validateInputFile(file);
@@ -102,7 +100,7 @@ describe("importUtils", () => {
     });
 
     it("should handle .fcd files with user ID device classes", async () => {
-      const validUdr = createE173Document({
+      const validCodexDoc = createE173Document({
         "org.esta.e173.user.12345678-1234-5678-1234-567812345678.dev.super-light":
           {
             "1.0.0": createValidDeviceClass("User device", "User"),
@@ -110,9 +108,13 @@ describe("importUtils", () => {
           },
       });
 
-      const file = new File([JSON.stringify(validUdr)], "user-device.fcd", {
-        type: "application/json",
-      });
+      const file = new File(
+        [JSON.stringify(validCodexDoc)],
+        "user-device.fcd",
+        {
+          type: "application/json",
+        },
+      );
       const result = await validateInputFile(file);
 
       expect(result.valid).toBe(true);
@@ -140,13 +142,13 @@ describe("importUtils", () => {
     });
 
     it("should reject device classes with invalid qualified IDs", async () => {
-      const invalidUdr = createE173Document({
+      const invalidCodexDoc = createE173Document({
         "invalid-id-format": {
           "1.0.0": createValidDeviceClass("Invalid device", "Test"),
         },
       });
 
-      const file = new File([JSON.stringify(invalidUdr)], "test.fcd", {
+      const file = new File([JSON.stringify(invalidCodexDoc)], "test.fcd", {
         type: "application/json",
       });
       const result = await validateInputFile(file);
@@ -157,13 +159,13 @@ describe("importUtils", () => {
     });
 
     it("should reject non-device entity types in deviceClasses", async () => {
-      const mixedUdr = createE173Document({
+      const mixedCodexDoc = createE173Document({
         "org.esta.lib.some-library": {
           "1.0.0": createValidDeviceClass("Library", "Test"),
         },
       });
 
-      const file = new File([JSON.stringify(mixedUdr)], "mixed.fcd", {
+      const file = new File([JSON.stringify(mixedCodexDoc)], "mixed.fcd", {
         type: "application/json",
       });
       const result = await validateInputFile(file);
@@ -184,9 +186,9 @@ describe("importUtils", () => {
     });
 
     it("should handle empty device classes object", async () => {
-      const emptyUdr = createE173Document({});
+      const emptyCodexDoc = createE173Document({});
 
-      const file = new File([JSON.stringify(emptyUdr)], "empty.fcd", {
+      const file = new File([JSON.stringify(emptyCodexDoc)], "empty.fcd", {
         type: "application/json",
       });
       const result = await validateInputFile(file);
@@ -196,14 +198,18 @@ describe("importUtils", () => {
     });
 
     it("should handle document with no device classes", async () => {
-      const noDevicesUdr: E173Document = {
-        $schema: SCHEMA_URL,
+      const noDevicesCodexDoc: E173Document = {
+        $schema: CODEX_DOC_SCHEMA_URL,
         e173doc: {},
       };
 
-      const file = new File([JSON.stringify(noDevicesUdr)], "no-devices.fcd", {
-        type: "application/json",
-      });
+      const file = new File(
+        [JSON.stringify(noDevicesCodexDoc)],
+        "no-devices.fcd",
+        {
+          type: "application/json",
+        },
+      );
       const result = await validateInputFile(file);
 
       expect(result.valid).toBe(true);
@@ -217,13 +223,13 @@ describe("importUtils", () => {
         "Test device",
         "Test Author",
       );
-      const udr = createE173Document({
+      const codexDoc = createE173Document({
         "org.example.dev.test-device": {
           "1.0.0": deviceClassDef,
         },
       });
 
-      const file = new File([JSON.stringify(udr)], "test.fcd", {
+      const file = new File([JSON.stringify(codexDoc)], "test.fcd", {
         type: "application/json",
       });
 
@@ -244,13 +250,13 @@ describe("importUtils", () => {
       const qualifiedId = `org.esta.e173.user.${uuid}.dev.my-device`;
       const deviceClassDef = createValidDeviceClass("User device", "User");
 
-      const udr = createE173Document({
+      const codexDoc = createE173Document({
         [qualifiedId]: {
           "2.0.0": deviceClassDef,
         },
       });
 
-      const file = new File([JSON.stringify(udr)], "user.fcd", {
+      const file = new File([JSON.stringify(codexDoc)], "user.fcd", {
         type: "application/json",
       });
 
@@ -266,13 +272,13 @@ describe("importUtils", () => {
     });
 
     it("should return null for non-existent device class", async () => {
-      const udr = createE173Document({
+      const codexDoc = createE173Document({
         "org.example.dev.other-device": {
           "1.0.0": createValidDeviceClass("Other device", "Test"),
         },
       });
 
-      const file = new File([JSON.stringify(udr)], "test.fcd", {
+      const file = new File([JSON.stringify(codexDoc)], "test.fcd", {
         type: "application/json",
       });
 
@@ -287,13 +293,13 @@ describe("importUtils", () => {
     });
 
     it("should return null for non-existent version", async () => {
-      const udr = createE173Document({
+      const codexDoc = createE173Document({
         "org.example.dev.test-device": {
           "1.0.0": createValidDeviceClass("Test device", "Test"),
         },
       });
 
-      const file = new File([JSON.stringify(udr)], "test.fcd", {
+      const file = new File([JSON.stringify(codexDoc)], "test.fcd", {
         type: "application/json",
       });
 
@@ -330,8 +336,7 @@ describe("importUtils", () => {
 
       // Create e173archive.json
       const archive = {
-        $schema:
-          "https://gitlab.com/esta-cpwg/e173/-/raw/main/schemas/draft-2024-1/udr-archive.json",
+        $schema: CODEX_ARCHIVE_SCHEMA_URL,
         e173archive: {
           deviceClasses: {
             "org.example.dev.test-device": {
@@ -377,8 +382,7 @@ describe("importUtils", () => {
 
       // Create e173archive.json
       const archive = {
-        $schema:
-          "https://gitlab.com/esta-cpwg/e173/-/raw/main/schemas/draft-2024-1/udr-archive.json",
+        $schema: CODEX_ARCHIVE_SCHEMA_URL,
         e173archive: {
           deviceClasses: {},
         },
@@ -425,8 +429,7 @@ describe("importUtils", () => {
       const uuid = "aaaabbbb-cccc-dddd-eeee-ffffffffffff";
 
       const archive = {
-        $schema:
-          "https://gitlab.com/esta-cpwg/e173/-/raw/main/schemas/draft-2024-1/udr-archive.json",
+        $schema: CODEX_ARCHIVE_SCHEMA_URL,
         e173archive: {
           deviceClasses: {},
         },

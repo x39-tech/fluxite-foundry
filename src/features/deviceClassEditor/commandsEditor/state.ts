@@ -1,6 +1,6 @@
 // import { nanoid } from "nanoid";
 import { Draft } from "immer";
-import { useCurrentLocale, useUdrDatabase } from "app/store";
+import { useCurrentLocale, useCodexDatabase } from "app/store";
 import {
   ClassReference,
   CodexId,
@@ -87,7 +87,7 @@ export function useCommandInfo(id: EntityId):
     ] as const;
   });
   const locale = useCurrentLocale();
-  const database = useUdrDatabase();
+  const database = useCodexDatabase();
 
   if (!editorPart) return undefined;
 
@@ -158,7 +158,7 @@ function resolveCommandClass(
   commandClassReturnValues: Record<EntityId, CommandReturnValue>,
   enumChoices: Record<EntityId, EnumChoice>,
   localizations: Record<LocalizationKey, Localization>,
-  database: ReturnType<typeof useUdrDatabase>,
+  database: ReturnType<typeof useCodexDatabase>,
   locale: string,
 ): ResolvedCommandClass | undefined {
   if (command.class.type === "imported") {

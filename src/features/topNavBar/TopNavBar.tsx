@@ -72,8 +72,8 @@ export const TopNavBar = () => {
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="text-md max-w-[260px] p-4">
-            Get started by adding a new editor, or import an existing UDR
-            document using the import option to the right.
+            Get started by adding a new editor, or import an existing Fluxite
+            Codex file using the import option to the right.
           </TooltipContent>
         </Tooltip>
         <div className="flex-grow" />

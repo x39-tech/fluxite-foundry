@@ -1,3 +1,4 @@
+import { useAppRuntimeStore } from "app/store";
 import dayjs from "dayjs";
 import {
   DeviceClass,
@@ -6,12 +7,20 @@ import {
   Subcategory,
   ParameterAccess,
 } from "e173";
+import { getNewestVersionOfEachLibrary } from "./codexDatabase";
 
 const DEFAULT_AUTHOR = "Firstname Lastname";
 const DEFAULT_COMPANY = "ACME Inc.";
 
 export function getDefaultDeviceClass(deviceClassId: string): DeviceClass {
   const modelName = toTitleCase(deviceClassId.replaceAll("-", " "));
+
+  const libraries = getNewestVersionOfEachLibrary(
+    useAppRuntimeStore.getState().codexDatabase,
+  ).reduce<Record<string, string>>((acc, lib) => {
+    acc[lib.id] = lib.version;
+    return acc;
+  }, {});
 
   return {
     "@description": "device_class_description",
@@ -28,12 +37,7 @@ export function getDefaultDeviceClass(deviceClassId: string): DeviceClass {
         subcategory: Subcategory.MovingProfile,
       },
     },
-    // TODO populate this with something smarter (from the loaded UDR database)
-    libraries: {
-      "org.esta.lib.intensity-color": "1.0.0",
-      "org.esta.lib.core": "1.0.0",
-      "org.esta.lib.motion": "1.0.0",
-    },
+    libraries,
     parameters: {
       "main-dimmer": {
         library: "org.esta.lib.intensity-color",

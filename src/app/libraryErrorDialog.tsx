@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "components/scn-ui/Dialog";
-import { APP_NAME, REPO_ISSUES_LINK } from "appInfo";
+import { APP_NAME, REPO_ISSUES_LINK } from "consts";
 
 interface Props {
   show: boolean;

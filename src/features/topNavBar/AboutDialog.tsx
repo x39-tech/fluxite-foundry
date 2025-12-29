@@ -4,7 +4,7 @@ import {
   APP_NAME,
   REPO_ISSUES_LINK,
   TSP_WORKING_GROUPS_LINK,
-} from "appInfo";
+} from "consts";
 import {
   Dialog,
   DialogContent,

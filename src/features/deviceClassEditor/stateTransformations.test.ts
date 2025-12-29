@@ -6,6 +6,7 @@ import {
 import { lookupParameterClass } from "./stateTransformations";
 import { beforeEach, describe, expect, test } from "vitest";
 import { CodexId } from "app/persistentState";
+import { CODEX_DOC_SCHEMA_URL } from "consts";
 
 const testDoc: E173Document = {
   e173doc: {
@@ -49,8 +50,7 @@ const testDoc: E173Document = {
       },
     },
   },
-  $schema:
-    "https://gitlab.com/esta-cpwg/e173/-/raw/main/schemas/draft-2024-1/udr-document.json",
+  $schema: CODEX_DOC_SCHEMA_URL,
 };
 
 describe("class lookup", () => {

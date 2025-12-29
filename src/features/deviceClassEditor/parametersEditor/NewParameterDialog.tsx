@@ -13,7 +13,7 @@ import {
 } from "components/scn-ui/Dialog";
 import { ParameterClassDisplay } from "./ParameterClassDisplay";
 import { validateNewItemId } from "utils/inputValidation";
-import { useCurrentLocale, useUdrDatabase } from "app/store";
+import { useCurrentLocale, useCodexDatabase } from "app/store";
 import { getUniqueItemId } from "utils/utils";
 import { createNewParameter, useParameterCodexIds } from "./state";
 import { lookupParameterClass } from "../stateTransformations";
@@ -26,7 +26,7 @@ interface Props {
 }
 
 export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
-  const database = useUdrDatabase();
+  const database = useCodexDatabase();
   const parameterIds = useParameterCodexIds();
   const locale = useCurrentLocale();
 

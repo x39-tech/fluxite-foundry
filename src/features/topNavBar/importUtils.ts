@@ -27,7 +27,7 @@ export interface DeviceClassToImport {
   fileName: string;
 }
 
-export interface UdrImportResult {
+export interface CodexImportResult {
   valid: boolean;
   feedbackKind?: FeedbackKind;
   feedback?: string;
@@ -35,10 +35,12 @@ export interface UdrImportResult {
   deviceClasses?: DeviceClassToImport[];
 }
 
-export async function validateInputFile(file: File): Promise<UdrImportResult> {
+export async function validateInputFile(
+  file: File,
+): Promise<CodexImportResult> {
   if (file.name.endsWith(".fca")) {
     try {
-      return await processUdrArchive(file);
+      return await processCodexArchive(file);
     } catch (_e) {
       return {
         valid: false,
@@ -57,8 +59,8 @@ export async function validateInputFile(file: File): Promise<UdrImportResult> {
     }
 
     try {
-      const udr = importUdr(content);
-      const deviceClasses = extractDeviceClasses(udr, file.name);
+      const codex = importUdr(content);
+      const deviceClasses = extractDeviceClasses(codex, file.name);
       return {
         valid: true,
         deviceClasses,
@@ -81,7 +83,7 @@ export async function validateInputFile(file: File): Promise<UdrImportResult> {
   }
 }
 
-async function processUdrArchive(file: File): Promise<UdrImportResult> {
+async function processCodexArchive(file: File): Promise<CodexImportResult> {
   try {
     const zip = await JSZip.loadAsync(file);
 
@@ -125,13 +127,16 @@ async function processUdrArchive(file: File): Promise<UdrImportResult> {
       if (jsonFile) {
         try {
           const content = await jsonFile.async("string");
-          const udr = importUdr(content);
-          const deviceClasses = extractDeviceClasses(udr, filename);
+          const codex = importUdr(content);
+          const deviceClasses = extractDeviceClasses(codex, filename);
           allDeviceClasses.push(...deviceClasses);
         } catch (e) {
-          // Skip files that can't be parsed as UDR documents
+          // Skip files that can't be parsed as Fluxite Codex documents
           // TODO better error notification
-          console.warn(`Failed to parse ${filename} as UDR document:`, e);
+          console.warn(
+            `Failed to parse ${filename} as Fluxite Codex document:`,
+            e,
+          );
         }
       }
     }
@@ -151,14 +156,14 @@ async function processUdrArchive(file: File): Promise<UdrImportResult> {
 }
 
 function extractDeviceClasses(
-  udr: E173Document,
+  codex: E173Document,
   fileName: string,
 ): DeviceClassToImport[] {
-  if (!udr.e173doc.deviceClasses) {
+  if (!codex.e173doc.deviceClasses) {
     return [];
   }
 
-  return Object.entries(udr.e173doc.deviceClasses).reduce(
+  return Object.entries(codex.e173doc.deviceClasses).reduce(
     (accum, [key, value]) => {
       for (const version of Object.keys(value)) {
         const idResult = parseQualifiedId(key);
@@ -193,12 +198,12 @@ export async function getDeviceClassFromArchive(
 
   try {
     const content = await jsonFile.async("string");
-    const udr = importUdr(content);
+    const codex = importUdr(content);
 
     const qualifiedId = buildQualifiedId(EntityType.Dev, dc.orgId, dc.id);
 
-    if (udr.e173doc.deviceClasses?.[qualifiedId]?.[dc.version]) {
-      return udr.e173doc.deviceClasses[qualifiedId][dc.version];
+    if (codex.e173doc.deviceClasses?.[qualifiedId]?.[dc.version]) {
+      return codex.e173doc.deviceClasses[qualifiedId][dc.version];
     }
     return null;
   } catch (_e) {
@@ -212,12 +217,12 @@ export async function getDeviceClassFromDocument(
 ): Promise<DeviceClass | null> {
   try {
     const content = await readFileToString(docFile);
-    const udr = importUdr(content);
+    const codex = importUdr(content);
 
     const qualifiedId = buildQualifiedId(EntityType.Dev, dc.orgId, dc.id);
 
-    if (udr.e173doc.deviceClasses?.[qualifiedId]?.[dc.version]) {
-      return udr.e173doc.deviceClasses[qualifiedId][dc.version];
+    if (codex.e173doc.deviceClasses?.[qualifiedId]?.[dc.version]) {
+      return codex.e173doc.deviceClasses[qualifiedId][dc.version];
     }
     return null;
   } catch (_e) {

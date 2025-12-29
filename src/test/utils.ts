@@ -25,7 +25,7 @@ export function resetAppRuntimeStore() {
       dmxController: {
         state: "not-created",
       },
-      udrDatabase: loadDefaultLibraries(),
+      codexDatabase: loadDefaultLibraries(),
       systemDarkModePreference: false,
     },
     true,

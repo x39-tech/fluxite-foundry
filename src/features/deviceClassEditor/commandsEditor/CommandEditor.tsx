@@ -66,7 +66,7 @@ export const CommandEditor = ({ id }: Props) => {
           </span>
         </AlertTitle>
         <AlertDescription>
-          This may be an indication of invalid UDR.
+          This may be an indication of invalid Fluxite Codex.
         </AlertDescription>
       </Alert>
     );

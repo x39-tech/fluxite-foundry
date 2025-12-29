@@ -682,10 +682,10 @@ async function getImportedDeviceClassEditorWithAssets(
   orgId: OrgId,
   id: string,
   version: string,
-  udr: DeviceClass,
+  deviceClass: DeviceClass,
   archive: ArchiveToImport,
 ) {
-  const editor = getImportedDeviceClassEditor(orgId, id, version, udr);
+  const editor = getImportedDeviceClassEditor(orgId, id, version, deviceClass);
 
   const qualifiedId = buildQualifiedId(EntityType.Dev, orgId, id);
   editor.resourceAssets = await loadResourceAssets(

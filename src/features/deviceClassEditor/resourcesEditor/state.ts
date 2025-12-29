@@ -1,5 +1,5 @@
 import { Draft } from "immer";
-import { useCurrentLocale, useUdrDatabase } from "app/store";
+import { useCurrentLocale, useCodexDatabase } from "app/store";
 import { assetStorage } from "app/assetStorage";
 import { CodexId, EntityId, Resource, Unlocalized } from "app/persistentState";
 import { ItemEditor } from "utils/utils";
@@ -62,7 +62,7 @@ export function useResourceInfo(
 
   const [resource, libraries, deviceResourceClasses, localizations] =
     editorPart;
-  const database = useUdrDatabase();
+  const database = useCodexDatabase();
   const locale = useCurrentLocale();
 
   let resourceClass = undefined;

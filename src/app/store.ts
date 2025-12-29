@@ -44,8 +44,8 @@ export const useAppPersistentStore = create<AppPersistentState>()(
   ),
 );
 
-export function useUdrDatabase(): CodexDatabase {
-  return useAppRuntimeStore((state) => state.udrDatabase);
+export function useCodexDatabase(): CodexDatabase {
+  return useAppRuntimeStore((state) => state.codexDatabase);
 }
 
 export function useTheme(): Theme {
@@ -121,7 +121,7 @@ function getDefaultRuntimeState(): AppRuntimeState {
     dmxController: {
       state: "not-created",
     },
-    udrDatabase: loadDefaultLibraries(),
+    codexDatabase: loadDefaultLibraries(),
     systemDarkModePreference: getSystemDarkModePreference(),
   };
 }

@@ -25,7 +25,7 @@ import { FieldSet } from "components/FieldSet";
 import { importDeviceClassEditor } from "features/deviceClassEditor/import";
 import {
   validateInputFile,
-  UdrImportResult,
+  CodexImportResult,
   DeviceClassToImport,
   FeedbackKind,
   getDeviceClassFromArchive,
@@ -37,10 +37,10 @@ interface Props {
   onClose: () => void;
 }
 
-export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
+export const ImportFluxiteCodexDialog = ({ isOpen, onClose }: Props) => {
   const [inputFile, setInputFile] = useState<File | null>(null);
   const [inputValidation, setInputValidation] = useState<
-    UdrImportResult | undefined
+    CodexImportResult | undefined
   >(undefined);
   const [selectedDeviceClass, setSelectedDeviceClass] = useState(-1);
 
@@ -55,11 +55,13 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Import UDR</DialogTitle>
+          <DialogTitle>Import Fluxite Codex</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center gap-2">
           <FieldSet>
-            <Label htmlFor="import-file">Select UDR file to import</Label>
+            <Label htmlFor="import-file">
+              Select Fluxite Codex file to import
+            </Label>
             <AppInput
               id="import-file"
               type="file"
@@ -154,7 +156,7 @@ export const ImportUdrDialog = ({ isOpen, onClose }: Props) => {
 
 interface AdditionalDialogElementsProps {
   inputFile: File | null;
-  inputValidation: UdrImportResult | undefined;
+  inputValidation: CodexImportResult | undefined;
   deviceClasses: DeviceClassToImport[];
   selectedIdx: number;
   onSelectedIdxChange: (newIdx: number) => void;
@@ -268,7 +270,9 @@ const ValidationFailure = ({
       return (
         <Alert variant="destructive">
           <ExclamationCircleIcon />
-          <AlertTitle>Selected file contains invalid UDR.</AlertTitle>
+          <AlertTitle>
+            Selected file contains invalid Fluxite Codex data.
+          </AlertTitle>
           <AlertDescription>
             <Textarea value={feedback} readOnly />
           </AlertDescription>
@@ -278,7 +282,7 @@ const ValidationFailure = ({
       return (
         <Alert variant="destructive">
           <ExclamationCircleIcon />
-          <AlertTitle>Failed to parse UDR archive.</AlertTitle>
+          <AlertTitle>Failed to parse Fluxite Codex archive.</AlertTitle>
           <AlertDescription>
             <Textarea value={feedback} readOnly />
           </AlertDescription>
