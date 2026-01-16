@@ -13,7 +13,7 @@ We maintain and migrate the persistent state like a primitive database. The form
 
 Additionally, we do not reference types defined in external libraries or schemas in the persistent state, since that would create problems with maintaining versions of the state over time as they get out of sync with the types defined by the external dependencies. The goal is to support migrations from arbitrarily old saved states to newer ones.
 
-This is why you might see duplication between the definitions in the persistent state and those in the external `e173` library, for example. This is intentional and worth the tradeoff.
+This is why you might see duplication between the definitions in the persistent state and those in the external `delver` library, for example. This is intentional and worth the tradeoff.
 
 The runtime state is more loosely defined, since it doesn't need to be migrated over time. It can use any types as necessary in whatever structure is most convenient.
 

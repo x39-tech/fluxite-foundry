@@ -1,4 +1,4 @@
-import { ParameterDatabase, Error as E173Error } from "e173";
+import { ParameterDatabase, Error as E173Error } from "@cpwg-community/delver";
 import { CodexDatabase } from "codex/codexDatabase";
 
 export interface AppRuntimeState {

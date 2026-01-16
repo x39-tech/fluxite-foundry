@@ -6,14 +6,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import JSZip from "jszip";
-import {
-  Access,
-  Category,
-  E173Archive,
-  E173Document,
-  Lifetime,
-  Subcategory,
-} from "e173";
+import { E173Archive, E173Document } from "@cpwg-community/delver";
 import { EntityType, OrgId, buildQualifiedId } from "../../src/utils/utils";
 import {
   CODEX_ARCHIVE_SCHEMA_URL,
@@ -76,16 +69,16 @@ async function createArchiveWithAssets(
               },
               model: {
                 name: "Test Device",
-                category: Category.Lighting,
-                subcategory: Subcategory.FixedOther,
+                category: "lighting",
+                subcategory: "fixed-other",
               },
             },
             resources: {
               logo: {
                 library: "org.esta.lib.core",
                 class: "preview-image",
-                access: [Access.Read],
-                lifetime: Lifetime.Static,
+                access: ["read"],
+                lifetime: "static",
                 default: testImageName,
                 mediaType: "image/png",
               },

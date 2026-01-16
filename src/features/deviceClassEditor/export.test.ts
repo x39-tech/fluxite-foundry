@@ -375,6 +375,23 @@ type DmxMappingOpts = {
   }>;
 };
 
+function rangeToChunkValues(range: {
+  chunkStart: number;
+  chunkEnd: number;
+  start: number;
+  end: number;
+}) {
+  return {
+    start: range.start,
+    end: range.end,
+    chunkValues: {
+      type: "range" as const,
+      chunkStart: range.chunkStart,
+      chunkEnd: range.chunkEnd,
+    },
+  };
+}
+
 function createDmxState(): NonNullable<
   DeviceClassEditorState["dmxSerializer"]
 > {
@@ -411,7 +428,7 @@ function addDmxMappingGroup(
         codexId: CodexId(m.mappedParam.codexId),
         index: m.mappedParam.index,
       },
-      ranges: m.ranges ?? [],
+      ranges: (m.ranges ?? []).map(rangeToChunkValues),
       unmappedParams: m.unmappedParams?.map((u) => ({
         parameter: {
           codexId: CodexId(u.parameter.codexId),
@@ -421,6 +438,7 @@ function addDmxMappingGroup(
         end: u.end,
       })),
     })),
+    triggers: [],
   };
   return entityId;
 }
@@ -1021,14 +1039,12 @@ describe("exportParameters", () => {
     const editor = createMinimalEditor();
     const pcId = addParamClass(editor, "pc-1", "test.param");
     addParam(editor, "p-1", "value", localClass("test.param", pcId), {
-      count: 10,
+      count: { type: "fixed", value: 10 },
       atomicIdentifier: "atomicId",
       minimum: 0,
       maximum: 100,
       minimumModifier: "minMod",
       maximumModifier: "maxMod",
-      dynamicMinimum: 5,
-      dynamicMaximum: 95,
       default: 50,
       wrapping: true,
       friendlyName: "value.friendly",
@@ -1041,14 +1057,12 @@ describe("exportParameters", () => {
       access: ["readActual"],
       lifetime: "static",
       "@friendlyName": "value.friendly",
-      count: 10,
+      count: { type: "fixed", value: 10 },
       atomicIdentifier: "atomicId",
       minimum: 0,
       maximum: 100,
       minimumModifier: "minMod",
       maximumModifier: "maxMod",
-      dynamicMinimum: 5,
-      dynamicMaximum: 95,
       default: 50,
       wrapping: true,
     });
@@ -1467,18 +1481,17 @@ describe("exportDmxSerializer", () => {
     const result = exportDeviceClass(editor);
 
     expect(result.serializers?.dmx).toBeDefined();
-    expect(result.serializers?.dmx?.library).toBe("org.esta.lib.core");
-    expect(result.serializers?.dmx?.class).toBe("esta-dmx");
-    expect(result.serializers?.dmx?.access).toEqual(["read"]);
-    expect(result.serializers?.dmx?.lifetime).toBe("static");
+    expect(result.serializers?.dmx?.type).toBe("EstaDmx");
+    expect(result.serializers?.dmx?.value.access).toEqual(["read"]);
+    expect(result.serializers?.dmx?.value.lifetime).toBe("static");
 
-    const estaDmx = result.serializers!.dmx!.default!;
+    const estaDmx = result.serializers!.dmx!.value.default!;
     expect(estaDmx.chunks["0"]).toBeDefined();
     expect(estaDmx.chunks["0"].offsets).toEqual([0]);
     expect(estaDmx.chunks["0"].mappingGroups).toHaveLength(1);
-    expect(estaDmx.chunks["0"].mappingGroups[0].mappings[0].mappedParam).toBe(
-      "intensity",
-    );
+    expect(
+      estaDmx.chunks["0"].mappingGroups[0].mappings[0].mappedParam,
+    ).toEqual({ id: "intensity" });
     expect(estaDmx.chunks["0"].mappingGroups[0].conditions).toBeUndefined();
   });
 
@@ -1493,7 +1506,7 @@ describe("exportDmxSerializer", () => {
     addDmxMappingGroup(dmx, "mg-2", chunk2Id, 0);
 
     const result = exportDeviceClass(editor);
-    const estaDmx = result.serializers!.dmx!.default!;
+    const estaDmx = result.serializers!.dmx!.value.default!;
 
     expect(estaDmx.chunks["0-1-2"]).toBeDefined();
     expect(estaDmx.chunks["0-1-2"].offsets).toEqual([0, 1, 2]);
@@ -1518,18 +1531,18 @@ describe("exportDmxSerializer", () => {
     ]);
 
     const result = exportDeviceClass(editor);
-    const estaDmx = result.serializers!.dmx!.default!;
+    const estaDmx = result.serializers!.dmx!.value.default!;
 
     expect(estaDmx.chunks["0"].mappingGroups).toHaveLength(3);
-    expect(estaDmx.chunks["0"].mappingGroups[0].mappings[0].mappedParam).toBe(
-      "param1",
-    );
-    expect(estaDmx.chunks["0"].mappingGroups[1].mappings[0].mappedParam).toBe(
-      "param2",
-    );
-    expect(estaDmx.chunks["0"].mappingGroups[2].mappings[0].mappedParam).toBe(
-      "param3",
-    );
+    expect(
+      estaDmx.chunks["0"].mappingGroups[0].mappings[0].mappedParam,
+    ).toEqual({ id: "param1" });
+    expect(
+      estaDmx.chunks["0"].mappingGroups[1].mappings[0].mappedParam,
+    ).toEqual({ id: "param2" });
+    expect(
+      estaDmx.chunks["0"].mappingGroups[2].mappings[0].mappedParam,
+    ).toEqual({ id: "param3" });
   });
 
   test("exports parameter references with indices", () => {
@@ -1548,15 +1561,15 @@ describe("exportDmxSerializer", () => {
     ]);
 
     const result = exportDeviceClass(editor);
-    const estaDmx = result.serializers!.dmx!.default!;
+    const estaDmx = result.serializers!.dmx!.value.default!;
 
-    expect(estaDmx.chunks["0"].mappingGroups[0].mappings[0].mappedParam).toBe(
-      "color[2]",
-    );
+    expect(
+      estaDmx.chunks["0"].mappingGroups[0].mappings[0].mappedParam,
+    ).toEqual({ id: "color", index: 2 });
     expect(
       estaDmx.chunks["0"].mappingGroups[0].mappings[0].unmappedParams?.[0]
         .parameter,
-    ).toBe("brightness[0]");
+    ).toEqual({ id: "brightness", index: 0 });
   });
 
   test("exports chunk reference condition", () => {
@@ -1577,7 +1590,7 @@ describe("exportDmxSerializer", () => {
     );
 
     const result = exportDeviceClass(editor);
-    const estaDmx = result.serializers!.dmx!.default!;
+    const estaDmx = result.serializers!.dmx!.value.default!;
 
     expect(estaDmx.chunks["0"].mappingGroups[0].conditions).toHaveLength(1);
     expect(estaDmx.chunks["0"].mappingGroups[0].conditions?.[0]).toEqual({
@@ -1619,7 +1632,7 @@ describe("exportDmxSerializer", () => {
     );
 
     const result = exportDeviceClass(editor);
-    const estaDmx = result.serializers!.dmx!.default!;
+    const estaDmx = result.serializers!.dmx!.value.default!;
 
     expect(estaDmx.chunks["0"].mappingGroups[0].conditions).toHaveLength(1);
     const groupCond = estaDmx.chunks["0"].mappingGroups[0].conditions?.[0];
@@ -1667,7 +1680,7 @@ describe("exportDmxSerializer", () => {
     );
 
     const result = exportDeviceClass(editor);
-    const estaDmx = result.serializers!.dmx!.default!;
+    const estaDmx = result.serializers!.dmx!.value.default!;
 
     const topCond = estaDmx.chunks["0"].mappingGroups[0].conditions?.[0];
     expect(topCond?.match).toBe("all");
@@ -1706,7 +1719,7 @@ describe("exportDmxSerializer", () => {
     ]);
 
     const result = exportDeviceClass(editor);
-    const estaDmx = result.serializers!.dmx!.default!;
+    const estaDmx = result.serializers!.dmx!.value.default!;
     const mapping = estaDmx.chunks["0"].mappingGroups[0].mappings[0];
 
     // Should not have the key at all, not even as undefined
@@ -1727,7 +1740,7 @@ describe("exportDmxSerializer", () => {
     ]);
 
     const result = exportDeviceClass(editor);
-    const estaDmx = result.serializers!.dmx!.default!;
+    const estaDmx = result.serializers!.dmx!.value.default!;
     const mappingGroup = estaDmx.chunks["0"].mappingGroups[0];
 
     // Should not have the key at all, not even as undefined
@@ -1763,17 +1776,17 @@ describe("exportDmxSerializer", () => {
     );
 
     const result = exportDeviceClass(editor);
-    const estaDmx = result.serializers!.dmx!.default!;
+    const estaDmx = result.serializers!.dmx!.value.default!;
 
     expect(Object.keys(estaDmx.chunks)).toHaveLength(2);
     expect(estaDmx.chunks["0-1"]).toBeDefined();
     expect(estaDmx.chunks["2"]).toBeDefined();
-    expect(estaDmx.chunks["0-1"].mappingGroups[0].mappings[0].mappedParam).toBe(
-      "pan",
-    );
-    expect(estaDmx.chunks["2"].mappingGroups[0].mappings[0].mappedParam).toBe(
-      "intensity",
-    );
+    expect(
+      estaDmx.chunks["0-1"].mappingGroups[0].mappings[0].mappedParam,
+    ).toEqual({ id: "pan" });
+    expect(
+      estaDmx.chunks["2"].mappingGroups[0].mappings[0].mappedParam,
+    ).toEqual({ id: "intensity" });
     expect(estaDmx.chunks["2"].mappingGroups[0].conditions?.[0]).toEqual({
       chunk: "0-1",
       chunkStart: 100,

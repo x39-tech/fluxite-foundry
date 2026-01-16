@@ -1,5 +1,5 @@
 import { Localization, LocalizationKey } from "app/persistentState";
-import { DefinitionLocalization } from "e173";
+import { DefinitionLocalization } from "@cpwg-community/delver";
 
 /**
  * Recursively collects all values from keys that start with '@' in an object.

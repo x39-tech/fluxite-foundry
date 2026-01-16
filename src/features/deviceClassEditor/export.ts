@@ -1,6 +1,6 @@
 import {
   Access,
-  Category,
+  ChunkValues,
   Command,
   CommandClass,
   Condition,
@@ -12,22 +12,70 @@ import {
   Parameter,
   ParameterAccess,
   ParameterClass,
+  ParameterCount,
+  ParamReference as FCParamReference,
   Resource,
   ResourceClass,
   SerializerClass,
   StructureClass,
-  Subcategory,
   UnitName,
-} from "e173";
+} from "@cpwg-community/delver";
 import {
   DeviceClassEditorState,
   DmxChunkRefCondition,
   DmxConditionGroup,
+  DmxMappingChunkValuesSchema,
   DmxSerializerState,
   EntityId,
+  ParameterCountSchema,
+  ParameterReference,
 } from "app/persistentState";
 import { select, selectWithIds } from "app/stateUtils";
-import { serializeParameterReference } from "utils/utils";
+import { z } from "zod";
+
+type InternalParameterCount = z.infer<typeof ParameterCountSchema>;
+
+function convertParamReference(ref: ParameterReference): FCParamReference {
+  return {
+    id: ref.codexId,
+    index: ref.index,
+  };
+}
+
+function convertParameterCount(
+  count: InternalParameterCount | undefined,
+): ParameterCount | undefined {
+  if (!count) return undefined;
+  if (count.type === "fixed") {
+    return { type: "fixed", value: count.value };
+  }
+  return {
+    type: "dynamic",
+    value: { minimum: count.min, maximum: count.max },
+  };
+}
+
+function convertChunkValues(
+  chunkValues: z.infer<typeof DmxMappingChunkValuesSchema>,
+): ChunkValues {
+  if (chunkValues.type === "range") {
+    return {
+      type: "range",
+      value: { start: chunkValues.chunkStart, end: chunkValues.chunkEnd },
+    };
+  }
+  return {
+    type: "sequence",
+    value: chunkValues.steps.map((step) => ({
+      chunkStart: step.chunkStart,
+      chunkEnd: step.chunkEnd,
+      hold:
+        step.hold === "indefinite"
+          ? "indefinite"
+          : { milliseconds: step.hold.milliseconds },
+    })),
+  };
+}
 
 export function exportDeviceClass(editor: DeviceClassEditorState): DeviceClass {
   const codexClass: DeviceClass = {
@@ -43,9 +91,8 @@ export function exportDeviceClass(editor: DeviceClassEditorState): DeviceClass {
       },
       model: {
         name: editor.basicData.modelName,
-        // TODO: Update e173 library to not export string enums
-        category: editor.basicData.modelCategory as Category,
-        subcategory: editor.basicData.modelSubcategory as Subcategory,
+        category: editor.basicData.modelCategory,
+        subcategory: editor.basicData.modelSubcategory,
       },
       compatibility: {
         firmwareVersions: editor.basicData.compatibleFirmwareVersions,
@@ -389,14 +436,12 @@ function exportParameters(
       access: param.access as ParameterAccess[],
       lifetime: param.lifetime as Lifetime,
       "@friendlyName": param.localized.friendlyName,
-      count: param.count,
+      count: convertParameterCount(param.count),
       atomicIdentifier: param.atomicIdentifier,
       minimum: param.minimum,
       maximum: param.maximum,
       minimumModifier: param.minimumModifier,
       maximumModifier: param.maximumModifier,
-      dynamicMinimum: param.dynamicMinimum,
-      dynamicMaximum: param.dynamicMaximum,
       default: param.default,
       wrapping: param.wrapping,
     };
@@ -625,11 +670,12 @@ function exportDmxSerializer(
   if (Object.keys(estaDmx.chunks).length > 0) {
     codexClass.serializers = codexClass.serializers || {};
     codexClass.serializers.dmx = {
-      library: "org.esta.lib.core",
-      class: "esta-dmx",
-      access: [Access.Read],
-      lifetime: Lifetime.Static,
-      default: estaDmx,
+      type: "EstaDmx",
+      value: {
+        access: ["read"],
+        lifetime: "static",
+        default: estaDmx,
+      },
     };
   }
 }
@@ -665,23 +711,23 @@ function convertDmxSerializerToEstaDmx(dmx: DmxSerializerState): EstaDmx {
 
         return {
           mappings: mg.mappings.map((m) => ({
-            mappedParam: serializeParameterReference(m.mappedParam),
+            mappedParam: convertParamReference(m.mappedParam),
             ranges: m.ranges.map((r) => ({
               start: r.start,
               end: r.end,
-              chunkStart: r.chunkStart,
-              chunkEnd: r.chunkEnd,
+              chunkValues: convertChunkValues(r.chunkValues),
             })),
             ...(m.unmappedParams
               ? {
                   unmappedParams: m.unmappedParams.map((up) => ({
-                    parameter: serializeParameterReference(up.parameter),
+                    parameter: convertParamReference(up.parameter),
                     start: up.start,
                     end: up.end,
                   })),
                 }
               : {}),
           })),
+          ...(mg.triggers.length > 0 ? { triggers: mg.triggers } : {}),
           ...(conditions.length > 0 ? { conditions } : {}),
         };
       });

@@ -1,5 +1,10 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { E173Archive, E173Document } from "e173";
+import {
+  E173Archive,
+  E173Document,
+  RawE173Document,
+  unparseFluxiteCodexDocument,
+} from "@cpwg-community/delver";
 import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 import JSZip from "jszip";
@@ -101,11 +106,13 @@ export const ExportFluxiteCodexDialog = ({ isOpen, onClose }: Props) => {
 
     let blob;
 
+    const rawDoc = unparseFluxiteCodexDocument(doc);
+
     if (createArchive) {
-      blob = await createFluxiteCodexArchive(doc, editor, prettyPrint);
+      blob = await createFluxiteCodexArchive(rawDoc, editor, prettyPrint);
     } else {
       blob = new Blob([
-        prettyPrint ? JSON.stringify(doc, null, 2) : JSON.stringify(doc),
+        prettyPrint ? JSON.stringify(rawDoc, null, 2) : JSON.stringify(rawDoc),
       ]);
     }
 
@@ -200,7 +207,7 @@ function createDocument(editor: DeviceClassEditorState): E173Document {
 }
 
 async function createFluxiteCodexArchive(
-  doc: E173Document,
+  doc: RawE173Document,
   editor: DeviceClassEditorState,
   prettyPrint: boolean,
 ): Promise<Blob | null> {

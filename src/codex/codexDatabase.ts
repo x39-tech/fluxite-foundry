@@ -2,11 +2,11 @@ import {
   Library,
   ParameterClass,
   StructureClass,
-  importUdr,
+  parseFluxiteCodexDocument,
   Error as E173Error,
   ResourceClass,
   CommandClass,
-} from "e173";
+} from "@cpwg-community/delver";
 import semver from "semver";
 import {
   CodexId,
@@ -184,7 +184,7 @@ export function loadLibrariesFromDocument(
 ): LoadLibrariesResult {
   let document;
   try {
-    document = importUdr(doc_obj);
+    document = parseFluxiteCodexDocument(doc_obj);
   } catch (err) {
     const e173err = err as E173Error;
     let errMsg = `Error loading Fluxite Codex library document: ${e173err.type}: ${e173err.description}`;

@@ -11,8 +11,8 @@ import {
   E173Document,
   EstaDmx,
   MappingGroup,
-  importUdr,
-} from "e173";
+  parseFluxiteCodexDocument,
+} from "@cpwg-community/delver";
 import { getImportedDeviceClassEditor } from "../../src/features/deviceClassEditor/import";
 import { exportDeviceClass } from "../../src/features/deviceClassEditor/export";
 import { parseQualifiedId } from "../../src/utils/utils";
@@ -72,14 +72,13 @@ function normalizeDmxChunkIds(deviceClass: DeviceClass): DeviceClass {
   const normalizedSerializers: typeof deviceClass.serializers = {};
 
   for (const [key, serializer] of Object.entries(deviceClass.serializers)) {
-    if (
-      serializer.library === "org.esta.lib.core" &&
-      serializer.class === "esta-dmx" &&
-      serializer.default
-    ) {
+    if (serializer.type === "EstaDmx" && serializer.value.default) {
       normalizedSerializers[key] = {
         ...serializer,
-        default: normalizeEstaDmx(serializer.default as EstaDmx),
+        value: {
+          ...serializer.value,
+          default: normalizeEstaDmx(serializer.value.default),
+        },
       };
     } else {
       normalizedSerializers[key] = serializer;
@@ -144,7 +143,7 @@ function normalizeCondition(
 const IGNORED_FIELDS = new Set([
   "structures", // physical structure visualization
   "looping", // parameter looping behavior
-  "categories", // localization categories added by importUdr but not used
+  "categories", // localization categories added by parseFluxiteCodexDocument but not used
 ]);
 
 function removeIgnoredFields(obj: unknown): unknown {
@@ -196,7 +195,7 @@ function readDeviceClassFromFile(
 ): DeviceClass {
   const absolutePath = resolve(process.cwd(), filePath);
   const content = readFileSync(absolutePath, "utf-8");
-  const doc: E173Document = importUdr(content);
+  const doc: E173Document = parseFluxiteCodexDocument(content);
 
   const deviceClasses = doc.e173doc.deviceClasses;
   if (!deviceClasses) {

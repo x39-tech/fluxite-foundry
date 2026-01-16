@@ -1,7 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import { renderHook } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { DataType } from "e173";
 import { ParameterEditor } from "./ParameterEditor";
 import { createDeviceClassEditor } from "features/topNavBar/state";
 import { createNewParameter, useParameters } from "./state";
@@ -65,7 +64,7 @@ describe("Enum Parameter Editing", () => {
       const classId = EntityId("TestEnumClass");
       editor.parameterClasses[classId] = {
         codexId: CodexId("TestEnumClass"),
-        dataType: DataType.Enum,
+        dataType: "enum",
         localized: {
           name: classNameKey,
         },
@@ -125,7 +124,7 @@ describe("Enum Parameter Editing", () => {
       const classId = EntityId("TestNumberClass");
       editor.parameterClasses[classId] = {
         codexId: CodexId("TestNumberClass"),
-        dataType: DataType.Number,
+        dataType: "number",
         localized: {
           name: classNameKey,
         },
@@ -162,7 +161,7 @@ describe("Enum Parameter Editing", () => {
       const classId = EntityId("TestEnumClass");
       editor.parameterClasses[classId] = {
         codexId: CodexId("TestEnumClass"),
-        dataType: DataType.Enum,
+        dataType: "enum",
         localized: {
           name: classNameKey,
         },
@@ -240,7 +239,7 @@ describe("Enum Parameter Editing", () => {
       const classId = EntityId("TestEnumClass");
       editor.parameterClasses[classId] = {
         codexId: CodexId("TestEnumClass"),
-        dataType: DataType.Enum,
+        dataType: "enum",
         localized: {
           name: classNameKey,
         },
@@ -317,7 +316,7 @@ describe("Enum Parameter Editing", () => {
       const classId = EntityId("TestEnumClass");
       editor.parameterClasses[classId] = {
         codexId: CodexId("TestEnumClass"),
-        dataType: DataType.Enum,
+        dataType: "enum",
         localized: {
           name: classNameKey,
         },
@@ -377,7 +376,7 @@ describe("Parameter Basic Properties", () => {
       const classId = EntityId("TestClass");
       editor.parameterClasses[classId] = {
         codexId: CodexId("TestClass"),
-        dataType: DataType.Number,
+        dataType: "number",
         localized: {
           name: classNameKey,
         },
@@ -410,7 +409,7 @@ describe("Parameter Basic Properties", () => {
       const classId = EntityId("TestClass");
       editor.parameterClasses[classId] = {
         codexId: CodexId("TestClass"),
-        dataType: DataType.Number,
+        dataType: "number",
         localized: {
           name: classNameKey,
         },
@@ -443,7 +442,7 @@ describe("Parameter Basic Properties", () => {
       const classId = EntityId("TestClass");
       editor.parameterClasses[classId] = {
         codexId: CodexId("TestClass"),
-        dataType: DataType.Number,
+        dataType: "number",
         localized: {
           name: classNameKey,
         },
@@ -477,7 +476,7 @@ describe("Min/Max/Default for Number Parameters", () => {
       const classId = EntityId("NumberClass");
       editor.parameterClasses[classId] = {
         codexId: CodexId("NumberClass"),
-        dataType: DataType.Number,
+        dataType: "number",
         localized: {
           name: classNameKey,
         },
@@ -511,7 +510,7 @@ describe("Min/Max/Default for Number Parameters", () => {
       const classId = EntityId("EnumClass");
       editor.parameterClasses[classId] = {
         codexId: CodexId("EnumClass"),
-        dataType: DataType.Enum,
+        dataType: "enum",
         localized: {
           name: classNameKey,
         },

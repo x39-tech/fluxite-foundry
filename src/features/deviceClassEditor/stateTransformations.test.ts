@@ -1,4 +1,4 @@
-import { DataType, E173Document, UnitName } from "e173";
+import { E173Document } from "@cpwg-community/delver";
 import {
   getEmptyCodexDatabase,
   loadLibrariesFromDocument,
@@ -20,14 +20,14 @@ const testDoc: E173Document = {
             parameter1: {
               "@name": "parameter_1",
               "@description": "parameter_1_desc",
-              dataType: DataType.Number,
+              dataType: "number",
               unit: {
-                name: UnitName.Hertz,
+                name: "hertz",
               },
             },
             "category/parameter2": {
               "@name": "parameter_2",
-              dataType: DataType.Boolean,
+              dataType: "boolean",
             },
           },
           structureClasses: {

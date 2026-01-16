@@ -1,11 +1,12 @@
-import { PlusCircleIcon } from "@heroicons/react/24/outline";
+import { useState } from "react";
+import { PencilIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
 import { TrashIcon } from "@heroicons/react/24/solid";
-import { DataType } from "e173";
 import {
   CodexId,
   DmxMapping,
   DmxMappingRange,
   DmxUnmappedParam,
+  fcDataTypes,
   ParameterReference,
 } from "app/persistentState";
 import { StringSelector } from "components/StringSelector";
@@ -23,6 +24,8 @@ import {
   parseParameterReference,
   serializeParameterReference,
 } from "utils/utils";
+import { MappingRangeEditorDialog } from "./MappingRangeEditorDialog";
+import { MappingRangeText } from "./MappingRangeText";
 
 interface DmxParameterMappingProps {
   mapping: DmxMapping;
@@ -46,8 +49,9 @@ function generateParameterCandidates(
 
   for (const [codexId, resolved] of Object.entries(paramsWithClasses)) {
     const count = resolved.param.count;
-    if (count !== undefined && count > 1) {
-      for (let i = 0; i < count; i++) {
+    const countValue = count?.type === "fixed" ? count.value : undefined;
+    if (countValue !== undefined && countValue > 1) {
+      for (let i = 0; i < countValue; i++) {
         const ref: ParameterReference = { codexId: CodexId(codexId), index: i };
         candidates.push({
           ref,
@@ -73,12 +77,17 @@ export const DmxParameterMapping = ({
   onUpdate,
   onRemove,
 }: DmxParameterMappingProps) => {
+  const [editingRangeIndex, setEditingRangeIndex] = useState<number | null>(
+    null,
+  );
+  const [isAddingRange, setIsAddingRange] = useState(false);
+
   // Filter to only number/boolean parameters
   const paramsWithClasses = Object.fromEntries(
     Object.entries(useParametersWithClasses()).filter(([_, resolved]) => {
       return (
-        resolved.paramClass.dataType == DataType.Number ||
-        resolved.paramClass.dataType == DataType.Boolean
+        resolved.paramClass.dataType == fcDataTypes.NUMBER ||
+        resolved.paramClass.dataType == fcDataTypes.BOOLEAN
       );
     }),
   );
@@ -121,9 +130,9 @@ export const DmxParameterMapping = ({
   ) {
     try {
       switch (mappedParamResolved.paramClass.dataType) {
-        case DataType.Number:
+        case fcDataTypes.NUMBER:
           break;
-        case DataType.Boolean:
+        case fcDataTypes.BOOLEAN:
           isBoolean = true;
           break;
         default:
@@ -135,12 +144,7 @@ export const DmxParameterMapping = ({
           <TooltipTrigger asChild className="self-start">
             <SmallIconButton
               className="size-7"
-              onClick={() => {
-                onUpdate({
-                  ...mapping,
-                  ranges: [...mapping.ranges, getNewRange(isBoolean)],
-                });
-              }}
+              onClick={() => setIsAddingRange(true)}
             >
               <PlusCircleIcon className="size-5" />
             </SmallIconButton>
@@ -149,36 +153,27 @@ export const DmxParameterMapping = ({
         </Tooltip>
       );
 
-      ranges =
-        mapping.ranges.length === 0 ? (
-          addRangeButton
-        ) : (
-          <>
-            <Table>
-              <thead>
-                <tr>
-                  <td>Start</td>
-                  <td>End</td>
-                  <td>DMX Start</td>
-                  <td>DMX End</td>
-                </tr>
-              </thead>
-              <tbody>
-                {mapping.ranges.map((range, index) => (
-                  <RangeTableRow
-                    key={index}
-                    index={index}
-                    range={range}
-                    mapping={mapping}
-                    onUpdate={onUpdate}
-                    isBoolean={isBoolean}
-                  />
-                ))}
-              </tbody>
-            </Table>
-            {addRangeButton}
-          </>
-        );
+      ranges = (
+        <div className="flex flex-col gap-1">
+          {mapping.ranges.map((range, index) => (
+            <RangeCard
+              key={index}
+              range={range}
+              onEdit={() => setEditingRangeIndex(index)}
+              onDelete={() => {
+                onUpdate({
+                  ...mapping,
+                  ranges: [
+                    ...mapping.ranges.slice(0, index),
+                    ...mapping.ranges.slice(index + 1),
+                  ],
+                });
+              }}
+            />
+          ))}
+          {addRangeButton}
+        </div>
+      );
       isOk = true;
     } catch (_) {
       // Do nothing - error message will be displayed
@@ -195,7 +190,8 @@ export const DmxParameterMapping = ({
             const firstCandidate = unmappedParameterCandidates[0];
             const newParam = getNewUnmappedParam(
               firstCandidate.ref,
-              firstCandidate.resolved.paramClass.dataType == DataType.Boolean,
+              firstCandidate.resolved.paramClass.dataType ==
+                fcDataTypes.BOOLEAN,
             );
             onUpdate({
               ...mapping,
@@ -242,6 +238,9 @@ export const DmxParameterMapping = ({
     );
   }
 
+  const editingRange =
+    editingRangeIndex !== null ? mapping.ranges[editingRangeIndex] : null;
+
   return (
     <div className="bg-slate-300 border border-gray-400 dark:border-hidden dark:bg-gray-600 m-2 p-2 rounded flex flex-col">
       <div className="flex items-center">
@@ -266,225 +265,71 @@ export const DmxParameterMapping = ({
       {ranges}
       <span className="font-bold mt-2 p-1">Unmapped Parameters</span>
       {unmappedParams}
+
+      {editingRange && (
+        <MappingRangeEditorDialog
+          isOpen={editingRangeIndex !== null}
+          onClose={() => setEditingRangeIndex(null)}
+          range={editingRange}
+          onSave={(newRange) => {
+            onUpdate({
+              ...mapping,
+              ranges: mapping.ranges.map((r, i) =>
+                i === editingRangeIndex ? newRange : r,
+              ),
+            });
+            setEditingRangeIndex(null);
+          }}
+          isBoolean={isBoolean}
+        />
+      )}
+
+      {isAddingRange && (
+        <MappingRangeEditorDialog
+          isOpen={isAddingRange}
+          onClose={() => setIsAddingRange(false)}
+          range={getNewRange(isBoolean)}
+          onSave={(newRange) => {
+            onUpdate({
+              ...mapping,
+              ranges: [...mapping.ranges, newRange],
+            });
+            setIsAddingRange(false);
+          }}
+          isBoolean={isBoolean}
+        />
+      )}
     </div>
   );
 };
 
-interface RangeTableRowProps {
-  index: number;
+interface RangeCardProps {
   range: DmxMappingRange;
-  mapping: DmxMapping;
-  onUpdate: (mapping: DmxMapping) => void;
-  isBoolean: boolean;
+  onEdit: () => void;
+  onDelete: () => void;
 }
 
-const RangeTableRow = ({
-  index,
-  range,
-  mapping,
-  onUpdate,
-  isBoolean,
-}: RangeTableRowProps) => {
-  if (isBoolean) {
-    return (
-      <RangeTableRowBoolean
-        index={index}
-        range={range}
-        mapping={mapping}
-        onUpdate={onUpdate}
-      />
-    );
-  } else {
-    return (
-      <RangeTableRowNumeric
-        index={index}
-        range={range}
-        mapping={mapping}
-        onUpdate={onUpdate}
-      />
-    );
-  }
-};
-
-interface RangeTableRowNumericProps {
-  index: number;
-  range: DmxMappingRange;
-  mapping: DmxMapping;
-  onUpdate: (mapping: DmxMapping) => void;
-}
-
-const RangeTableRowNumeric = ({
-  index,
-  range,
-  mapping,
-  onUpdate,
-}: RangeTableRowNumericProps) => {
-  const start = range.start;
-  const end =
-    range.start === undefined ? range.start : range.end || range.start;
-  if (
-    (typeof start !== "number" && typeof start !== "undefined") ||
-    (typeof end !== "number" && typeof end !== "undefined")
-  ) {
-    throw new Error();
-  }
-
+const RangeCard = ({ range, onEdit, onDelete }: RangeCardProps) => {
   return (
-    <tr key={index}>
-      <td className="!align-middle">
-        <TextEditorField
-          value={(start === undefined ? "" : start).toString()}
-          placeholder="<null>"
-          onValueChanged={(newValue) => {
-            onUpdate(
-              updateRangeStart(
-                mapping,
-                index,
-                newValue ? parseInt(newValue) : undefined,
-              ),
-            );
-          }}
-        />
-      </td>
-      <td className="!align-middle">
-        <TextEditorField
-          value={(end === undefined ? "" : end).toString()}
-          placeholder="<null>"
-          onValueChanged={(newValue) => {
-            onUpdate(
-              updateRangeEnd(
-                mapping,
-                index,
-                newValue ? parseInt(newValue) : undefined,
-              ),
-            );
-          }}
-        />
-      </td>
-      <td className="!align-middle">
-        <TextEditorField
-          value={range.chunkStart.toString()}
-          onValueChanged={(newValue) => {
-            onUpdate(updateRangeDMXStart(mapping, index, parseInt(newValue)));
-          }}
-        />
-      </td>
-      <td className="!align-middle">
-        <TextEditorField
-          value={range.chunkEnd.toString()}
-          onValueChanged={(newValue) => {
-            onUpdate(updateRangeDMXEnd(mapping, index, parseInt(newValue)));
-          }}
-        />
-      </td>
-      <td>
-        <SmallIconButton
-          onClick={() => {
-            onUpdate({
-              ...mapping,
-              ranges: [
-                ...mapping.ranges.slice(0, index),
-                ...mapping.ranges.slice(index + 1),
-              ],
-            });
-          }}
-        >
-          <TrashIcon />
-        </SmallIconButton>
-      </td>
-    </tr>
-  );
-};
-
-interface RangeTableRowBooleanProps {
-  index: number;
-  range: DmxMappingRange;
-  mapping: DmxMapping;
-  onUpdate: (mapping: DmxMapping) => void;
-}
-
-const RangeTableRowBoolean = ({
-  index,
-  range,
-  mapping,
-  onUpdate,
-}: RangeTableRowBooleanProps) => {
-  const selectValues = ["false", "true", "null"];
-
-  const start = range.start;
-  const end =
-    range.start === undefined ? range.start : range.end || range.start;
-  if (
-    (typeof start !== "boolean" && typeof start !== "undefined") ||
-    (typeof end !== "boolean" && typeof end !== "undefined")
-  ) {
-    throw new Error();
-  }
-
-  return (
-    <tr key={index}>
-      <td className="!align-middle">
-        <SelectField
-          values={selectValues}
-          selectedValue={(start === undefined ? "null" : start).toString()}
-          onSelectionChanged={(newValue) => {
-            onUpdate(
-              updateRangeStart(
-                mapping,
-                index,
-                newValue === "null" ? undefined : newValue === "true",
-              ),
-            );
-          }}
-        />
-      </td>
-      <td className="!align-middle">
-        <SelectField
-          values={selectValues}
-          selectedValue={(end === undefined ? "null" : end).toString()}
-          onSelectionChanged={(newValue) => {
-            onUpdate(
-              updateRangeEnd(
-                mapping,
-                index,
-                newValue === "null" ? undefined : newValue === "true",
-              ),
-            );
-          }}
-        />
-      </td>
-      <td className="!align-middle">
-        <TextEditorField
-          value={range.chunkStart.toString()}
-          onValueChanged={(newValue) => {
-            onUpdate(updateRangeDMXStart(mapping, index, parseInt(newValue)));
-          }}
-        />
-      </td>
-      <td className="!align-middle">
-        <TextEditorField
-          value={range.chunkEnd.toString()}
-          onValueChanged={(newValue) => {
-            onUpdate(updateRangeDMXEnd(mapping, index, parseInt(newValue)));
-          }}
-        />
-      </td>
-      <td>
-        <SmallIconButton
-          onClick={() => {
-            onUpdate({
-              ...mapping,
-              ranges: [
-                ...mapping.ranges.slice(0, index),
-                ...mapping.ranges.slice(index + 1),
-              ],
-            });
-          }}
-        >
-          <TrashIcon />
-        </SmallIconButton>
-      </td>
-    </tr>
+    <div className="flex items-center gap-2 px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">
+      <MappingRangeText range={range} />
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <SmallIconButton onClick={onEdit}>
+            <PencilIcon className="size-4" />
+          </SmallIconButton>
+        </TooltipTrigger>
+        <TooltipContent>Edit</TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <SmallIconButton onClick={onDelete}>
+            <TrashIcon className="size-4" />
+          </SmallIconButton>
+        </TooltipTrigger>
+        <TooltipContent>Delete</TooltipContent>
+      </Tooltip>
+    </div>
   );
 };
 
@@ -493,15 +338,21 @@ function getNewRange(isBoolean: boolean): DmxMappingRange {
     return {
       start: false,
       end: true,
-      chunkStart: 0,
-      chunkEnd: 255,
+      chunkValues: {
+        type: "range",
+        chunkStart: 0,
+        chunkEnd: 255,
+      },
     };
   } else {
     return {
       start: 0,
       end: 1,
-      chunkStart: 0,
-      chunkEnd: 255,
+      chunkValues: {
+        type: "range",
+        chunkStart: 0,
+        chunkEnd: 255,
+      },
     };
   }
 }
@@ -541,7 +392,7 @@ const UnmappedParameterTableRow = ({
   }
 
   switch (resolved.paramClass.dataType) {
-    case DataType.Number:
+    case fcDataTypes.NUMBER:
       return (
         <UnmappedParameterTableRowNumeric
           index={index}
@@ -552,7 +403,7 @@ const UnmappedParameterTableRow = ({
           onUpdate={onUpdate}
         />
       );
-    case DataType.Boolean:
+    case fcDataTypes.BOOLEAN:
       return (
         <UnmappedParameterTableRowBoolean
           index={index}
@@ -605,7 +456,7 @@ const UnmappedParameterTableRowBoolean = ({
                 ...mapping.unmappedParams!.slice(0, index),
                 getNewUnmappedParam(
                   newRef,
-                  newResolved.paramClass.dataType == DataType.Boolean,
+                  newResolved.paramClass.dataType == fcDataTypes.BOOLEAN,
                 ),
                 ...mapping.unmappedParams!.slice(index + 1),
               ],
@@ -692,7 +543,7 @@ const UnmappedParameterTableRowNumeric = ({
                 ...mapping.unmappedParams!.slice(0, index),
                 getNewUnmappedParam(
                   newRef,
-                  newResolved.paramClass.dataType == DataType.Boolean,
+                  newResolved.paramClass.dataType == fcDataTypes.BOOLEAN,
                 ),
                 ...mapping.unmappedParams!.slice(index + 1),
               ],
@@ -759,82 +610,6 @@ function getNewUnmappedParam(
       end: 1,
     };
   }
-}
-
-function updateRangeStart(
-  mapping: DmxMapping,
-  rangeIndex: number,
-  newStart: number | boolean | undefined,
-): DmxMapping {
-  const newRange = {
-    ...mapping.ranges[rangeIndex],
-    start: newStart,
-  };
-  return {
-    ...mapping,
-    ranges: [
-      ...mapping.ranges.slice(0, rangeIndex),
-      newRange,
-      ...mapping.ranges.slice(rangeIndex + 1),
-    ],
-  };
-}
-
-function updateRangeEnd(
-  mapping: DmxMapping,
-  rangeIndex: number,
-  newEnd: number | boolean | undefined,
-): DmxMapping {
-  const newRange = {
-    ...mapping.ranges[rangeIndex],
-    end: newEnd,
-  };
-  return {
-    ...mapping,
-    ranges: [
-      ...mapping.ranges.slice(0, rangeIndex),
-      newRange,
-      ...mapping.ranges.slice(rangeIndex + 1),
-    ],
-  };
-}
-
-function updateRangeDMXStart(
-  mapping: DmxMapping,
-  rangeIndex: number,
-  newStart: number,
-): DmxMapping {
-  const newRange = {
-    ...mapping.ranges[rangeIndex],
-    chunkStart: newStart,
-  };
-  return {
-    ...mapping,
-    ranges: [
-      ...mapping.ranges.slice(0, rangeIndex),
-      newRange,
-      ...mapping.ranges.slice(rangeIndex + 1),
-    ],
-  };
-}
-
-function updateRangeDMXEnd(
-  mapping: DmxMapping,
-  rangeIndex: number,
-  newEnd: number,
-): DmxMapping {
-  const newRange = {
-    ...mapping.ranges[rangeIndex],
-    chunkEnd: newEnd,
-  };
-  return {
-    ...mapping,
-    ranges: [
-      ...mapping.ranges.slice(0, rangeIndex),
-      newRange,
-      ...mapping.ranges.slice(rangeIndex + 1),
-    ],
-  };
 }
 
 function updateUnmappedParamStart(

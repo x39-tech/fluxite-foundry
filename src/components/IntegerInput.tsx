@@ -11,6 +11,7 @@ export interface IntegerInputProps {
   value?: number | null;
   defaultValue?: number;
   onValueChange?: (value: number | null) => void;
+  onValueConfirm?: (value: number | null) => void;
   placeholder?: string;
   disabled?: boolean;
   className?: string;
@@ -33,6 +34,7 @@ export const IntegerInput = forwardRef<
       value,
       defaultValue,
       onValueChange,
+      onValueConfirm,
       placeholder,
       disabled,
       className,
@@ -72,7 +74,10 @@ export const IntegerInput = forwardRef<
     );
 
     const updateValue = useCallback(
-      (newValue: number | null, inputText?: string) => {
+      (
+        newValue: number | null,
+        options?: { inputText?: string; commit?: boolean },
+      ) => {
         const validatedValue =
           newValue !== null ? validateAndClamp(newValue) : null;
 
@@ -80,14 +85,17 @@ export const IntegerInput = forwardRef<
           // Uncontrolled mode
           setInternalValue(validatedValue);
           // Only update input value if no input text is provided (for manual updates)
-          if (inputText === undefined) {
+          if (options?.inputText === undefined) {
             setInputValue(validatedValue?.toString() ?? "");
           }
         }
 
         onValueChange?.(validatedValue);
+        if (options?.commit) {
+          onValueConfirm?.(validatedValue);
+        }
       },
-      [value, validateAndClamp, onValueChange],
+      [value, validateAndClamp, onValueChange, onValueConfirm],
     );
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,11 +106,11 @@ export const IntegerInput = forwardRef<
       }
 
       if (inputVal === "" || inputVal === "-") {
-        updateValue(null, inputVal);
+        updateValue(null, { inputText: inputVal });
       } else {
         const numValue = parseInt(inputVal, 10);
         if (!isNaN(numValue)) {
-          updateValue(numValue, inputVal);
+          updateValue(numValue, { inputText: inputVal });
         }
       }
     };
@@ -136,23 +144,25 @@ export const IntegerInput = forwardRef<
           }
         }
       }
+
+      onValueConfirm?.(currentValue);
     };
 
     const increment = () => {
       if (disabled) return;
       const newValue = (currentValue ?? 0) + step;
-      updateValue(newValue);
+      updateValue(newValue, { commit: true });
     };
 
     const decrement = () => {
       if (disabled) return;
       const newValue = (currentValue ?? 0) - step;
-      updateValue(newValue);
+      updateValue(newValue, { commit: true });
     };
 
     const clear = () => {
       if (disabled) return;
-      updateValue(null);
+      updateValue(null, { commit: true });
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -162,6 +172,9 @@ export const IntegerInput = forwardRef<
       } else if (e.key === "ArrowDown") {
         e.preventDefault();
         decrement();
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        e.currentTarget.blur();
       }
     };
 

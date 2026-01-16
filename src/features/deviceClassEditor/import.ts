@@ -1,5 +1,13 @@
 import JSZip from "jszip";
-import { Condition, DeviceClass, E173Archive, EstaDmx } from "e173";
+import {
+  Condition,
+  DeviceClass,
+  E173Archive,
+  EstaDmx,
+  MappingRange,
+  Trigger,
+  UnmappedParam,
+} from "@cpwg-community/delver";
 import { newEntityId, optionalLocalizationKey } from "app/stateUtils";
 import { updateAppPersistentState, useAppPersistentStore } from "app/store";
 import {
@@ -8,7 +16,6 @@ import {
   getDefaultWindowLayout,
   getUniqueItemId,
   OrgId,
-  parseParameterReference,
 } from "utils/utils";
 import { updateDmxController } from "./state";
 import {
@@ -18,13 +25,18 @@ import {
   DmxChunkRefCondition,
   DmxConditionGroup,
   DmxConditionParent,
+  DmxMapping,
+  DmxMappingRange,
   DmxSerializerState,
+  DmxTrigger,
+  DmxUnmappedParam,
   Command,
   EntityId,
   LocalizationDbSchema,
   LocalizationKey,
   LocalizationReferencedItem,
   Resource,
+  ParameterCount,
 } from "app/persistentState";
 import { getDefaultDeviceClass } from "codex/codex";
 import { assetStorage } from "app/assetStorage";
@@ -96,13 +108,11 @@ export function getImportedDeviceClassEditor(
 ): DeviceClassEditorState {
   let dmx: EstaDmx | undefined = undefined;
 
+  // TODO: support multiple DMX serializers
   if (codexClass.serializers) {
-    for (const value of Object.values(codexClass.serializers)) {
-      // TODO remove hardcoded values
-      if (value.library == "org.esta.lib.core" && value.class == "esta-dmx") {
-        // It is validated by the E1.73 library
-        dmx = value.default as EstaDmx;
-      }
+    for (const value of Object.values(codexClass.serializers ?? {})) {
+      if (value.type === "EstaDmx" && value.value.default)
+        dmx = value.value.default;
     }
   }
 
@@ -466,11 +476,22 @@ function importParameters(
           id: EntityId(localParamClasses[param.class]),
         };
 
+    let count: ParameterCount | undefined = undefined;
+    if (param.count?.type === "fixed") {
+      count = { type: "fixed", value: param.count.value };
+    } else if (param.count?.type === "dynamic") {
+      count = {
+        type: "dynamic",
+        min: param.count.value.minimum,
+        max: param.count.value.maximum,
+      };
+    }
+
     const paramId = newEntityId();
     editor.parameters[paramId] = {
       codexId: CodexId(id),
       class: classRef,
-      count: param.count,
+      count,
       access: param.access,
       lifetime: param.lifetime,
       enumExclusions: param.choices?.excluded,
@@ -479,8 +500,6 @@ function importParameters(
       maximum: param.maximum,
       minimumModifier: param.minimumModifier,
       maximumModifier: param.maximumModifier,
-      dynamicMinimum: param.dynamicMinimum,
-      dynamicMaximum: param.dynamicMaximum,
       default: param.default,
       wrapping: param.wrapping,
       localized: {
@@ -783,15 +802,8 @@ function convertEstaDmxToEditorState(estaDmx: EstaDmx): DmxSerializerState {
       result.mappingGroups[mappingGroupId] = {
         chunkId: newChunkId,
         index,
-        mappings: mg.mappings.map((m) => ({
-          mappedParam: parseParameterReference(m.mappedParam),
-          ranges: m.ranges,
-          unmappedParams: m.unmappedParams?.map((up) => ({
-            parameter: parseParameterReference(up.parameter),
-            start: up.start,
-            end: up.end,
-          })),
-        })),
+        mappings: (mg.mappings ?? []).map((m) => convertMapping(m)),
+        triggers: (mg.triggers ?? []).map((t) => convertTrigger(t)),
       };
 
       // Convert conditions for this mapping group
@@ -858,4 +870,74 @@ function convertConditionsToNormalized(
       result.conditions[chunkRefConditionId] = chunkRefCondition;
     }
   }
+}
+
+function convertMapping(m: {
+  mappedParam: { id: string; index?: number };
+  ranges: MappingRange[];
+  unmappedParams?: UnmappedParam[];
+}): DmxMapping {
+  return {
+    mappedParam: {
+      codexId: CodexId(m.mappedParam.id),
+      index: m.mappedParam.index,
+    },
+    ranges: m.ranges.map(convertMappingRange),
+    unmappedParams: m.unmappedParams?.map(convertUnmappedParam),
+  };
+}
+
+function convertMappingRange(r: MappingRange): DmxMappingRange {
+  return {
+    start: r.start,
+    end: r.end,
+    chunkValues:
+      r.chunkValues.type === "range"
+        ? {
+            type: "range",
+            chunkStart: r.chunkValues.value.start,
+            chunkEnd: r.chunkValues.value.end,
+          }
+        : {
+            type: "sequence",
+            steps: r.chunkValues.value.map((step) => ({
+              chunkStart: step.chunkStart,
+              chunkEnd: step.chunkEnd,
+              hold: step.hold,
+            })),
+          },
+  };
+}
+
+function convertUnmappedParam(up: UnmappedParam): DmxUnmappedParam {
+  return {
+    parameter: {
+      codexId: CodexId(up.parameter.id),
+      index: up.parameter.index,
+    },
+    start: up.start,
+    end: up.end,
+  };
+}
+
+function convertTrigger(t: Trigger): DmxTrigger {
+  return {
+    command: CodexId(t.command),
+    mappings: t.mappings.map((tm) => ({
+      conditions: Object.fromEntries(
+        Object.entries(tm.conditions).map(([key, cond]) => [
+          key,
+          {
+            argumentMin: cond.argumentMin,
+            argumentMax: cond.argumentMax,
+          },
+        ]),
+      ),
+      sequence: tm.sequence.map((step) => ({
+        chunkStart: step.chunkStart,
+        chunkEnd: step.chunkEnd,
+        hold: step.hold,
+      })),
+    })),
+  };
 }

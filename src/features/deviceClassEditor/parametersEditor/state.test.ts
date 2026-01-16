@@ -1,6 +1,5 @@
 import { describe, test, expect, beforeEach } from "vitest";
 import { act, renderHook } from "@testing-library/react";
-import { DataType } from "e173";
 import { addEnumChoice, updateCurrentEditor } from "../state";
 import { resetAllStores, createEmptyDeviceClassEditor } from "test/utils";
 import {
@@ -17,6 +16,7 @@ import {
 import {
   CodexId,
   EntityId,
+  FCDataType,
   LocalizationDbSchema,
   LocalizationKey,
   LocalizationReferencedItem,
@@ -36,7 +36,7 @@ function getParameterInfo(id: EntityId): ReturnType<typeof useParameterInfo> {
 function createTestParamClass(
   id: EntityId,
   codexId: CodexId,
-  dataType: DataType,
+  dataType: FCDataType,
   nameLocalizations: Record<string, string>,
 ) {
   updateCurrentEditor((editor) => {
@@ -79,14 +79,9 @@ describe("parametersEditor/state.ts", () => {
       });
 
       test("returns all parameters after creation", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+        });
 
         createNewParameter(
           undefined,
@@ -116,22 +111,12 @@ describe("parametersEditor/state.ts", () => {
       });
 
       test("returns parameter classes after they are added", () => {
-        createTestParamClass(
-          EntityId("Class1"),
-          CodexId("Class1"),
-          DataType.Number,
-          {
-            "en-US": "Class 1",
-          },
-        );
-        createTestParamClass(
-          EntityId("Class2"),
-          CodexId("Class2"),
-          DataType.String,
-          {
-            "en-US": "Class 2",
-          },
-        );
+        createTestParamClass(EntityId("Class1"), CodexId("Class1"), "number", {
+          "en-US": "Class 1",
+        });
+        createTestParamClass(EntityId("Class2"), CodexId("Class2"), "string", {
+          "en-US": "Class 2",
+        });
 
         const classes = getHookValue(useParameterClasses);
         expect(Object.keys(classes || {}).length).toBe(2);
@@ -145,14 +130,9 @@ describe("parametersEditor/state.ts", () => {
       });
 
       test("returns parameter IDs in order", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+        });
 
         createNewParameter(
           undefined,
@@ -181,14 +161,9 @@ describe("parametersEditor/state.ts", () => {
       });
 
       test("returns all parameter codexIds", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+        });
 
         createNewParameter(
           undefined,
@@ -218,14 +193,9 @@ describe("parametersEditor/state.ts", () => {
       });
 
       test("returns parameter info with localized friendly name", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+        });
 
         createNewParameter(
           undefined,
@@ -249,14 +219,9 @@ describe("parametersEditor/state.ts", () => {
   describe("Write functions (mutations)", () => {
     describe("createNewParameter", () => {
       test("creates a new parameter with correct properties", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+        });
 
         createNewParameter(
           undefined,
@@ -276,14 +241,9 @@ describe("parametersEditor/state.ts", () => {
       });
 
       test("creates localization entry for friendly name", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+        });
 
         createNewParameter(
           undefined,
@@ -301,14 +261,9 @@ describe("parametersEditor/state.ts", () => {
       });
 
       test("does not create duplicate parameters with same codexId", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+        });
 
         createNewParameter(
           undefined,
@@ -330,14 +285,9 @@ describe("parametersEditor/state.ts", () => {
       });
 
       test("adds parameter ID to parameterEditors array", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+        });
 
         createNewParameter(
           undefined,
@@ -354,14 +304,9 @@ describe("parametersEditor/state.ts", () => {
 
     describe("modifyParameter", () => {
       test("modifies parameter properties", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+        });
 
         createNewParameter(
           undefined,
@@ -397,14 +342,9 @@ describe("parametersEditor/state.ts", () => {
     describe("modifyParameterLocalizedValue", () => {
       test("updates existing localization value", () => {
         act(() => {
-          createTestParamClass(
-            TEST_CLASS_ID,
-            TEST_CLASS_CODEX_ID,
-            DataType.Number,
-            {
-              "en-US": "Test Class",
-            },
-          );
+          createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+            "en-US": "Test Class",
+          });
 
           createNewParameter(
             undefined,
@@ -432,14 +372,9 @@ describe("parametersEditor/state.ts", () => {
       });
 
       test("creates new localization if it does not exist", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+        });
 
         createNewParameter(
           undefined,
@@ -492,14 +427,9 @@ describe("parametersEditor/state.ts", () => {
 
     describe("deleteParameter", () => {
       test("removes parameter from parameters object", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+        });
 
         createNewParameter(
           undefined,
@@ -521,14 +451,9 @@ describe("parametersEditor/state.ts", () => {
       });
 
       test("removes parameter from parameterEditors array", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+        });
 
         createNewParameter(
           undefined,
@@ -550,14 +475,9 @@ describe("parametersEditor/state.ts", () => {
       });
 
       test("cleans up localization references", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+        });
 
         createNewParameter(
           undefined,
@@ -595,14 +515,9 @@ describe("parametersEditor/state.ts", () => {
   describe("Edge cases and state synchronization", () => {
     describe("Localization synchronization", () => {
       test("localization items reference is properly maintained on create", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+        });
 
         createNewParameter(
           undefined,
@@ -631,14 +546,9 @@ describe("parametersEditor/state.ts", () => {
       });
 
       test("localization is cleaned up when parameter is deleted", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+        });
 
         createNewParameter(
           undefined,
@@ -663,14 +573,9 @@ describe("parametersEditor/state.ts", () => {
       });
 
       test("shared localization is not deleted if other items still reference it", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+        });
 
         createNewParameter(
           undefined,
@@ -737,14 +642,9 @@ describe("parametersEditor/state.ts", () => {
         const TEST_CLASS_CODEX_ID = CodexId("TestEnum");
         const TEST_ENUM_CHOICE_CODEX_ID = CodexId("customChoice1");
 
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Enum,
-          {
-            "en-US": "Test Enum",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "enum", {
+          "en-US": "Test Enum",
+        });
 
         updateCurrentEditor((editor) => {
           editor.localizations[LocalizationKey("enumChoice_enumChoice1")] = {
@@ -827,14 +727,9 @@ describe("parametersEditor/state.ts", () => {
 
     describe("Parameter editors array consistency", () => {
       test("parameterEditors array stays in sync with parameters object", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+        });
 
         createNewParameter(
           undefined,
@@ -873,14 +768,9 @@ describe("parametersEditor/state.ts", () => {
       });
 
       test("deleting middle parameter maintains correct order", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+        });
 
         createNewParameter(
           undefined,
@@ -922,14 +812,9 @@ describe("parametersEditor/state.ts", () => {
 
     describe("codexId uniqueness", () => {
       test("creating parameter with duplicate codexId is prevented", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+        });
 
         createNewParameter(
           undefined,
@@ -959,14 +844,9 @@ describe("parametersEditor/state.ts", () => {
       });
 
       test("codexIds remain unique in the array", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+        });
 
         createNewParameter(
           undefined,
@@ -999,15 +879,10 @@ describe("parametersEditor/state.ts", () => {
 
     describe("Multi-locale support", () => {
       test("parameter localization works with multiple locales", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-            "fr-FR": "Classe de test",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+          "fr-FR": "Classe de test",
+        });
 
         createNewParameter(
           undefined,
@@ -1071,14 +946,9 @@ describe("parametersEditor/state.ts", () => {
       });
 
       test("creates parameter with device class when no library specified", () => {
-        createTestParamClass(
-          TEST_CLASS_ID,
-          TEST_CLASS_CODEX_ID,
-          DataType.Number,
-          {
-            "en-US": "Test Class",
-          },
-        );
+        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
+          "en-US": "Test Class",
+        });
 
         createNewParameter(
           undefined,

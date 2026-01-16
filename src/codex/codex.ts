@@ -1,12 +1,6 @@
 import { useAppRuntimeStore } from "app/store";
 import dayjs from "dayjs";
-import {
-  DeviceClass,
-  Lifetime,
-  Category,
-  Subcategory,
-  ParameterAccess,
-} from "e173";
+import { DeviceClass } from "@cpwg-community/delver";
 import { getNewestVersionOfEachLibrary } from "./codexDatabase";
 
 const DEFAULT_AUTHOR = "Firstname Lastname";
@@ -33,8 +27,8 @@ export function getDefaultDeviceClass(deviceClassId: string): DeviceClass {
       },
       model: {
         name: modelName,
-        category: Category.Lighting,
-        subcategory: Subcategory.MovingProfile,
+        category: "lighting",
+        subcategory: "moving-profile",
       },
     },
     libraries,
@@ -43,8 +37,8 @@ export function getDefaultDeviceClass(deviceClassId: string): DeviceClass {
         library: "org.esta.lib.intensity-color",
         class: "intensity/dimmer",
         "@friendlyName": "parameter_main-dimmer",
-        access: [ParameterAccess.ReadActual, ParameterAccess.Write],
-        lifetime: Lifetime.Runtime,
+        access: ["readActual", "write"],
+        lifetime: "runtime",
         minimum: 0,
         maximum: 1,
       },

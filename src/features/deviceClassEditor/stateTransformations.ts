@@ -3,7 +3,7 @@ import {
   DefinitionLocalization,
   DataType,
   Unit,
-} from "e173";
+} from "@cpwg-community/delver";
 import { CodexDatabase } from "codex/codexDatabase";
 import {
   CodexId,

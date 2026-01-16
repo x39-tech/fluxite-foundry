@@ -7,6 +7,20 @@ import { indexedDB, IDBKeyRange } from "fake-indexeddb";
 // Enable Immer patches for tests
 enablePatches();
 
+// Polyfill pointer capture APIs for Radix UI components (e.g., Select)
+// happy-dom doesn't implement these, but Radix UI requires them
+if (typeof Element.prototype.hasPointerCapture !== "function") {
+  Element.prototype.hasPointerCapture = function () {
+    return false;
+  };
+}
+if (typeof Element.prototype.setPointerCapture !== "function") {
+  Element.prototype.setPointerCapture = function () {};
+}
+if (typeof Element.prototype.releasePointerCapture !== "function") {
+  Element.prototype.releasePointerCapture = function () {};
+}
+
 // Set up fake-indexeddb for Dexie before any tests run
 Dexie.dependencies.indexedDB = indexedDB;
 Dexie.dependencies.IDBKeyRange = IDBKeyRange;

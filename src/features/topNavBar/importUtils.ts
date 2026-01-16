@@ -1,11 +1,11 @@
 import {
   E173Document,
   E173Archive,
-  importUdr,
-  importUdrArchive,
+  parseFluxiteCodexDocument,
+  parseFluxiteCodexArchive,
   Error as E173Error,
   DeviceClass,
-} from "e173";
+} from "@cpwg-community/delver";
 import JSZip from "jszip";
 import {
   buildQualifiedId,
@@ -59,7 +59,7 @@ export async function validateInputFile(
     }
 
     try {
-      const codex = importUdr(content);
+      const codex = parseFluxiteCodexDocument(content);
       const deviceClasses = extractDeviceClasses(codex, file.name);
       return {
         valid: true,
@@ -100,7 +100,7 @@ async function processCodexArchive(file: File): Promise<CodexImportResult> {
     const archiveContent = await archiveFile.async("string");
     let archive: E173Archive;
     try {
-      archive = importUdrArchive(archiveContent);
+      archive = parseFluxiteCodexArchive(archiveContent);
     } catch (e) {
       const err = e as E173Error;
       const path = err.path ? ` (at ${err.path})` : undefined;
@@ -127,7 +127,7 @@ async function processCodexArchive(file: File): Promise<CodexImportResult> {
       if (jsonFile) {
         try {
           const content = await jsonFile.async("string");
-          const codex = importUdr(content);
+          const codex = parseFluxiteCodexDocument(content);
           const deviceClasses = extractDeviceClasses(codex, filename);
           allDeviceClasses.push(...deviceClasses);
         } catch (e) {
@@ -198,7 +198,7 @@ export async function getDeviceClassFromArchive(
 
   try {
     const content = await jsonFile.async("string");
-    const codex = importUdr(content);
+    const codex = parseFluxiteCodexDocument(content);
 
     const qualifiedId = buildQualifiedId(EntityType.Dev, dc.orgId, dc.id);
 
@@ -217,7 +217,7 @@ export async function getDeviceClassFromDocument(
 ): Promise<DeviceClass | null> {
   try {
     const content = await readFileToString(docFile);
-    const codex = importUdr(content);
+    const codex = parseFluxiteCodexDocument(content);
 
     const qualifiedId = buildQualifiedId(EntityType.Dev, dc.orgId, dc.id);
 

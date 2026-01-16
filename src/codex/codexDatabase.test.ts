@@ -4,7 +4,7 @@ import {
   getNewestVersionOfEachLibrary,
   CodexDatabase,
 } from "./codexDatabase";
-import { Library } from "e173";
+import { Library } from "@cpwg-community/delver";
 
 function createMockLibrary(description = "Test library"): Library {
   return {

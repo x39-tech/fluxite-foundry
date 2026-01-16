@@ -1,6 +1,5 @@
 import { useId } from "react";
 import { capitalCase } from "change-case";
-import { DataType } from "e173";
 import { ExclamationTriangleIcon } from "@heroicons/react/16/solid";
 import {
   Tooltip,
@@ -33,6 +32,7 @@ import {
   ParameterAccess,
   Lifetime,
   lifetimes,
+  fcDataTypes,
   EntityId,
   CodexId,
 } from "app/persistentState";
@@ -185,10 +185,10 @@ const ParameterPropsTable = ({
         }
       />
       <InstantiationProperties paramId={paramId} param={param} />
-      {paramClass.dataType === DataType.Number && (
+      {paramClass.dataType === fcDataTypes.NUMBER && (
         <MinMaxDefaultProperties paramId={paramId} param={param} />
       )}
-      {paramClass.dataType === DataType.Enum && (
+      {paramClass.dataType === fcDataTypes.ENUM && (
         <tr>
           <td className="align-middle">Enum Choices</td>
           <td>

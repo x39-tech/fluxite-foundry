@@ -1,8 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import { DataType, ParameterCluster, ParameterCombo, UnitName } from "e173";
-import { CodexId, FCUnit } from "app/persistentState";
+import {
+  ParamReference,
+  ParameterCluster,
+  ParameterCombo,
+  ParameterConstraint,
+} from "@cpwg-community/delver";
+import { CodexId, fcDataTypes, FCUnit, fcUnitNames } from "app/persistentState";
 import { useParametersWithClasses } from "../state";
 import { useDmxController } from "../dmxEditor/state";
 import { Button } from "components/scn-ui/Button";
@@ -238,10 +243,14 @@ export const DmxController = () => {
     dmxController.db.dmxDriver.clusters
       .map((cluster) => ({
         combinations: cluster.combinations,
-        parameters: cluster.parameters.toSorted(),
+        parameters: cluster.parameters.toSorted((a, b) =>
+          serializeParamRef(a).localeCompare(serializeParamRef(b)),
+        ),
       }))
       .sort((a, b) =>
-        (a.parameters[0] as string).localeCompare(b.parameters[0] as string),
+        serializeParamRef(a.parameters[0]).localeCompare(
+          serializeParamRef(b.parameters[0]),
+        ),
       );
 
   return (
@@ -298,29 +307,24 @@ export const DmxController = () => {
           return (
             <div key={index} className="flex flex-col border-b py-2">
               {cluster.parameters.map((parameter, index) => {
-                const parsedParam = parameter.match(/([^[]+)(\[(\d+)\])?/);
-                if (!parsedParam) {
+                const paramKey = serializeParamRef(parameter);
+                const param = dmxController.db.parameters[parameter.id];
+                const paramClass = paramClasses[CodexId(parameter.id)];
+                if (!param || !paramClass) {
                   return <></>;
                 }
 
-                const paramName = parsedParam[1];
-                const param = dmxController.db.parameters[paramName];
-                const paramClass = paramClasses[CodexId(paramName)];
-                if (!paramClass) {
-                  return <></>;
-                }
-
-                if (paramClass.paramClass.dataType == DataType.Number) {
+                if (paramClass.paramClass.dataType == fcDataTypes.NUMBER) {
                   if ("minimum" in param && "maximum" in param) {
                     const min = param.minimum as number;
                     const max = param.maximum as number;
 
-                    const active = paramValues.params[parameter]?.active;
+                    const active = paramValues.params[paramKey]?.active;
 
                     return (
                       <div key={index} className="flex items-center py-2">
                         <span className="mx-4">
-                          {parameter}
+                          {paramKey}
                           {getUnitString(paramClass.paramClass.unit)}
                         </span>
                         <div className="grow" />
@@ -328,7 +332,7 @@ export const DmxController = () => {
                           className={`max-w-96 mx-4 ${!active ? "opacity-50" : ""}`}
                           min={min}
                           max={max}
-                          value={[paramValues.params[parameter]?.value]}
+                          value={[paramValues.params[paramKey]?.value]}
                           onValueChange={(values) => {
                             setParamValue(
                               paramValues,
@@ -344,7 +348,9 @@ export const DmxController = () => {
                     );
                   }
                   return <></>;
-                } else if (paramClass.paramClass.dataType == DataType.Boolean) {
+                } else if (
+                  paramClass.paramClass.dataType == fcDataTypes.BOOLEAN
+                ) {
                   return <></>;
                 } else {
                   return <></>;
@@ -384,11 +390,11 @@ function getUnitString(unit: FCUnit | undefined): string {
     return "";
   }
 
-  if (unit.name == UnitName.None) {
+  if (unit.name == fcUnitNames.NONE) {
     return "";
   } else if (
-    unit.name == UnitName.Other ||
-    unit.name == UnitName.Ratio ||
+    unit.name == fcUnitNames.OTHER ||
+    unit.name == fcUnitNames.RATIO ||
     !unit.exponent
   ) {
     return ` (${unit.name})`;
@@ -415,11 +421,12 @@ function setParamValue(
   paramValues: ParamState,
   setParamValues: (paramValues: ParamState) => void,
   cluster: ParameterCluster,
-  parameter: string,
+  parameter: ParamReference,
   value: number,
 ) {
+  const paramKey = serializeParamRef(parameter);
   const candidates = cluster.combinations.filter((combo) => {
-    const constraint = combo.constraints[parameter];
+    const constraint = getConstraintForParam(combo.constraints, parameter);
     return (
       constraint &&
       constraint.paramRange &&
@@ -434,20 +441,21 @@ function setParamValue(
 
   const winningCandidate = candidates.reduce(
     (acc, candidate) => {
-      if (
-        !candidate.constraints[parameter].paramRange ||
-        !candidate.constraints[parameter].dmxMapping
-      ) {
+      const constraint = getConstraintForParam(
+        candidate.constraints,
+        parameter,
+      );
+      if (!constraint?.paramRange || !constraint?.dmxMapping) {
         return acc;
       }
 
       const curNumAdjustments = acc
-        ? getNumberOfParamsToBeAdjusted(paramValues, acc, parameter)
+        ? getNumberOfParamsToBeAdjusted(paramValues, acc, paramKey)
         : 0;
       const numAdjustments = getNumberOfParamsToBeAdjusted(
         paramValues,
         candidate,
-        parameter,
+        paramKey,
       );
 
       if (acc === null || numAdjustments < curNumAdjustments) {
@@ -465,49 +473,52 @@ function setParamValue(
 
   const newParamValues: { [key: string]: ParamValue } = {};
   const newDmxChunks: { [key: string]: number } = {};
-  for (const [param, constraint] of Object.entries(
+  for (const [paramId, indexMap] of Object.entries(
     winningCandidate.constraints,
   )) {
-    if (param == parameter) {
-      newParamValues[param] = { value, active: true };
-      newDmxChunks[constraint.dmxMapping!.chunkId] = calculateDmxValue(
-        value,
-        constraint.paramRange,
-        constraint.dmxMapping!,
-      );
-    } else {
-      const paramCurValue = paramValues.params[param]?.value;
-      if (paramCurValue !== undefined) {
-        if (constraint.paramRange) {
-          if (paramCurValue < (constraint.paramRange.start as number)) {
-            newParamValues[param] = {
-              value: constraint.paramRange.start as number,
-              active: true,
-            };
-          } else if (paramCurValue > (constraint.paramRange.end as number)) {
-            newParamValues[param] = {
-              value: constraint.paramRange.end as number,
-              active: true,
-            };
-          } else {
-            newParamValues[param] = {
-              value: paramCurValue,
-              active: true,
-            };
-          }
+    for (const [index, constraint] of Object.entries(indexMap)) {
+      const thisParamKey = serializeParamRefFromParts(paramId, Number(index));
+      if (thisParamKey == paramKey) {
+        newParamValues[thisParamKey] = { value, active: true };
+        newDmxChunks[constraint.dmxMapping!.chunkId] = calculateDmxValue(
+          value,
+          constraint.paramRange,
+          constraint.dmxMapping!,
+        );
+      } else {
+        const paramCurValue = paramValues.params[thisParamKey]?.value;
+        if (paramCurValue !== undefined) {
+          if (constraint.paramRange) {
+            if (paramCurValue < (constraint.paramRange.start as number)) {
+              newParamValues[thisParamKey] = {
+                value: constraint.paramRange.start as number,
+                active: true,
+              };
+            } else if (paramCurValue > (constraint.paramRange.end as number)) {
+              newParamValues[thisParamKey] = {
+                value: constraint.paramRange.end as number,
+                active: true,
+              };
+            } else {
+              newParamValues[thisParamKey] = {
+                value: paramCurValue,
+                active: true,
+              };
+            }
 
-          if (constraint.dmxMapping) {
-            newDmxChunks[constraint.dmxMapping.chunkId] = calculateDmxValue(
-              paramCurValue,
-              constraint.paramRange,
-              constraint.dmxMapping,
-            );
+            if (constraint.dmxMapping) {
+              newDmxChunks[constraint.dmxMapping.chunkId] = calculateDmxValue(
+                paramCurValue,
+                constraint.paramRange,
+                constraint.dmxMapping,
+              );
+            }
+          } else {
+            newParamValues[thisParamKey] = {
+              value: paramCurValue,
+              active: false,
+            };
           }
-        } else {
-          newParamValues[param] = {
-            value: paramCurValue,
-            active: false,
-          };
         }
       }
     }
@@ -528,11 +539,13 @@ function setParamValue(
 function getNumberOfParamsToBeAdjusted(
   paramValues: ParamState,
   combination: ParameterCombo,
-  excludeParam: string,
+  excludeParamKey: string,
 ) {
-  return Object.entries(combination.constraints).reduce(
-    (acc, [param, constraint]) => {
-      const paramValue = paramValues.params[param]!;
+  let count = 0;
+  for (const [paramId, indexMap] of Object.entries(combination.constraints)) {
+    for (const [index, constraint] of Object.entries(indexMap)) {
+      const paramKey = serializeParamRefFromParts(paramId, Number(index));
+      const paramValue = paramValues.params[paramKey]!;
       const paramWillChangeActivity = paramValue
         ? paramValue.active != !constraint.calculated
         : !constraint.calculated;
@@ -543,14 +556,33 @@ function getNumberOfParamsToBeAdjusted(
           paramValue.value > (constraint.paramRange.end as number));
 
       if (
-        param !== excludeParam &&
+        paramKey !== excludeParamKey &&
         (paramWillChangeActivity || paramWillChangeRange)
       ) {
-        return acc + 1;
-      } else {
-        return acc;
+        count++;
       }
-    },
-    0,
-  );
+    }
+  }
+  return count;
+}
+
+function serializeParamRef(ref: ParamReference): string {
+  if (ref.index !== undefined && ref.index !== 0) {
+    return `${ref.id}[${ref.index}]`;
+  }
+  return ref.id;
+}
+
+function serializeParamRefFromParts(id: string, index: number): string {
+  if (index !== 0) {
+    return `${id}[${index}]`;
+  }
+  return id;
+}
+
+function getConstraintForParam(
+  constraints: Record<string, Record<number, ParameterConstraint>>,
+  parameter: ParamReference,
+): ParameterConstraint | undefined {
+  return constraints[parameter.id]?.[parameter.index ?? 0];
 }

@@ -1,7 +1,10 @@
 import { Draft, produceWithPatches } from "immer";
 import * as FlexLayout from "flexlayout-react";
 import { useShallow } from "zustand/react/shallow";
-import { createParameterDatabase, Error as E173Error } from "e173";
+import {
+  createParameterDatabase,
+  Error as E173Error,
+} from "@cpwg-community/delver";
 import {
   AppPersistentState,
   CodexId,

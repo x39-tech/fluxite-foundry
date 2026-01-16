@@ -102,6 +102,7 @@ export function addDmxChunk() {
       chunkId: newChunkId,
       index: 0,
       mappings: [],
+      triggers: [],
     };
   });
 }
@@ -221,6 +222,7 @@ export function addParameterMappingGroup(chunkId: EntityId) {
       chunkId,
       index: nextIndex,
       mappings: [],
+      triggers: [],
     };
   });
 }
@@ -258,8 +260,10 @@ export function addParameterMapping(mappingGroupId: EntityId) {
     const firstParam = Object.values(editor.parameters)[0];
     if (!firstParam) return;
 
+    const countValue =
+      firstParam.count?.type === "fixed" ? firstParam.count.value : undefined;
     const mappedParam =
-      firstParam.count !== undefined && firstParam.count > 1
+      countValue !== undefined && countValue > 1
         ? { codexId: firstParam.codexId, index: 0 }
         : { codexId: firstParam.codexId };
 

@@ -4,7 +4,7 @@ import {
   ChevronDownIcon,
   ListBulletIcon,
 } from "@heroicons/react/24/solid";
-import { Library } from "e173";
+import { Library } from "@cpwg-community/delver";
 import {
   ImportedItemClass,
   ItemClassWithId,

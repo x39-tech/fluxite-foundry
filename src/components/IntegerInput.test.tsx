@@ -338,7 +338,7 @@ describe("IntegerInput", () => {
   });
 
   it("handles controlled vs uncontrolled mode correctly", async () => {
-    const _user = userEvent.setup();
+    userEvent.setup();
 
     // Uncontrolled mode
     const { rerender } = render(<IntegerInput defaultValue={10} />);
@@ -359,5 +359,141 @@ describe("IntegerInput", () => {
 
     await user.click(incrementButton);
     expect(input).not.toHaveFocus();
+  });
+
+  describe("onValueConfirm callback", () => {
+    it("is called on blur with the current value", async () => {
+      const user = userEvent.setup();
+      const handleConfirm = vi.fn();
+      render(<IntegerInput value={42} onValueConfirm={handleConfirm} />);
+
+      const input = screen.getByRole("textbox");
+      await user.click(input);
+      await user.tab(); // Trigger blur
+
+      expect(handleConfirm).toHaveBeenCalledWith(42);
+      expect(handleConfirm).toHaveBeenCalledTimes(1);
+    });
+
+    it("is called when increment button is clicked", async () => {
+      const user = userEvent.setup();
+      const handleConfirm = vi.fn();
+      render(<IntegerInput value={5} onValueConfirm={handleConfirm} />);
+
+      const incrementButton = screen.getByText("Increment").closest("button")!;
+      await user.click(incrementButton);
+
+      expect(handleConfirm).toHaveBeenCalledWith(6);
+      expect(handleConfirm).toHaveBeenCalledTimes(1);
+    });
+
+    it("is called when decrement button is clicked", async () => {
+      const user = userEvent.setup();
+      const handleConfirm = vi.fn();
+      render(<IntegerInput value={5} onValueConfirm={handleConfirm} />);
+
+      const decrementButton = screen.getByText("Decrement").closest("button")!;
+      await user.click(decrementButton);
+
+      expect(handleConfirm).toHaveBeenCalledWith(4);
+      expect(handleConfirm).toHaveBeenCalledTimes(1);
+    });
+
+    it("is called when clear button is clicked", async () => {
+      const user = userEvent.setup();
+      const handleConfirm = vi.fn();
+      render(
+        <IntegerInput value={42} clearable onValueConfirm={handleConfirm} />,
+      );
+
+      const clearButton = screen.getByText("Clear value").closest("button")!;
+      await user.click(clearButton);
+
+      expect(handleConfirm).toHaveBeenCalledWith(null);
+      expect(handleConfirm).toHaveBeenCalledTimes(1);
+    });
+
+    it("is called when arrow keys are used", async () => {
+      const user = userEvent.setup();
+      const handleConfirm = vi.fn();
+      render(<IntegerInput value={5} onValueConfirm={handleConfirm} />);
+
+      const input = screen.getByRole("textbox");
+      await user.click(input);
+      await user.keyboard("{ArrowUp}");
+
+      expect(handleConfirm).toHaveBeenCalledWith(6);
+
+      await user.keyboard("{ArrowDown}");
+      expect(handleConfirm).toHaveBeenCalledWith(4);
+    });
+
+    it("is not called during typing", async () => {
+      const user = userEvent.setup();
+      const handleChange = vi.fn();
+      const handleConfirm = vi.fn();
+      render(
+        <IntegerInput
+          onValueChange={handleChange}
+          onValueConfirm={handleConfirm}
+        />,
+      );
+
+      const input = screen.getByRole("textbox");
+      await user.type(input, "123");
+
+      // onValueChange should be called for each keystroke
+      expect(handleChange).toHaveBeenCalledTimes(3);
+      expect(handleChange).toHaveBeenLastCalledWith(123);
+
+      // onValueConfirm should NOT be called yet
+      expect(handleConfirm).not.toHaveBeenCalled();
+
+      // Now blur to trigger commit
+      await user.tab();
+      expect(handleConfirm).toHaveBeenCalledWith(123);
+      expect(handleConfirm).toHaveBeenCalledTimes(1);
+    });
+
+    it("is called with clamped value when using buttons near boundaries", async () => {
+      const user = userEvent.setup();
+      const handleConfirm = vi.fn();
+      // value=8, step=5, max=10 -> incrementing would give 13, but clamped to 10
+      render(
+        <IntegerInput
+          value={8}
+          step={5}
+          max={10}
+          onValueConfirm={handleConfirm}
+        />,
+      );
+
+      const incrementButton = screen.getByText("Increment").closest("button")!;
+      await user.click(incrementButton);
+
+      // Value should be clamped to max
+      expect(handleConfirm).toHaveBeenCalledWith(10);
+    });
+
+    it("is called when Enter key is pressed", async () => {
+      const user = userEvent.setup();
+      const handleConfirm = vi.fn();
+      render(<IntegerInput onValueConfirm={handleConfirm} />);
+
+      const input = screen.getByRole("textbox");
+      await user.click(input);
+      await user.type(input, "42");
+
+      // onValueConfirm should NOT be called yet (only typing)
+      expect(handleConfirm).not.toHaveBeenCalled();
+
+      // Press Enter to confirm
+      await user.keyboard("{Enter}");
+
+      expect(handleConfirm).toHaveBeenCalledWith(42);
+      expect(handleConfirm).toHaveBeenCalledTimes(1);
+      // Input should be blurred
+      expect(input).not.toHaveFocus();
+    });
   });
 });

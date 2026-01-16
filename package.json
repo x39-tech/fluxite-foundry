@@ -16,6 +16,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@cpwg-community/delver": "^0.1.0-alpha.9",
     "@headlessui/react": "^2.2.6",
     "@heroicons/react": "^2.2.0",
     "@radix-ui/react-checkbox": "^1.3.3",
@@ -39,7 +40,6 @@
     "cmdk": "^1.1.1",
     "dayjs": "^1.11.10",
     "dexie": "^4.2.0",
-    "e173": "^0.1.0-alpha.7",
     "flexlayout-react": "^0.8.17",
     "immer": "^10.1.1",
     "jsondiffpatch": "^0.7.3",

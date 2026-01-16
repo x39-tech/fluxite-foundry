@@ -2,8 +2,8 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DeviceInfoEditor } from "./DeviceInfoEditor";
 import { createDeviceClassEditor } from "features/topNavBar/state";
-import { Category } from "e173";
 import { expect } from "vitest";
+import { modelCategories, ModelCategory } from "app/persistentState";
 
 // Helper function to change a ValidatedInput field value
 async function changeConfirmableInputField(
@@ -75,9 +75,9 @@ test("category field has valid options", async () => {
   expect(options.length).toBeGreaterThan(0);
 
   // Verify at least one valid category is available
-  const categoryValues = Object.values(Category);
+  const categoryValues = Object.values(modelCategories);
   const hasValidCategory = options.some((option) =>
-    categoryValues.includes(option.textContent as Category),
+    categoryValues.includes(option.textContent as ModelCategory),
   );
   expect(hasValidCategory).toBe(true);
 });

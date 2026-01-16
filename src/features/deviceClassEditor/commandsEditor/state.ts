@@ -1,4 +1,3 @@
-// import { nanoid } from "nanoid";
 import { Draft } from "immer";
 import { useCurrentLocale, useCodexDatabase } from "app/store";
 import {

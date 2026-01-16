@@ -37,7 +37,7 @@ export default defineConfig({
     preserveSymlinks: true,
   },
   optimizeDeps: {
-    exclude: ["e173"],
+    exclude: ["@cpwg-community/delver"],
   },
   test: {
     globals: true,

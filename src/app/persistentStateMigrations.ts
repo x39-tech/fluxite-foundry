@@ -1,6 +1,8 @@
 import * as z from "zod";
 import { AppStateSchema as AppStateSchemaV1 } from "./persistentState/v1/state";
+import { AppStateSchema as AppStateSchemaV2 } from "./persistentState/v2/state";
 import { migrateV1toV2 } from "./persistentState/v2/migrate";
+import { migrateV2toV3 } from "./persistentState/v3/migrate";
 
 export interface Migration {
   fromSchema: z.ZodSchema<unknown>;
@@ -13,5 +15,15 @@ export const MIGRATIONS: Migration[] = [
     fromSchema: AppStateSchemaV1,
     migrate: migrateV1toV2 as (state: unknown) => unknown,
     description: "Convert darkMode boolean to theme enum",
+  },
+  {
+    fromSchema: AppStateSchemaV2,
+    migrate: migrateV2toV3 as (state: unknown) => unknown,
+    description: `
+- Collapse Parameter count, dynamicMinimum and dynamicMaximum into 'count' descriminated union.
+- Key deviceClassEditors by EntityId instead of string.
+- DmxMappingRange: chunkStart/chunkEnd moved into chunkValues discriminated union, where we also add support for sequences.
+- DmxMappingGroup: add triggers array.
+`,
   },
 ];

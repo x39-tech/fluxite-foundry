@@ -1,5 +1,4 @@
 import { useId } from "react";
-import { Category, Subcategory } from "e173";
 import builderInfo from "e173/extras/draft-2026-1/_builder.json";
 import { RenderError } from "components/RenderError";
 import { FieldSet } from "components/FieldSet";
@@ -14,6 +13,11 @@ import {
   modifyBasicDataLocalizedValue,
   useBasicData,
 } from "./state";
+import {
+  modelCategories,
+  ModelCategory,
+  ModelSubcategory,
+} from "app/persistentState";
 
 export const DeviceInfoEditor = () => {
   const basicData = useBasicData();
@@ -85,15 +89,15 @@ export const DeviceInfoEditor = () => {
           <Label htmlFor={`${idPrefix}-category`}>Category</Label>
           <SelectField
             id={`${idPrefix}-category`}
-            values={Object.values(Category)}
+            values={Object.values(modelCategories)}
             selectedValue={basicData.modelCategory}
             onSelectionChanged={(newValue) =>
               modifyBasicData((draft) => {
-                draft.modelCategory = newValue as Category;
+                draft.modelCategory = newValue as ModelCategory;
                 draft.modelSubcategory = builderInfo.deviceClass
                   .modelCategoriesSubcategories[
-                  newValue as Category
-                ][0] as Subcategory;
+                  newValue as ModelCategory
+                ][0] as ModelSubcategory;
               })
             }
           />
@@ -110,7 +114,7 @@ export const DeviceInfoEditor = () => {
             selectedValue={basicData.modelSubcategory}
             onSelectionChanged={(newValue) =>
               modifyBasicData((draft) => {
-                draft.modelSubcategory = newValue as Subcategory;
+                draft.modelSubcategory = newValue as ModelSubcategory;
               })
             }
           />

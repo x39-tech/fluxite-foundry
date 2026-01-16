@@ -1,4 +1,10 @@
-import { DmxDriver, DmxMapping, Parameter, ParamRange } from "e173";
+import {
+  DmxDriver,
+  DmxMapping,
+  Parameter,
+  ParamRange,
+  ParamReference,
+} from "@cpwg-community/delver";
 
 export interface ParamValue {
   value: number;
@@ -8,6 +14,20 @@ export interface ParamValue {
 export interface ParamState {
   params: { [key: string]: ParamValue };
   dmxChunks: { [key: string]: number };
+}
+
+function serializeParamRef(ref: ParamReference): string {
+  if (ref.index !== undefined && ref.index !== 0) {
+    return `${ref.id}[${ref.index}]`;
+  }
+  return ref.id;
+}
+
+function serializeParamRefFromParts(id: string, index: number): string {
+  if (index !== 0) {
+    return `${id}[${index}]`;
+  }
+  return id;
 }
 
 export function reconcileParamValues(
@@ -20,43 +40,40 @@ export function reconcileParamValues(
 
   for (const cluster of dmxDriver.clusters) {
     const currentParams = Object.keys(paramValues.params);
-    if (cluster.parameters.every((param) => currentParams.includes(param))) {
+    const clusterParamKeys = cluster.parameters.map(serializeParamRef);
+    if (clusterParamKeys.every((param) => currentParams.includes(param))) {
       for (const param of cluster.parameters) {
-        newParamValues[param] = paramValues.params[param];
+        const paramKey = serializeParamRef(param);
+        newParamValues[paramKey] = paramValues.params[paramKey];
       }
       continue;
     }
 
     const firstCombo = cluster.combinations[0];
-    for (const [param, constraint] of Object.entries(firstCombo.constraints)) {
-      // TODO: destroy all parsers
-      const parsedParam = param.match(/([^[]+)(\[(\d+)\])?/);
-      if (!parsedParam) {
-        console.error(`Invalid parameter name ${param}`);
-        continue;
-      }
+    for (const [paramId, indexMap] of Object.entries(firstCombo.constraints)) {
+      for (const [index, constraint] of Object.entries(indexMap)) {
+        const paramKey = serializeParamRefFromParts(paramId, Number(index));
+        const paramData = paramDb[paramId];
 
-      const paramName = parsedParam[1];
-      const paramData = paramDb[paramName];
-
-      if (constraint.paramRange) {
-        newParamValues[param] = getParamInitialValue(
-          paramData,
-          constraint.paramRange,
-        );
-      }
-
-      if (constraint.dmxMapping) {
-        const paramValue = newParamValues[param]?.value;
-        if (paramValue !== undefined) {
-          newDmxChunks[constraint.dmxMapping.chunkId] = calculateDmxValue(
-            paramValue,
+        if (constraint.paramRange) {
+          newParamValues[paramKey] = getParamInitialValue(
+            paramData,
             constraint.paramRange,
-            constraint.dmxMapping,
           );
-        } else {
-          newDmxChunks[constraint.dmxMapping.chunkId] =
-            constraint.dmxMapping.start;
+        }
+
+        if (constraint.dmxMapping) {
+          const paramValue = newParamValues[paramKey]?.value;
+          if (paramValue !== undefined) {
+            newDmxChunks[constraint.dmxMapping.chunkId] = calculateDmxValue(
+              paramValue,
+              constraint.paramRange,
+              constraint.dmxMapping,
+            );
+          } else {
+            newDmxChunks[constraint.dmxMapping.chunkId] =
+              constraint.dmxMapping.start;
+          }
         }
       }
     }

@@ -1,12 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  E173Document,
-  DeviceClass,
-  Category,
-  Subcategory,
-  ParameterAccess,
-  Lifetime,
-} from "e173";
+import { E173Document, DeviceClass } from "@cpwg-community/delver";
 import {
   validateInputFile,
   getDeviceClassFromDocument,
@@ -31,8 +24,8 @@ function createValidDeviceClass(
       },
       model: {
         name: "Test Model",
-        category: Category.Lighting,
-        subcategory: Subcategory.MovingProfile,
+        category: "lighting",
+        subcategory: "moving-profile",
       },
     },
     libraries: {
@@ -43,8 +36,8 @@ function createValidDeviceClass(
         library: "org.esta.lib.core",
         class: "test/param",
         "@friendlyName": "Test Parameter",
-        access: [ParameterAccess.ReadActual, ParameterAccess.Write],
-        lifetime: Lifetime.Runtime,
+        access: ["readActual", "write"],
+        lifetime: "runtime",
         minimum: 0,
         maximum: 1,
       },

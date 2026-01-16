@@ -1,11 +1,11 @@
 import { describe, test, expect, beforeEach } from "vitest";
 import { act, renderHook } from "@testing-library/react";
-import { DataType } from "e173";
 import { updateCurrentEditor } from "../state";
 import { resetAllStores, createEmptyDeviceClassEditor } from "test/utils";
 import {
   CodexId,
   EntityId,
+  FCDataType,
   LocalizationDbSchema,
   LocalizationKey,
 } from "app/persistentState";
@@ -37,7 +37,7 @@ function getHookValue<T>(hook: () => T): T {
 function createTestParamClass(
   id: EntityId = TEST_CLASS_ID,
   codexId: CodexId = TEST_CLASS_CODEX_ID,
-  dataType: DataType = DataType.Number,
+  dataType: FCDataType = "number",
   nameLocalizations: Record<string, string> = { "en-US": "Test Class" },
 ) {
   updateCurrentEditor((editor) => {
@@ -54,7 +54,7 @@ function createTestParamClass(
 
     editor.parameterClasses[id] = {
       codexId,
-      dataType: dataType,
+      dataType,
       localized: {
         name: locKey,
       },
@@ -76,7 +76,7 @@ function createTestParameter(
         codexId: classCodexId,
         id: EntityId(`class_${classCodexId}`),
       },
-      count,
+      count: count !== undefined ? { type: "fixed", value: count } : undefined,
       access: ["readActual", "readTarget", "write"],
       lifetime: "persistent",
       localized: {},

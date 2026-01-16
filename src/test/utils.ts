@@ -47,7 +47,7 @@ export function resetAllStores() {
  */
 export function createEmptyDeviceClassEditor() {
   const state = useAppPersistentStore.getState();
-  const editorId = "test-editor-id";
+  const editorId = EntityId("test-editor-id");
 
   state.deviceClassEditors[editorId] = {
     orgId: { type: "org", id: "test-org" },
