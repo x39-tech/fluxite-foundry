@@ -5,6 +5,8 @@ import {
   formatDuration,
   getHoldMilliseconds,
   createHoldValue,
+  getEffectiveEnd,
+  normalizeEndValue,
 } from "./mappingUtils";
 import { DmxSequenceStep } from "app/persistentState";
 
@@ -145,6 +147,113 @@ describe("mappingUtils", () => {
 
     it("creates indefinite hold for indefinite string", () => {
       expect(createHoldValue("indefinite")).toBe("indefinite");
+    });
+  });
+
+  describe("getEffectiveEnd", () => {
+    describe("numeric values", () => {
+      it("returns end when end is defined", () => {
+        expect(getEffectiveEnd(0, 100)).toBe(100);
+      });
+
+      it("returns start when end is undefined", () => {
+        expect(getEffectiveEnd(50, undefined)).toBe(50);
+      });
+
+      it("returns end even when end equals start", () => {
+        expect(getEffectiveEnd(42, 42)).toBe(42);
+      });
+
+      it("handles zero values correctly", () => {
+        expect(getEffectiveEnd(0, 0)).toBe(0);
+        expect(getEffectiveEnd(0, undefined)).toBe(0);
+      });
+
+      it("handles negative values", () => {
+        expect(getEffectiveEnd(-10, undefined)).toBe(-10);
+        expect(getEffectiveEnd(-10, -5)).toBe(-5);
+      });
+    });
+
+    describe("boolean values", () => {
+      it("returns end when end is defined", () => {
+        expect(getEffectiveEnd(false, true)).toBe(true);
+        expect(getEffectiveEnd(true, false)).toBe(false);
+      });
+
+      it("returns start when end is undefined", () => {
+        expect(getEffectiveEnd(true, undefined)).toBe(true);
+        expect(getEffectiveEnd(false, undefined)).toBe(false);
+      });
+
+      it("returns end even when end equals start", () => {
+        expect(getEffectiveEnd(true, true)).toBe(true);
+        expect(getEffectiveEnd(false, false)).toBe(false);
+      });
+    });
+
+    describe("undefined start", () => {
+      it("returns end when start is undefined and end is defined", () => {
+        expect(getEffectiveEnd(undefined, 100)).toBe(100);
+      });
+
+      it("returns undefined when both are undefined", () => {
+        expect(getEffectiveEnd(undefined, undefined)).toBe(undefined);
+      });
+    });
+  });
+
+  describe("normalizeEndValue", () => {
+    describe("numeric values", () => {
+      it("returns undefined when end equals start", () => {
+        expect(normalizeEndValue(10, 10)).toBe(undefined);
+      });
+
+      it("returns the end value when end differs from start", () => {
+        expect(normalizeEndValue(0, 100)).toBe(100);
+      });
+
+      it("handles zero correctly", () => {
+        expect(normalizeEndValue(0, 0)).toBe(undefined);
+        expect(normalizeEndValue(0, 1)).toBe(1);
+        expect(normalizeEndValue(1, 0)).toBe(0);
+      });
+
+      it("handles negative values", () => {
+        expect(normalizeEndValue(-10, -10)).toBe(undefined);
+        expect(normalizeEndValue(-10, -5)).toBe(-5);
+      });
+
+      it("handles floating point values", () => {
+        expect(normalizeEndValue(0.5, 0.5)).toBe(undefined);
+        expect(normalizeEndValue(0.5, 1.5)).toBe(1.5);
+      });
+    });
+
+    describe("boolean values", () => {
+      it("returns undefined when end equals start", () => {
+        expect(normalizeEndValue(true, true)).toBe(undefined);
+        expect(normalizeEndValue(false, false)).toBe(undefined);
+      });
+
+      it("returns the end value when end differs from start", () => {
+        expect(normalizeEndValue(false, true)).toBe(true);
+        expect(normalizeEndValue(true, false)).toBe(false);
+      });
+    });
+
+    describe("undefined values", () => {
+      it("returns undefined when end is undefined", () => {
+        expect(normalizeEndValue(10, undefined)).toBe(undefined);
+      });
+
+      it("returns end when start is undefined and end is defined", () => {
+        expect(normalizeEndValue(undefined, 100)).toBe(100);
+      });
+
+      it("returns undefined when both are undefined", () => {
+        expect(normalizeEndValue(undefined, undefined)).toBe(undefined);
+      });
     });
   });
 });

@@ -6,22 +6,18 @@ import { expect, test, vi, beforeEach } from "vitest";
 import { DmxController } from "./DmxController";
 
 // Mock the hooks
-vi.mock("../state", () => ({
-  useParametersWithClasses: vi.fn(),
-}));
-
 vi.mock("../dmxEditor/state", () => ({
   useDmxController: vi.fn(),
+  useMappableParameters: vi.fn(),
 }));
 
 vi.mock("app/store", () => ({
   useDarkMode: vi.fn(() => false),
 }));
 
-import { useParametersWithClasses } from "../state";
-import { useDmxController } from "../dmxEditor/state";
+import { useDmxController, useMappableParameters } from "../dmxEditor/state";
 
-const mockUseParametersWithClasses = useParametersWithClasses as ReturnType<
+const mockUseMappableParameters = useMappableParameters as ReturnType<
   typeof vi.fn
 >;
 const mockUseDmxController = useDmxController as ReturnType<typeof vi.fn>;
@@ -35,7 +31,7 @@ const noMappingsMessage =
 
 test("Correctly handles case where reconcileParamValues results in empty state", () => {
   // Mock empty parameter classes
-  mockUseParametersWithClasses.mockReturnValue({});
+  mockUseMappableParameters.mockReturnValue({});
 
   // Create dmx controller with no parameters or clusters,
   // which will result in empty param values after initialization
@@ -58,7 +54,7 @@ test("Correctly handles case where reconcileParamValues results in empty state",
 });
 
 test("Shows message when no DMX driver is present", () => {
-  mockUseParametersWithClasses.mockReturnValue({});
+  mockUseMappableParameters.mockReturnValue({});
 
   mockUseDmxController.mockReturnValue({
     state: "available",
@@ -74,7 +70,7 @@ test("Shows message when no DMX driver is present", () => {
 });
 
 test("Shows message when DMX controller is not created", () => {
-  mockUseParametersWithClasses.mockReturnValue({});
+  mockUseMappableParameters.mockReturnValue({});
 
   mockUseDmxController.mockReturnValue({
     state: "not-created",
@@ -86,7 +82,7 @@ test("Shows message when DMX controller is not created", () => {
 });
 
 test("Shows error message when DMX controller has error", () => {
-  mockUseParametersWithClasses.mockReturnValue({});
+  mockUseMappableParameters.mockReturnValue({});
 
   mockUseDmxController.mockReturnValue({
     state: "error",

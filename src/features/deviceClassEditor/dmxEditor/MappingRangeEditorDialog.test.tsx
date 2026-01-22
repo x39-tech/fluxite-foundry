@@ -2,7 +2,9 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MappingRangeEditorDialog } from "./MappingRangeEditorDialog";
-import { DmxMappingRange } from "app/persistentState";
+import { CodexId, DmxMappingRange } from "app/persistentState";
+import { EffectiveEnumChoice } from "./mappingUtils";
+import { MappableDataType } from "./state";
 
 describe("MappingRangeEditorDialog", () => {
   const mockOnClose = vi.fn();
@@ -13,16 +15,30 @@ describe("MappingRangeEditorDialog", () => {
     mockOnSave.mockClear();
   });
 
-  const renderDialog = (range: DmxMappingRange, isBoolean = false) => {
+  const renderDialog = (
+    range: DmxMappingRange,
+    dataType: MappableDataType = "number",
+    enumChoices?: EffectiveEnumChoice[],
+  ) => {
     return render(
       <MappingRangeEditorDialog
         isOpen={true}
         onClose={mockOnClose}
         range={range}
         onSave={mockOnSave}
-        isBoolean={isBoolean}
+        dataType={dataType}
+        enumChoices={enumChoices}
       />,
     );
+  };
+
+  // Helper to create test enum choices
+  const createEnumChoices = (names: string[]): EffectiveEnumChoice[] => {
+    return names.map((name, index) => ({
+      index,
+      codexId: CodexId(`choice-${index}`),
+      name: { value: name, locale: "en", desiredLocale: "en" },
+    }));
   };
 
   describe("initial values", () => {
@@ -59,23 +75,6 @@ describe("MappingRangeEditorDialog", () => {
 
       expect(screen.getByText("Sequence Steps")).toBeInTheDocument();
       expect(screen.getByText("Total: 1.5s")).toBeInTheDocument();
-    });
-
-    it("displays boolean inputs when isBoolean is true", () => {
-      const range: DmxMappingRange = {
-        start: false,
-        end: true,
-        chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
-      };
-
-      renderDialog(range, true);
-
-      // Boolean mode uses Select dropdowns instead of numeric inputs
-      // Check that the dropdowns show the correct values
-      const comboboxes = screen.getAllByRole("combobox");
-      // First two comboboxes are for Start/End boolean values
-      expect(comboboxes[0]).toHaveTextContent("false");
-      expect(comboboxes[1]).toHaveTextContent("true");
     });
   });
 
@@ -296,7 +295,7 @@ describe("MappingRangeEditorDialog", () => {
             chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
           }}
           onSave={mockOnSave}
-          isBoolean={false}
+          dataType="number"
         />,
       );
 
@@ -390,6 +389,261 @@ describe("MappingRangeEditorDialog", () => {
       // Parameter bounds should have placeholder "null"
       expect(allInputs[0]).toHaveAttribute("placeholder", "null");
       expect(allInputs[1]).toHaveAttribute("placeholder", "null");
+    });
+
+    it("displays start value in end field when end is undefined", () => {
+      const range: DmxMappingRange = {
+        start: 50,
+        end: undefined,
+        chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
+      };
+
+      renderDialog(range);
+
+      const allInputs = screen.getAllByRole("textbox");
+      // Both inputs should show the same value
+      expect(allInputs[0]).toHaveValue("50");
+      expect(allInputs[1]).toHaveValue("50");
+    });
+
+    it("sets end to undefined when user enters same value as start", async () => {
+      const user = userEvent.setup();
+      const range: DmxMappingRange = {
+        start: 10,
+        end: 100,
+        chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
+      };
+
+      renderDialog(range);
+
+      // Change end to match start using fireEvent for reliable value replacement
+      const allInputs = screen.getAllByRole("textbox");
+      fireEvent.change(allInputs[1], { target: { value: "10" } });
+
+      await user.click(screen.getByRole("button", { name: "Save" }));
+
+      // End should be undefined since it matches start
+      expect(mockOnSave).toHaveBeenCalledWith({
+        start: 10,
+        end: undefined,
+        chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
+      });
+    });
+  });
+
+  describe("boolean parameter handling", () => {
+    it("displays boolean inputs when dataType is boolean", () => {
+      const range: DmxMappingRange = {
+        start: false,
+        end: true,
+        chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
+      };
+
+      renderDialog(range, "boolean");
+
+      const comboboxes = screen.getAllByRole("combobox");
+      expect(comboboxes[0]).toHaveTextContent("false");
+      expect(comboboxes[1]).toHaveTextContent("true");
+    });
+
+    it("displays start value in end field when end is undefined", () => {
+      const range: DmxMappingRange = {
+        start: true,
+        end: undefined,
+        chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
+      };
+
+      renderDialog(range, "boolean");
+
+      const comboboxes = screen.getAllByRole("combobox");
+      // Both dropdowns should show "true"
+      expect(comboboxes[0]).toHaveTextContent("true");
+      expect(comboboxes[1]).toHaveTextContent("true");
+    });
+
+    it("sets end to undefined when user selects same value as start", async () => {
+      const user = userEvent.setup();
+      const range: DmxMappingRange = {
+        start: false,
+        end: true,
+        chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
+      };
+
+      renderDialog(range, "boolean");
+
+      // Change end to match start (false)
+      const comboboxes = screen.getAllByRole("combobox");
+      await user.click(comboboxes[1]); // End value dropdown
+      await user.click(screen.getByRole("option", { name: "false" }));
+
+      await user.click(screen.getByRole("button", { name: "Save" }));
+
+      // End should be undefined since it matches start
+      expect(mockOnSave).toHaveBeenCalledWith({
+        start: false,
+        end: undefined,
+        chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
+      });
+    });
+  });
+
+  describe("enum parameter handling", () => {
+    it("displays enum select inputs with valid choices", () => {
+      const range: DmxMappingRange = {
+        start: 0,
+        end: 2,
+        chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
+      };
+      const choices = createEnumChoices(["Square", "Sine", "Sawtooth"]);
+
+      renderDialog(range, "enum", choices);
+
+      // Enum mode uses Select dropdowns
+      const comboboxes = screen.getAllByRole("combobox");
+      // First two are for Start/End enum values
+      expect(comboboxes[0]).toHaveTextContent("Square (0)");
+      expect(comboboxes[1]).toHaveTextContent("Sawtooth (2)");
+    });
+
+    it("shows invalid placeholder when enum value does not match any choice", () => {
+      const range: DmxMappingRange = {
+        start: 5, // Invalid - no choice with index 5
+        end: 1,
+        chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
+      };
+      const choices = createEnumChoices(["Square", "Sine", "Sawtooth"]);
+
+      renderDialog(range, "enum", choices);
+
+      const comboboxes = screen.getAllByRole("combobox");
+      // First combobox should show invalid placeholder
+      expect(comboboxes[0]).toHaveTextContent("Invalid: 5");
+      // Second combobox has valid value
+      expect(comboboxes[1]).toHaveTextContent("Sine (1)");
+    });
+
+    it("applies warning styling to invalid enum values", () => {
+      const range: DmxMappingRange = {
+        start: 99, // Invalid
+        end: 0,
+        chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
+      };
+      const choices = createEnumChoices(["Open", "Closed"]);
+
+      renderDialog(range, "enum", choices);
+
+      // Find select triggers and check for orange border class
+      const triggers = document.querySelectorAll('[class*="border-orange"]');
+      expect(triggers.length).toBeGreaterThan(0);
+    });
+
+    it("shows invalid placeholder when enum has no choices", () => {
+      const range: DmxMappingRange = {
+        start: 0,
+        end: 1,
+        chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
+      };
+
+      // Render with enum type but empty choices
+      renderDialog(range, "enum", []);
+
+      // Should still show enum selects with invalid placeholders
+      const comboboxes = screen.getAllByRole("combobox");
+      // First two comboboxes are for Start/End values, both invalid since no choices
+      expect(comboboxes[0]).toHaveTextContent("Invalid: 0");
+      expect(comboboxes[1]).toHaveTextContent("Invalid: 1");
+    });
+
+    it("saves enum values correctly", async () => {
+      const user = userEvent.setup();
+      const range: DmxMappingRange = {
+        start: 0,
+        end: 1,
+        chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
+      };
+      const choices = createEnumChoices(["Square", "Sine", "Sawtooth"]);
+
+      renderDialog(range, "enum", choices);
+
+      // Change the end value to Sawtooth (index 2)
+      const comboboxes = screen.getAllByRole("combobox");
+      await user.click(comboboxes[1]); // End value dropdown
+      await user.click(screen.getByRole("option", { name: "Sawtooth (2)" }));
+
+      await user.click(screen.getByRole("button", { name: "Save" }));
+
+      expect(mockOnSave).toHaveBeenCalledWith({
+        start: 0,
+        end: 2,
+        chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
+      });
+    });
+
+    it("allows selecting null for enum values", async () => {
+      const user = userEvent.setup();
+      const range: DmxMappingRange = {
+        start: 0,
+        end: 1,
+        chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
+      };
+      const choices = createEnumChoices(["Square", "Sine"]);
+
+      renderDialog(range, "enum", choices);
+
+      // Change the end value to null
+      const comboboxes = screen.getAllByRole("combobox");
+      await user.click(comboboxes[1]); // End value dropdown
+      await user.click(screen.getByRole("option", { name: "null" }));
+
+      await user.click(screen.getByRole("button", { name: "Save" }));
+
+      expect(mockOnSave).toHaveBeenCalledWith({
+        start: 0,
+        end: undefined,
+        chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
+      });
+    });
+
+    it("displays start value in end field when end is undefined", () => {
+      const range: DmxMappingRange = {
+        start: 1,
+        end: undefined,
+        chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
+      };
+      const choices = createEnumChoices(["Square", "Sine", "Sawtooth"]);
+
+      renderDialog(range, "enum", choices);
+
+      // Both dropdowns should show the same value (Sine)
+      const comboboxes = screen.getAllByRole("combobox");
+      expect(comboboxes[0]).toHaveTextContent("Sine (1)");
+      expect(comboboxes[1]).toHaveTextContent("Sine (1)");
+    });
+
+    it("sets end to undefined when user selects same value as start", async () => {
+      const user = userEvent.setup();
+      const range: DmxMappingRange = {
+        start: 0,
+        end: 2,
+        chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
+      };
+      const choices = createEnumChoices(["Square", "Sine", "Sawtooth"]);
+
+      renderDialog(range, "enum", choices);
+
+      // Change end to match start (Square)
+      const comboboxes = screen.getAllByRole("combobox");
+      await user.click(comboboxes[1]); // End value dropdown
+      await user.click(screen.getByRole("option", { name: "Square (0)" }));
+
+      await user.click(screen.getByRole("button", { name: "Save" }));
+
+      // End should be undefined since it matches start
+      expect(mockOnSave).toHaveBeenCalledWith({
+        start: 0,
+        end: undefined,
+        chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
+      });
     });
   });
 });

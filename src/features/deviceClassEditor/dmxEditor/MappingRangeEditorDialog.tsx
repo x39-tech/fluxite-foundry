@@ -24,7 +24,13 @@ import {
   SelectValue,
 } from "components/scn-ui/Select";
 import { SequenceStepEditor } from "./SequenceStepEditor";
-import { validateSequenceSteps } from "./mappingUtils";
+import {
+  EffectiveEnumChoice,
+  getEffectiveEnd,
+  normalizeEndValue,
+  validateSequenceSteps,
+} from "./mappingUtils";
+import { MappableDataType } from "./state";
 
 type OutputMode = "range" | "sequence";
 
@@ -33,7 +39,8 @@ interface MappingRangeEditorDialogProps {
   onClose: () => void;
   range: DmxMappingRange;
   onSave: (range: DmxMappingRange) => void;
-  isBoolean: boolean;
+  dataType: MappableDataType;
+  enumChoices?: EffectiveEnumChoice[];
 }
 
 export const MappingRangeEditorDialog = ({
@@ -41,7 +48,8 @@ export const MappingRangeEditorDialog = ({
   onClose,
   range,
   onSave,
-  isBoolean,
+  dataType,
+  enumChoices,
 }: MappingRangeEditorDialogProps) => {
   // Parameter value bounds
   const [start, setStart] = useState<DmxMappingBound | undefined>(range.start);
@@ -114,14 +122,24 @@ export const MappingRangeEditorDialog = ({
           <div className="flex flex-col gap-2">
             <Label className="font-semibold">Parameter Value Range</Label>
             <div className="flex items-center gap-4">
-              {isBoolean ? (
+              {dataType === "boolean" && (
                 <BooleanBoundInputs
                   start={start}
                   end={end}
                   onStartChange={setStart}
                   onEndChange={setEnd}
                 />
-              ) : (
+              )}
+              {dataType === "enum" && enumChoices && (
+                <EnumBoundInputs
+                  start={start}
+                  end={end}
+                  onStartChange={setStart}
+                  onEndChange={setEnd}
+                  choices={enumChoices}
+                />
+              )}
+              {dataType === "number" && (
                 <NumericBoundInputs
                   start={start}
                   end={end}
@@ -212,12 +230,14 @@ const NumericBoundInputs = ({
   onStartChange,
   onEndChange,
 }: NumericBoundInputsProps) => {
+  const effectiveEnd = getEffectiveEnd(start, end);
+
   // Track raw input values to allow typing intermediate states like "0." or "-"
   const [startInput, setStartInput] = useState(
     typeof start === "number" ? start.toString() : "",
   );
   const [endInput, setEndInput] = useState(
-    typeof end === "number" ? end.toString() : "",
+    typeof effectiveEnd === "number" ? effectiveEnd.toString() : "",
   );
 
   // Sync input values when props change from outside
@@ -225,8 +245,11 @@ const NumericBoundInputs = ({
     setStartInput(typeof start === "number" ? start.toString() : "");
   }, [start]);
   useEffect(() => {
-    setEndInput(typeof end === "number" ? end.toString() : "");
-  }, [end]);
+    const newEffectiveEnd = getEffectiveEnd(start, end);
+    setEndInput(
+      typeof newEffectiveEnd === "number" ? newEffectiveEnd.toString() : "",
+    );
+  }, [end, start]);
 
   const parseNumericValue = (val: string): number | undefined => {
     if (val === "" || val === "-" || val === "." || val === "-.") {
@@ -247,7 +270,9 @@ const NumericBoundInputs = ({
   const handleEndChange = (val: string) => {
     if (val === "" || /^-?\d*\.?\d*$/.test(val)) {
       setEndInput(val);
-      onEndChange(parseNumericValue(val));
+      const parsed = parseNumericValue(val);
+      const normalized = normalizeEndValue(start, parsed);
+      onEndChange(normalized);
     }
   };
 
@@ -292,13 +317,26 @@ const BooleanBoundInputs = ({
   onStartChange,
   onEndChange,
 }: BooleanBoundInputsProps) => {
+  const effectiveEnd = getEffectiveEnd(start, end);
+
   const startValue =
     start === undefined ? "null" : start === true ? "true" : "false";
-  const endValue = end === undefined ? "null" : end === true ? "true" : "false";
+  const endValue =
+    effectiveEnd === undefined
+      ? "null"
+      : effectiveEnd === true
+        ? "true"
+        : "false";
 
   const parseBoolean = (val: string): DmxMappingBound | undefined => {
     if (val === "null") return undefined;
     return val === "true";
+  };
+
+  const handleEndChange = (val: string) => {
+    const parsed = parseBoolean(val);
+    const normalized = normalizeEndValue(start, parsed);
+    onEndChange(normalized);
   };
 
   return (
@@ -321,10 +359,7 @@ const BooleanBoundInputs = ({
       </div>
       <div className="flex items-center gap-2">
         <Label>End:</Label>
-        <Select
-          value={endValue}
-          onValueChange={(v) => onEndChange(parseBoolean(v))}
-        >
+        <Select value={endValue} onValueChange={handleEndChange}>
           <SelectTrigger className="w-24">
             <SelectValue />
           </SelectTrigger>
@@ -338,3 +373,119 @@ const BooleanBoundInputs = ({
     </>
   );
 };
+
+interface EnumBoundInputsProps {
+  start: DmxMappingBound | undefined;
+  end: DmxMappingBound | undefined;
+  onStartChange: (value: DmxMappingBound | undefined) => void;
+  onEndChange: (value: DmxMappingBound | undefined) => void;
+  choices: EffectiveEnumChoice[];
+}
+
+const EnumBoundInputs = ({
+  start,
+  end,
+  onStartChange,
+  onEndChange,
+  choices,
+}: EnumBoundInputsProps) => {
+  const effectiveEnd = getEffectiveEnd(start, end);
+  const startInfo = getBoundRenderInfo(start, choices);
+  const endInfo = getBoundRenderInfo(effectiveEnd, choices);
+
+  const parseEnumValue = (val: string): DmxMappingBound | undefined => {
+    if (val === "null") return undefined;
+    const parsed = parseInt(val, 10);
+    return isNaN(parsed) ? undefined : parsed;
+  };
+
+  const handleEndChange = (val: string) => {
+    const parsed = parseEnumValue(val);
+    const normalized = normalizeEndValue(start, parsed);
+    onEndChange(normalized);
+  };
+
+  // Format choice label: "Name (index)"
+  const formatChoice = (choice: EffectiveEnumChoice): string => {
+    return `${choice.name.value} (${choice.index})`;
+  };
+
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <Label>Start:</Label>
+        <Select
+          value={startInfo.selectValue}
+          onValueChange={(v) => onStartChange(parseEnumValue(v))}
+        >
+          <SelectTrigger className={`w-40 ${startInfo.borderClass}`}>
+            <SelectValue placeholder={startInfo.placeholderText} />
+          </SelectTrigger>
+          <SelectContent>
+            {choices.map((choice) => (
+              <SelectItem key={choice.index} value={choice.index.toString()}>
+                {formatChoice(choice)}
+              </SelectItem>
+            ))}
+            <SelectItem value="null">null</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex items-center gap-2">
+        <Label>End:</Label>
+        <Select value={endInfo.selectValue} onValueChange={handleEndChange}>
+          <SelectTrigger className={`w-40 ${endInfo.borderClass}`}>
+            <SelectValue placeholder={endInfo.placeholderText} />
+          </SelectTrigger>
+          <SelectContent>
+            {choices.map((choice) => (
+              <SelectItem key={choice.index} value={choice.index.toString()}>
+                {formatChoice(choice)}
+              </SelectItem>
+            ))}
+            <SelectItem value="null">null</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </>
+  );
+};
+
+const invalidBorderClass = "border-orange-500 dark:border-orange-400";
+
+interface BoundRenderInfo {
+  selectValue: string;
+  borderClass: string;
+  placeholderText: string | undefined;
+}
+
+function getBoundRenderInfo(
+  val: DmxMappingBound | undefined,
+  choices: EffectiveEnumChoice[],
+): BoundRenderInfo {
+  if (val === undefined) {
+    return {
+      selectValue: "null",
+      borderClass: "",
+      placeholderText: undefined,
+    };
+  }
+
+  if (
+    typeof val !== "number" ||
+    !Number.isInteger(val) ||
+    !choices.some((c) => c.index === val)
+  ) {
+    return {
+      selectValue: "",
+      borderClass: invalidBorderClass,
+      placeholderText: `Invalid: ${val}`,
+    };
+  }
+
+  return {
+    selectValue: val.toString(),
+    borderClass: "",
+    placeholderText: undefined,
+  };
+}

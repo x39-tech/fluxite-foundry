@@ -42,7 +42,7 @@ export const DmxParameterGroup = ({
   return (
     <div className="bg-gray-300 dark:bg-gray-700 my-2 p-1 rounded-lg">
       <div className="flex">
-        <div className="font-bold mx-2 my-1">Parameter Group</div>
+        <div className="font-bold mx-2 my-1">Mapping Group</div>
         <div className="grow" />
         <SmallIconButton
           onClick={() => removeParameterMappingGroup(chunkId, mappingGroupId)}

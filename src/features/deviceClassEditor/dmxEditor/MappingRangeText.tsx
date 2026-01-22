@@ -3,17 +3,31 @@
 import { DmxMappingRange } from "app/persistentState";
 import {
   calculateTotalDuration,
+  EffectiveEnumChoice,
   formatBoundValue,
   formatDuration,
+  formatEnumBoundValue,
 } from "./mappingUtils";
 
 export interface MappingRangeTextProps {
   range: DmxMappingRange;
+  enumChoices?: EffectiveEnumChoice[];
 }
 
-export const MappingRangeText = ({ range }: MappingRangeTextProps) => {
-  const start = formatBoundValue(range.start);
-  const end = formatBoundValue(range.end);
+export const MappingRangeText = ({
+  range,
+  enumChoices,
+}: MappingRangeTextProps) => {
+  // Use enum formatting if enum choices are provided, otherwise use standard formatting
+  const formatValue = (value: number | boolean | undefined): string => {
+    if (enumChoices && enumChoices.length > 0) {
+      return formatEnumBoundValue(value, enumChoices);
+    }
+    return formatBoundValue(value);
+  };
+
+  const start = formatValue(range.start);
+  const end = formatValue(range.end);
   const paramRangeText =
     range.end === undefined || range.start === range.end
       ? start

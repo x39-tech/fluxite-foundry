@@ -1,5 +1,6 @@
 import { DmxController } from "app/runtimeState";
 import {
+  CodexId,
   DmxChunkRefCondition,
   DmxCondition,
   DmxConditionGroup,
@@ -7,10 +8,47 @@ import {
   DmxMappingGroup,
   DmxSerializerState,
   EntityId,
+  fcDataTypes,
+  Parameter,
 } from "app/persistentState";
-import { updateCurrentEditor, useCurrentEditorPart } from "../state";
+import {
+  updateCurrentEditor,
+  useCurrentEditorPart,
+  useCurrentEditorPartShallow,
+} from "../state";
 import { newEntityId, selectWithIds } from "app/stateUtils";
-import { useAppRuntimeStore } from "app/store";
+import {
+  useAppRuntimeStore,
+  useCodexDatabase,
+  useCurrentLocale,
+} from "app/store";
+import {
+  lookupDeviceParameterClass,
+  lookupParameterClass,
+  ResolvedParameterClass,
+  LocalizedInstanceEnumChoice,
+} from "../stateTransformations";
+import { EffectiveEnumChoice, getEffectiveEnumChoices } from "./mappingUtils";
+import { localize } from "utils/localizationUtils";
+
+/** Data types that can be mapped to DMX values */
+export type MappableDataType =
+  | typeof fcDataTypes.NUMBER
+  | typeof fcDataTypes.BOOLEAN
+  | typeof fcDataTypes.ENUM;
+
+/** ResolvedParameterClass narrowed to only mappable data types */
+export interface MappableParameterClass
+  extends Omit<ResolvedParameterClass, "dataType"> {
+  dataType: MappableDataType;
+}
+
+export interface MappableParameter {
+  param: Parameter;
+  paramClass: MappableParameterClass;
+  entityId: EntityId;
+  enumChoices: EffectiveEnumChoice[];
+}
 
 // ---------------------------------------------------------------------------
 // Read
@@ -22,6 +60,105 @@ export function useDmxSerializer(): DmxSerializerState | undefined {
 
 export function useDmxController(): DmxController {
   return useAppRuntimeStore((state) => state.dmxController);
+}
+
+/**
+ * Hook that returns parameters that can be mapped to DMX.
+ * Filters to only number/boolean/enum data types and computes effective enum choices.
+ */
+export function useMappableParameters(): Record<CodexId, MappableParameter> {
+  const locale = useCurrentLocale();
+  const database = useCodexDatabase();
+
+  const editorPart = useCurrentEditorPartShallow((editor) => {
+    return [
+      editor.parameters,
+      editor.libraries,
+      editor.parameterClasses,
+      editor.enumChoices,
+      editor.localizations,
+    ] as const;
+  });
+
+  if (!editorPart) return {};
+
+  const [
+    parameters,
+    libraries,
+    deviceParamClasses,
+    enumChoices,
+    localizations,
+  ] = editorPart;
+
+  return Object.entries(parameters).reduce(
+    (acc, [entityId, param]) => {
+      let paramClass: ResolvedParameterClass | undefined = undefined;
+
+      if (param.class.type === "imported") {
+        const libraryVersion = libraries[param.class.library];
+        if (!libraryVersion) {
+          return acc;
+        }
+
+        paramClass = lookupParameterClass(
+          database,
+          param.class.codexId,
+          param.class.library,
+          libraryVersion,
+          locale,
+        );
+      } else {
+        paramClass = lookupDeviceParameterClass(
+          deviceParamClasses,
+          localizations,
+          enumChoices,
+          param.class.id,
+          locale,
+        );
+      }
+
+      if (!paramClass || !isMappableParamClass(paramClass)) {
+        return acc;
+      }
+
+      // Compute instance enum choices for this parameter
+      const instanceChoices = selectWithIds(
+        enumChoices,
+        (choice) =>
+          choice.parent.type === "paramAdditional" &&
+          choice.parent.id === entityId,
+      );
+      instanceChoices.sort((a, b) => a.index - b.index);
+
+      const localizedInstanceChoices: LocalizedInstanceEnumChoice[] =
+        instanceChoices.map((choice) => ({
+          id: choice.id,
+          codexId: choice.codexId,
+          index: choice.index,
+          name: localize(localizations, choice.localized.name, locale),
+          description: choice.localized.description
+            ? localize(localizations, choice.localized.description, locale)
+            : undefined,
+        }));
+
+      // Compute effective enum choices (class + instance - exclusions)
+      const effectiveEnumChoices = getEffectiveEnumChoices(
+        paramClass.choices,
+        localizedInstanceChoices,
+        param.enumExclusions,
+      );
+
+      acc[param.codexId] = {
+        param,
+        paramClass,
+        entityId: EntityId(entityId),
+        enumChoices: effectiveEnumChoices,
+      };
+
+      return acc;
+    },
+    {} as Record<CodexId, MappableParameter>,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -65,6 +202,16 @@ export function getChildConditions(
     dmx.conditions,
     (cond) =>
       cond.parent.type === "condition" && cond.parent.id === parentConditionId,
+  );
+}
+
+function isMappableParamClass(
+  paramClass: ResolvedParameterClass,
+): paramClass is MappableParameterClass {
+  return (
+    paramClass.dataType === fcDataTypes.NUMBER ||
+    paramClass.dataType === fcDataTypes.BOOLEAN ||
+    paramClass.dataType === fcDataTypes.ENUM
   );
 }
 

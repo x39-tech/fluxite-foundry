@@ -8,8 +8,7 @@ import {
   ParameterConstraint,
 } from "@cpwg-community/delver";
 import { CodexId, fcDataTypes, FCUnit, fcUnitNames } from "app/persistentState";
-import { useParametersWithClasses } from "../state";
-import { useDmxController } from "../dmxEditor/state";
+import { useDmxController, useMappableParameters } from "../dmxEditor/state";
 import { Button } from "components/scn-ui/Button";
 import { Slider } from "components/scn-ui/Slider";
 import {
@@ -47,7 +46,7 @@ interface WebSocketPayload {
 }
 
 export const DmxController = () => {
-  const paramClasses = useParametersWithClasses();
+  const mappableParams = useMappableParameters();
   const dmxController = useDmxController();
   const [paramValues, setParamValues] = useState<ParamState>({
     params: {},
@@ -309,12 +308,12 @@ export const DmxController = () => {
               {cluster.parameters.map((parameter, index) => {
                 const paramKey = serializeParamRef(parameter);
                 const param = dmxController.db.parameters[parameter.id];
-                const paramClass = paramClasses[CodexId(parameter.id)];
-                if (!param || !paramClass) {
+                const mappable = mappableParams[CodexId(parameter.id)];
+                if (!param || !mappable) {
                   return <></>;
                 }
 
-                if (paramClass.paramClass.dataType == fcDataTypes.NUMBER) {
+                if (mappable.paramClass.dataType == fcDataTypes.NUMBER) {
                   if ("minimum" in param && "maximum" in param) {
                     const min = param.minimum as number;
                     const max = param.maximum as number;
@@ -325,7 +324,7 @@ export const DmxController = () => {
                       <div key={index} className="flex items-center py-2">
                         <span className="mx-4">
                           {paramKey}
-                          {getUnitString(paramClass.paramClass.unit)}
+                          {getUnitString(mappable.paramClass.unit)}
                         </span>
                         <div className="grow" />
                         <Slider
@@ -349,7 +348,7 @@ export const DmxController = () => {
                   }
                   return <></>;
                 } else if (
-                  paramClass.paramClass.dataType == fcDataTypes.BOOLEAN
+                  mappable.paramClass.dataType == fcDataTypes.BOOLEAN
                 ) {
                   return <></>;
                 } else {

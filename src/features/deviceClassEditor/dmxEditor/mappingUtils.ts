@@ -1,4 +1,9 @@
-import { DmxSequenceStep, HoldValue } from "app/persistentState";
+import { CodexId, DmxSequenceStep, HoldValue } from "app/persistentState";
+import {
+  LocalizedClassEnumChoice,
+  LocalizedInstanceEnumChoice,
+} from "../stateTransformations";
+import { LocalizedString } from "utils/localizationUtils";
 
 export interface SequenceWarning {
   type: "indefinite_not_last";
@@ -123,4 +128,107 @@ export function formatBoundValue(value: number | boolean | undefined): string {
   if (value === undefined) return "null";
   if (typeof value === "boolean") return value ? "true" : "false";
   return value.toString();
+}
+
+/**
+ * Represents an effective enum choice with its computed index.
+ * Combines class and instance choices, excluding any disabled choices.
+ */
+export interface EffectiveEnumChoice {
+  index: number;
+  codexId: CodexId;
+  name: LocalizedString;
+}
+
+/**
+ * Combines class and instance enum choices, excluding any choices
+ * that are disabled via enumExclusions. Class choices come first,
+ * followed by instance choices. The index is computed based on position.
+ */
+export function getEffectiveEnumChoices(
+  classChoices: LocalizedClassEnumChoice[],
+  instanceChoices: LocalizedInstanceEnumChoice[],
+  exclusions: string[] | undefined,
+): EffectiveEnumChoice[] {
+  const excludedSet = new Set(exclusions ?? []);
+
+  const filteredClassChoices = classChoices.filter(
+    (choice) => !excludedSet.has(choice.codexId),
+  );
+
+  // Instance choices are already sorted by index
+  const sortedInstanceChoices = [...instanceChoices].sort(
+    (a, b) => a.index - b.index,
+  );
+
+  const result: EffectiveEnumChoice[] = [];
+
+  // Add class choices first
+  filteredClassChoices.forEach((choice) => {
+    result.push({
+      index: result.length,
+      codexId: choice.codexId,
+      name: choice.name,
+    });
+  });
+
+  // Add instance choices after
+  sortedInstanceChoices.forEach((choice) => {
+    result.push({
+      index: result.length,
+      codexId: choice.codexId,
+      name: choice.name,
+    });
+  });
+
+  return result;
+}
+
+/**
+ * Formats an enum bound value for display.
+ * Returns the choice name with its index, e.g., "Open (0)".
+ * For invalid values, returns "Invalid: {value}".
+ */
+export function formatEnumBoundValue(
+  value: number | boolean | undefined,
+  choices: EffectiveEnumChoice[],
+): string {
+  if (value === undefined) return "null";
+
+  // Check if value is a valid integer index
+  if (typeof value !== "number" || !Number.isInteger(value)) {
+    return `Invalid: ${value}`;
+  }
+
+  const choice = choices.find((c) => c.index === value);
+  if (choice) {
+    return `${choice.name.value} (${value})`;
+  }
+
+  return `Invalid: ${value}`;
+}
+
+export type BoundValue = number | boolean | undefined;
+
+/**
+ * Gets the effective end value for display purposes.
+ * When end is undefined, it should be displayed as the start value.
+ */
+export function getEffectiveEnd(
+  start: BoundValue,
+  end: BoundValue,
+): BoundValue {
+  return end === undefined ? start : end;
+}
+
+/**
+ * Normalizes the end value for storage.
+ * When end equals start, it should be stored as undefined.
+ * This ensures that "start=5, end=5" is stored as "start=5, end=undefined".
+ */
+export function normalizeEndValue(
+  start: BoundValue,
+  newEnd: BoundValue,
+): BoundValue {
+  return newEnd === start ? undefined : newEnd;
 }

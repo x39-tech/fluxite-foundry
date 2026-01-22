@@ -16,22 +16,14 @@ import {
   LocalizationDbSchema,
   LocalizationKey,
   LocalizationReferencedItem,
-  Parameter,
   Unlocalized,
 } from "app/persistentState";
 import {
   useAppPersistentStore,
   updateAppPersistentState,
-  useCodexDatabase,
-  useCurrentLocale,
   updateAppRuntimeState,
 } from "app/store";
 import { getUniqueItemId } from "utils/utils";
-import {
-  lookupDeviceParameterClass,
-  lookupParameterClass,
-  ResolvedParameterClass,
-} from "./stateTransformations";
 import {
   enumChoiceParentsEqual,
   newEntityId,
@@ -80,74 +72,6 @@ export function useCurrentEditorPartShallow<T>(
 
 export function useLibraries(): Record<string, string> | undefined {
   return useCurrentEditorPart((state) => state.libraries);
-}
-
-export interface ResolvedParameter {
-  param: Parameter;
-  paramClass: ResolvedParameterClass;
-}
-
-export function useParametersWithClasses(): Record<CodexId, ResolvedParameter> {
-  const editorPart = useCurrentEditorPartShallow((editor) => {
-    return [
-      editor.parameters,
-      editor.libraries,
-      editor.parameterClasses,
-      editor.enumChoices,
-      editor.localizations,
-    ] as const;
-  });
-
-  if (!editorPart) return {};
-
-  const [
-    parameters,
-    libraries,
-    deviceParamClasses,
-    enumChoices,
-    localizations,
-  ] = editorPart;
-  const locale = useCurrentLocale();
-  const database = useCodexDatabase();
-
-  return Object.values(parameters).reduce(
-    (acc, param) => {
-      let paramClass = undefined;
-
-      if (param.class.type === "imported") {
-        const libraryVersion = libraries[param.class.library];
-        if (!libraryVersion) {
-          return acc;
-        }
-
-        paramClass = lookupParameterClass(
-          database,
-          param.class.codexId,
-          param.class.library,
-          libraryVersion,
-          locale,
-        );
-      } else {
-        paramClass = lookupDeviceParameterClass(
-          deviceParamClasses,
-          localizations,
-          enumChoices,
-          param.class.id,
-          locale,
-        );
-      }
-
-      if (paramClass) {
-        acc[param.codexId] = {
-          param,
-          paramClass,
-        };
-      }
-
-      return acc;
-    },
-    {} as Record<string, ResolvedParameter>,
-  );
 }
 
 export function useLocalizations(): Record<LocalizationKey, Localization> {
