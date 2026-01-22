@@ -2,6 +2,7 @@ import {
   APP_COPYRIGHT,
   APP_LICENSE,
   APP_NAME,
+  BUILD_STRING,
   REPO_ISSUES_LINK,
   TSP_WORKING_GROUPS_LINK,
 } from "consts";
@@ -36,14 +37,26 @@ export const AboutDialog = ({ isOpen, onClose }: Props) => {
           <div className="text-lg font-bold mb-2">{APP_NAME}</div>
           <p className="mb-4">
             This is an early prototype application, and likely has bugs. Please
-            file issues on the <a href={REPO_ISSUES_LINK}>GitLab repository</a>.
-            Please consider{" "}
-            <a href={TSP_WORKING_GROUPS_LINK}>
+            file issues on the{" "}
+            <a
+              href={REPO_ISSUES_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GitLab repository
+            </a>
+            . Please consider{" "}
+            <a
+              href={TSP_WORKING_GROUPS_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               joining the Control Protocols Working Group
             </a>{" "}
             to participate in the development of the Fluxite standards suite.
           </p>
           <p className="mb-4">{APP_COPYRIGHT}</p>
+          <p className="mb-4 text-sm text-gray-600">Build: {BUILD_STRING}</p>
           <p className="mb-2">License:</p>
           <Textarea
             value={APP_LICENSE}
