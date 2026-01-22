@@ -7,6 +7,7 @@ import { ItemClassSelector } from "components/ItemClassSelector";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -65,6 +66,10 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>New Parameter</DialogTitle>
+          <DialogDescription>
+            Create a new parameter by selecting a class and providing an ID and
+            display name
+          </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col">
           <SimplePropsTable>

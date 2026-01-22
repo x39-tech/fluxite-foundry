@@ -9,6 +9,7 @@ import { Button } from "components/scn-ui/Button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -115,6 +116,9 @@ export const MappingRangeEditorDialog = ({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Edit Mapping Range</DialogTitle>
+          <DialogDescription>
+            Configure how parameter values map to DMX output values
+          </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">

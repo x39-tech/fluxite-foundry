@@ -12,6 +12,7 @@ import { LabeledCheckbox } from "components/LabeledCheckbox";
 import { Button } from "components/scn-ui/Button";
 import {
   Dialog,
+  DialogDescription,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -129,6 +130,9 @@ export const ExportFluxiteCodexDialog = ({ isOpen, onClose }: Props) => {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Export Fluxite Codex</DialogTitle>
+          <DialogDescription>
+            Export a device class to a Fluxite Codex archive or document file
+          </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3">
           <FieldSet>

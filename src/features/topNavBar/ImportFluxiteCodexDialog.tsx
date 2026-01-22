@@ -6,6 +6,7 @@ import {
   Dialog,
   DialogFooter,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "components/scn-ui/Dialog";
@@ -56,6 +57,9 @@ export const ImportFluxiteCodexDialog = ({ isOpen, onClose }: Props) => {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Import Fluxite Codex</DialogTitle>
+          <DialogDescription>
+            Import a device class from a Fluxite Codex archive or document file
+          </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col items-center gap-2">
           <FieldSet>

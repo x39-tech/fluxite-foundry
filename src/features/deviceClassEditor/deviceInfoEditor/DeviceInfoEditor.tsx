@@ -67,7 +67,11 @@ export const DeviceInfoEditor = () => {
             value={basicData.manufacturerEstaId || ""}
             onConfirm={(newValue) =>
               modifyBasicData((draft) =>
-                assignOrDelete(draft, "manufacturerEstaId", newValue),
+                assignOrDelete(
+                  draft,
+                  "manufacturerEstaId",
+                  newValue === "" ? undefined : newValue,
+                ),
               )
             }
           />

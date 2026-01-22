@@ -3,6 +3,10 @@ import { vi } from "vitest";
 import { enablePatches } from "immer";
 import Dexie from "dexie";
 import { indexedDB, IDBKeyRange } from "fake-indexeddb";
+import { mockAnimationsApi } from "jsdom-testing-mocks";
+
+// Mock animations API for Headless UI
+mockAnimationsApi();
 
 // Enable Immer patches for tests
 enablePatches();

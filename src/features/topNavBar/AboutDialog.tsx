@@ -34,7 +34,7 @@ export const AboutDialog = ({ isOpen, onClose }: Props) => {
         <Separator orientation="horizontal" />
         <div>
           <div className="text-lg font-bold mb-2">{APP_NAME}</div>
-          <p>
+          <p className="mb-4">
             This is an early prototype application, and likely has bugs. Please
             file issues on the <a href={REPO_ISSUES_LINK}>GitLab repository</a>.
             Please consider{" "}
@@ -43,8 +43,8 @@ export const AboutDialog = ({ isOpen, onClose }: Props) => {
             </a>{" "}
             to participate in the development of the Fluxite standards suite.
           </p>
-          <p>{APP_COPYRIGHT}</p>
-          <p>License:</p>
+          <p className="mb-4">{APP_COPYRIGHT}</p>
+          <p className="mb-2">License:</p>
           <Textarea
             value={APP_LICENSE}
             readOnly

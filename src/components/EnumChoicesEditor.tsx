@@ -9,6 +9,7 @@ import { Button } from "./scn-ui/Button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -117,6 +118,10 @@ export const EnumChoicesEditor = ({
         <DialogContent className="max-h-[90vh] grid-rows-[auto_1fr]">
           <DialogHeader>
             <DialogTitle>Enum Choices for {forName}</DialogTitle>
+            <DialogDescription>
+              Manage class-level enum choices and add custom instance-specific
+              enum choices
+            </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-2 overflow-y-auto min-h-0">
             <Table id={`${idPrefix}-class-choices`}>

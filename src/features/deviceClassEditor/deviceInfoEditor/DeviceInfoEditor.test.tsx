@@ -4,6 +4,7 @@ import { DeviceInfoEditor } from "./DeviceInfoEditor";
 import { createDeviceClassEditor } from "features/topNavBar/state";
 import { expect } from "vitest";
 import { modelCategories, ModelCategory } from "app/persistentState";
+import { useAppPersistentStore } from "app/store";
 
 // Helper function to change a ValidatedInput field value
 async function changeConfirmableInputField(
@@ -257,4 +258,34 @@ test("can add multiple firmware versions", async () => {
 
   expect(screen.getByText("v1.0.0")).toBeInTheDocument();
   expect(screen.getByText("v2.0.0")).toBeInTheDocument();
+});
+
+test("removes manufacturerEstaId from state when set to empty string", async () => {
+  const user = userEvent.setup();
+  render(<DeviceInfoEditor />);
+
+  const input = screen.getByLabelText("Manufacturer ESTA ID");
+  expect(input).toBeInTheDocument();
+
+  // First set a value
+  await changeConfirmableInputField(user, input, "12345");
+
+  // Verify the value is set in the state
+  let state = useAppPersistentStore.getState();
+  let currentEditor = state.deviceClassEditors[state.openEditors.editors[0].id];
+  expect(currentEditor.basicData.manufacturerEstaId).toBe("12345");
+
+  // Now clear the field
+  await user.clear(input);
+  await user.keyboard("{Enter}");
+
+  // Wait for the input to be empty
+  await waitFor(() => {
+    expect(input).toHaveValue("");
+  });
+
+  // Verify the property is undefined (removed) in the state
+  state = useAppPersistentStore.getState();
+  currentEditor = state.deviceClassEditors[state.openEditors.editors[0].id];
+  expect(currentEditor.basicData.manufacturerEstaId).toBeUndefined();
 });
