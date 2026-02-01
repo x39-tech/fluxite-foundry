@@ -35,13 +35,11 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
     undefined,
   );
   const [newItemId, setNewItemId] = useState(getUniqueItemId(parameterIds));
-  const [newItemFriendlyName, setNewItemFriendlyName] = useState("My New Item");
 
   // Flush relevant parts of the state when the dialog was just opened
   useEffect(() => {
     if (isOpen) {
       setNewItemId(getUniqueItemId(parameterIds));
-      setNewItemFriendlyName("My New Item");
     }
   }, [isOpen]);
 
@@ -67,8 +65,7 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
         <DialogHeader>
           <DialogTitle>New Parameter</DialogTitle>
           <DialogDescription>
-            Create a new parameter by selecting a class and providing an ID and
-            display name
+            Create a new parameter by selecting a class and providing an ID
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col">
@@ -97,11 +94,6 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
               validator={(input) => validateNewItemId(input, parameterIds)}
               validationErrorPlacement="right"
             />
-            <TextEditorTableRow
-              label="Display Name"
-              value={newItemFriendlyName}
-              onValueChanged={setNewItemFriendlyName}
-            />
           </SimplePropsTable>
         </div>
         <DialogFooter>
@@ -116,8 +108,6 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
                     : undefined,
                   newItemClass.codexId,
                   CodexId(newItemId),
-                  newItemFriendlyName,
-                  locale,
                 );
               }
 

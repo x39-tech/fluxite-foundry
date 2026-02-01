@@ -1,5 +1,15 @@
 import { describe, it, expect } from "vitest";
-import { collectLocalizableKeys } from "./localizationUtils";
+import {
+  collectLocalizableKeys,
+  localize,
+  fcLocalize,
+} from "./localizationUtils";
+import {
+  Localization,
+  LocalizationDbSchema,
+  LocalizationKey,
+} from "app/persistentState";
+import { DefinitionLocalization } from "@cpwg-community/delver";
 
 describe("collectLocalizableKeys", () => {
   describe("basic functionality", () => {
@@ -258,6 +268,282 @@ describe("collectLocalizableKeys", () => {
       const obj: { "@name": string; self?: object } = { "@name": "loc_key_1" };
       obj.self = obj; // Create circular reference
       expect(() => collectLocalizableKeys(obj)).toThrow(RangeError);
+    });
+  });
+});
+
+describe("localize", () => {
+  describe("basic functionality", () => {
+    it("should return the value for the desired locale", () => {
+      const db: Record<LocalizationKey, Localization> = {
+        [LocalizationKey("loc_key_1")]: {
+          strings: LocalizationDbSchema.parse({
+            "en-US": "Hello",
+            "fr-FR": "Bonjour",
+          }),
+          items: [],
+        },
+      };
+      const result = localize(db, LocalizationKey("loc_key_1"), "en-US");
+      expect(result).toEqual({
+        value: "Hello",
+        locale: "en-US",
+        desiredLocale: "en-US",
+      });
+    });
+
+    it("should fall back to en-US when desired locale is not available", () => {
+      const db: Record<LocalizationKey, Localization> = {
+        [LocalizationKey("loc_key_1")]: {
+          strings: LocalizationDbSchema.parse({
+            "en-US": "Hello",
+            "fr-FR": "Bonjour",
+          }),
+          items: [],
+        },
+      };
+      const result = localize(db, LocalizationKey("loc_key_1"), "de-DE");
+      expect(result).toEqual({
+        value: "Hello",
+        locale: "en-US",
+        desiredLocale: "de-DE",
+      });
+    });
+
+    it("should return the key when no strings are available", () => {
+      const db: Record<LocalizationKey, Localization> = {
+        [LocalizationKey("loc_key_1")]: {
+          strings: LocalizationDbSchema.parse({}),
+          items: [],
+        },
+      };
+      const result = localize(db, LocalizationKey("loc_key_1"), "en-US");
+      expect(result).toEqual({
+        value: "loc_key_1",
+        desiredLocale: "en-US",
+      });
+    });
+
+    it("should return the key when the key is not in the database", () => {
+      const db: Record<LocalizationKey, Localization> = {};
+      const result = localize(db, LocalizationKey("missing_key"), "en-US");
+      expect(result).toEqual({
+        value: "missing_key",
+        desiredLocale: "en-US",
+      });
+    });
+  });
+
+  describe("empty string handling", () => {
+    it("should return empty string when desired locale has empty string", () => {
+      const db: Record<LocalizationKey, Localization> = {
+        [LocalizationKey("loc_key_1")]: {
+          strings: LocalizationDbSchema.parse({ "en-US": "" }),
+          items: [],
+        },
+      };
+      const result = localize(db, LocalizationKey("loc_key_1"), "en-US");
+      expect(result).toEqual({
+        value: "",
+        locale: "en-US",
+        desiredLocale: "en-US",
+      });
+    });
+
+    it("should return empty string when fallback locale has empty string", () => {
+      const db: Record<LocalizationKey, Localization> = {
+        [LocalizationKey("loc_key_1")]: {
+          strings: LocalizationDbSchema.parse({ "en-US": "" }),
+          items: [],
+        },
+      };
+      const result = localize(db, LocalizationKey("loc_key_1"), "fr-FR");
+      expect(result).toEqual({
+        value: "",
+        locale: "en-US",
+        desiredLocale: "fr-FR",
+      });
+    });
+
+    it("should prefer desired locale empty string over non-empty fallback", () => {
+      const db: Record<LocalizationKey, Localization> = {
+        [LocalizationKey("loc_key_1")]: {
+          strings: LocalizationDbSchema.parse({
+            "en-US": "Hello",
+            "fr-FR": "",
+          }),
+          items: [],
+        },
+      };
+      const result = localize(db, LocalizationKey("loc_key_1"), "fr-FR");
+      expect(result).toEqual({
+        value: "",
+        locale: "fr-FR",
+        desiredLocale: "fr-FR",
+      });
+    });
+  });
+
+  describe("edge cases", () => {
+    it("should handle undefined database", () => {
+      const result = localize(
+        undefined as unknown as Record<LocalizationKey, Localization>,
+        LocalizationKey("loc_key_1"),
+        "en-US",
+      );
+      expect(result).toEqual({
+        value: "loc_key_1",
+        desiredLocale: "en-US",
+      });
+    });
+
+    it("should handle database with undefined strings", () => {
+      const db = {
+        [LocalizationKey("loc_key_1")]: {
+          strings: undefined,
+          items: [],
+        },
+      } as unknown as Record<LocalizationKey, Localization>;
+      const result = localize(db, LocalizationKey("loc_key_1"), "en-US");
+      expect(result).toEqual({
+        value: "loc_key_1",
+        desiredLocale: "en-US",
+      });
+    });
+  });
+});
+
+describe("fcLocalize", () => {
+  describe("basic functionality", () => {
+    it("should return the value for the desired locale", () => {
+      const db: Record<string, DefinitionLocalization> = {
+        "en-US": {
+          strings: { greeting: "Hello", farewell: "Goodbye" },
+        },
+        "fr-FR": {
+          strings: { greeting: "Bonjour", farewell: "Au revoir" },
+        },
+      };
+      const result = fcLocalize(db, "greeting", "en-US");
+      expect(result).toEqual({
+        value: "Hello",
+        locale: "en-US",
+        desiredLocale: "en-US",
+      });
+    });
+
+    it("should fall back to en-US when desired locale is not available", () => {
+      const db: Record<string, DefinitionLocalization> = {
+        "en-US": {
+          strings: { greeting: "Hello" },
+        },
+        "fr-FR": {
+          strings: { greeting: "Bonjour" },
+        },
+      };
+      const result = fcLocalize(db, "greeting", "de-DE");
+      expect(result).toEqual({
+        value: "Hello",
+        locale: "en-US",
+        desiredLocale: "de-DE",
+      });
+    });
+
+    it("should return the string key when no localization is available", () => {
+      const db: Record<string, DefinitionLocalization> = {
+        "en-US": {
+          strings: LocalizationDbSchema.parse({}),
+        },
+      };
+      const result = fcLocalize(db, "missing", "en-US");
+      expect(result).toEqual({
+        value: "missing",
+        desiredLocale: "en-US",
+      });
+    });
+
+    it("should return the string key when database is undefined", () => {
+      const result = fcLocalize(undefined, "greeting", "en-US");
+      expect(result).toEqual({
+        value: "greeting",
+        desiredLocale: "en-US",
+      });
+    });
+  });
+
+  describe("empty string handling", () => {
+    it("should return empty string when desired locale has empty string", () => {
+      const db: Record<string, DefinitionLocalization> = {
+        "en-US": {
+          strings: { greeting: "" },
+        },
+      };
+      const result = fcLocalize(db, "greeting", "en-US");
+      expect(result).toEqual({
+        value: "",
+        locale: "en-US",
+        desiredLocale: "en-US",
+      });
+    });
+
+    it("should return empty string when fallback locale has empty string", () => {
+      const db: Record<string, DefinitionLocalization> = {
+        "en-US": {
+          strings: { greeting: "" },
+        },
+      };
+      const result = fcLocalize(db, "greeting", "fr-FR");
+      expect(result).toEqual({
+        value: "",
+        locale: "en-US",
+        desiredLocale: "fr-FR",
+      });
+    });
+
+    it("should prefer desired locale empty string over non-empty fallback", () => {
+      const db: Record<string, DefinitionLocalization> = {
+        "en-US": {
+          strings: { greeting: "Hello" },
+        },
+        "fr-FR": {
+          strings: { greeting: "" },
+        },
+      };
+      const result = fcLocalize(db, "greeting", "fr-FR");
+      expect(result).toEqual({
+        value: "",
+        locale: "fr-FR",
+        desiredLocale: "fr-FR",
+      });
+    });
+  });
+
+  describe("edge cases", () => {
+    it("should handle database with missing locale", () => {
+      const db: Record<string, DefinitionLocalization> = {
+        "en-US": {
+          strings: { greeting: "Hello" },
+        },
+      };
+      const result = fcLocalize(db, "greeting", "ja-JP");
+      expect(result).toEqual({
+        value: "Hello",
+        locale: "en-US",
+        desiredLocale: "ja-JP",
+      });
+    });
+
+    it("should handle database with undefined strings for locale", () => {
+      const db: Record<string, DefinitionLocalization> = {
+        "en-US": {
+          strings: undefined as unknown as Record<string, string>,
+        },
+      };
+      const result = fcLocalize(db, "greeting", "en-US");
+      expect(result).toEqual({
+        value: "greeting",
+        desiredLocale: "en-US",
+      });
     });
   });
 });

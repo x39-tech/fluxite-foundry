@@ -29,10 +29,8 @@ function createParameter(
   library: string | undefined,
   paramClass: CodexId,
   codexId: CodexId,
-  friendlyName: string,
-  locale: string,
 ): EntityId {
-  createNewParameter(library, paramClass, codexId, friendlyName, locale);
+  createNewParameter(library, paramClass, codexId);
   const params = getHookValue(useParameters);
   const paramEntry = Object.entries(params || {}).find(
     ([_, param]) => param.codexId === codexId,
@@ -97,12 +95,10 @@ describe("InstantiationProperties - Dynamic Mode", () => {
       undefined,
       CodexId("TestClass"),
       CodexId("test-param"),
-      "Test Parameter",
-      "en-US",
     );
 
     render(<ParameterEditor paramId={paramId} />);
-    await expandParameter("Test Parameter");
+    await expandParameter("test-param");
 
     // Change to Dynamic mode
     const instancesRow = screen.getByText("Instances").closest("tr")!;

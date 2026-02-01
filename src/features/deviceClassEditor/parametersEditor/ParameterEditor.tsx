@@ -54,10 +54,7 @@ export const ParameterEditor = ({ paramId }: Props) => {
   const { param, paramClass, instanceEnumChoices } = paramInfo;
 
   return (
-    <ItemEditor
-      title={param.friendlyName?.value || param.codexId}
-      onDelete={() => deleteParameter(paramId)}
-    >
+    <ItemEditor title={param.codexId} onDelete={() => deleteParameter(paramId)}>
       <div className="flex flex-col">
         {paramClass ? (
           <ParameterPropsTable

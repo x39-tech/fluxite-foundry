@@ -19,6 +19,7 @@ import {
   addNewItemLocalization,
   removeReferencedLocalization,
   updateCurrentEditor,
+  updateLocalizedValue,
   useCurrentEditorPartShallow,
 } from "../state";
 import {
@@ -325,26 +326,17 @@ export function modifyCommandLocalizedValue(
       return;
     }
 
-    const localization = command.localized[key]
-      ? editor.localizations[command.localized[key]]
-      : undefined;
-
-    if (!localization) {
-      const info = COMMAND_LOCALIZED_INFO[key];
-      const locKey = addNewItemLocalization(
-        editor,
-        info.constructKey(command.codexId),
-        {
-          itemId: id,
-          itemType: info.itemType,
-        },
-        locale,
-        newValue,
-      );
-      command.localized[key] = locKey;
-    } else {
-      localization.strings[locale] = newValue;
-    }
+    const info = COMMAND_LOCALIZED_INFO[key];
+    updateLocalizedValue(editor, command, {
+      fieldKey: key,
+      newValue,
+      locale,
+      constructKey: () => info.constructKey(command.codexId),
+      referencedItem: {
+        itemId: id,
+        itemType: info.itemType,
+      },
+    });
   });
 }
 

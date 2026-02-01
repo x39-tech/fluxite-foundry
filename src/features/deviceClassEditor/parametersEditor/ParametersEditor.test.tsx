@@ -17,10 +17,9 @@ test("Adds a new parameter correctly from the new parameter dialog", async () =>
 
   expect(screen.getByText("New Parameter")).toBeInTheDocument();
 
+  // Edit the ID field
   await user.click(screen.getByDisplayValue("my-new-item"));
   await user.keyboard("{Control>}a{/Control}{Delete}test-item{Enter}");
-  await user.click(screen.getByDisplayValue("My New Item"));
-  await user.keyboard("{Control>}a{/Control}{Delete}Test Item{Enter}");
 
   // Select a parameter class before adding
   await user.click(screen.getByRole("combobox", { name: "Class" }));
@@ -38,12 +37,17 @@ test("Adds a new parameter correctly from the new parameter dialog", async () =>
 
   await user.click(screen.getByRole("button", { name: "Add" }));
 
-  const expandButton = getByRole("button", { name: "Expand Test Item" });
+  const expandButton = getByRole("button", { name: "Expand test-item" });
   expect(expandButton).toBeInTheDocument();
   await user.click(expandButton);
 
+  // Verify the ID is displayed correctly
   const idRow = getEditorTableRow("ID", container);
   expect(getByText(idRow, "test-item")).toBeInTheDocument();
+
+  // Verify the Display Name field exists but is empty by default
   const nameRow = getEditorTableRow("Display Name", container);
-  expect(getByText(nameRow, "Test Item")).toBeInTheDocument();
+  const displayNameInput = nameRow.querySelector("input");
+  expect(displayNameInput).toBeInTheDocument();
+  expect(displayNameInput).toHaveValue("");
 });

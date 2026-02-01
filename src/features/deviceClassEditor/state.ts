@@ -320,27 +320,17 @@ export function modifyEnumChoiceLocalizedValue(
       return;
     }
 
-    const localization = enumChoice.localized[key]
-      ? editor.localizations[enumChoice.localized[key]]
-      : undefined;
-
     const info = ENUM_CHOICE_LOCALIZED_INFO[key];
-
-    if (!localization) {
-      const locKey = addNewItemLocalization(
-        editor,
-        info.constructKey(keyPrefix, enumChoice.codexId),
-        {
-          itemId: id,
-          itemType: info.itemType,
-        },
-        locale,
-        newValue,
-      );
-      enumChoice.localized[key] = locKey;
-    } else {
-      localization.strings[locale] = newValue;
-    }
+    updateLocalizedValue(editor, enumChoice, {
+      fieldKey: key,
+      newValue,
+      locale,
+      constructKey: () => info.constructKey(keyPrefix, enumChoice.codexId),
+      referencedItem: {
+        itemId: id,
+        itemType: info.itemType,
+      },
+    });
   });
 }
 
@@ -426,5 +416,59 @@ export function removeReferencedLocalization(
     } else {
       loc.items = newItems;
     }
+  }
+}
+
+/**
+ * Helper function to update a localized value on an entity.
+ * Handles creating, updating, and removing localizations based on the new value.
+ */
+export function updateLocalizedValue<
+  T extends { localized: Record<string, LocalizationKey | undefined> },
+>(
+  editor: Draft<DeviceClassEditorState>,
+  entity: Draft<T>,
+  options: {
+    fieldKey: string;
+    newValue: string;
+    locale: string;
+    constructKey: () => string;
+    referencedItem: LocalizationReferencedItem;
+    isRequired?: boolean;
+  },
+): void {
+  const {
+    fieldKey,
+    newValue,
+    locale,
+    constructKey,
+    referencedItem,
+    isRequired = false,
+  } = options;
+
+  const localizationKey = entity.localized[fieldKey];
+  const localization = localizationKey
+    ? editor.localizations[localizationKey]
+    : undefined;
+
+  if (newValue === "" && !isRequired) {
+    // Remove localization when value is blank and field is optional
+    if (localization && localizationKey) {
+      removeReferencedLocalization(editor, localizationKey, referencedItem);
+    }
+    delete entity.localized[fieldKey];
+  } else if (!localization) {
+    // Create new localization
+    const locKey = addNewItemLocalization(
+      editor,
+      constructKey(),
+      referencedItem,
+      locale,
+      newValue,
+    );
+    entity.localized[fieldKey] = locKey;
+  } else {
+    // Update existing localization
+    localization.strings[locale] = newValue;
   }
 }

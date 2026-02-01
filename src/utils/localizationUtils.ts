@@ -79,7 +79,7 @@ export function localize(
 
   if (strings) {
     const desired = strings[desiredLocale];
-    if (desired) {
+    if (desired !== undefined) {
       return {
         value: desired,
         locale: desiredLocale,
@@ -88,7 +88,7 @@ export function localize(
     }
 
     const fallback = strings["en-US"];
-    if (fallback) {
+    if (fallback !== undefined) {
       return {
         value: fallback,
         locale: "en-US",
@@ -109,7 +109,7 @@ export function fcLocalize(
   desiredLocale: string,
 ): LocalizedString {
   const desired = db?.[desiredLocale]?.strings?.[stringKey];
-  if (desired) {
+  if (desired !== undefined) {
     return {
       value: desired,
       locale: desiredLocale,
@@ -118,7 +118,7 @@ export function fcLocalize(
   }
 
   const fallback = db?.["en-US"]?.strings?.[stringKey];
-  if (fallback) {
+  if (fallback !== undefined) {
     return {
       value: fallback,
       locale: "en-US",

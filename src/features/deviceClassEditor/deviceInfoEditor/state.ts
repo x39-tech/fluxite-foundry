@@ -1,7 +1,7 @@
 import { Draft } from "immer";
 import {
-  addNewItemLocalization,
   updateCurrentEditor,
+  updateLocalizedValue,
   useCurrentEditorPartShallow,
 } from "../state";
 import {
@@ -76,25 +76,15 @@ export function modifyBasicDataLocalizedValue(
 ) {
   updateCurrentEditor((editor) => {
     const basicData = editor.basicData;
-    const localization = basicData.localized[key]
-      ? editor.localizations[basicData.localized[key]]
-      : undefined;
-
-    const info = BASIC_DATA_LOCALIZED_INFO[key];
-
-    if (!localization) {
-      const locKey = addNewItemLocalization(
-        editor,
-        info.constructKey(),
-        {
-          itemType: "devClassDesc",
-        },
-        locale,
-        newValue,
-      );
-      basicData.localized[key] = locKey;
-    } else {
-      localization.strings[locale] = newValue;
-    }
+    updateLocalizedValue(editor, basicData, {
+      fieldKey: key,
+      newValue,
+      locale,
+      constructKey: BASIC_DATA_LOCALIZED_INFO[key].constructKey,
+      referencedItem: {
+        itemType: "devClassDesc",
+      },
+      isRequired: true, // description field is required in the schema
+    });
   });
 }

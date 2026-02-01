@@ -12,9 +12,9 @@ import { getWithId, selectWithIds } from "app/stateUtils";
 import { localize, LocalizedString } from "utils/localizationUtils";
 import { useCurrentLocale, useCodexDatabase } from "app/store";
 import {
-  addNewItemLocalization,
   removeReferencedLocalization,
   updateCurrentEditor,
+  updateLocalizedValue,
   useCurrentEditorPart,
   useCurrentEditorPartShallow,
 } from "../state";
@@ -147,8 +147,6 @@ export function createNewParameter(
   library: string | undefined,
   paramClass: CodexId,
   codexId: CodexId,
-  friendlyName: string,
-  locale: string,
 ) {
   updateCurrentEditor((editor) => {
     if (
@@ -175,19 +173,9 @@ export function createNewParameter(
 
     const paramId = newEntityId();
 
-    const friendlyNameKey = addNewItemLocalization(
-      editor,
-      `param_${codexId}`,
-      { itemId: paramId, itemType: "paramName" },
-      locale,
-      friendlyName,
-    );
-
     editor.parameters[paramId] = {
       codexId,
-      localized: {
-        friendlyName: friendlyNameKey,
-      },
+      localized: {},
       class: classRef,
       access: ["readActual", "write"],
       lifetime: "runtime",
@@ -236,26 +224,17 @@ export function modifyParameterLocalizedValue(
       return;
     }
 
-    const localization = param.localized[key]
-      ? editor.localizations[param.localized[key]]
-      : undefined;
-
-    if (!localization) {
-      const info = PARAM_LOCALIZED_INFO[key];
-      const locKey = addNewItemLocalization(
-        editor,
-        info.constructKey(param.codexId),
-        {
-          itemId: id,
-          itemType: info.itemType,
-        },
-        locale,
-        newValue,
-      );
-      param.localized[key] = locKey;
-    } else {
-      localization.strings[locale] = newValue;
-    }
+    const info = PARAM_LOCALIZED_INFO[key];
+    updateLocalizedValue(editor, param, {
+      fieldKey: key,
+      newValue,
+      locale,
+      constructKey: () => info.constructKey(param.codexId),
+      referencedItem: {
+        itemId: id,
+        itemType: info.itemType,
+      },
+    });
   });
 }
 

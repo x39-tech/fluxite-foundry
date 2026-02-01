@@ -38,7 +38,7 @@ function createTestParamClass(
 
 // Helper to create a test parameter
 function createTestParameter(codexId: CodexId, classCodexId: CodexId) {
-  createNewParameter(undefined, classCodexId, codexId, "", "en");
+  createNewParameter(undefined, classCodexId, codexId);
 }
 
 describe("DmxParameterMapping - Unmapped Parameter Table Rows", () => {

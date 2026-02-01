@@ -83,20 +83,8 @@ describe("parametersEditor/state.ts", () => {
           "en-US": "Test Class",
         });
 
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param1"),
-          "Parameter 1",
-          "en-US",
-        );
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param2"),
-          "Parameter 2",
-          "en-US",
-        );
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param1"));
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param2"));
 
         const params = getHookValue(useParameters);
         expect(Object.keys(params || {}).length).toBe(2);
@@ -134,20 +122,8 @@ describe("parametersEditor/state.ts", () => {
           "en-US": "Test Class",
         });
 
-        createNewParameter(
-          undefined,
-          CodexId("TestClass"),
-          CodexId("param1"),
-          "Parameter 1",
-          "en-US",
-        );
-        createNewParameter(
-          undefined,
-          CodexId("TestClass"),
-          CodexId("param2"),
-          "Parameter 2",
-          "en-US",
-        );
+        createNewParameter(undefined, CodexId("TestClass"), CodexId("param1"));
+        createNewParameter(undefined, CodexId("TestClass"), CodexId("param2"));
 
         const editors = getHookValue(useParameterEditors);
         expect(editors.length).toBe(2);
@@ -165,20 +141,8 @@ describe("parametersEditor/state.ts", () => {
           "en-US": "Test Class",
         });
 
-        createNewParameter(
-          undefined,
-          CodexId("TestClass"),
-          CodexId("param1"),
-          "Parameter 1",
-          "en-US",
-        );
-        createNewParameter(
-          undefined,
-          CodexId("TestClass"),
-          CodexId("param2"),
-          "Parameter 2",
-          "en-US",
-        );
+        createNewParameter(undefined, CodexId("TestClass"), CodexId("param1"));
+        createNewParameter(undefined, CodexId("TestClass"), CodexId("param2"));
 
         const codexIds = getHookValue(useParameterCodexIds);
         expect(codexIds).toContain("param1");
@@ -197,16 +161,20 @@ describe("parametersEditor/state.ts", () => {
           "en-US": "Test Class",
         });
 
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param1"),
-          "Parameter 1",
-          "en-US",
-        );
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param1"));
 
         const params = getHookValue(useParameters);
         const paramId = EntityId(Object.keys(params || {})[0]);
+
+        act(() => {
+          modifyParameterLocalizedValue(
+            paramId,
+            "friendlyName",
+            "Parameter 1",
+            "en-US",
+          );
+        });
+
         const info = getParameterInfo(paramId);
 
         expect(info).toBeDefined();
@@ -227,8 +195,6 @@ describe("parametersEditor/state.ts", () => {
           undefined,
           TEST_CLASS_CODEX_ID,
           CodexId("new-param"),
-          "New Parameter",
-          "en-US",
         );
 
         const params = getHookValue(useParameters);
@@ -240,26 +206,6 @@ describe("parametersEditor/state.ts", () => {
         expect(param?.class.type).toBe("local");
       });
 
-      test("creates localization entry for friendly name", () => {
-        createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
-          "en-US": "Test Class",
-        });
-
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("new-param"),
-          "New Parameter",
-          "en-US",
-        );
-
-        const params = getHookValue(useParameters);
-        const paramId = EntityId(Object.keys(params || {})[0]);
-        const info = getParameterInfo(paramId);
-
-        expect(info?.param.friendlyName?.value).toBe("New Parameter");
-      });
-
       test("does not create duplicate parameters with same codexId", () => {
         createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
           "en-US": "Test Class",
@@ -269,15 +215,11 @@ describe("parametersEditor/state.ts", () => {
           undefined,
           TEST_CLASS_CODEX_ID,
           CodexId("duplicate"),
-          "First",
-          "en-US",
         );
         createNewParameter(
           undefined,
           TEST_CLASS_CODEX_ID,
           CodexId("duplicate"),
-          "Second",
-          "en-US",
         );
 
         const params = getHookValue(useParameters);
@@ -293,8 +235,6 @@ describe("parametersEditor/state.ts", () => {
           undefined,
           TEST_CLASS_CODEX_ID,
           CodexId("new-param"),
-          "New Parameter",
-          "en-US",
         );
 
         const editors = getHookValue(useParameterEditors);
@@ -308,13 +248,7 @@ describe("parametersEditor/state.ts", () => {
           "en-US": "Test Class",
         });
 
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param1"),
-          "Parameter 1",
-          "en-US",
-        );
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param1"));
 
         const params = getHookValue(useParameters);
         const paramId = EntityId(Object.keys(params || {})[0]);
@@ -346,13 +280,7 @@ describe("parametersEditor/state.ts", () => {
             "en-US": "Test Class",
           });
 
-          createNewParameter(
-            undefined,
-            TEST_CLASS_CODEX_ID,
-            CodexId("param1"),
-            "Original Name",
-            "en-US",
-          );
+          createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param1"));
         });
 
         const params = getHookValue(useParameters);
@@ -376,13 +304,7 @@ describe("parametersEditor/state.ts", () => {
           "en-US": "Test Class",
         });
 
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param1"),
-          "Original Name",
-          "en-US",
-        );
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param1"));
 
         const params = getHookValue(useParameters);
         const paramId = EntityId(Object.keys(params || {})[0]);
@@ -431,13 +353,7 @@ describe("parametersEditor/state.ts", () => {
           "en-US": "Test Class",
         });
 
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param1"),
-          "Parameter 1",
-          "en-US",
-        );
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param1"));
 
         const params = getHookValue(useParameters);
         const paramId = EntityId(Object.keys(params || {})[0]);
@@ -455,13 +371,7 @@ describe("parametersEditor/state.ts", () => {
           "en-US": "Test Class",
         });
 
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param1"),
-          "Parameter 1",
-          "en-US",
-        );
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param1"));
 
         const params = getHookValue(useParameters);
         const paramId = EntityId(Object.keys(params || {})[0]);
@@ -479,13 +389,7 @@ describe("parametersEditor/state.ts", () => {
           "en-US": "Test Class",
         });
 
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param1"),
-          "Parameter 1",
-          "en-US",
-        );
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param1"));
 
         const params = getHookValue(useParameters);
         const paramId = EntityId(Object.keys(params || {})[0]);
@@ -519,17 +423,23 @@ describe("parametersEditor/state.ts", () => {
           "en-US": "Test Class",
         });
 
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param1"),
-          "Parameter 1",
-          "en-US",
-        );
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param1"));
 
         const params = getHookValue(useParameters);
         const paramId = EntityId(Object.keys(params || {})[0]);
-        const localizationKey = params?.[paramId]?.localized.friendlyName;
+
+        act(() => {
+          modifyParameterLocalizedValue(
+            paramId,
+            "friendlyName",
+            "Test Parameter",
+            "en-US",
+          );
+        });
+
+        const updatedParams = getHookValue(useParameters);
+        const localizationKey =
+          updatedParams?.[paramId]?.localized.friendlyName;
 
         // Verify the localization has the correct item reference
         updateCurrentEditor((editor) => {
@@ -550,13 +460,7 @@ describe("parametersEditor/state.ts", () => {
           "en-US": "Test Class",
         });
 
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param1"),
-          "Parameter 1",
-          "en-US",
-        );
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param1"));
 
         const params = getHookValue(useParameters);
         const paramId = EntityId(Object.keys(params || {})[0]);
@@ -577,24 +481,30 @@ describe("parametersEditor/state.ts", () => {
           "en-US": "Test Class",
         });
 
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param1"),
-          "Parameter 1",
-          "en-US",
-        );
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param2"),
-          "Parameter 2",
-          "en-US",
-        );
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param1"));
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param2"));
 
         const params = getHookValue(useParameters);
         const paramIds = Object.keys(params || {}).map(EntityId);
-        const param1Key = params?.[paramIds[0]]?.localized.friendlyName;
+
+        // Set friendly names for both parameters
+        act(() => {
+          modifyParameterLocalizedValue(
+            paramIds[0],
+            "friendlyName",
+            "Shared Name",
+            "en-US",
+          );
+          modifyParameterLocalizedValue(
+            paramIds[1],
+            "friendlyName",
+            "Temp Name",
+            "en-US",
+          );
+        });
+
+        const updatedParams = getHookValue(useParameters);
+        const param1Key = updatedParams?.[paramIds[0]]?.localized.friendlyName;
 
         // Manually make param2 share the same localization key
         act(() => {
@@ -678,8 +588,6 @@ describe("parametersEditor/state.ts", () => {
           undefined,
           TEST_CLASS_CODEX_ID,
           CodexId("enum-param"),
-          "Enum Parameter",
-          "en-US",
         );
 
         const params = getHookValue(useParameters);
@@ -731,27 +639,9 @@ describe("parametersEditor/state.ts", () => {
           "en-US": "Test Class",
         });
 
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param1"),
-          "Parameter 1",
-          "en-US",
-        );
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param2"),
-          "Parameter 2",
-          "en-US",
-        );
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param3"),
-          "Parameter 3",
-          "en-US",
-        );
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param1"));
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param2"));
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param3"));
 
         const params = getHookValue(useParameters);
         const editors = getHookValue(useParameterEditors);
@@ -772,27 +662,9 @@ describe("parametersEditor/state.ts", () => {
           "en-US": "Test Class",
         });
 
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param1"),
-          "Parameter 1",
-          "en-US",
-        );
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param2"),
-          "Parameter 2",
-          "en-US",
-        );
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param3"),
-          "Parameter 3",
-          "en-US",
-        );
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param1"));
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param2"));
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param3"));
 
         const params = getHookValue(useParameters);
         const paramIds = Object.keys(params || {}).map(EntityId);
@@ -820,8 +692,6 @@ describe("parametersEditor/state.ts", () => {
           undefined,
           TEST_CLASS_CODEX_ID,
           CodexId("unique-id"),
-          "First Parameter",
-          "en-US",
         );
 
         const paramsBefore = getHookValue(useParameters);
@@ -832,8 +702,6 @@ describe("parametersEditor/state.ts", () => {
           undefined,
           TEST_CLASS_CODEX_ID,
           CodexId("unique-id"),
-          "Second Parameter",
-          "en-US",
         );
 
         const paramsAfter = getHookValue(useParameters);
@@ -848,27 +716,9 @@ describe("parametersEditor/state.ts", () => {
           "en-US": "Test Class",
         });
 
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param1"),
-          "Parameter 1",
-          "en-US",
-        );
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param2"),
-          "Parameter 2",
-          "en-US",
-        );
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param3"),
-          "Parameter 3",
-          "en-US",
-        );
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param1"));
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param2"));
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param3"));
 
         const codexIds = getHookValue(useParameterCodexIds);
         const uniqueCodexIds = new Set(codexIds);
@@ -884,16 +734,18 @@ describe("parametersEditor/state.ts", () => {
           "fr-FR": "Classe de test",
         });
 
-        createNewParameter(
-          undefined,
-          TEST_CLASS_CODEX_ID,
-          CodexId("param1"),
-          "Parameter 1",
-          "en-US",
-        );
+        createNewParameter(undefined, TEST_CLASS_CODEX_ID, CodexId("param1"));
 
         const params = getHookValue(useParameters);
         const paramId = EntityId(Object.keys(params || {})[0]);
+
+        // Add English friendly name first
+        modifyParameterLocalizedValue(
+          paramId,
+          "friendlyName",
+          "Parameter 1",
+          "en-US",
+        );
 
         // Add French translation
         modifyParameterLocalizedValue(
@@ -930,8 +782,6 @@ describe("parametersEditor/state.ts", () => {
           "some-library",
           CodexId("ImportedClass"),
           CodexId("imported-param"),
-          "Imported Parameter",
-          "en-US",
         );
 
         const params = getHookValue(useParameters);
@@ -954,8 +804,6 @@ describe("parametersEditor/state.ts", () => {
           undefined,
           TEST_CLASS_CODEX_ID,
           CodexId("device-param"),
-          "Device Parameter",
-          "en-US",
         );
 
         const params = getHookValue(useParameters);

@@ -32,10 +32,8 @@ function createParameterAndGetId(
   library: string | undefined,
   paramClass: CodexId,
   codexId: CodexId,
-  friendlyName: string,
-  locale: string,
 ): EntityId {
-  createNewParameter(library, paramClass, codexId, friendlyName, locale);
+  createNewParameter(library, paramClass, codexId);
   const params = getHookValue(useParameters);
   // Find the parameter with the matching codexId
   const paramEntry = Object.entries(params || {}).find(
@@ -101,12 +99,10 @@ describe("Enum Parameter Editing", () => {
       undefined,
       CodexId("TestEnumClass"),
       CodexId("test-param"),
-      "Test Enum Parameter",
-      "en-US",
     );
 
     render(<ParameterEditor paramId={paramId} />);
-    await expandParameter("Test Enum Parameter");
+    await expandParameter("test-param");
 
     // Verify enum choices editor is rendered
     expect(screen.getByText("Enum Choices")).toBeInTheDocument();
@@ -136,12 +132,10 @@ describe("Enum Parameter Editing", () => {
       undefined,
       CodexId("TestNumberClass"),
       CodexId("test-param"),
-      "Test Number Parameter",
-      "en-US",
     );
 
     render(<ParameterEditor paramId={paramId} />);
-    await expandParameter("Test Number Parameter");
+    await expandParameter("test-param");
 
     // Verify enum choices editor is NOT rendered
     expect(screen.queryByText("Enum Choices")).not.toBeInTheDocument();
@@ -209,12 +203,10 @@ describe("Enum Parameter Editing", () => {
       undefined,
       CodexId("TestEnumClass"),
       CodexId("test-param"),
-      "Test Enum",
-      "en-US",
     );
 
     render(<ParameterEditor paramId={paramId} />);
-    await expandParameter("Test Enum");
+    await expandParameter("test-param");
 
     // Open the View dropdown to see the choices
     const viewButton = screen.getByRole("button", { name: "View" });
@@ -276,12 +268,10 @@ describe("Enum Parameter Editing", () => {
       undefined,
       CodexId("TestEnumClass"),
       CodexId("test-param"),
-      "Test Enum",
-      "en-US",
     );
 
     render(<ParameterEditor paramId={paramId} />);
-    await expandParameter("Test Enum");
+    await expandParameter("test-param");
 
     // Click the Modify button to open the dialog
     const modifyButton = screen.getByRole("button", { name: "Modify" });
@@ -341,12 +331,10 @@ describe("Enum Parameter Editing", () => {
       undefined,
       CodexId("TestEnumClass"),
       CodexId("test-param"),
-      "Test Enum",
-      "en-US",
     );
 
     render(<ParameterEditor paramId={paramId} />);
-    await expandParameter("Test Enum");
+    await expandParameter("test-param");
 
     // Click the Modify button to open the dialog
     const modifyButton = screen.getByRole("button", { name: "Modify" });
@@ -365,7 +353,7 @@ describe("Enum Parameter Editing", () => {
 });
 
 describe("Parameter Basic Properties", () => {
-  test("renders parameter ID and display name", async () => {
+  test("renders parameter ID and display name field", async () => {
     updateCurrentEditor((editor) => {
       const classNameKey = LocalizationKey("test_class_name");
       editor.localizations[classNameKey] = {
@@ -387,15 +375,19 @@ describe("Parameter Basic Properties", () => {
       undefined,
       CodexId("TestClass"),
       CodexId("test-param-id"),
-      "Test Parameter Name",
-      "en-US",
     );
 
     render(<ParameterEditor paramId={paramId} />);
-    await expandParameter("Test Parameter Name");
+    await expandParameter("test-param-id");
 
+    // Verify ID field is rendered with correct value
     expect(screen.getByDisplayValue("test-param-id")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("Test Parameter Name")).toBeInTheDocument();
+
+    // Verify Display Name field exists (but is empty by default)
+    const displayNameRow = screen.getByText("Display Name").closest("tr")!;
+    const displayNameInput = within(displayNameRow).getByRole("textbox");
+    expect(displayNameInput).toBeInTheDocument();
+    expect(displayNameInput).toHaveValue("");
   });
 
   test("renders library information", async () => {
@@ -420,12 +412,10 @@ describe("Parameter Basic Properties", () => {
       undefined,
       CodexId("TestClass"),
       CodexId("test-param"),
-      "Test",
-      "en-US",
     );
 
     render(<ParameterEditor paramId={paramId} />);
-    await expandParameter("Test");
+    await expandParameter("test-param");
 
     // Should show "Device Library" for parameters without a library
     expect(screen.getByText("Device Library")).toBeInTheDocument();
@@ -453,14 +443,61 @@ describe("Parameter Basic Properties", () => {
       undefined,
       CodexId("TestClass"),
       CodexId("test-param"),
-      "Test",
-      "en-US",
     );
 
     render(<ParameterEditor paramId={paramId} />);
-    await expandParameter("Test");
+    await expandParameter("test-param");
 
     expect(screen.getByText("TestClass")).toBeInTheDocument();
+  });
+
+  test("updating display name works properly", async () => {
+    const user = userEvent.setup();
+
+    updateCurrentEditor((editor) => {
+      const classNameKey = LocalizationKey("test_class_name");
+      editor.localizations[classNameKey] = {
+        strings: LocalizationDbSchema.parse({ "en-US": "Test Class" }),
+        items: [],
+      };
+
+      const classId = EntityId("TestClass");
+      editor.parameterClasses[classId] = {
+        codexId: CodexId("TestClass"),
+        dataType: "number",
+        localized: {
+          name: classNameKey,
+        },
+      };
+    });
+
+    const paramId = createParameterAndGetId(
+      undefined,
+      CodexId("TestClass"),
+      CodexId("blank-test-param"),
+    );
+
+    render(<ParameterEditor paramId={paramId} />);
+    await expandParameter("blank-test-param");
+
+    // First, set a display name
+    const displayNameRow = screen.getByText("Display Name").closest("tr")!;
+    const displayNameInput = within(displayNameRow).getByRole("textbox");
+    await user.type(displayNameInput, "Initial Name{Enter}");
+
+    // Verify the display name was set
+    expect(screen.getByDisplayValue("Initial Name")).toBeInTheDocument();
+
+    // Now clear it
+    await user.clear(displayNameInput);
+    await user.type(displayNameInput, "{Enter}");
+
+    // After clearing and confirming, the parameter should still be accessible by its codexId
+    // and the localization key should not be visible
+    const params = getHookValue(useParameters);
+    const param = params?.[paramId];
+    expect(param).toBeDefined();
+    expect(param?.localized.friendlyName).toBeUndefined();
   });
 });
 
@@ -487,12 +524,10 @@ describe("Min/Max/Default for Number Parameters", () => {
       undefined,
       CodexId("NumberClass"),
       CodexId("number-param"),
-      "Number Param",
-      "en-US",
     );
 
     render(<ParameterEditor paramId={paramId} />);
-    await expandParameter("Number Param");
+    await expandParameter("number-param");
 
     expect(screen.getByText("Minimum Value")).toBeInTheDocument();
     expect(screen.getByText("Maximum Value")).toBeInTheDocument();
@@ -521,12 +556,10 @@ describe("Min/Max/Default for Number Parameters", () => {
       undefined,
       CodexId("EnumClass"),
       CodexId("enum-param"),
-      "Enum Param",
-      "en-US",
     );
 
     render(<ParameterEditor paramId={paramId} />);
-    await expandParameter("Enum Param");
+    await expandParameter("enum-param");
 
     expect(screen.queryByText("Minimum Value")).not.toBeInTheDocument();
     expect(screen.queryByText("Maximum Value")).not.toBeInTheDocument();
