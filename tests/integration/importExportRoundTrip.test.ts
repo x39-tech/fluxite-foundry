@@ -128,21 +128,30 @@ function normalizeCondition(
   condition: Condition,
   chunkIdMapping: Record<string, string>,
 ): Condition {
-  return {
-    ...condition,
-    chunk: condition.chunk
-      ? (chunkIdMapping[condition.chunk] ?? condition.chunk)
-      : undefined,
-    conditions: condition.conditions?.map((c) =>
-      normalizeCondition(c, chunkIdMapping),
-    ),
-  };
+  if (condition.type === "simple") {
+    return {
+      type: "simple",
+      value: {
+        ...condition.value,
+        chunk: chunkIdMapping[condition.value.chunk] ?? condition.value.chunk,
+      },
+    };
+  } else {
+    return {
+      type: "group",
+      value: {
+        ...condition.value,
+        conditions: condition.value.conditions.map((c) =>
+          normalizeCondition(c, chunkIdMapping),
+        ),
+      },
+    };
+  }
 }
 
 // Fields not currently imported/exported by the editor
 const IGNORED_FIELDS = new Set([
   "structures", // physical structure visualization
-  "looping", // parameter looping behavior
   "categories", // localization categories added by parseFluxiteCodexDocument but not used
 ]);
 

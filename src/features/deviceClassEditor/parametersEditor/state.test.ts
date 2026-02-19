@@ -739,21 +739,23 @@ describe("parametersEditor/state.ts", () => {
         const params = getHookValue(useParameters);
         const paramId = EntityId(Object.keys(params || {})[0]);
 
-        // Add English friendly name first
-        modifyParameterLocalizedValue(
-          paramId,
-          "friendlyName",
-          "Parameter 1",
-          "en-US",
-        );
+        act(() => {
+          // Add English friendly name first
+          modifyParameterLocalizedValue(
+            paramId,
+            "friendlyName",
+            "Parameter 1",
+            "en-US",
+          );
 
-        // Add French translation
-        modifyParameterLocalizedValue(
-          paramId,
-          "friendlyName",
-          "Paramètre 1",
-          "fr-FR",
-        );
+          // Add French translation
+          modifyParameterLocalizedValue(
+            paramId,
+            "friendlyName",
+            "Paramètre 1",
+            "fr-FR",
+          );
+        });
 
         // Verify both locales exist
         updateCurrentEditor((editor) => {

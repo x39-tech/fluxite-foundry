@@ -26,6 +26,7 @@ Please follow the following guidelines when changing or adding code to the proje
 
 - Write and/or maintain unit tests for code you add or change. Unit test quantity should be balanced; cover the most critical logic and edge cases without writing so many tests as to create a maintenance burden. Tests for React components should use React Testing Library to drive tests from a user perspective.
 - Avoid writing tests that are coupled to implementation; write code that has a clear contract of behavior and write tests that verify that behavior. For React components, use React Testing Library to accomplish this.
+  - In particular, avoid writing tests which assert on the presence or value of classes. For example, do not assert on the presence of a Tailwind class to verify that an element has a certain style.
 - Work should not be considered done until tests that cover the work in question are passing.
 - Some code duplication in tests is expected, but factor out common setup logic where it makes sense to do so and where it can make tests less verbose and easier to read.
 

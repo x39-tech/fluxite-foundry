@@ -443,7 +443,7 @@ function exportParameters(
       minimumModifier: param.minimumModifier,
       maximumModifier: param.maximumModifier,
       default: param.default,
-      wrapping: param.wrapping,
+      looping: param.wrapping,
     };
 
     // Handle enum choices (excluded and additional)
@@ -778,9 +778,12 @@ function convertConditionToNested(
     }
 
     return {
-      chunk: chunkId,
-      chunkStart: chunkRefCond.chunkStart,
-      chunkEnd: chunkRefCond.chunkEnd,
+      type: "simple" as const,
+      value: {
+        chunk: chunkId,
+        chunkStart: chunkRefCond.chunkStart,
+        chunkEnd: chunkRefCond.chunkEnd,
+      },
     };
   } else {
     const groupCond = condition as DmxConditionGroup;
@@ -798,8 +801,11 @@ function convertConditionToNested(
     );
 
     return {
-      match: groupCond.match,
-      conditions: childConditions,
+      type: "group" as const,
+      value: {
+        condMatch: groupCond.match,
+        conditions: childConditions,
+      },
     };
   }
 }

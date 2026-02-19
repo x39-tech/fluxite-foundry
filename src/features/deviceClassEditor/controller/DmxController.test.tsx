@@ -29,44 +29,39 @@ beforeEach(() => {
 const noMappingsMessage =
   /Add a DMX parameter mapping in the DMX editor to use the test controller/;
 
-test("Correctly handles case where reconcileParamValues results in empty state", () => {
-  // Mock empty parameter classes
-  mockUseMappableParameters.mockReturnValue({});
-
-  // Create dmx controller with no parameters or clusters,
-  // which will result in empty param values after initialization
-  const dmxController = {
-    state: "available" as const,
-    db: {
-      parameters: {},
-      dmx_driver: {
-        chunks: {},
-        clusters: [],
-      },
-    },
+function createMockDriver(paramStates: Array<{ id: string; value: number }>) {
+  return {
+    getParamStates: vi.fn(() =>
+      paramStates.map((p) => ({
+        param: { id: p.id },
+        value: { type: "numeric" as const, value: p.value },
+      })),
+    ),
+    getDmxValues: vi.fn(() => new Uint8Array(512)),
+    updateParamValue: vi.fn(() => ({
+      paramStateUpdates: [],
+      dmxValues: new Uint8Array(512),
+      queuedDmxSequences: [],
+    })),
   };
+}
 
-  mockUseDmxController.mockReturnValue(dmxController);
-
-  render(<DmxController />);
-
-  expect(screen.getByText(noMappingsMessage)).toBeInTheDocument();
-});
-
-test("Shows message when no DMX driver is present", () => {
+test("Renders DMX output display when controller is available with no parameters", () => {
   mockUseMappableParameters.mockReturnValue({});
 
+  const mockDriver = createMockDriver([]);
   mockUseDmxController.mockReturnValue({
-    state: "available",
-    db: {
+    state: "available" as const,
+    driver: mockDriver,
+    deviceClass: {
       parameters: {},
-      dmx_driver: null,
     },
   });
 
   render(<DmxController />);
 
-  expect(screen.getByText(noMappingsMessage)).toBeInTheDocument();
+  // Should render the DMX output header
+  expect(screen.getByText("DMX Output")).toBeInTheDocument();
 });
 
 test("Shows message when DMX controller is not created", () => {
@@ -98,5 +93,24 @@ test("Shows error message when DMX controller has error", () => {
     screen.getByText(
       /Error compiling DMX test controller: compilation_error: Test error message/,
     ),
+  ).toBeInTheDocument();
+});
+
+test("Shows Active Sequences button with count 0 when no sequences are active", () => {
+  mockUseMappableParameters.mockReturnValue({});
+
+  const mockDriver = createMockDriver([]);
+  mockUseDmxController.mockReturnValue({
+    state: "available" as const,
+    driver: mockDriver,
+    deviceClass: {
+      parameters: {},
+    },
+  });
+
+  render(<DmxController />);
+
+  expect(
+    screen.getByRole("button", { name: "Active Sequences: 0" }),
   ).toBeInTheDocument();
 });

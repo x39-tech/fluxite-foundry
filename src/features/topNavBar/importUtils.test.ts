@@ -32,10 +32,10 @@ function createValidDeviceClass(
       "org.esta.lib.core": "1.0.0",
     },
     parameters: {
-      "test-param": {
+      "display-brightness": {
         library: "org.esta.lib.core",
-        class: "test/param",
-        "@friendlyName": "Test Parameter",
+        class: "config/display/brightness",
+        "@friendlyName": "Display Brightness",
         access: ["readActual", "write"],
         lifetime: "runtime",
         minimum: 0,

@@ -768,7 +768,7 @@ describe("getImportedDeviceClassEditor", () => {
         minimumModifier: "minMod",
         maximumModifier: "maxMod",
         default: 50,
-        wrapping: true,
+        looping: true,
         friendlyName: "Friendly Value",
       });
 
@@ -1198,7 +1198,12 @@ describe("DMX serializer import", () => {
 
     chunk1.mappingGroups.push(
       createMappingGroup({
-        conditions: [{ chunk: "1", chunkStart: 10, chunkEnd: 20 }],
+        conditions: [
+          {
+            type: "simple",
+            value: { chunk: "1", chunkStart: 10, chunkEnd: 20 },
+          },
+        ],
         mappings: [createMapping("intensity", [createRangeMapping(0, 255)])],
       }),
     );
@@ -1235,11 +1240,20 @@ describe("DMX serializer import", () => {
       createMappingGroup({
         conditions: [
           {
-            match: "any",
-            conditions: [
-              { chunk: "1", chunkStart: 0, chunkEnd: 50 },
-              { chunk: "1", chunkStart: 100, chunkEnd: 150 },
-            ],
+            type: "group",
+            value: {
+              condMatch: "any",
+              conditions: [
+                {
+                  type: "simple",
+                  value: { chunk: "1", chunkStart: 0, chunkEnd: 50 },
+                },
+                {
+                  type: "simple",
+                  value: { chunk: "1", chunkStart: 100, chunkEnd: 150 },
+                },
+              ],
+            },
           },
         ],
       }),

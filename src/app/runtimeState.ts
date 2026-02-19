@@ -1,4 +1,4 @@
-import { ParameterDatabase, Error as E173Error } from "@cpwg-community/delver";
+import { DmxDriver, Error as E173Error } from "@cpwg-community/delver";
 import { CodexDatabase } from "codex/codexDatabase";
 
 export interface AppRuntimeState {
@@ -18,7 +18,7 @@ export interface DmxControllerNotCreated {
 
 export interface DmxControllerAvailable {
   state: "available";
-  db: ParameterDatabase;
+  driver: DmxDriver;
 }
 
 export interface DmxControllerError {

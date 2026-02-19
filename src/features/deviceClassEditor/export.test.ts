@@ -1064,7 +1064,7 @@ describe("exportParameters", () => {
       minimumModifier: "minMod",
       maximumModifier: "maxMod",
       default: 50,
-      wrapping: true,
+      looping: true,
     });
   });
 
@@ -1594,9 +1594,12 @@ describe("exportDmxSerializer", () => {
 
     expect(estaDmx.chunks["0"].mappingGroups[0].conditions).toHaveLength(1);
     expect(estaDmx.chunks["0"].mappingGroups[0].conditions?.[0]).toEqual({
-      chunk: "1",
-      chunkStart: 10,
-      chunkEnd: 20,
+      type: "simple",
+      value: {
+        chunk: "1",
+        chunkStart: 10,
+        chunkEnd: 20,
+      },
     });
   });
 
@@ -1636,18 +1639,27 @@ describe("exportDmxSerializer", () => {
 
     expect(estaDmx.chunks["0"].mappingGroups[0].conditions).toHaveLength(1);
     const groupCond = estaDmx.chunks["0"].mappingGroups[0].conditions?.[0];
-    expect(groupCond?.match).toBe("any");
-    expect(groupCond?.conditions).toHaveLength(2);
-    expect(groupCond?.conditions?.[0]).toEqual({
-      chunk: "1",
-      chunkStart: 0,
-      chunkEnd: 50,
-    });
-    expect(groupCond?.conditions?.[1]).toEqual({
-      chunk: "1",
-      chunkStart: 100,
-      chunkEnd: 200,
-    });
+    expect(groupCond?.type).toBe("group");
+    if (groupCond?.type === "group") {
+      expect(groupCond.value.condMatch).toBe("any");
+      expect(groupCond.value.conditions).toHaveLength(2);
+      expect(groupCond.value.conditions[0]).toEqual({
+        type: "simple",
+        value: {
+          chunk: "1",
+          chunkStart: 0,
+          chunkEnd: 50,
+        },
+      });
+      expect(groupCond.value.conditions[1]).toEqual({
+        type: "simple",
+        value: {
+          chunk: "1",
+          chunkStart: 100,
+          chunkEnd: 200,
+        },
+      });
+    }
   });
 
   test("exports nested group conditions", () => {
@@ -1683,17 +1695,26 @@ describe("exportDmxSerializer", () => {
     const estaDmx = result.serializers!.dmx!.value.default!;
 
     const topCond = estaDmx.chunks["0"].mappingGroups[0].conditions?.[0];
-    expect(topCond?.match).toBe("all");
-    expect(topCond?.conditions).toHaveLength(1);
+    expect(topCond?.type).toBe("group");
+    if (topCond?.type === "group") {
+      expect(topCond.value.condMatch).toBe("all");
+      expect(topCond.value.conditions).toHaveLength(1);
 
-    const nestedCond = topCond?.conditions?.[0];
-    expect(nestedCond?.match).toBe("any");
-    expect(nestedCond?.conditions).toHaveLength(1);
-    expect(nestedCond?.conditions?.[0]).toEqual({
-      chunk: "1",
-      chunkStart: 5,
-      chunkEnd: 15,
-    });
+      const nestedCond = topCond.value.conditions[0];
+      expect(nestedCond.type).toBe("group");
+      if (nestedCond.type === "group") {
+        expect(nestedCond.value.condMatch).toBe("any");
+        expect(nestedCond.value.conditions).toHaveLength(1);
+        expect(nestedCond.value.conditions[0]).toEqual({
+          type: "simple",
+          value: {
+            chunk: "1",
+            chunkStart: 5,
+            chunkEnd: 15,
+          },
+        });
+      }
+    }
   });
 
   test("does not export empty chunks", () => {
@@ -1788,9 +1809,12 @@ describe("exportDmxSerializer", () => {
       estaDmx.chunks["2"].mappingGroups[0].mappings[0].mappedParam,
     ).toEqual({ id: "intensity" });
     expect(estaDmx.chunks["2"].mappingGroups[0].conditions?.[0]).toEqual({
-      chunk: "0-1",
-      chunkStart: 100,
-      chunkEnd: 200,
+      type: "simple",
+      value: {
+        chunk: "0-1",
+        chunkStart: 100,
+        chunkEnd: 200,
+      },
     });
   });
 });

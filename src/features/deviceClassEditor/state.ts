@@ -1,10 +1,7 @@
 import { Draft, produceWithPatches } from "immer";
 import * as FlexLayout from "flexlayout-react";
 import { useShallow } from "zustand/react/shallow";
-import {
-  createParameterDatabase,
-  Error as E173Error,
-} from "@cpwg-community/delver";
+import { DmxDriver, Error as E173Error } from "@cpwg-community/delver";
 import {
   AppPersistentState,
   CodexId,
@@ -105,9 +102,17 @@ export function updateCurrentEditor(
           patch.path[0] == "deviceClassEditors" &&
           typeof patch.path[2] == "string"
         ) {
-          return ["libraries", "deviceLibrary", "parameters", "dmx"].includes(
-            patch.path[2],
-          );
+          return [
+            "libraries",
+            "parameterClasses",
+            "commandClasses",
+            "parameters",
+            "commands",
+            "commandClassArguments",
+            "commandClassReturnValues",
+            "enumChoices",
+            "dmxSerializer",
+          ].includes(patch.path[2]);
         }
       })
     ) {
@@ -132,11 +137,11 @@ export function updateDmxController(editor: DeviceClassEditorState) {
   if (editor.dmxSerializer) {
     try {
       const deviceClass = exportDeviceClass(editor);
-      const db = createParameterDatabase(deviceClass);
+      const driver = new DmxDriver(deviceClass, "dmx");
       updateAppRuntimeState((state) => {
         state.dmxController = {
           state: "available",
-          db,
+          driver,
         };
       });
     } catch (e) {

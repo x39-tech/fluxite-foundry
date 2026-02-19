@@ -501,7 +501,7 @@ function importParameters(
       minimumModifier: param.minimumModifier,
       maximumModifier: param.maximumModifier,
       default: param.default,
-      wrapping: param.wrapping,
+      wrapping: param.looping,
       localized: {
         friendlyName: optionalLocalizationKey(param["@friendlyName"]),
       },
@@ -828,35 +828,31 @@ function convertConditionsToNormalized(
   result: DmxSerializerState,
 ) {
   for (const condition of conditions) {
-    if (condition.match !== undefined && condition.conditions !== undefined) {
+    if (condition.type === "group") {
       // This is a group condition
       const groupConditionId = newEntityId();
       const groupCondition: DmxConditionGroup = {
         conditionType: "group",
         parent,
-        match: condition.match,
+        match: condition.value.condMatch,
       };
       result.conditions[groupConditionId] = groupCondition;
 
       // Recursively convert child conditions
       convertConditionsToNormalized(
-        condition.conditions,
+        condition.value.conditions,
         { type: "condition", id: groupConditionId },
         chunkIdMap,
         result,
       );
-    } else if (
-      condition.chunk !== undefined &&
-      condition.chunkStart !== undefined &&
-      condition.chunkEnd !== undefined
-    ) {
+    } else if (condition.type === "simple") {
       // This is a chunk reference condition
       const chunkRefConditionId = newEntityId();
-      const referencedChunkId = chunkIdMap[condition.chunk];
+      const referencedChunkId = chunkIdMap[condition.value.chunk];
 
       if (!referencedChunkId) {
         throw new Error(
-          `Chunk reference condition references non-existent chunk: "${condition.chunk}". Available chunks: ${Object.keys(chunkIdMap).join(", ")}`,
+          `Chunk reference condition references non-existent chunk: "${condition.value.chunk}". Available chunks: ${Object.keys(chunkIdMap).join(", ")}`,
         );
       }
 
@@ -864,8 +860,8 @@ function convertConditionsToNormalized(
         conditionType: "chunkRef",
         parent,
         chunkId: referencedChunkId,
-        chunkStart: condition.chunkStart,
-        chunkEnd: condition.chunkEnd,
+        chunkStart: condition.value.chunkStart,
+        chunkEnd: condition.value.chunkEnd,
       };
       result.conditions[chunkRefConditionId] = chunkRefCondition;
     }
