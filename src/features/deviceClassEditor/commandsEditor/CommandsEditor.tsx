@@ -14,6 +14,7 @@ export const CommandsEditor = () => {
         editors={editorStates}
         itemType="Command"
         getEditorTitle={(editor) => editor.codexId}
+        searchPlaceholder="Search Commands..."
         onAddItem={() => setNewResourceDialogIsOpen(true)}
         onDeleteItem={(editor) => deleteCommand(editor.id)}
         renderActiveEditor={(editor) => <CommandEditor id={editor.id} />}

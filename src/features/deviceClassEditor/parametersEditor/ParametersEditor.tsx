@@ -15,6 +15,7 @@ export const ParametersEditor = () => {
         editors={editorStates}
         itemType="Parameter"
         getEditorTitle={(editor) => editor.codexId}
+        searchPlaceholder="Search Parameters..."
         onAddItem={() => setNewParameterDialogIsOpen(true)}
         onDeleteItem={(editor) => deleteParameter(editor.id)}
         renderActiveEditor={(editor) => <ParameterEditor id={editor.id} />}

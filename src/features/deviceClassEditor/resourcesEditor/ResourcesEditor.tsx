@@ -14,6 +14,7 @@ export const ResourcesEditor = () => {
         editors={editorStates}
         itemType="Resource"
         getEditorTitle={(editor) => editor.codexId}
+        searchPlaceholder="Search Resources..."
         onAddItem={() => setNewResourceDialogIsOpen(true)}
         onDeleteItem={(editor) => deleteResource(editor.id)}
         renderActiveEditor={(editor) => <ResourceEditor id={editor.id} />}
