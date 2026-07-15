@@ -16,6 +16,9 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-tooltip: var(--tooltip);
+  --color-tooltip-foreground: var(--tooltip-foreground);
+  --color-tooltip-border: var(--tooltip-border);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -51,6 +54,12 @@
   --popover-foreground: oklch(0.141 0.005 285.823);
   --primary: oklch(0.606 0.25 292.717);
   --primary-foreground: oklch(0.969 0.016 293.756);
+  /*
+   * Our addition to the shadcn template for tooltips
+   */
+  --tooltip: oklch(0.96 0.025 293);
+  --tooltip-foreground: oklch(0.45 0.19 293);
+  --tooltip-border: oklch(0.9 0.05 293);
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
   --muted: oklch(0.967 0.001 286.375);
@@ -85,6 +94,12 @@
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.541 0.281 293.009);
   --primary-foreground: oklch(0.969 0.016 293.756);
+  /*
+   * Our addition to the shadcn template for tooltips
+   */
+  --tooltip: oklch(0.28 0.05 293);
+  --tooltip-foreground: oklch(0.87 0.06 293);
+  --tooltip-border: oklch(0.38 0.08 293);
   --secondary: oklch(0.274 0.006 286.033);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.274 0.006 286.033);
