@@ -17,14 +17,6 @@ function getHookValue<T>(hook: () => T): T {
   return result.current;
 }
 
-async function expandParameter(parameterName: string) {
-  const user = userEvent.setup();
-  const expandButton = screen.getByRole("button", {
-    name: `Expand ${parameterName}`,
-  });
-  await user.click(expandButton);
-}
-
 function createParameter(
   library: string | undefined,
   paramClass: CodexId,
@@ -42,8 +34,11 @@ function createParameter(
 }
 
 function getInputByLabel(label: string) {
-  const row = screen.getByText(label).closest("tr")!;
-  return within(row).getByRole("textbox");
+  return screen.getByRole("textbox", { name: label });
+}
+
+function getInputControls(label: string) {
+  return within(getInputByLabel(label).closest("div")!);
 }
 
 async function setInputValue(
@@ -97,15 +92,11 @@ describe("InstantiationProperties - Dynamic Mode", () => {
       CodexId("test-param"),
     );
 
-    render(<ParameterEditor paramId={paramId} />);
-    await expandParameter("test-param");
+    render(<ParameterEditor id={paramId} />);
 
     // Change to Dynamic mode
-    const instancesRow = screen.getByText("Instances").closest("tr")!;
-    const instancesSelect = within(instancesRow).getByRole("combobox");
-    await user.click(instancesSelect);
-    const dynamicOption = screen.getByRole("option", { name: "Dynamic" });
-    await user.click(dynamicOption);
+    await user.click(screen.getByRole("combobox", { name: "Instances" }));
+    await user.click(screen.getByRole("option", { name: "Dynamic" }));
 
     // Wait for Dynamic mode to be active
     await waitFor(() => {
@@ -183,11 +174,11 @@ describe("InstantiationProperties - Dynamic Mode", () => {
     expect(getInputByLabel("Maximum Instance Count")).toHaveValue("10");
 
     // Clear maximum using the clear button
-    const maxRow = screen.getByText("Maximum Instance Count").closest("tr")!;
-    const clearButton = within(maxRow).getByRole("button", {
-      name: "Clear value",
-    });
-    await user.click(clearButton);
+    await user.click(
+      getInputControls("Maximum Instance Count").getByRole("button", {
+        name: "Clear value",
+      }),
+    );
 
     expect(getInputByLabel("Minimum Instance Count")).toHaveValue("5");
     expect(getInputByLabel("Maximum Instance Count")).toHaveValue("");
@@ -201,10 +192,9 @@ describe("InstantiationProperties - Dynamic Mode", () => {
     expect(getInputByLabel("Maximum Instance Count")).toHaveValue("3");
 
     // Initial minimum is 1, click increment button 3 times to get to 4
-    const minRow = screen.getByText("Minimum Instance Count").closest("tr")!;
-    const incrementButton = within(minRow).getByRole("button", {
-      name: "Increment",
-    });
+    const incrementButton = getInputControls(
+      "Minimum Instance Count",
+    ).getByRole("button", { name: "Increment" });
 
     // Click increment 3 times: 1 -> 2 -> 3 -> 4
     await user.click(incrementButton);
@@ -228,10 +218,9 @@ describe("InstantiationProperties - Dynamic Mode", () => {
     expect(getInputByLabel("Maximum Instance Count")).toHaveValue("7");
 
     // Click decrement button 3 times: 7 -> 6 -> 5 -> 4
-    const maxRow = screen.getByText("Maximum Instance Count").closest("tr")!;
-    const decrementButton = within(maxRow).getByRole("button", {
-      name: "Decrement",
-    });
+    const decrementButton = getInputControls(
+      "Maximum Instance Count",
+    ).getByRole("button", { name: "Decrement" });
 
     await user.click(decrementButton);
     await user.click(decrementButton);

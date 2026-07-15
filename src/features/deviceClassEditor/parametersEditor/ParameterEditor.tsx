@@ -1,51 +1,47 @@
 import { useId } from "react";
 import { capitalCase } from "change-case";
 import { ExclamationTriangleIcon } from "@heroicons/react/16/solid";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "components/scn-ui/Tooltip";
-import { SelectTableRow } from "components/EditorFields/DeprecatedSelectField";
-import { TextEditorTableRow } from "components/EditorFields/DeprecatedTextEditorField";
-import { ItemEditor } from "components/ItemEditor/ItemEditor";
-import { SimplePropsTable } from "components/SimplePropsTable";
+import { FieldSet } from "components/FieldSet";
+import { Label } from "components/scn-ui/Label";
+import { AppInput } from "components/AppInput";
 import { RenderError } from "components/RenderError";
-import { Alert, AlertDescription, AlertTitle } from "components/scn-ui/Alert";
+import { ItemClassDisplay } from "components/ItemClassDisplay";
 import { ParameterClassDisplay } from "./ParameterClassDisplay";
+import { EnumChoicesEditor } from "components/EnumChoicesEditor";
+import { ValidatedInput } from "components/ValidatedInput";
+import { LabeledCheckbox } from "components/LabeledCheckbox";
+import { SelectField } from "components/EditorFields/SelectField";
+import { Alert, AlertDescription, AlertTitle } from "components/scn-ui/Alert";
 import { validateNewItemId } from "utils/inputValidation";
+import { useCurrentLocale } from "app/store";
 import {
-  deleteParameter,
-  LocalizedParameter,
+  CodexId,
+  EntityId,
+  Lifetime,
+  lifetimes,
+  fcDataTypes,
+  ParameterAccess,
+  parameterAccesses,
+} from "app/persistentState";
+import {
   modifyParameter,
   modifyParameterLocalizedValue,
   useParameterCodexIds,
   useParameterInfo,
 } from "./state";
-import { EnumChoicesEditor } from "components/EnumChoicesEditor";
 import { InstantiationProperties } from "./InstantiationProperties";
-import {
-  LocalizedInstanceEnumChoice,
-  ResolvedParameterClass,
-} from "../stateTransformations";
-import {
-  ParameterAccess,
-  Lifetime,
-  lifetimes,
-  fcDataTypes,
-  EntityId,
-  CodexId,
-} from "app/persistentState";
-import { useCurrentLocale } from "app/store";
 import { MinMaxDefaultProperties } from "./MinMaxDefaultProperties";
 
 interface Props {
-  paramId: EntityId;
+  id: EntityId;
 }
 
-export const ParameterEditor = ({ paramId }: Props) => {
-  const paramInfo = useParameterInfo(paramId);
-  const parameterIds = useParameterCodexIds();
+export const ParameterEditor = ({ id }: Props) => {
+  const parameterCodexIds = useParameterCodexIds();
+  const paramInfo = useParameterInfo(id);
+  const locale = useCurrentLocale();
+
+  const idPrefix = useId();
 
   if (!paramInfo) {
     return <RenderError />;
@@ -53,229 +49,202 @@ export const ParameterEditor = ({ paramId }: Props) => {
 
   const { param, paramClass, instanceEnumChoices } = paramInfo;
 
+  if (!paramClass) {
+    return (
+      <Alert>
+        <ExclamationTriangleIcon />
+        <AlertTitle>
+          <span>
+            Class <code>{param.class.codexId}</code> not found.
+          </span>
+        </AlertTitle>
+        <AlertDescription>
+          This may be an indication of invalid Fluxite Codex.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   return (
-    <ItemEditor title={param.codexId} onDelete={() => deleteParameter(paramId)}>
-      <div className="flex flex-col">
-        {paramClass ? (
-          <ParameterPropsTable
-            paramId={paramId}
-            param={param}
-            paramClass={paramClass}
-            instanceEnumChoices={instanceEnumChoices}
-            existingItemIds={parameterIds}
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap gap-4">
+        <FieldSet>
+          <Label htmlFor={`${idPrefix}-library`}>Library</Label>
+          <AppInput
+            id={`${idPrefix}-library`}
+            disabled
+            value={
+              param.class.type === "imported"
+                ? param.class.library
+                : "Device Library"
+            }
           />
-        ) : (
-          <ClassNotFoundMessage paramClass={param.class.codexId} />
+        </FieldSet>
+        <FieldSet>
+          <Label htmlFor={`${idPrefix}-class`}>Class</Label>
+          <ItemClassDisplay
+            id={`${idPrefix}-class`}
+            value={param.class.codexId}
+            tooltipRenderer={() => (
+              <ParameterClassDisplay paramClass={paramClass} />
+            )}
+          />
+        </FieldSet>
+        <FieldSet>
+          <Label htmlFor={`${idPrefix}-id`}>ID</Label>
+          <ValidatedInput
+            id={`${idPrefix}-id`}
+            value={param.codexId}
+            onConfirm={(newValue) =>
+              modifyParameter(
+                id,
+                (draft) => (draft.codexId = CodexId(newValue)),
+              )
+            }
+            validator={(input) =>
+              validateNewItemId(
+                input,
+                parameterCodexIds.filter((value) => value !== param.codexId),
+              )
+            }
+          />
+        </FieldSet>
+        <FieldSet>
+          <Label htmlFor={`${idPrefix}-friendlyName`}>Display Name</Label>
+          <ValidatedInput
+            id={`${idPrefix}-friendlyName`}
+            value={param.friendlyName?.value || ""}
+            onConfirm={(newValue) =>
+              modifyParameterLocalizedValue(
+                id,
+                "friendlyName",
+                newValue,
+                locale,
+              )
+            }
+          />
+        </FieldSet>
+        <FieldSet>
+          <Label htmlFor={`${idPrefix}-access`}>Access</Label>
+          <AccessCheckboxes
+            id={`${idPrefix}-access`}
+            access={param.access}
+            lifetime={param.lifetime}
+            onAccessChanged={(newAccess) =>
+              modifyParameter(id, (draft) => {
+                draft.access = newAccess;
+              })
+            }
+          />
+        </FieldSet>
+        <FieldSet>
+          <Label htmlFor={`${idPrefix}-lifetime`}>Lifetime</Label>
+          <SelectField
+            id={`${idPrefix}-lifetime`}
+            values={Object.values(lifetimes)}
+            displayValues={Object.values(lifetimes).map((val) =>
+              capitalCase(val),
+            )}
+            selectedValue={param.lifetime}
+            onSelectionChanged={(newValue) =>
+              modifyParameter(id, (draft) => {
+                draft.lifetime = newValue as Lifetime;
+                if (newValue === lifetimes.STATIC) {
+                  draft.access = draft.access.filter(
+                    (value) => value === parameterAccesses.READ_ACTUAL,
+                  );
+                }
+              })
+            }
+          />
+        </FieldSet>
+        <InstantiationProperties paramId={id} param={param} />
+        {paramClass.dataType === fcDataTypes.NUMBER && (
+          <MinMaxDefaultProperties paramId={id} param={param} />
         )}
       </div>
-    </ItemEditor>
-  );
-};
-
-interface ParameterPropsTableProps {
-  paramId: EntityId;
-  param: LocalizedParameter;
-  paramClass: ResolvedParameterClass;
-  instanceEnumChoices: LocalizedInstanceEnumChoice[];
-  existingItemIds: string[];
-}
-
-const ParameterPropsTable = ({
-  paramId,
-  param,
-  paramClass,
-  instanceEnumChoices,
-  existingItemIds,
-}: ParameterPropsTableProps) => {
-  const locale = useCurrentLocale();
-
-  return (
-    <SimplePropsTable className="mb-2">
-      <tr>
-        <td>Library</td>
-        <td>
-          <code>
-            {param.class.type === "imported"
-              ? param.class.library
-              : "Device Library"}
-          </code>
-        </td>
-      </tr>
-      <tr>
-        <td>Class</td>
-        <td>
-          <Tooltip>
-            <TooltipTrigger>
-              <code>{param.class.codexId}</code>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              <ParameterClassDisplay paramClass={paramClass} />
-            </TooltipContent>
-          </Tooltip>
-        </td>
-      </tr>
-      <TextEditorTableRow
-        label="ID"
-        value={param.codexId}
-        onValueChanged={(newValue) =>
-          modifyParameter(
-            paramId,
-            (draft) => (draft.codexId = CodexId(newValue)),
-          )
-        }
-        validator={(input) =>
-          validateNewItemId(
-            input,
-            existingItemIds.filter((value) => value !== param.codexId),
-          )
-        }
-      />
-      <TextEditorTableRow
-        label="Display Name"
-        value={param.friendlyName?.value}
-        onValueChanged={(newValue) =>
-          modifyParameterLocalizedValue(
-            paramId,
-            "friendlyName",
-            newValue,
-            locale,
-          )
-        }
-      />
-      <tr>
-        <td>Access</td>
-        <td className="flex flex-row items-center">
-          <AccessCheckbox
-            paramId={paramId}
-            access="readActual"
-            paramAccess={param.access}
-            disabled={false}
-          />
-          <AccessCheckbox
-            paramId={paramId}
-            access="readTarget"
-            paramAccess={param.access}
-            disabled={param.lifetime === "static"}
-          />
-          <AccessCheckbox
-            paramId={paramId}
-            access="write"
-            paramAccess={param.access}
-            disabled={param.lifetime === "static"}
-          />
-        </td>
-      </tr>
-      <SelectTableRow
-        label="Lifetime"
-        values={Object.values(lifetimes)}
-        displayValues={Object.values(lifetimes).map((val) => capitalCase(val))}
-        selectedValue={param.lifetime}
-        onSelectionChanged={(newValue) =>
-          modifyParameter(paramId, (draft) => {
-            draft.lifetime = newValue as Lifetime;
-            if (newValue === "static") {
-              draft.access = draft.access.filter(
-                (value) => value === "readActual",
-              );
-            }
-          })
-        }
-      />
-      <InstantiationProperties paramId={paramId} param={param} />
-      {paramClass.dataType === fcDataTypes.NUMBER && (
-        <MinMaxDefaultProperties paramId={paramId} param={param} />
-      )}
       {paramClass.dataType === fcDataTypes.ENUM && (
-        <tr>
-          <td className="align-middle">Enum Choices</td>
-          <td>
-            <EnumChoicesEditor
-              forName={param.friendlyName?.value || param.codexId}
-              parent={{ type: "paramAdditional", id: paramId }}
-              classChoices={paramClass.choices}
-              instanceChoices={instanceEnumChoices}
-              exclusions={param.enumExclusions}
-              onExclusionChanged={(choiceId, excluded) =>
-                modifyParameter(paramId, (draft) => {
-                  draft.enumExclusions ||= [];
+        <FieldSet>
+          <Label htmlFor={`${idPrefix}-enumChoices`}>Enum Choices</Label>
+          <EnumChoicesEditor
+            id={`${idPrefix}-enumChoices`}
+            forName={param.friendlyName?.value || param.codexId}
+            parent={{ type: "paramAdditional", id }}
+            classChoices={paramClass.choices}
+            instanceChoices={instanceEnumChoices}
+            exclusions={param.enumExclusions}
+            onExclusionChanged={(choiceId, excluded) =>
+              modifyParameter(id, (draft) => {
+                draft.enumExclusions ||= [];
 
-                  if (excluded) {
-                    if (!draft.enumExclusions.includes(choiceId)) {
-                      draft.enumExclusions.push(choiceId);
-                    }
-                  } else {
-                    draft.enumExclusions = draft.enumExclusions.filter(
-                      (value) => value !== choiceId,
-                    );
-                    if (!draft.enumExclusions) {
-                      delete draft.enumExclusions;
-                    }
+                if (excluded) {
+                  if (!draft.enumExclusions.includes(choiceId)) {
+                    draft.enumExclusions.push(choiceId);
                   }
-                })
-              }
-            />
-          </td>
-        </tr>
-      )}
-    </SimplePropsTable>
-  );
-};
-
-interface AccessCheckboxProps {
-  paramId: EntityId;
-  access: ParameterAccess;
-  paramAccess: ParameterAccess[];
-  disabled: boolean;
-}
-
-const AccessCheckbox = ({
-  paramId,
-  access,
-  paramAccess,
-  disabled,
-}: AccessCheckboxProps) => {
-  const id = useId();
-
-  return (
-    <>
-      <input
-        type="checkbox"
-        id={id}
-        checked={paramAccess.includes(access)}
-        disabled={disabled}
-        onChange={(event) =>
-          modifyParameter(paramId, (draft) => {
-            if (event.target.value && !draft.access.includes(access)) {
-              draft.access.push(access);
-            } else {
-              draft.access = draft.access.filter((value) => value !== access);
+                } else {
+                  draft.enumExclusions = draft.enumExclusions.filter(
+                    (value) => value !== choiceId,
+                  );
+                  if (!draft.enumExclusions) {
+                    delete draft.enumExclusions;
+                  }
+                }
+              })
             }
-          })
-        }
-      />
-      <label className="mx-1" htmlFor={id}>
-        {capitalCase(access)}
-      </label>
-    </>
+          />
+        </FieldSet>
+      )}
+    </div>
   );
 };
 
-interface ClassNotFoundMessageProps {
-  paramClass: CodexId;
+interface AccessCheckboxesProps {
+  id: string;
+  access: ParameterAccess[];
+  lifetime: Lifetime;
+  onAccessChanged: (access: ParameterAccess[]) => void;
 }
 
-const ClassNotFoundMessage = ({ paramClass }: ClassNotFoundMessageProps) => {
+const AccessCheckboxes = ({
+  id,
+  access,
+  lifetime,
+  onAccessChanged,
+}: AccessCheckboxesProps) => {
+  const updateAccess = (checked: boolean, relevantAccess: ParameterAccess) => {
+    if (checked && !access.includes(relevantAccess)) {
+      onAccessChanged([...access, relevantAccess]);
+    } else if (!checked) {
+      onAccessChanged(access.filter((a) => a !== relevantAccess));
+    }
+  };
+
   return (
-    <Alert>
-      <ExclamationTriangleIcon />
-      <AlertTitle>
-        <span>
-          Class <code>{paramClass}</code> not found.
-        </span>
-      </AlertTitle>
-      <AlertDescription>
-        This may be an indication of invalid Fluxite Codex.
-      </AlertDescription>
-    </Alert>
+    <div id={id} className="flex w-xs h-9 items-center gap-4 px-1">
+      <LabeledCheckbox
+        checked={access.includes(parameterAccesses.READ_ACTUAL)}
+        onChange={(checked) =>
+          updateAccess(checked, parameterAccesses.READ_ACTUAL)
+        }
+      >
+        Read Actual
+      </LabeledCheckbox>
+      <LabeledCheckbox
+        disabled={lifetime === lifetimes.STATIC}
+        checked={access.includes(parameterAccesses.READ_TARGET)}
+        onChange={(checked) =>
+          updateAccess(checked, parameterAccesses.READ_TARGET)
+        }
+      >
+        Read Target
+      </LabeledCheckbox>
+      <LabeledCheckbox
+        disabled={lifetime === lifetimes.STATIC}
+        checked={access.includes(parameterAccesses.WRITE)}
+        onChange={(checked) => updateAccess(checked, parameterAccesses.WRITE)}
+      >
+        Write
+      </LabeledCheckbox>
+    </div>
   );
 };

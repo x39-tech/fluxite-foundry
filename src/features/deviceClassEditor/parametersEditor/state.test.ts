@@ -647,13 +647,14 @@ describe("parametersEditor/state.ts", () => {
         const editors = getHookValue(useParameterEditors);
 
         // Verify all IDs in editors array exist in parameters object
-        editors.forEach((id) => {
-          expect(params?.[id]).toBeDefined();
+        editors.forEach((editor) => {
+          expect(params?.[editor.id]).toBeDefined();
         });
 
         // Verify all parameter IDs are in editors array
+        const editorIds = editors.map((editor) => editor.id);
         Object.keys(params || {}).forEach((id) => {
-          expect(editors).toContain(id);
+          expect(editorIds).toContain(id);
         });
       });
 
@@ -674,11 +675,13 @@ describe("parametersEditor/state.ts", () => {
           deleteParameter(paramIds[1]);
         });
 
-        const editorsAfter = getHookValue(useParameterEditors);
-        expect(editorsAfter.length).toBe(2);
-        expect(editorsAfter).toContain(paramIds[0]);
-        expect(editorsAfter).toContain(paramIds[2]);
-        expect(editorsAfter).not.toContain(paramIds[1]);
+        const editorIdsAfter = getHookValue(useParameterEditors).map(
+          (editor) => editor.id,
+        );
+        expect(editorIdsAfter.length).toBe(2);
+        expect(editorIdsAfter).toContain(paramIds[0]);
+        expect(editorIdsAfter).toContain(paramIds[2]);
+        expect(editorIdsAfter).not.toContain(paramIds[1]);
       });
     });
 

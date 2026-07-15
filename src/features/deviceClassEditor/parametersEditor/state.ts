@@ -9,6 +9,7 @@ import {
   Unlocalized,
 } from "app/persistentState";
 import { getWithId, selectWithIds } from "app/stateUtils";
+import { ItemEditor } from "utils/utils";
 import { localize, LocalizedString } from "utils/localizationUtils";
 import { useCurrentLocale, useCodexDatabase } from "app/store";
 import {
@@ -44,8 +45,23 @@ export function useParameterClasses():
   return useCurrentEditorPart((state) => state.parameterClasses);
 }
 
-export function useParameterEditors(): EntityId[] {
-  return useCurrentEditorPart((state) => state.parameterEditors) || [];
+export function useParameterEditors(): ItemEditor[] {
+  const editorIds =
+    useCurrentEditorPartShallow((state) => state.parameterEditors) || [];
+  const codexIds =
+    useCurrentEditorPartShallow((state) =>
+      editorIds.map((id) =>
+        state.parameters[id] ? state.parameters[id].codexId : null,
+      ),
+    ) || [];
+
+  return editorIds.reduce<ItemEditor[]>((acc, id, index) => {
+    const codexId = codexIds[index];
+    if (codexId) {
+      acc.push({ id, codexId });
+    }
+    return acc;
+  }, []);
 }
 
 export function useParameterCodexIds(): CodexId[] {

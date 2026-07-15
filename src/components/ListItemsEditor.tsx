@@ -1,4 +1,11 @@
-import { cloneElement, Fragment, useState } from "react";
+import {
+  cloneElement,
+  Fragment,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { AdjustmentsHorizontalIcon } from "@heroicons/react/24/outline";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { cn, ItemEditor } from "utils/utils";
@@ -28,6 +35,23 @@ export const ListItemsEditor = ({
   const [selectedEditorIndex, setSelectedEditorIndex] = useState<number | null>(
     null,
   );
+  const activeEditorRef = useRef<HTMLDivElement>(null);
+
+  const scrollActiveEditorIntoView = useCallback(() => {
+    activeEditorRef.current?.scrollIntoView({ block: "start" });
+  }, []);
+
+  useEffect(() => {
+    scrollActiveEditorIntoView();
+  }, [selectedEditorIndex, scrollActiveEditorIntoView]);
+
+  const selectEditor = (idx: number) => {
+    if (idx === selectedEditorIndex) {
+      scrollActiveEditorIntoView();
+    } else {
+      setSelectedEditorIndex(idx);
+    }
+  };
 
   const reselectEditorId = () => {
     if (editors.length <= 1 || selectedEditorIndex === null) {
@@ -50,34 +74,36 @@ export const ListItemsEditor = ({
 
   return (
     <div className="flex items-start h-full overflow-hidden">
-      <div className="h-full overflow-auto min-w-3xs m-2">
-        <div className="flex flex-col w-full border rounded-lg py-5 px-4 gap-2">
-          {editors.map((editor, idx) => (
-            <Fragment key={idx}>
-              <div className="relative flex flex-col">
-                <Toggle
-                  className="justify-start"
-                  pressed={idx == selectedEditorIndex}
-                  onClick={() => setSelectedEditorIndex(idx)}
-                >
-                  {editor.codexId}
-                </Toggle>
-                <Button
-                  size="icon"
-                  aria-label={`Delete ${itemType}`}
-                  variant="ghost"
-                  className={`absolute right-1 ${idx === selectedEditorIndex ? "visible" : "invisible"}`}
-                  onClick={() => {
-                    onDeleteItem?.(editor);
-                    reselectEditorId();
-                  }}
-                >
-                  <TrashIcon className="size-4" />
-                </Button>
-              </div>
-              {idx !== editors.length - 1 && <Separator />}
-            </Fragment>
-          ))}
+      <div className="flex items-start h-full p-2">
+        <div className="flex flex-col max-h-full min-w-3xs border rounded-lg py-5 px-4 gap-2">
+          <div className="flex flex-col min-h-0 gap-2 overflow-auto">
+            {editors.map((editor, idx) => (
+              <Fragment key={idx}>
+                <div className="relative flex flex-col">
+                  <Toggle
+                    className="justify-start"
+                    pressed={idx == selectedEditorIndex}
+                    onClick={() => selectEditor(idx)}
+                  >
+                    {editor.codexId}
+                  </Toggle>
+                  <Button
+                    size="icon"
+                    aria-label={`Delete ${itemType}`}
+                    variant="ghost"
+                    className={`absolute right-1 ${idx === selectedEditorIndex ? "visible" : "invisible"}`}
+                    onClick={() => {
+                      onDeleteItem?.(editor);
+                      reselectEditorId();
+                    }}
+                  >
+                    <TrashIcon className="size-4" />
+                  </Button>
+                </div>
+                {idx !== editors.length - 1 && <Separator />}
+              </Fragment>
+            ))}
+          </div>
           <Button onClick={onAddItem}>
             <PlusIcon className="size-4" />
             Add {itemType}
@@ -97,7 +123,7 @@ export const ListItemsEditor = ({
                 <CollapsedItemEditor
                   id={editor.codexId}
                   index={idx}
-                  onClick={() => setSelectedEditorIndex(idx)}
+                  onClick={() => selectEditor(idx)}
                   className="my-4"
                 />
                 <div className="px-2">
@@ -110,6 +136,7 @@ export const ListItemsEditor = ({
               return (
                 <div
                   key={idx}
+                  ref={activeEditorRef}
                   className="min-w-xs rounded-lg bg-accent m-2 px-4 py-5 flex flex-col gap-4"
                 >
                   <div className="flex gap-4 items-center">
@@ -139,7 +166,7 @@ export const ListItemsEditor = ({
                   <CollapsedItemEditor
                     id={editor.codexId}
                     index={idx}
-                    onClick={() => setSelectedEditorIndex(idx)}
+                    onClick={() => selectEditor(idx)}
                     className="mb-2 mt-4"
                   />
                 </Fragment>
@@ -150,7 +177,7 @@ export const ListItemsEditor = ({
                   <CollapsedItemEditor
                     id={editor.codexId}
                     index={idx}
-                    onClick={() => setSelectedEditorIndex(idx)}
+                    onClick={() => selectEditor(idx)}
                     className="mt-2 mb-4"
                   />
                   <div className="pb-2 px-2">

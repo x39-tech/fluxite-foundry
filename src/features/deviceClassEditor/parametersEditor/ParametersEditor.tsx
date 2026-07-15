@@ -1,29 +1,28 @@
 import { useState } from "react";
-import { AddItemSection } from "components/AddItemSection";
 import { NewParameterDialog } from "./NewParameterDialog";
+import { deleteParameter, useParameterEditors } from "./state";
 import { ParameterEditor } from "./ParameterEditor";
-import { useParameterEditors } from "./state";
+import { ListItemsEditor } from "components/ListItemsEditor";
 
 export const ParametersEditor = () => {
   const editorStates = useParameterEditors();
-
   const [newParameterDialogIsOpen, setNewParameterDialogIsOpen] =
     useState(false);
 
-  const parameterEditors = editorStates.map((editor) => (
-    <ParameterEditor key={editor} paramId={editor} />
-  ));
-
   return (
-    <div className="flex flex-col items-stretch p-1">
-      {parameterEditors}
-      <AddItemSection onClick={() => setNewParameterDialogIsOpen(true)} />
+    <>
+      <ListItemsEditor
+        editors={editorStates}
+        itemType="Parameter"
+        getEditorTitle={(editor) => editor.codexId}
+        onAddItem={() => setNewParameterDialogIsOpen(true)}
+        onDeleteItem={(editor) => deleteParameter(editor.id)}
+        renderActiveEditor={(editor) => <ParameterEditor id={editor.id} />}
+      />
       <NewParameterDialog
         isOpen={newParameterDialogIsOpen}
-        onClose={() => {
-          setNewParameterDialogIsOpen(false);
-        }}
+        onClose={() => setNewParameterDialogIsOpen(false)}
       />
-    </div>
+    </>
   );
 };

@@ -1,8 +1,7 @@
-import { getByText, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ParametersEditor } from "./ParametersEditor";
 import { createDeviceClassEditor } from "features/topNavBar/state";
-import { getEditorTableRow } from "test/utils";
 
 beforeEach(() => {
   createDeviceClassEditor();
@@ -11,9 +10,9 @@ beforeEach(() => {
 test("Adds a new parameter correctly from the new parameter dialog", async () => {
   const user = userEvent.setup();
 
-  const { container, getByRole } = render(<ParametersEditor />);
+  const { getByRole } = render(<ParametersEditor />);
 
-  await user.click(getByRole("button", { name: "Add Item" }));
+  await user.click(getByRole("button", { name: "Add Parameter" }));
 
   expect(screen.getByText("New Parameter")).toBeInTheDocument();
 
@@ -37,17 +36,14 @@ test("Adds a new parameter correctly from the new parameter dialog", async () =>
 
   await user.click(screen.getByRole("button", { name: "Add" }));
 
-  const expandButton = getByRole("button", { name: "Expand test-item" });
-  expect(expandButton).toBeInTheDocument();
-  await user.click(expandButton);
+  // The new parameter is listed, and selecting it opens its editor
+  const listItem = getByRole("button", { name: "test-item" });
+  expect(listItem).toBeInTheDocument();
+  await user.click(listItem);
 
   // Verify the ID is displayed correctly
-  const idRow = getEditorTableRow("ID", container);
-  expect(getByText(idRow, "test-item")).toBeInTheDocument();
+  expect(screen.getByRole("textbox", { name: "ID" })).toHaveValue("test-item");
 
   // Verify the Display Name field exists but is empty by default
-  const nameRow = getEditorTableRow("Display Name", container);
-  const displayNameInput = nameRow.querySelector("input");
-  expect(displayNameInput).toBeInTheDocument();
-  expect(displayNameInput).toHaveValue("");
+  expect(screen.getByRole("textbox", { name: "Display Name" })).toHaveValue("");
 });
