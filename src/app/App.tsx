@@ -3,6 +3,7 @@ import { useOpenEditors } from "features/topNavBar/state";
 import { DeviceClassEditor } from "features/deviceClassEditor/DeviceClassEditor";
 import { TopNavBar } from "features/topNavBar/TopNavBar";
 import { Toaster } from "components/scn-ui/Sonner";
+import { checkForUpdateOnStartup } from "features/updater/updatePrompt";
 import { codexDatabaseIsEmpty } from "codex/codexDatabase";
 import { LibraryErrorDialog } from "./libraryErrorDialog";
 import {
@@ -32,6 +33,12 @@ export const App = () => {
       root.classList.remove("dark");
     }
   }, [darkMode]);
+
+  // Offer the user a newer desktop version if one has been released. No-ops in
+  // the browser.
+  useEffect(() => {
+    void checkForUpdateOnStartup();
+  }, []);
 
   // Listen for system dark mode preference changes
   useEffect(() => {

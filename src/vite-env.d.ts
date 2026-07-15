@@ -9,3 +9,4 @@ declare module "*.fcd" {
 
 // Build-time constants injected by Vite
 declare const __BUILD_STRING__: string;
+declare const __APP_VERSION__: string;

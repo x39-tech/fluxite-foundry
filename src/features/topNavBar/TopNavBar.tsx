@@ -20,8 +20,14 @@ export const TopNavBar = () => {
 
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 flex items-center h-[50px]">
-        <div className="pl-3 flex gap-1 items-center">
+      <div
+        className="fixed top-0 left-0 right-0 flex items-center h-[50px]"
+        data-tauri-drag-region
+      >
+        <div
+          className="pl-[max(0.75rem,var(--titlebar-controls-inset))] flex gap-1 items-center"
+          data-tauri-drag-region
+        >
           <AppLogo />
           <div className="text-lg">
             <span className="font-bold text-primary">FLUXITE</span>{" "}
@@ -59,7 +65,7 @@ export const TopNavBar = () => {
             Codex file using the import option to the right.
           </TooltipContent>
         </Tooltip>
-        <div className="flex-grow" />
+        <div className="flex-grow self-stretch" data-tauri-drag-region />
         <div className="mr-4">
           <AppMainMenu />
         </div>

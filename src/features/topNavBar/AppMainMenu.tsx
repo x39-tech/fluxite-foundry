@@ -3,16 +3,17 @@ import {
   CircleQuestionMarkIcon,
   DownloadIcon,
   FileTextIcon,
+  RefreshCwIcon,
   SettingsIcon,
   SlidersVerticalIcon,
   UploadIcon,
   WrenchIcon,
 } from "lucide-react";
+import { isTauri } from "@tauri-apps/api/core";
 import { toast } from "sonner";
-import {
-  getMigrationReport,
-  openMigrationReportInNewTab,
-} from "app/migrationReport";
+import { getMigrationReport, openMigrationReport } from "app/migrationReport";
+import { checkForUpdateInteractively } from "features/updater/updatePrompt";
+import { errorMessage } from "utils/utils";
 import { APP_NAME } from "consts";
 import { AboutDialog } from "./AboutDialog";
 import { ImportFluxiteCodexDialog } from "./ImportFluxiteCodexDialog";
@@ -72,15 +73,23 @@ export const AppMainMenu = () => {
             <DropdownMenuSubContent>
               <DropdownMenuItem
                 onClick={() => {
-                  if (!getMigrationReport()) {
-                    toast.error("No migration report available");
-                    return;
-                  }
-                  if (!openMigrationReportInNewTab()) {
-                    toast.error(
-                      "Failed to open migration report. Pop-ups may be blocked.",
-                    );
-                  }
+                  void (async () => {
+                    if (!getMigrationReport()) {
+                      toast.error("No migration report available");
+                      return;
+                    }
+                    try {
+                      if (!(await openMigrationReport())) {
+                        toast.error(
+                          "Failed to open migration report. Pop-ups may be blocked.",
+                        );
+                      }
+                    } catch (error) {
+                      toast.error(
+                        `Failed to open migration report: ${errorMessage(error)}`,
+                      );
+                    }
+                  })();
                 }}
               >
                 <FileTextIcon className="size-5" />
@@ -88,6 +97,14 @@ export const AppMainMenu = () => {
               </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
+          {isTauri() && (
+            <DropdownMenuItem
+              onClick={() => void checkForUpdateInteractively()}
+            >
+              <RefreshCwIcon className="size-5" />
+              Check for Updates...
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onClick={() => setAboutDialogIsOpen(true)}>
             <CircleQuestionMarkIcon className="size-5" />
             {`About ${APP_NAME}`}

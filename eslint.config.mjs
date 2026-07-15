@@ -17,7 +17,13 @@ const compat = new FlatCompat({
 });
 
 export default defineConfig([
-  globalIgnores(["**/dist/", "**/node_modules/", "tools/sacn-server/"]),
+  globalIgnores([
+    "**/dist/",
+    "**/node_modules/",
+    "tools/sacn-server/",
+    "src-tauri/target/",
+    "src-tauri/gen/",
+  ]),
   {
     extends: compat.extends(
       "eslint:recommended",

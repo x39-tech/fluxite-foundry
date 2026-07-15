@@ -1,6 +1,8 @@
 /// <reference types="vitest" />
 import { defineConfig, Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import process from "node:process";
+import { readFileSync } from "node:fs";
 import tailwindcss from "@tailwindcss/vite";
 import checker from "vite-plugin-checker";
 import svgr from "vite-plugin-svgr";
@@ -14,6 +16,12 @@ import {
   colors,
   animals,
 } from "unique-names-generator";
+
+const host = process.env.TAURI_DEV_HOST;
+
+const { version: appVersion } = JSON.parse(
+  readFileSync(new URL("./package.json", import.meta.url), "utf-8"),
+) as { version: string };
 
 // Plugin to handle .fcd files as JSON
 function fcdPlugin(): Plugin {
@@ -69,6 +77,7 @@ function getBuildInfo() {
 export default defineConfig({
   define: {
     __BUILD_STRING__: JSON.stringify(getBuildInfo().buildString),
+    __APP_VERSION__: JSON.stringify(appVersion),
   },
   plugins: [
     fcdPlugin(),
@@ -80,6 +89,23 @@ export default defineConfig({
     tsconfigPaths(),
     checker({ typescript: true }),
   ],
+  clearScreen: false,
+  server: {
+    port: 5173,
+    strictPort: true,
+    host: host || false,
+    hmr: host
+      ? {
+          protocol: "ws",
+          host,
+          port: 5174,
+        }
+      : undefined,
+    watch: {
+      // 3. tell Vite to ignore watching `src-tauri`
+      ignored: ["**/src-tauri/**"],
+    },
+  },
   resolve: {
     preserveSymlinks: true,
   },

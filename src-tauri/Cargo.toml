@@ -1,0 +1,36 @@
+[package]
+name = "fluxite-foundry"
+# Deliberately no version here. The app version lives in package.json and
+# reaches the bundle through `version` in tauri.conf.json. Cargo is only
+# consulted if that field is absent, so a number here could only ever drift out
+# of sync with the real one. Cargo defaults the crate to 0.0.0.
+description = "An app for creating and visualizing Fluxite Codex data."
+edition = "2024"
+
+[lib]
+name = "fluxite_foundry_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-opener = "2"
+tauri-plugin-process = "2"
+
+[target.'cfg(any(target_os = "macos", windows, target_os = "linux"))'.dependencies]
+tauri-plugin-updater = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+
+# Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3
+panic = "abort"
+strip = true

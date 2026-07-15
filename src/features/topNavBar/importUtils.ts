@@ -10,6 +10,7 @@ import JSZip from "jszip";
 import {
   buildQualifiedId,
   EntityType,
+  errorMessage,
   OrgId,
   parseQualifiedId,
 } from "utils/utils";
@@ -150,7 +151,7 @@ async function processCodexArchive(file: File): Promise<CodexImportResult> {
     return {
       valid: false,
       feedbackKind: FeedbackKind.ArchiveParsingFailed,
-      feedback: `Failed to read ZIP archive: ${e instanceof Error ? e.message : String(e)}`,
+      feedback: `Failed to read ZIP archive: ${errorMessage(e)}`,
     };
   }
 }

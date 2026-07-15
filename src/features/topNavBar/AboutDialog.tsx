@@ -2,6 +2,7 @@ import {
   APP_COPYRIGHT,
   APP_LICENSE,
   APP_NAME,
+  APP_VERSION,
   BUILD_STRING,
   REPO_ISSUES_LINK,
   TSP_WORKING_GROUPS_LINK,
@@ -56,7 +57,9 @@ export const AboutDialog = ({ isOpen, onClose }: Props) => {
             to participate in the development of the Fluxite standards suite.
           </p>
           <p className="mb-4">{APP_COPYRIGHT}</p>
-          <p className="mb-4 text-sm text-gray-600">Build: {BUILD_STRING}</p>
+          <p className="mb-4 text-sm text-gray-600">
+            Version {APP_VERSION} (build {BUILD_STRING})
+          </p>
           <p className="mb-2">License:</p>
           <Textarea
             value={APP_LICENSE}

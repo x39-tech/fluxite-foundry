@@ -32,6 +32,14 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Get a message to show the user from a caught value, which is not guaranteed
+ * to be an Error.
+ */
+export function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 export function getDefaultWindowLayout(): IJsonRowNode {
   return {
     type: "row",

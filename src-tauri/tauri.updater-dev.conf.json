@@ -1,0 +1,9 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "plugins": {
+    "updater": {
+      "endpoints": ["http://localhost:8000/latest.json"],
+      "dangerousInsecureTransportProtocol": true
+    }
+  }
+}

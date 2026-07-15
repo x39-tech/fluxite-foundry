@@ -1,6 +1,9 @@
 dist/
 node-modules/
 
+src-tauri/target/
+src-tauri/gen/
+
 src/generated/
 src/e173/
 

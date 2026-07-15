@@ -45,6 +45,7 @@
 }
 
 :root {
+  --titlebar-controls-inset: 0px;
   --radius: 0.65rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
@@ -83,6 +84,10 @@
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.606 0.25 292.717);
+}
+
+:root[data-window-controls="macos-overlay"] {
+  --titlebar-controls-inset: 82px;
 }
 
 .dark {
@@ -141,5 +146,13 @@
    */
   svg.lucide {
     stroke-width: 1.5;
+  }
+
+  /*
+   * nicer scrollbars on Windows
+   */
+  html[data-platform="windows"] * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
   }
 }

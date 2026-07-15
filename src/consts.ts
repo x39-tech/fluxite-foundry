@@ -19,3 +19,4 @@ export const CODEX_ARCHIVE_SCHEMA_URL =
 
 // Build information
 export const BUILD_STRING = __BUILD_STRING__;
+export const APP_VERSION = __APP_VERSION__;

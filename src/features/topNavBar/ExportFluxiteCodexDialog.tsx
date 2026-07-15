@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useId, useState } from "react";
 import {
   E173Archive,
   E173Document,
@@ -34,7 +34,8 @@ import {
   TooltipTrigger,
 } from "components/scn-ui/Tooltip";
 import { assetStorage } from "app/assetStorage";
-import { buildQualifiedId, EntityType } from "utils/utils";
+import { saveFile } from "app/saveFile";
+import { buildQualifiedId, EntityType, errorMessage } from "utils/utils";
 import { exportDeviceClass } from "features/deviceClassEditor/export";
 import {
   APP_NAME,
@@ -80,25 +81,12 @@ export const ExportFluxiteCodexDialog = ({ isOpen, onClose }: Props) => {
 
   const devClassSelId = useId();
 
-  const [fileDownloadUrl, setFileDownloadUrl] = useState<string | undefined>(
-    undefined,
-  );
-  const downloadRef = useRef<HTMLAnchorElement>(null);
-
-  useEffect(() => {
-    if (fileDownloadUrl && downloadRef.current) {
-      downloadRef.current.click();
-      setFileDownloadUrl(undefined);
-      onClose();
-    }
-  }, [fileDownloadUrl]);
-
   const editor = selectedEditorId
     ? deviceClassEditors[selectedEditorId]
     : undefined;
-  const downloadFileName = `${editor?.deviceClassId || "my-device"}.${createArchive ? "fca" : "fcd"}`;
+  const exportFileName = `${editor?.deviceClassId || "my-device"}.${createArchive ? "fca" : "fcd"}`;
 
-  const createAndDownload = async () => {
+  const createAndExport = async () => {
     const editor = deviceClassEditors[selectedEditorId!];
     if (!editor) {
       toast(
@@ -125,8 +113,18 @@ export const ExportFluxiteCodexDialog = ({ isOpen, onClose }: Props) => {
       return;
     }
 
-    const url = URL.createObjectURL(blob);
-    setFileDownloadUrl(url);
+    try {
+      await saveFile(
+        blob,
+        exportFileName,
+        createArchive ? "Fluxite Codex Archive" : "Fluxite Codex Document",
+      );
+    } catch (error) {
+      toast.error(`Error saving ${exportFileName}: ${errorMessage(error)}`);
+      return;
+    }
+
+    onClose();
   };
 
   return (
@@ -176,19 +174,13 @@ export const ExportFluxiteCodexDialog = ({ isOpen, onClose }: Props) => {
         <DialogFooter>
           <Button
             disabled={editorsWithNames.length === 0}
-            onClick={createAndDownload}
+            onClick={createAndExport}
           >
             Export
           </Button>
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          <a
-            hidden
-            href={fileDownloadUrl}
-            ref={downloadRef}
-            download={downloadFileName}
-          />
         </DialogFooter>
       </DialogContent>
     </Dialog>

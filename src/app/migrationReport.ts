@@ -1,4 +1,5 @@
 import * as jsondiffpatch from "jsondiffpatch";
+import { isTauri } from "@tauri-apps/api/core";
 import { format as formatHtmlDiff } from "jsondiffpatch/formatters/html";
 // Import CSS as raw string for embedding in generated HTML reports
 import jsondiffpatchCss from "jsondiffpatch/formatters/styles/html.css?raw";
@@ -480,11 +481,16 @@ export function generateHtmlReport(report: MigrationReport): string {
 // Public API
 // =============================================================================
 
+/** File name the report is written under when opened from the desktop app. */
+const REPORT_FILE_NAME = "migration-report.html";
+
 /**
- * Open the migration report in a new browser tab.
- * @returns true if successful, false if no report exists or popup was blocked
+ * Open the migration report for viewing.
+ *
+ * @returns false if there is no report to show or if pop-ups are blocked.
+ * Failures to write or launch the report on the desktop throw.
  */
-export function openMigrationReportInNewTab(): boolean {
+export async function openMigrationReport(): Promise<boolean> {
   const report = getMigrationReport();
   if (!report) {
     return false;
@@ -492,14 +498,45 @@ export function openMigrationReportInNewTab(): boolean {
 
   const html = generateHtmlReport(report);
 
-  // Create a Blob URL for the HTML content
+  if (isTauri()) {
+    await openReportInSystemBrowser(html);
+    return true;
+  }
+
+  return openReportInNewTab(html);
+}
+
+/**
+ * On desktop, opens the report in the system default browser
+ */
+async function openReportInSystemBrowser(html: string): Promise<void> {
+  // Loaded lazily so the browser build never pulls the Tauri plugins into its
+  // bundle.
+  const [{ mkdir, writeTextFile }, { openPath }, { appCacheDir, join }] =
+    await Promise.all([
+      import("@tauri-apps/plugin-fs"),
+      import("@tauri-apps/plugin-opener"),
+      import("@tauri-apps/api/path"),
+    ]);
+
+  const cacheDir = await appCacheDir();
+  // Nothing guarantees the cache directory exists on a fresh install.
+  await mkdir(cacheDir, { recursive: true });
+
+  const reportPath = await join(cacheDir, REPORT_FILE_NAME);
+  await writeTextFile(reportPath, html);
+  await openPath(reportPath);
+}
+
+/**
+ * On web, opens the report in a new browser tab
+ */
+function openReportInNewTab(html: string): boolean {
   const blob = new Blob([html], { type: "text/html" });
   const url = URL.createObjectURL(blob);
 
-  // Open the Blob URL in a new tab
   const win = window.open(url, "_blank");
   if (!win) {
-    // Clean up the URL if window failed to open
     URL.revokeObjectURL(url);
     return false;
   }

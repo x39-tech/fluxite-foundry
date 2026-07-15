@@ -1,5 +1,4 @@
-// Used both in the app and as the favicon
-import Mark from "../../../public/icon.svg?react";
+import Mark from "./AppLogoMark.svg?react";
 
 interface AppLogoProps {
   className?: string;
