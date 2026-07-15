@@ -3,19 +3,40 @@ import {
   Fragment,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
-import { AdjustmentsHorizontalIcon } from "@heroicons/react/24/outline";
-import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import {
+  AdjustmentsHorizontalIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/outline";
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  PlusIcon,
+  TrashIcon,
+} from "@heroicons/react/24/solid";
+import { EntityId } from "app/persistentState";
 import { cn, ItemEditor } from "utils/utils";
 import { Toggle } from "./scn-ui/Toggle";
 import { Button } from "./scn-ui/Button";
 import { Separator } from "./scn-ui/Separator";
+import { Input } from "./scn-ui/Input";
+
+/**
+ * Chrome used for the item rows in the editor pane. "icon" gives each item a
+ * coloured icon next to its title, while "accordion" gives it a chevron and a
+ * dividing rule.
+ */
+export type ListItemsEditorVariant = "icon" | "accordion";
 
 interface ListItemsEditorProps {
   editors: ItemEditor[];
   itemType: string;
+  variant?: ListItemsEditorVariant;
+  // When set, a search box filtering the items by title is shown.
+  searchPlaceholder?: string;
   getEditorTitle?: (editor: ItemEditor) => string;
   onAddItem?: () => void;
   onDeleteItem?: (editor: ItemEditor) => void;
@@ -27,47 +48,95 @@ interface ListItemsEditorProps {
 export const ListItemsEditor = ({
   editors,
   itemType,
+  variant = "icon",
+  searchPlaceholder,
   getEditorTitle,
   onAddItem,
   onDeleteItem,
   renderActiveEditor,
 }: ListItemsEditorProps) => {
-  const [selectedEditorIndex, setSelectedEditorIndex] = useState<number | null>(
+  const [selectedEditorId, setSelectedEditorId] = useState<EntityId | null>(
     null,
   );
+  const [searchText, setSearchText] = useState("");
   const activeEditorRef = useRef<HTMLDivElement>(null);
+  const activeListItemRef = useRef<HTMLDivElement>(null);
+  const knownEditorIds = useRef<Set<EntityId> | null>(null);
 
-  const scrollActiveEditorIntoView = useCallback(() => {
+  const editorTitle = useCallback(
+    (editor: ItemEditor) => getEditorTitle?.(editor) ?? editor.codexId,
+    [getEditorTitle],
+  );
+
+  // Determine when a new ID is added and select it.
+  useEffect(() => {
+    const previousIds = knownEditorIds.current;
+    knownEditorIds.current = new Set(editors.map((editor) => editor.id));
+
+    if (previousIds === null) return;
+
+    const addedIds = editors
+      .map((editor) => editor.id)
+      .filter((id) => !previousIds.has(id));
+
+    if (addedIds.length !== 1) return;
+
+    setSelectedEditorId(addedIds[0]);
+    setSearchText("");
+  }, [editors]);
+
+  const visibleEditors = useMemo(() => {
+    const query = searchText.trim().toLowerCase();
+    if (!query) return editors;
+    return editors.filter((editor) =>
+      editorTitle(editor).toLowerCase().includes(query),
+    );
+  }, [editors, searchText, editorTitle]);
+
+  const selectedIndex = visibleEditors.findIndex(
+    (editor) => editor.id === selectedEditorId,
+  );
+
+  const scrollActiveItemIntoView = useCallback(() => {
     activeEditorRef.current?.scrollIntoView({ block: "start" });
+    // The list only needs to reveal its row, so it scrolls by as little as it
+    // can. A row that is already on screen stays where it is.
+    activeListItemRef.current?.scrollIntoView({ block: "nearest" });
   }, []);
 
   useEffect(() => {
-    scrollActiveEditorIntoView();
-  }, [selectedEditorIndex, scrollActiveEditorIntoView]);
+    scrollActiveItemIntoView();
+  }, [selectedEditorId, scrollActiveItemIntoView]);
 
-  const selectEditor = (idx: number) => {
-    if (idx === selectedEditorIndex) {
-      scrollActiveEditorIntoView();
+  const selectEditor = (editor: ItemEditor) => {
+    if (editor.id === selectedEditorId) {
+      scrollActiveItemIntoView();
     } else {
-      setSelectedEditorIndex(idx);
+      setSelectedEditorId(editor.id);
     }
   };
 
-  const reselectEditorId = () => {
-    if (editors.length <= 1 || selectedEditorIndex === null) {
-      setSelectedEditorIndex(null);
-    } else if (selectedEditorIndex === editors.length - 1) {
-      setSelectedEditorIndex(selectedEditorIndex - 1);
-    }
+  // Once the selected item goes away, fall back to the item that takes its
+  // place, or the one before it if it was last.
+  const selectNeighbourOf = (editor: ItemEditor) => {
+    if (editor.id !== selectedEditorId) return;
+    const index = editors.findIndex((e) => e.id === editor.id);
+    const neighbour = editors[index + 1] ?? editors[index - 1];
+    setSelectedEditorId(neighbour?.id ?? null);
   };
 
-  const getActiveEditor = (editor: ItemEditor, idx: number) => {
+  const deleteEditor = (editor: ItemEditor) => {
+    onDeleteItem?.(editor);
+    selectNeighbourOf(editor);
+  };
+
+  const getActiveEditor = (editor: ItemEditor) => {
     const editorElem = renderActiveEditor(editor);
     return cloneElement(editorElem, {
-      key: idx,
+      key: editor.id,
       onDelete: () => {
         editorElem.props.onDelete?.();
-        reselectEditorId();
+        selectNeighbourOf(editor);
       },
     });
   };
@@ -76,31 +145,48 @@ export const ListItemsEditor = ({
     <div className="flex items-start h-full overflow-hidden">
       <div className="flex items-start h-full p-2">
         <div className="flex flex-col max-h-full min-w-3xs border rounded-lg py-5 px-4 gap-2">
+          {searchPlaceholder && (
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none" />
+              <Input
+                type="search"
+                className="pl-9"
+                aria-label={`Search ${itemType}s`}
+                placeholder={searchPlaceholder}
+                value={searchText}
+                onChange={(event) => setSearchText(event.target.value)}
+              />
+            </div>
+          )}
           <div className="flex flex-col min-h-0 gap-2 overflow-auto">
-            {editors.map((editor, idx) => (
-              <Fragment key={idx}>
-                <div className="relative flex flex-col">
+            {visibleEditors.map((editor, idx) => (
+              <Fragment key={editor.id}>
+                <div
+                  ref={
+                    editor.id === selectedEditorId
+                      ? activeListItemRef
+                      : undefined
+                  }
+                  className="relative flex flex-col"
+                >
                   <Toggle
                     className="justify-start"
-                    pressed={idx == selectedEditorIndex}
-                    onClick={() => selectEditor(idx)}
+                    pressed={editor.id === selectedEditorId}
+                    onClick={() => selectEditor(editor)}
                   >
-                    {editor.codexId}
+                    {editorTitle(editor)}
                   </Toggle>
                   <Button
                     size="icon"
                     aria-label={`Delete ${itemType}`}
                     variant="ghost"
-                    className={`absolute right-1 ${idx === selectedEditorIndex ? "visible" : "invisible"}`}
-                    onClick={() => {
-                      onDeleteItem?.(editor);
-                      reselectEditorId();
-                    }}
+                    className={`absolute right-1 ${editor.id === selectedEditorId ? "visible" : "invisible"}`}
+                    onClick={() => deleteEditor(editor)}
                   >
                     <TrashIcon className="size-4" />
                   </Button>
                 </div>
-                {idx !== editors.length - 1 && <Separator />}
+                {idx !== visibleEditors.length - 1 && <Separator />}
               </Fragment>
             ))}
           </div>
@@ -110,46 +196,76 @@ export const ListItemsEditor = ({
           </Button>
         </div>
       </div>
-      <div className="flex flex-col w-full h-full overflow-auto">
-        {selectedEditorIndex === null && editors.length > 0 && (
-          <div className="px-2 pt-2">
-            <Separator />
-          </div>
-        )}
-        {editors.map((editor, idx) => {
-          if (selectedEditorIndex === null) {
-            return (
-              <Fragment key={idx}>
-                <CollapsedItemEditor
-                  id={editor.codexId}
-                  index={idx}
-                  onClick={() => selectEditor(idx)}
-                  className="my-4"
-                />
-                <div className="px-2">
-                  <Separator />
+      <div className="relative flex flex-col w-full h-full overflow-auto">
+        {variant === "accordion" &&
+          visibleEditors.map((editor) => (
+            <div
+              key={editor.id}
+              ref={editor.id === selectedEditorId ? activeEditorRef : undefined}
+              className="mx-4 border-b scroll-mt-2"
+            >
+              <ItemEditorAccordionHeader
+                title={editorTitle(editor)}
+                expanded={editor.id === selectedEditorId}
+                onClick={() => selectEditor(editor)}
+              />
+              {editor.id === selectedEditorId && (
+                <div className="flex flex-col gap-4 pb-4">
+                  {getActiveEditor(editor)}
+                  <div className="flex justify-end">
+                    <Button
+                      variant="destructive"
+                      onClick={() => deleteEditor(editor)}
+                    >
+                      <TrashIcon />
+                      Delete
+                    </Button>
+                  </div>
                 </div>
-              </Fragment>
-            );
-          } else {
-            if (idx === selectedEditorIndex) {
+              )}
+            </div>
+          ))}
+        {variant === "icon" &&
+          selectedIndex === -1 &&
+          visibleEditors.length > 0 && (
+            <div className="px-2 pt-2">
+              <Separator />
+            </div>
+          )}
+        {variant === "icon" &&
+          visibleEditors.map((editor, idx) => {
+            if (selectedIndex === -1) {
+              return (
+                <Fragment key={editor.id}>
+                  <CollapsedItemEditor
+                    title={editorTitle(editor)}
+                    index={idx}
+                    onClick={() => selectEditor(editor)}
+                    className="my-4"
+                  />
+                  <div className="px-2">
+                    <Separator />
+                  </div>
+                </Fragment>
+              );
+            } else if (idx === selectedIndex) {
               return (
                 <div
-                  key={idx}
+                  key={editor.id}
                   ref={activeEditorRef}
                   className="min-w-xs rounded-lg bg-accent m-2 scroll-mt-2 px-4 py-5 flex flex-col gap-4"
                 >
                   <div className="flex gap-4 items-center">
                     <ItemEditorIcon index={idx} />
                     <div className="text-xl font-semibold pb-1">
-                      {getEditorTitle?.(editor) || editor.codexId}
+                      {editorTitle(editor)}
                     </div>
                   </div>
-                  {getActiveEditor(editor, idx)}
+                  {getActiveEditor(editor)}
                   <div className="flex justify-end">
                     <Button
                       variant="destructive"
-                      onClick={() => onDeleteItem?.(editor)}
+                      onClick={() => deleteEditor(editor)}
                     >
                       <TrashIcon />
                       Delete
@@ -157,27 +273,27 @@ export const ListItemsEditor = ({
                   </div>
                 </div>
               );
-            } else if (idx < selectedEditorIndex) {
+            } else if (idx < selectedIndex) {
               return (
-                <Fragment key={idx}>
+                <Fragment key={editor.id}>
                   <div className="pt-2 px-2">
                     <Separator />
                   </div>
                   <CollapsedItemEditor
-                    id={editor.codexId}
+                    title={editorTitle(editor)}
                     index={idx}
-                    onClick={() => selectEditor(idx)}
+                    onClick={() => selectEditor(editor)}
                     className="mb-2 mt-4"
                   />
                 </Fragment>
               );
             } else {
               return (
-                <Fragment key={idx}>
+                <Fragment key={editor.id}>
                   <CollapsedItemEditor
-                    id={editor.codexId}
+                    title={editorTitle(editor)}
                     index={idx}
-                    onClick={() => selectEditor(idx)}
+                    onClick={() => selectEditor(editor)}
                     className="mt-2 mb-4"
                   />
                   <div className="pb-2 px-2">
@@ -186,22 +302,49 @@ export const ListItemsEditor = ({
                 </Fragment>
               );
             }
-          }
-        })}
+          })}
       </div>
     </div>
   );
 };
 
+interface ItemEditorAccordionHeaderProps {
+  title: string;
+  expanded: boolean;
+  onClick: () => void;
+}
+
+const ItemEditorAccordionHeader = ({
+  title,
+  expanded,
+  onClick,
+}: ItemEditorAccordionHeaderProps) => {
+  return (
+    <button
+      type="button"
+      aria-expanded={expanded}
+      onClick={onClick}
+      className="flex w-full items-center justify-between py-4 font-medium cursor-pointer"
+    >
+      {title}
+      {expanded ? (
+        <ChevronUpIcon className="size-4 shrink-0" />
+      ) : (
+        <ChevronDownIcon className="size-4 shrink-0" />
+      )}
+    </button>
+  );
+};
+
 interface CollapsedItemEditorProps {
-  id: string;
+  title: string;
   index: number;
   onClick: () => void;
   className?: string;
 }
 
 const CollapsedItemEditor = ({
-  id,
+  title,
   index,
   onClick,
   className,
@@ -212,7 +355,7 @@ const CollapsedItemEditor = ({
       onClick={onClick}
     >
       <ItemEditorIcon index={index} />
-      <div className="text-xl font-semibold pb-1">{id}</div>
+      <div className="text-xl font-semibold pb-1">{title}</div>
     </div>
   );
 };

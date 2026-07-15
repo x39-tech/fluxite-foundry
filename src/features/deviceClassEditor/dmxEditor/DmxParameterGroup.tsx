@@ -1,15 +1,12 @@
-import {
-  CalculatorIcon,
-  FunnelIcon,
-  TrashIcon,
-} from "@heroicons/react/24/solid";
+import { PlusCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { DmxMappingGroup, EntityId } from "app/persistentState";
-import { SmallIconButton } from "components/SmallIconButton";
+import { Button } from "components/scn-ui/Button";
 import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "components/scn-ui/Tooltip";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "components/scn-ui/DropdownMenu";
 import {
   addCondition,
   addParameterMapping,
@@ -40,15 +37,45 @@ export const DmxParameterGroup = ({
     : [];
 
   return (
-    <div className="bg-gray-300 dark:bg-gray-700 my-2 p-1 rounded-lg">
-      <div className="flex">
-        <div className="font-bold mx-2 my-1">Mapping Group</div>
+    <div className="flex flex-col gap-4 rounded-lg border bg-sidebar p-4">
+      <div className="flex items-center gap-2">
+        <span className="text-base font-semibold">Mapping Group</span>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-primary"
+              aria-label="Add to Mapping Group"
+            >
+              <PlusCircleIcon className="size-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem
+              onClick={() => addParameterMapping(mappingGroupId)}
+            >
+              Parameter Mapping
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              // A condition compares another slot group's value, so there has
+              // to be one other than this group's own.
+              disabled={chunksCount <= 1}
+              onClick={() => addCondition(mappingGroupId, chunkId)}
+            >
+              Condition
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <div className="grow" />
-        <SmallIconButton
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Remove Mapping Group"
           onClick={() => removeParameterMappingGroup(chunkId, mappingGroupId)}
         >
-          <TrashIcon />
-        </SmallIconButton>
+          <XMarkIcon className="size-5" />
+        </Button>
       </div>
       {mappingGroup.mappings.map((mapping, index) => (
         <DmxParameterMapping
@@ -60,39 +87,19 @@ export const DmxParameterGroup = ({
           onRemove={() => removeParameterMapping(mappingGroupId, index)}
         />
       ))}
-      <div className="font-bold m-2">Conditions</div>
-      {conditions.map((condition) => (
-        <DmxConditionTree
-          key={condition.id}
-          conditionId={condition.id}
-          condition={condition}
-          parentChunkId={chunkId}
-        />
-      ))}
-      <div className="flex items-center my-1">
-        <div className="grow" />
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <SmallIconButton
-              onClick={() => addParameterMapping(mappingGroupId)}
-            >
-              <CalculatorIcon />
-            </SmallIconButton>
-          </TooltipTrigger>
-          <TooltipContent>Add Parameter Mapping</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <SmallIconButton
-              disabled={chunksCount <= 1}
-              onClick={() => addCondition(mappingGroupId, chunkId)}
-            >
-              <FunnelIcon />
-            </SmallIconButton>
-          </TooltipTrigger>
-          <TooltipContent>Add Condition</TooltipContent>
-        </Tooltip>
-      </div>
+      {conditions.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <span className="text-base font-semibold">Conditions</span>
+          {conditions.map((condition) => (
+            <DmxConditionTree
+              key={condition.id}
+              conditionId={condition.id}
+              condition={condition}
+              parentChunkId={chunkId}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

@@ -106,6 +106,7 @@ export const TextEditorField = ({
           onKeyDown={handleKeyDown}
           onBlur={handleConfirm}
           maxLength={maxLength}
+          className={className}
           {...props}
         />
       </PopoverAnchor>

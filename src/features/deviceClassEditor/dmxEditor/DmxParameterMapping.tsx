@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import {
   ExclamationTriangleIcon,
-  PencilIcon,
-  PlusCircleIcon,
+  PlusIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { TrashIcon } from "@heroicons/react/24/solid";
 import {
   CodexId,
   DmxMapping,
@@ -14,10 +13,19 @@ import {
   ParameterReference,
 } from "app/persistentState";
 import { StringSelector } from "components/StringSelector";
-import { TextEditorField } from "components/EditorFields/DeprecatedTextEditorField";
-import { SelectField } from "components/EditorFields/DeprecatedSelectField";
-import { Table } from "components/Table";
-import { SmallIconButton } from "components/SmallIconButton";
+import { FieldSet } from "components/FieldSet";
+import { Label } from "components/scn-ui/Label";
+import { Button } from "components/scn-ui/Button";
+import { TextEditorField } from "components/EditorFields/TextEditorField";
+import { SelectField } from "components/EditorFields/SelectField";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "components/scn-ui/Table";
 import {
   Tooltip,
   TooltipContent,
@@ -92,6 +100,37 @@ function generateParameterCandidates(
   return candidates;
 }
 
+const SectionHeading = ({
+  children,
+  addLabel,
+  disabled,
+  onAdd,
+}: {
+  children: string;
+  addLabel: string;
+  disabled?: boolean;
+  onAdd: () => void;
+}) => (
+  <div className="flex items-center gap-1">
+    <span className="text-sm font-semibold">{children}</span>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-primary"
+          aria-label={addLabel}
+          disabled={disabled}
+          onClick={onAdd}
+        >
+          <PlusIcon className="size-5" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{addLabel}</TooltipContent>
+    </Tooltip>
+  </div>
+);
+
 export const DmxParameterMapping = ({
   mapping,
   onUpdate,
@@ -101,6 +140,7 @@ export const DmxParameterMapping = ({
     null,
   );
   const [isAddingRange, setIsAddingRange] = useState(false);
+  const idPrefix = useId();
 
   const mappableParams = useMappableParameters();
   const allCandidates = generateParameterCandidates(mappableParams);
@@ -129,42 +169,58 @@ export const DmxParameterMapping = ({
 
   // Header with parameter selector - always shown so user can fix invalid mappings
   const header = (
-    <div className="flex items-center">
-      <div className="mx-1">Parameter:</div>
-      <StringSelector
-        className="!min-w-48 overflow-y-auto"
-        items={mappedParameterCandidateStrs}
-        selectedItem={mappedParamStr}
-        onSelectedItemChanged={(newVal) =>
-          onUpdate({
-            mappedParam: parseParameterReference(newVal),
-            ranges: [],
-          })
-        }
-      />
-      <div className="grow" />
-      <SmallIconButton onClick={onRemove}>
-        <TrashIcon />
-      </SmallIconButton>
+    <div className="flex items-end gap-2">
+      <FieldSet>
+        <Label htmlFor={`${idPrefix}-parameter`}>Parameter</Label>
+        <StringSelector
+          className="!min-w-48 overflow-y-auto"
+          items={mappedParameterCandidateStrs}
+          selectedItem={mappedParamStr}
+          onSelectedItemChanged={(newVal) =>
+            onUpdate({
+              mappedParam: parseParameterReference(newVal),
+              ranges: [],
+            })
+          }
+        />
+      </FieldSet>
+      <Button variant="ghost" className="text-primary" onClick={onRemove}>
+        Remove
+      </Button>
     </div>
   );
+
+  const addUnmappedParam = () => {
+    const firstCandidate = unmappedParameterCandidates[0];
+    const newParam = getNewUnmappedParam(
+      firstCandidate.ref,
+      firstCandidate.mappable.paramClass.dataType,
+      firstCandidate.mappable.enumChoices,
+    );
+    onUpdate({
+      ...mapping,
+      unmappedParams: mapping.unmappedParams
+        ? [...mapping.unmappedParams, newParam]
+        : [newParam],
+    });
+  };
 
   // Invalid mapping: show error state with disabled controls
   if (!isValidMapping) {
     return (
-      <div className="bg-slate-300 border border-gray-400 dark:border-hidden dark:bg-gray-600 m-2 p-2 rounded flex flex-col">
+      <div className="flex flex-col gap-2 border-l border-primary/40 pl-4">
         {header}
-        <span className="font-bold mt-2 p-1">Mapping Ranges</span>
-        <div>Parameter mapping has bad data</div>
-        <span className="font-bold mt-2 p-1">Unmapped Parameters</span>
-        <Tooltip>
-          <TooltipTrigger asChild className="self-start">
-            <SmallIconButton className="size-7" disabled>
-              <PlusCircleIcon className="size-5" />
-            </SmallIconButton>
-          </TooltipTrigger>
-          <TooltipContent>Add Unmapped Parameter</TooltipContent>
-        </Tooltip>
+        <SectionHeading addLabel="Add Range" disabled onAdd={() => {}}>
+          Mapping Ranges
+        </SectionHeading>
+        <div className="text-sm">Parameter mapping has bad data</div>
+        <SectionHeading
+          addLabel="Add Unmapped Parameter"
+          disabled
+          onAdd={() => {}}
+        >
+          Unmapped Parameters
+        </SectionHeading>
       </div>
     );
   }
@@ -176,83 +232,49 @@ export const DmxParameterMapping = ({
   const editingRange =
     editingRangeIndex !== null ? mapping.ranges[editingRangeIndex] : null;
 
-  const addRangeButton = (
-    <Tooltip>
-      <TooltipTrigger asChild className="self-start">
-        <SmallIconButton
-          className="size-7"
-          onClick={() => setIsAddingRange(true)}
-        >
-          <PlusCircleIcon className="size-5" />
-        </SmallIconButton>
-      </TooltipTrigger>
-      <TooltipContent>Add Range</TooltipContent>
-    </Tooltip>
-  );
-
-  const ranges = (
-    <div className="flex flex-col gap-1">
-      {mapping.ranges.map((range, index) => (
-        <RangeCard
-          key={index}
-          range={range}
-          onEdit={() => setEditingRangeIndex(index)}
-          onDelete={() => {
-            onUpdate({
-              ...mapping,
-              ranges: [
-                ...mapping.ranges.slice(0, index),
-                ...mapping.ranges.slice(index + 1),
-              ],
-            });
-          }}
-          enumChoices={dataType === "enum" ? enumChoices : undefined}
-        />
-      ))}
-      {addRangeButton}
-    </div>
-  );
-
-  const addUnmappedParamButton = (
-    <Tooltip>
-      <TooltipTrigger asChild className="self-start">
-        <SmallIconButton
-          className="size-7"
-          disabled={unmappedParameterCandidates.length === 0}
-          onClick={() => {
-            const firstCandidate = unmappedParameterCandidates[0];
-            const newParam = getNewUnmappedParam(
-              firstCandidate.ref,
-              firstCandidate.mappable.paramClass.dataType,
-              firstCandidate.mappable.enumChoices,
-            );
-            onUpdate({
-              ...mapping,
-              unmappedParams: mapping.unmappedParams
-                ? [...mapping.unmappedParams, newParam]
-                : [newParam],
-            });
-          }}
-        >
-          <PlusCircleIcon className="size-5" />
-        </SmallIconButton>
-      </TooltipTrigger>
-      <TooltipContent>Add Unmapped Parameter</TooltipContent>
-    </Tooltip>
-  );
-
-  const unmappedParams =
-    mapping.unmappedParams && mapping.unmappedParams.length > 0 ? (
-      <>
+  return (
+    <div className="flex flex-col gap-2 border-l border-primary/40 pl-4">
+      {header}
+      <SectionHeading addLabel="Add Range" onAdd={() => setIsAddingRange(true)}>
+        Mapping Ranges
+      </SectionHeading>
+      <div className="flex flex-col gap-2">
+        {mapping.ranges.map((range, index) => (
+          <RangeCard
+            key={index}
+            range={range}
+            onEdit={() => setEditingRangeIndex(index)}
+            onDelete={() => {
+              onUpdate({
+                ...mapping,
+                ranges: [
+                  ...mapping.ranges.slice(0, index),
+                  ...mapping.ranges.slice(index + 1),
+                ],
+              });
+            }}
+            enumChoices={dataType === "enum" ? enumChoices : undefined}
+          />
+        ))}
+      </div>
+      <SectionHeading
+        addLabel="Add Unmapped Parameter"
+        disabled={unmappedParameterCandidates.length === 0}
+        onAdd={addUnmappedParam}
+      >
+        Unmapped Parameters
+      </SectionHeading>
+      {mapping.unmappedParams && mapping.unmappedParams.length > 0 && (
         <Table>
-          <thead>
-            <tr>
-              <td>Parameter</td>
-              <td>Start</td>
-              <td>End</td>
-            </tr>
-          </thead>
-          <tbody>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Parameter</TableHead>
+              <TableHead>Start</TableHead>
+              <TableHead>End</TableHead>
+              <TableHead className="text-right">Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {mapping.unmappedParams.map((param, index) => (
               <UnmappedParameterTableRow
                 key={index}
@@ -264,21 +286,9 @@ export const DmxParameterMapping = ({
                 onUpdate={onUpdate}
               />
             ))}
-          </tbody>
+          </TableBody>
         </Table>
-        {addUnmappedParamButton}
-      </>
-    ) : (
-      addUnmappedParamButton
-    );
-
-  return (
-    <div className="bg-slate-300 border border-gray-400 dark:border-hidden dark:bg-gray-600 m-2 p-2 rounded flex flex-col">
-      {header}
-      <span className="font-bold mt-2 p-1">Mapping Ranges</span>
-      {ranges}
-      <span className="font-bold mt-2 p-1">Unmapped Parameters</span>
-      {unmappedParams}
+      )}
 
       {editingRange && (
         <MappingRangeEditorDialog
@@ -333,24 +343,29 @@ const RangeCard = ({
   enumChoices,
 }: RangeCardProps) => {
   return (
-    <div className="flex items-center gap-2 px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">
+    <div className="flex items-center justify-between gap-2 rounded-sm bg-background px-4 py-3 shadow-sm">
       <MappingRangeText range={range} enumChoices={enumChoices} />
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <SmallIconButton onClick={onEdit}>
-            <PencilIcon className="size-4" />
-          </SmallIconButton>
-        </TooltipTrigger>
-        <TooltipContent>Edit</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <SmallIconButton onClick={onDelete}>
-            <TrashIcon className="size-4" />
-          </SmallIconButton>
-        </TooltipTrigger>
-        <TooltipContent>Delete</TooltipContent>
-      </Tooltip>
+      <div className="flex items-center gap-3">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-primary"
+          onClick={onEdit}
+        >
+          Edit
+        </Button>
+        <span aria-hidden className="text-input">
+          |
+        </span>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Delete range"
+          onClick={onDelete}
+        >
+          <XMarkIcon className="size-4" />
+        </Button>
+      </div>
     </div>
   );
 };
@@ -403,9 +418,15 @@ type ParameterCandidate = {
 };
 
 const InvalidUnmappedParamTableRow = () => (
-  <tr>
-    <td colSpan={3}>Invalid data in unmapped parameter</td>
-  </tr>
+  <TableRow>
+    <TableCell colSpan={4}>Invalid data in unmapped parameter</TableCell>
+  </TableRow>
+);
+
+const RemoveUnmappedParamButton = ({ onClick }: { onClick: () => void }) => (
+  <Button variant="ghost" size="sm" className="text-primary" onClick={onClick}>
+    Remove
+  </Button>
 );
 
 interface UnmappedParameterTableRowProps {
@@ -417,66 +438,23 @@ interface UnmappedParameterTableRowProps {
   onUpdate: (mapping: DmxMapping) => void;
 }
 
-const UnmappedParameterTableRow = ({
-  index,
-  param,
-  mappableParams,
-  eligibleCandidates,
-  mapping,
-  onUpdate,
-}: UnmappedParameterTableRowProps) => {
-  const mappable = mappableParams[param.parameter.codexId];
+const UnmappedParameterTableRow = (props: UnmappedParameterTableRowProps) => {
+  const mappable = props.mappableParams[props.param.parameter.codexId];
   if (!mappable) {
     return <InvalidUnmappedParamTableRow />;
   }
 
   switch (mappable.paramClass.dataType) {
     case fcDataTypes.NUMBER:
-      return (
-        <UnmappedParameterTableRowNumeric
-          index={index}
-          param={param}
-          mappableParams={mappableParams}
-          eligibleCandidates={eligibleCandidates}
-          mapping={mapping}
-          onUpdate={onUpdate}
-        />
-      );
+      return <UnmappedParameterTableRowNumeric {...props} />;
     case fcDataTypes.BOOLEAN:
-      return (
-        <UnmappedParameterTableRowBoolean
-          index={index}
-          param={param}
-          mappableParams={mappableParams}
-          eligibleCandidates={eligibleCandidates}
-          mapping={mapping}
-          onUpdate={onUpdate}
-        />
-      );
+      return <UnmappedParameterTableRowBoolean {...props} />;
     case fcDataTypes.ENUM:
-      return (
-        <UnmappedParameterTableRowEnum
-          index={index}
-          param={param}
-          mappableParams={mappableParams}
-          eligibleCandidates={eligibleCandidates}
-          mapping={mapping}
-          onUpdate={onUpdate}
-        />
-      );
+      return <UnmappedParameterTableRowEnum {...props} />;
     default:
       return <InvalidUnmappedParamTableRow />;
   }
 };
-
-interface UnmappedParameterTableRowBooleanProps {
-  index: number;
-  param: DmxUnmappedParam;
-  mappableParams: Record<CodexId, MappableParameter>;
-  eligibleCandidates: ParameterCandidate[];
-  mapping: DmxMapping;
-  onUpdate: (mapping: DmxMapping) => void;
-}
 
 const UnmappedParameterTableRowBoolean = ({
   index,
@@ -485,7 +463,7 @@ const UnmappedParameterTableRowBoolean = ({
   eligibleCandidates,
   mapping,
   onUpdate,
-}: UnmappedParameterTableRowBooleanProps) => {
+}: UnmappedParameterTableRowProps) => {
   const selectValues = ["false", "true"];
 
   const paramStr = serializeParameterReference(param.parameter);
@@ -500,31 +478,21 @@ const UnmappedParameterTableRowBoolean = ({
   };
 
   return (
-    <tr key={index}>
-      <td>
+    <TableRow>
+      <TableCell>
         <StringSelector
           items={allEligibleStrs}
           selectedItem={paramStr}
-          onSelectedItemChanged={(newValue) => {
-            const newRef = parseParameterReference(newValue);
-            const newMappable = mappableParams[newRef.codexId];
-            onUpdate({
-              ...mapping,
-              unmappedParams: [
-                ...mapping.unmappedParams!.slice(0, index),
-                getNewUnmappedParam(
-                  newRef,
-                  newMappable.paramClass.dataType,
-                  newMappable.enumChoices,
-                ),
-                ...mapping.unmappedParams!.slice(index + 1),
-              ],
-            });
-          }}
+          onSelectedItemChanged={(newValue) =>
+            onUpdate(
+              replaceUnmappedParam(mapping, index, newValue, mappableParams),
+            )
+          }
         />
-      </td>
-      <td className="!align-middle">
+      </TableCell>
+      <TableCell>
         <SelectField
+          className="w-24"
           values={selectValues}
           selectedValue={(param.start as boolean).toString()}
           onSelectionChanged={(newValue) => {
@@ -533,44 +501,23 @@ const UnmappedParameterTableRowBoolean = ({
             );
           }}
         />
-      </td>
-      <td className="!align-middle">
+      </TableCell>
+      <TableCell>
         <SelectField
+          className="w-24"
           values={selectValues}
           selectedValue={(effectiveEnd as boolean).toString()}
           onSelectionChanged={handleEndChange}
         />
-      </td>
-      <td className="!align-middle">
-        <SmallIconButton
-          onClick={() => {
-            onUpdate({
-              ...mapping,
-              unmappedParams:
-                mapping.unmappedParams!.length === 1
-                  ? undefined
-                  : [
-                      ...mapping.unmappedParams!.slice(0, index),
-                      ...mapping.unmappedParams!.slice(index + 1),
-                    ],
-            });
-          }}
-        >
-          <TrashIcon />
-        </SmallIconButton>
-      </td>
-    </tr>
+      </TableCell>
+      <TableCell className="text-right">
+        <RemoveUnmappedParamButton
+          onClick={() => onUpdate(removeUnmappedParam(mapping, index))}
+        />
+      </TableCell>
+    </TableRow>
   );
 };
-
-interface UnmappedParameterTableRowNumericProps {
-  index: number;
-  param: DmxUnmappedParam;
-  mappableParams: Record<CodexId, MappableParameter>;
-  eligibleCandidates: ParameterCandidate[];
-  mapping: DmxMapping;
-  onUpdate: (mapping: DmxMapping) => void;
-}
 
 const UnmappedParameterTableRowNumeric = ({
   index,
@@ -579,7 +526,7 @@ const UnmappedParameterTableRowNumeric = ({
   eligibleCandidates,
   mapping,
   onUpdate,
-}: UnmappedParameterTableRowNumericProps) => {
+}: UnmappedParameterTableRowProps) => {
   const paramStr = serializeParameterReference(param.parameter);
   const allEligibleStrs = [...eligibleCandidates.map((c) => c.str), paramStr];
 
@@ -592,75 +539,46 @@ const UnmappedParameterTableRowNumeric = ({
   };
 
   return (
-    <tr key={index}>
-      <td>
+    <TableRow>
+      <TableCell>
         <StringSelector
           items={allEligibleStrs}
           selectedItem={paramStr}
-          onSelectedItemChanged={(newValue) => {
-            const newRef = parseParameterReference(newValue);
-            const newMappable = mappableParams[newRef.codexId];
-            onUpdate({
-              ...mapping,
-              unmappedParams: [
-                ...mapping.unmappedParams!.slice(0, index),
-                getNewUnmappedParam(
-                  newRef,
-                  newMappable.paramClass.dataType,
-                  newMappable.enumChoices,
-                ),
-                ...mapping.unmappedParams!.slice(index + 1),
-              ],
-            });
-          }}
+          onSelectedItemChanged={(newValue) =>
+            onUpdate(
+              replaceUnmappedParam(mapping, index, newValue, mappableParams),
+            )
+          }
         />
-      </td>
-      <td className="!align-middle">
+      </TableCell>
+      <TableCell>
         <TextEditorField
-          value={param.start?.toString()}
-          onValueChanged={(newValue) => {
+          className="w-24"
+          aria-label="Start"
+          value={param.start?.toString() ?? ""}
+          onConfirm={(newValue) => {
             onUpdate(
               updateUnmappedParamStart(mapping, index, parseInt(newValue)),
             );
           }}
         />
-      </td>
-      <td className="!align-middle">
+      </TableCell>
+      <TableCell>
         <TextEditorField
-          value={effectiveEnd?.toString()}
-          onValueChanged={handleEndChange}
+          className="w-24"
+          aria-label="End"
+          value={effectiveEnd?.toString() ?? ""}
+          onConfirm={handleEndChange}
         />
-      </td>
-      <td className="!align-middle">
-        <SmallIconButton
-          onClick={() => {
-            onUpdate({
-              ...mapping,
-              unmappedParams:
-                mapping.unmappedParams!.length === 1
-                  ? undefined
-                  : [
-                      ...mapping.unmappedParams!.slice(0, index),
-                      ...mapping.unmappedParams!.slice(index + 1),
-                    ],
-            });
-          }}
-        >
-          <TrashIcon />
-        </SmallIconButton>
-      </td>
-    </tr>
+      </TableCell>
+      <TableCell className="text-right">
+        <RemoveUnmappedParamButton
+          onClick={() => onUpdate(removeUnmappedParam(mapping, index))}
+        />
+      </TableCell>
+    </TableRow>
   );
 };
-
-interface UnmappedParameterTableRowEnumProps {
-  index: number;
-  param: DmxUnmappedParam;
-  mappableParams: Record<CodexId, MappableParameter>;
-  eligibleCandidates: ParameterCandidate[];
-  mapping: DmxMapping;
-  onUpdate: (mapping: DmxMapping) => void;
-}
 
 const UnmappedParameterTableRowEnum = ({
   index,
@@ -669,7 +587,7 @@ const UnmappedParameterTableRowEnum = ({
   eligibleCandidates,
   mapping,
   onUpdate,
-}: UnmappedParameterTableRowEnumProps) => {
+}: UnmappedParameterTableRowProps) => {
   const mappable = mappableParams[param.parameter.codexId];
   const paramStr = serializeParameterReference(param.parameter);
   const allEligibleStrs = [...eligibleCandidates.map((c) => c.str), paramStr];
@@ -720,28 +638,17 @@ const UnmappedParameterTableRowEnum = ({
   const hasNoChoices = enumChoices.length === 0;
 
   return (
-    <tr key={index}>
-      <td>
+    <TableRow>
+      <TableCell>
         <div className="flex items-center gap-2">
           <StringSelector
             items={allEligibleStrs}
             selectedItem={paramStr}
-            onSelectedItemChanged={(newValue) => {
-              const newRef = parseParameterReference(newValue);
-              const newMappable = mappableParams[newRef.codexId];
-              onUpdate({
-                ...mapping,
-                unmappedParams: [
-                  ...mapping.unmappedParams!.slice(0, index),
-                  getNewUnmappedParam(
-                    newRef,
-                    newMappable.paramClass.dataType,
-                    newMappable.enumChoices,
-                  ),
-                  ...mapping.unmappedParams!.slice(index + 1),
-                ],
-              });
-            }}
+            onSelectedItemChanged={(newValue) =>
+              onUpdate(
+                replaceUnmappedParam(mapping, index, newValue, mappableParams),
+              )
+            }
           />
           {hasNoChoices && (
             <Tooltip>
@@ -756,8 +663,8 @@ const UnmappedParameterTableRowEnum = ({
             </Tooltip>
           )}
         </div>
-      </td>
-      <td className="!align-middle">
+      </TableCell>
+      <TableCell>
         <Select
           value={startIsValid ? startValue : ""}
           onValueChange={(v) =>
@@ -784,8 +691,8 @@ const UnmappedParameterTableRowEnum = ({
             <SelectItem value="null">null</SelectItem>
           </SelectContent>
         </Select>
-      </td>
-      <td className="!align-middle">
+      </TableCell>
+      <TableCell>
         <Select
           value={endIsValid ? endValue : ""}
           onValueChange={handleEndChange}
@@ -806,26 +713,13 @@ const UnmappedParameterTableRowEnum = ({
             <SelectItem value="null">null</SelectItem>
           </SelectContent>
         </Select>
-      </td>
-      <td className="!align-middle">
-        <SmallIconButton
-          onClick={() => {
-            onUpdate({
-              ...mapping,
-              unmappedParams:
-                mapping.unmappedParams!.length === 1
-                  ? undefined
-                  : [
-                      ...mapping.unmappedParams!.slice(0, index),
-                      ...mapping.unmappedParams!.slice(index + 1),
-                    ],
-            });
-          }}
-        >
-          <TrashIcon />
-        </SmallIconButton>
-      </td>
-    </tr>
+      </TableCell>
+      <TableCell className="text-right">
+        <RemoveUnmappedParamButton
+          onClick={() => onUpdate(removeUnmappedParam(mapping, index))}
+        />
+      </TableCell>
+    </TableRow>
   );
 };
 
@@ -857,6 +751,45 @@ function getNewUnmappedParam(
         end: 1,
       };
   }
+}
+
+/** Swaps the parameter an unmapped entry points at, resetting its bounds. */
+function replaceUnmappedParam(
+  mapping: DmxMapping,
+  paramIndex: number,
+  newValue: string,
+  mappableParams: Record<CodexId, MappableParameter>,
+): DmxMapping {
+  const newRef = parseParameterReference(newValue);
+  const newMappable = mappableParams[newRef.codexId];
+  return {
+    ...mapping,
+    unmappedParams: [
+      ...mapping.unmappedParams!.slice(0, paramIndex),
+      getNewUnmappedParam(
+        newRef,
+        newMappable.paramClass.dataType,
+        newMappable.enumChoices,
+      ),
+      ...mapping.unmappedParams!.slice(paramIndex + 1),
+    ],
+  };
+}
+
+function removeUnmappedParam(
+  mapping: DmxMapping,
+  paramIndex: number,
+): DmxMapping {
+  return {
+    ...mapping,
+    unmappedParams:
+      mapping.unmappedParams!.length === 1
+        ? undefined
+        : [
+            ...mapping.unmappedParams!.slice(0, paramIndex),
+            ...mapping.unmappedParams!.slice(paramIndex + 1),
+          ],
+  };
 }
 
 function updateUnmappedParamStart(

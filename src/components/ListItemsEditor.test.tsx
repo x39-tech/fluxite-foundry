@@ -1,3 +1,4 @@
+import { ComponentProps } from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, expect, test, vi } from "vitest";
@@ -16,12 +17,15 @@ const StubEditor = ({
   onDelete?: () => void;
 }) => <div>{`${codexId} editor`}</div>;
 
-function renderListItemsEditor() {
+function renderListItemsEditor(
+  props: Partial<ComponentProps<typeof ListItemsEditor>> = {},
+) {
   return render(
     <ListItemsEditor
       editors={editors}
       itemType="Item"
       renderActiveEditor={(editor) => <StubEditor codexId={editor.codexId} />}
+      {...props}
     />,
   );
 }
@@ -75,4 +79,121 @@ test("scrolls to the newly selected item when the selection changes", async () =
   expect(screen.getByText("first-item editor")).toBeInTheDocument();
   expect(screen.queryByText("second-item editor")).not.toBeInTheDocument();
   expect(scrollIntoView).toHaveBeenCalled();
+});
+
+test("lists items by the title from getEditorTitle", () => {
+  renderListItemsEditor({
+    getEditorTitle: (editor) => `Slot ${editor.codexId}`,
+  });
+
+  expect(
+    screen.getByRole("button", { name: "Slot first-item" }),
+  ).toBeInTheDocument();
+});
+
+test("shows only the items matching the search text", async () => {
+  const user = userEvent.setup();
+
+  renderListItemsEditor({ searchPlaceholder: "Search Items..." });
+
+  await user.type(screen.getByRole("searchbox"), "second");
+
+  expect(
+    screen.getByRole("button", { name: "second-item" }),
+  ).toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: "first-item" }),
+  ).not.toBeInTheDocument();
+});
+
+test("keeps the selected item's editor open while it still matches the search", async () => {
+  const user = userEvent.setup();
+
+  renderListItemsEditor({ searchPlaceholder: "Search Items..." });
+
+  await user.click(screen.getByRole("button", { name: "second-item" }));
+  await user.type(screen.getByRole("searchbox"), "second");
+
+  expect(screen.getByText("second-item editor")).toBeInTheDocument();
+});
+
+test("selects and scrolls to an item that is newly added", () => {
+  const scrollIntoView = vi.spyOn(Element.prototype, "scrollIntoView");
+
+  const { rerender } = renderListItemsEditor();
+  expect(screen.queryByText("third-item editor")).not.toBeInTheDocument();
+
+  const added = { id: EntityId("id-3"), codexId: CodexId("third-item") };
+  rerender(
+    <ListItemsEditor
+      editors={[...editors, added]}
+      itemType="Item"
+      renderActiveEditor={(editor) => <StubEditor codexId={editor.codexId} />}
+    />,
+  );
+
+  expect(screen.getByText("third-item editor")).toBeInTheDocument();
+  expect(scrollIntoView).toHaveBeenCalled();
+});
+
+test("clears the search so a newly added item is visible", async () => {
+  const user = userEvent.setup();
+
+  const { rerender } = renderListItemsEditor({
+    searchPlaceholder: "Search Items...",
+  });
+  await user.type(screen.getByRole("searchbox"), "second");
+
+  const added = { id: EntityId("id-3"), codexId: CodexId("third-item") };
+  rerender(
+    <ListItemsEditor
+      editors={[...editors, added]}
+      itemType="Item"
+      searchPlaceholder="Search Items..."
+      renderActiveEditor={(editor) => <StubEditor codexId={editor.codexId} />}
+    />,
+  );
+
+  expect(screen.getByRole("searchbox")).toHaveValue("");
+  expect(screen.getByText("third-item editor")).toBeInTheDocument();
+});
+
+test("does not steal the selection when many items appear at once", () => {
+  const { rerender } = renderListItemsEditor();
+
+  // Loading or importing a device class brings in many items at once.
+  rerender(
+    <ListItemsEditor
+      editors={[
+        ...editors,
+        { id: EntityId("id-3"), codexId: CodexId("third-item") },
+        { id: EntityId("id-4"), codexId: CodexId("fourth-item") },
+      ]}
+      itemType="Item"
+      renderActiveEditor={(editor) => <StubEditor codexId={editor.codexId} />}
+    />,
+  );
+
+  expect(screen.queryByText("third-item editor")).not.toBeInTheDocument();
+  expect(screen.queryByText("fourth-item editor")).not.toBeInTheDocument();
+});
+
+test("expands and collapses the selected item in the accordion variant", async () => {
+  const user = userEvent.setup();
+
+  renderListItemsEditor({ variant: "accordion" });
+
+  // Each item gets an accordion header, and none of them start expanded.
+  const header = screen.getByRole("button", {
+    name: "second-item",
+    expanded: false,
+  });
+  expect(screen.queryByText("second-item editor")).not.toBeInTheDocument();
+
+  await user.click(header);
+
+  expect(
+    screen.getByRole("button", { name: "second-item", expanded: true }),
+  ).toBeInTheDocument();
+  expect(screen.getByText("second-item editor")).toBeInTheDocument();
 });

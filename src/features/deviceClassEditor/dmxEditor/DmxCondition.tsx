@@ -1,20 +1,16 @@
+import { Fragment } from "react";
 import {
   DmxChunkRefCondition,
   DmxCondition,
   EntityId,
 } from "app/persistentState";
-import { TrashIcon } from "@heroicons/react/24/solid";
-import { TextEditorField } from "components/EditorFields/DeprecatedTextEditorField";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "components/scn-ui/Select";
+import { TextEditorField } from "components/EditorFields/TextEditorField";
+import { SelectField } from "components/EditorFields/SelectField";
 import { StringSelector } from "components/StringSelector";
-import { SmallIconButton } from "components/SmallIconButton";
+import { Button } from "components/scn-ui/Button";
+import { Separator } from "components/scn-ui/Separator";
 import {
+  dmxChunkLabel,
   getChildConditions,
   removeCondition,
   updateCondition,
@@ -47,57 +43,66 @@ export const DmxConditionTree = ({
     const childConditions = dmx ? getChildConditions(dmx, conditionId) : [];
 
     return (
-      <div className="flex flex-col items-start">
-        {childConditions.map((childCondition, index) => {
-          const elements = [];
-
-          if (index === 1) {
-            // First separator is a selector
-            elements.push(
-              <Select
-                key={`sep-${index}`}
-                value={condition.match === "any" ? "OR" : "AND"}
-                onValueChange={(value) => {
-                  updateConditionMatch(
-                    conditionId,
-                    value === "OR" ? "any" : "all",
-                  );
-                }}
-              >
-                <SelectTrigger className="m-2">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="AND">AND</SelectItem>
-                  <SelectItem value="OR">OR</SelectItem>
-                </SelectContent>
-              </Select>,
-            );
-          } else if (index > 1) {
-            elements.push(
-              <div key={`sep-${index}`} className="m-2 font-bold">
-                {condition.match === "any" ? "OR" : "AND"}
-              </div>,
-            );
-          }
-
-          elements.push(
-            <div key={childCondition.id}>
-              <DmxConditionTree
-                conditionId={childCondition.id}
-                condition={childCondition}
-                parentChunkId={parentChunkId}
+      <div className="flex flex-col">
+        {childConditions.map((childCondition, index) => (
+          <Fragment key={childCondition.id}>
+            {index > 0 && (
+              <ConditionMatchDivider
+                match={condition.match}
+                // Only the first divider sets the match; the rest just report
+                // it, since one group matches the same way throughout.
+                editable={index === 1}
+                onMatchChanged={(newMatch) =>
+                  updateConditionMatch(conditionId, newMatch)
+                }
               />
-            </div>,
-          );
-
-          return elements;
-        })}
+            )}
+            <DmxConditionTree
+              conditionId={childCondition.id}
+              condition={childCondition}
+              parentChunkId={parentChunkId}
+            />
+          </Fragment>
+        ))}
       </div>
     );
   }
 
   return <>Invalid condition data</>;
+};
+
+interface ConditionMatchDividerProps {
+  match: "any" | "all";
+  editable: boolean;
+  onMatchChanged: (match: "any" | "all") => void;
+}
+
+const ConditionMatchDivider = ({
+  match,
+  editable,
+  onMatchChanged,
+}: ConditionMatchDividerProps) => {
+  return (
+    <div className="relative flex items-center justify-center py-2">
+      <Separator className="absolute" />
+      {editable ? (
+        <SelectField
+          className="relative w-24 bg-background"
+          aria-label="Match"
+          values={["all", "any"]}
+          displayValues={["And", "Or"]}
+          selectedValue={match}
+          onSelectionChanged={(newValue) =>
+            onMatchChanged(newValue as "any" | "all")
+          }
+        />
+      ) : (
+        <span className="relative rounded-md border bg-background px-3 py-1.5 text-sm font-medium">
+          {match === "any" ? "Or" : "And"}
+        </span>
+      )}
+    </div>
+  );
 };
 
 interface DmxChunkRefConditionViewProps {
@@ -123,11 +128,11 @@ const DmxChunkRefConditionView = ({
 
   const displayNames = availableChunkIds.map((chunkId) => {
     const chunk = dmx.chunks[chunkId];
-    return chunk ? `Slot ${chunk.offsets.join(", ")}` : chunkId;
+    return chunk ? dmxChunkLabel(chunk.offsets) : chunkId;
   });
 
   return (
-    <div className="mx-2 flex items-center">
+    <div className="flex items-center gap-3">
       <StringSelector
         items={availableChunkIds}
         displayNames={displayNames}
@@ -140,41 +145,42 @@ const DmxChunkRefConditionView = ({
           })
         }
       />
-      <span className="mx-2">is between</span>
+      <span className="text-sm">is between</span>
       <TextEditorField
+        className="w-24"
+        aria-label="Range start"
         value={condition.chunkStart.toString()}
-        onValueChanged={(newValue) => {
-          try {
-            updateCondition(conditionId, {
-              ...condition,
-              chunkStart: parseInt(newValue),
-            });
-          } catch (_) {
-            // No update
-          }
+        onConfirm={(newValue) => {
+          const parsed = parseInt(newValue);
+          if (isNaN(parsed)) return;
+          updateCondition(conditionId, {
+            ...condition,
+            chunkStart: parsed,
+          });
         }}
       />
-      <span className="mx-2">and</span>
       <TextEditorField
+        className="w-24"
+        aria-label="Range end"
         value={condition.chunkEnd.toString()}
-        onValueChanged={(newValue) => {
-          try {
-            updateCondition(conditionId, {
-              ...condition,
-              chunkEnd: parseInt(newValue),
-            });
-          } catch (_) {
-            // No update
-          }
+        onConfirm={(newValue) => {
+          const parsed = parseInt(newValue);
+          if (isNaN(parsed)) return;
+          updateCondition(conditionId, {
+            ...condition,
+            chunkEnd: parsed,
+          });
         }}
       />
-      <SmallIconButton
-        className="mx-1"
-        onClick={() => removeCondition(conditionId)}
+      <div className="grow" />
+      <Button
+        variant="ghost"
+        className="text-primary"
         aria-label="Delete condition"
+        onClick={() => removeCondition(conditionId)}
       >
-        <TrashIcon />
-      </SmallIconButton>
+        Remove
+      </Button>
     </div>
   );
 };

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { DmxController } from "app/runtimeState";
 import {
   CodexId,
@@ -30,6 +31,7 @@ import {
 } from "../stateTransformations";
 import { EffectiveEnumChoice, getEffectiveEnumChoices } from "./mappingUtils";
 import { localize } from "utils/localizationUtils";
+import { ItemEditor } from "utils/utils";
 
 /** Data types that can be mapped to DMX values */
 export type MappableDataType =
@@ -56,6 +58,26 @@ export interface MappableParameter {
 
 export function useDmxSerializer(): DmxSerializerState | undefined {
   return useCurrentEditorPart((state) => state.dmxSerializer);
+}
+
+export function dmxChunkLabel(offsets: number[]): string {
+  return `Slot ${offsets.join(", ")}`;
+}
+
+export function useDmxChunkEditors(): ItemEditor[] {
+  const chunks = useCurrentEditorPart((state) => state.dmxSerializer?.chunks);
+
+  return useMemo(() => {
+    const chunkEditors = Object.entries(chunks ?? {}).map(([id, chunk]) => ({
+      id: EntityId(id),
+      codexId: CodexId(dmxChunkLabel(chunk.offsets)),
+      firstOffset: chunk.offsets[0] ?? Infinity,
+    }));
+
+    chunkEditors.sort((a, b) => a.firstOffset - b.firstOffset);
+
+    return chunkEditors.map(({ id, codexId }) => ({ id, codexId }));
+  }, [chunks]);
 }
 
 export function useDmxController(): DmxController {
