@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   Layout,
   Model,
@@ -6,7 +6,7 @@ import {
   Actions,
   DockLocation,
 } from "flexlayout-react";
-import { PlusCircleIcon } from "@heroicons/react/24/outline";
+import { PlusIcon } from "@heroicons/react/24/outline";
 import { throttle } from "lodash";
 import { nanoid } from "nanoid";
 import { APP_NAME } from "consts";
@@ -19,6 +19,8 @@ import {
   DropdownMenuTrigger,
 } from "components/scn-ui/DropdownMenu";
 import { WIDGETS, isValidWidget } from "./widgets";
+import { useTabStripWheelScroll } from "./useTabStripWheelScroll";
+import { useTabStripScrollIndicators } from "./useTabStripScrollIndicators";
 import {
   getCurrentEditor,
   setWindowLayout,
@@ -31,6 +33,10 @@ import { getDefaultWindowLayout } from "utils/utils";
 export const DeviceClassEditor = () => {
   const currentEditorId = useCurrentEditorId();
   const editorName = useCurrentEditorPart((state) => state.basicData.modelName);
+  const layoutRef = useRef<Layout>(null);
+
+  useTabStripWheelScroll(layoutRef);
+  useTabStripScrollIndicators(layoutRef);
 
   useEffect(() => {
     document.title = `Editing: ${editorName} -- ${APP_NAME}`;
@@ -95,21 +101,18 @@ export const DeviceClassEditor = () => {
 
   return (
     <Layout
+      ref={layoutRef}
       model={model}
       onModelChange={onModelChange}
       factory={factory}
       onRenderTabSet={(tabSetNode, renderValues) => {
         const tabSetId = tabSetNode.getId();
-        renderValues.stickyButtons = [
+        renderValues.buttons = [
           <DropdownMenu key={1}>
             <DropdownMenuTrigger asChild>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="size-6 align-middle"
-                aria-label="Add new widget"
-              >
-                <PlusCircleIcon className="size-5" />
+              <Button size="sm" variant="outline">
+                <PlusIcon className="size-4" />
+                Add Tab
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="p-0.5">
@@ -128,6 +131,7 @@ export const DeviceClassEditor = () => {
             </DropdownMenuContent>
           </DropdownMenu>,
         ];
+        renderValues.overflowPosition = 1;
       }}
       onRenderTab={(node, renderValues) => {
         renderValues.content =

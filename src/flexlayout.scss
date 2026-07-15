@@ -34,8 +34,8 @@
     --color-border-divider-line: var(--color-4);
 
     --color-tab-selected: var(--color-text);
-    --color-tab-selected-background: var(--color-4);
-    --color-tab-unselected: gray;
+    --color-tab-selected-background: var(--card);
+    --color-tab-unselected: var(--muted-foreground);
     --color-tab-unselected-background: transparent;
     --color-tab-textbox: var(--color-text);
     --color-tab-textbox-background: var(--color-3);
@@ -45,9 +45,9 @@
     --color-border-tab-unselected: gray;
     --color-border-tab-unselected-background: var(--color-2);
 
-    --color-splitter: var(--color-1);
-    --color-splitter-hover: var(--color-4);
-    --color-splitter-drag: var(--color-4);
+    --color-splitter: var(--border);
+    --color-splitter-hover: var(--ring);
+    --color-splitter-drag: var(--ring);
 
     --color-drag-rect-border: var(--color-6);
     --color-drag-rect-background: var(--color-4);
@@ -60,7 +60,142 @@
     --color-popup-selected-background: var(--color-3);
 
     --color-edge-marker: gray;
+
+    --color-tab-content: var(--color-background);
+    --color-border-tab-content: var(--color-background);
+    --color-toolbar-button-hover: var(--color-3);
+    --color-mini-scroll-indicator: rgba(128, 128, 128, 0.5);
+    --color-mini-scroll-indicator-hovered: rgba(128, 128, 128, 0.7);
+    --size-mini-scroll-indicator: 3px;
+
+    // Not a flexlayout variable; ours, for the segmented control below. The
+    // track has to read as a step behind the selected tab's surface.
+    --color-tab-track: var(--muted);
   }
 }
 
+// The dark palette orders these tones the other way round to the light one:
+// --card is darker than --muted, so reusing the light pairing would make the
+// selected tab look punched into the track rather than raised above it.
+.dark .flexlayout__layout {
+  --color-tab-selected-background: var(--accent);
+  --color-tab-track: var(--card);
+}
+
 @include base.baseMixin;
+
+// Tab strip appearance.
+//
+// baseMixin only exposes colour through custom properties; radius, padding,
+// border and shadow are hardcoded there and have to be overridden explicitly.
+// The themes bundled with flexlayout-react layer over the base the same way
+// (see rounded_theme_overrides in the package) so this follows their lead.
+//
+// The tabs render as a segmented control: a track with the selected tab as a
+// raised pill inside it.
+//
+// The track lives on the scrollbar container, which is the closest ancestor of
+// the tabs that does not scroll. Both the inset and the rounded ends therefore
+// stay put while the tabs scroll underneath them. Keeping them off the scroll
+// viewport and off the scrolling tab container is deliberate: flexlayout scrolls
+// the selected tab into view by aligning the tab's edge with the viewport's
+// border box, so any horizontal padding inside the scroll container leaves that
+// much residual scroll that the tab can never reach.
+.flexlayout {
+  &__tabset_tabbar_outer_top {
+    padding: 13px 8px 10px;
+    border-bottom: none;
+  }
+
+  // Shrink-to-fit so the track hugs the tabs when they fit. It still shrinks
+  // (letting the tabs scroll inside the track) once they don't, because the
+  // base stylesheet grows this to fill the strip.
+  &__mini_scrollbar_container {
+    flex-grow: 0;
+    flex-shrink: 1;
+    min-width: 0;
+    background-color: var(--color-tab-track);
+    border-radius: calc(var(--radius) - 2px);
+    padding: 3px;
+
+    // Chevrons marking tabs scrolled out of view, with the attributes set by
+    // useTabStripScrollIndicators. Drawn as a mask rather than an inline SVG
+    // fill so the colour comes from the theme; a data URI can't reference a
+    // custom property. They ignore the pointer so the tab passing underneath
+    // stays clickable.
+    &[data-tabs-before]::before,
+    &[data-tabs-after]::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 14px;
+      pointer-events: none;
+      background-color: color-mix(
+        in oklch,
+        var(--foreground),
+        var(--muted-foreground)
+      );
+      mask-repeat: no-repeat;
+      mask-size: 11px 11px;
+    }
+
+    &[data-tabs-before]::before {
+      left: 3px;
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M5.5 1 2.5 4l3 3' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      mask-position: left center;
+    }
+
+    &[data-tabs-after]::after {
+      right: 3px;
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='m2.5 1 3 3-3 3' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      mask-position: right center;
+    }
+  }
+
+  // Fade the tabs out beneath each chevron so they don't collide with it.
+  &__mini_scrollbar_container[data-tabs-before] &__tabset_tabbar_inner {
+    mask-image: linear-gradient(to right, transparent 4px, black 34px);
+  }
+
+  &__mini_scrollbar_container[data-tabs-after] &__tabset_tabbar_inner {
+    mask-image: linear-gradient(to left, transparent 4px, black 34px);
+  }
+
+  &__mini_scrollbar_container[data-tabs-before][data-tabs-after]
+    &__tabset_tabbar_inner {
+    mask-image: linear-gradient(
+      to right,
+      transparent 4px,
+      black 34px,
+      black calc(100% - 34px),
+      transparent calc(100% - 4px)
+    );
+  }
+
+  &__tabset_tabbar_inner_tab_container {
+    padding: 0;
+  }
+
+  // Transparent placeholder for the drag indicator in the base stylesheet; it
+  // would otherwise offset the tabs inside the track by 2px.
+  &__tabset_tabbar_inner_tab_container_top {
+    border-top: none;
+  }
+
+  &__tab_button {
+    border: 1px solid transparent;
+    border-radius: calc(var(--radius) - 4px);
+    padding: 3px 10px;
+    font-weight: 500;
+    transition:
+      background-color 120ms ease,
+      border-color 120ms ease,
+      color 120ms ease;
+  }
+
+  &__tab_button--selected {
+    border-color: var(--border);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+  }
+}

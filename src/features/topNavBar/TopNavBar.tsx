@@ -81,7 +81,7 @@ export const TopNavBar = () => {
           <AppMainMenu />
         </div>
       </div>
-      <Separator className="shadow-[0px_2px_4px_-1px_#0000000F,0px_4px_6px_-1px_#0000001A] fixed top-[50px] z-1" />
+      <Separator className="shadow-[0px_2px_4px_#0000000F,0px_4px_6px_#0000001A] fixed top-[50px] z-1" />
     </>
   );
 };

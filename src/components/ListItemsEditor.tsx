@@ -137,7 +137,7 @@ export const ListItemsEditor = ({
                 <div
                   key={idx}
                   ref={activeEditorRef}
-                  className="min-w-xs rounded-lg bg-accent m-2 px-4 py-5 flex flex-col gap-4"
+                  className="min-w-xs rounded-lg bg-accent m-2 scroll-mt-2 px-4 py-5 flex flex-col gap-4"
                 >
                   <div className="flex gap-4 items-center">
                     <ItemEditorIcon index={idx} />
