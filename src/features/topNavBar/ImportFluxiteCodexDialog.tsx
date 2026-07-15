@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { LoaderCircle } from "lucide-react";
+import { CircleAlertIcon, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
-import { ExclamationCircleIcon } from "@heroicons/react/16/solid";
 import {
   Dialog,
   DialogFooter,
@@ -220,7 +219,7 @@ const DeviceClassSelect = ({
   if (deviceClasses.length === 0) {
     return (
       <Alert variant="destructive">
-        <ExclamationCircleIcon />
+        <CircleAlertIcon />
         <AlertTitle>No Device Classes found in selected document.</AlertTitle>
       </Alert>
     );
@@ -266,14 +265,14 @@ const ValidationFailure = ({
     case FeedbackKind.UnableToReadFile:
       return (
         <Alert variant="destructive">
-          <ExclamationCircleIcon />
+          <CircleAlertIcon />
           <AlertTitle>The selected file could not be read.</AlertTitle>
         </Alert>
       );
     case FeedbackKind.ValidationFailed:
       return (
         <Alert variant="destructive">
-          <ExclamationCircleIcon />
+          <CircleAlertIcon />
           <AlertTitle>
             Selected file contains invalid Fluxite Codex data.
           </AlertTitle>
@@ -285,7 +284,7 @@ const ValidationFailure = ({
     case FeedbackKind.ArchiveParsingFailed:
       return (
         <Alert variant="destructive">
-          <ExclamationCircleIcon />
+          <CircleAlertIcon />
           <AlertTitle>Failed to parse Fluxite Codex archive.</AlertTitle>
           <AlertDescription>
             <Textarea value={feedback} readOnly />
@@ -295,7 +294,7 @@ const ValidationFailure = ({
     default:
       return (
         <Alert variant="destructive">
-          <ExclamationCircleIcon />
+          <CircleAlertIcon />
           <AlertTitle>
             An unknown error occurred importing the selected file.
           </AlertTitle>

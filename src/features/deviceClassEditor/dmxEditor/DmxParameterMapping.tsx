@@ -1,9 +1,5 @@
 import { useId, useState } from "react";
-import {
-  ExclamationTriangleIcon,
-  PlusIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+import { PlusIcon, TriangleAlertIcon, XIcon } from "lucide-react";
 import {
   CodexId,
   DmxMapping,
@@ -363,7 +359,7 @@ const RangeCard = ({
           aria-label="Delete range"
           onClick={onDelete}
         >
-          <XMarkIcon className="size-4" />
+          <XIcon className="size-4" />
         </Button>
       </div>
     </div>
@@ -653,7 +649,7 @@ const UnmappedParameterTableRowEnum = ({
           {hasNoChoices && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <ExclamationTriangleIcon className="size-5 text-orange-500 shrink-0" />
+                <TriangleAlertIcon className="size-5 text-orange-500 shrink-0" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
                 No enum choices are defined for this parameter. The parameter

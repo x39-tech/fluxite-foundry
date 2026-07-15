@@ -2,7 +2,7 @@
 // Can either be controlled (value) or uncontrolled (defaultValue).
 
 import { useId, useState } from "react";
-import { ExclamationCircleIcon } from "@heroicons/react/16/solid";
+import { CircleAlertIcon } from "lucide-react";
 import { ConfirmableInput } from "../ConfirmableInput";
 import { InputValidationResult } from "utils/inputValidation";
 import {
@@ -60,7 +60,7 @@ export const TextEditorField = ({
         }}
       >
         <Alert variant="destructive">
-          <ExclamationCircleIcon />
+          <CircleAlertIcon />
           <AlertDescription>
             {validationResult.feedback || "An unknown error occurred."}
           </AlertDescription>

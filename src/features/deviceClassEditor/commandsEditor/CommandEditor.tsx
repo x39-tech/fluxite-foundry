@@ -1,6 +1,5 @@
 import { useEffect, useId } from "react";
-import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
-import { ExclamationTriangleIcon } from "@heroicons/react/16/solid";
+import { CircleQuestionMarkIcon, TriangleAlertIcon } from "lucide-react";
 import { FieldSet } from "components/FieldSet";
 import { Label } from "components/scn-ui/Label";
 import { AppInput } from "components/AppInput";
@@ -59,7 +58,7 @@ export const CommandEditor = ({ id }: Props) => {
   if (!commandClass) {
     return (
       <Alert>
-        <ExclamationTriangleIcon />
+        <TriangleAlertIcon />
         <AlertTitle>
           <span>
             Class <code>{command.class.codexId}</code> not found.
@@ -169,7 +168,7 @@ export const CommandEditor = ({ id }: Props) => {
                           {argument.descripton && (
                             <Tooltip>
                               <TooltipTrigger>
-                                <QuestionMarkCircleIcon className="size-5 opacity-50" />
+                                <CircleQuestionMarkIcon className="size-5 opacity-50" />
                               </TooltipTrigger>
                               <TooltipContent>
                                 {argument.descripton.value}

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { toast } from "sonner";
-import { CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { CheckIcon, XIcon } from "lucide-react";
 import {
   DriverParamState,
   DriverParamValue,
@@ -187,7 +187,7 @@ export const DmxController = () => {
           ) : (
             <>
               <span className="mr-2">Disconnected</span>
-              <XMarkIcon className="size-5" />
+              <XIcon className="size-5" />
             </>
           )}
         </span>

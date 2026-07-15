@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { LoaderCircle } from "lucide-react";
 import {
   CheckIcon,
+  CircleAlertIcon,
   ClipboardIcon,
-  CodeBracketSquareIcon,
-} from "@heroicons/react/24/outline";
-import { ExclamationCircleIcon } from "@heroicons/react/16/solid";
+  LoaderCircle,
+  SquareCodeIcon,
+} from "lucide-react";
 import { Asset, assetStorage } from "app/assetStorage";
 import { AppInput } from "components/AppInput";
 import { formatFileSize } from "utils/utils";
@@ -214,7 +214,7 @@ const AssetError = ({ mediaType, onChange, onDelete }: AssetErrorProps) => {
   return (
     <div className="flex flex-col gap-2 p-2 border rounded-sm">
       <Alert>
-        <ExclamationCircleIcon className="size-8" />
+        <CircleAlertIcon className="size-8" />
         Error loading asset.
       </Alert>
       <div className="flex gap-2">
@@ -307,7 +307,7 @@ const ImageWidget = ({ id, asset }: WidgetInteriorProps) => {
 const OpaqueDataWidget = ({ id }: WidgetInteriorProps) => {
   return (
     <div className="flex items-center gap-2">
-      <CodeBracketSquareIcon className="size-10" />
+      <SquareCodeIcon className="size-10" />
       <div id={id}>Opaque data</div>
     </div>
   );

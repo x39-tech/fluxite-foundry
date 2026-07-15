@@ -1,5 +1,4 @@
-import { PlusCircleIcon } from "@heroicons/react/24/outline";
-import { ExclamationTriangleIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { CirclePlusIcon, Trash2Icon, TriangleAlertIcon } from "lucide-react";
 import { DmxSequenceStep } from "app/persistentState";
 import { IntegerInput } from "components/IntegerInput";
 import {
@@ -96,7 +95,7 @@ export const SequenceStepEditor = ({
         <Tooltip>
           <TooltipTrigger asChild>
             <SmallIconButton className="size-7" onClick={handleAddStep}>
-              <PlusCircleIcon className="size-5" />
+              <CirclePlusIcon className="size-5" />
             </SmallIconButton>
           </TooltipTrigger>
           <TooltipContent>Add Step</TooltipContent>
@@ -215,13 +214,13 @@ const StepCard = ({
           {hasWarning && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <ExclamationTriangleIcon className="size-5 text-yellow-500" />
+                <TriangleAlertIcon className="size-5 text-yellow-500" />
               </TooltipTrigger>
               <TooltipContent>{warningMessage}</TooltipContent>
             </Tooltip>
           )}
           <SmallIconButton onClick={onRemove}>
-            <TrashIcon />
+            <Trash2Icon />
           </SmallIconButton>
         </div>
       </div>

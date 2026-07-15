@@ -1,13 +1,13 @@
 import { useState } from "react";
 import {
-  ArrowDownTrayIcon,
-  ArrowUpTrayIcon,
-  DocumentTextIcon,
-  EllipsisHorizontalIcon,
-  QuestionMarkCircleIcon,
-  WrenchScrewdriverIcon,
-} from "@heroicons/react/24/solid";
-import { CogIcon } from "@heroicons/react/24/outline";
+  CircleQuestionMarkIcon,
+  DownloadIcon,
+  FileTextIcon,
+  SettingsIcon,
+  SlidersVerticalIcon,
+  UploadIcon,
+  WrenchIcon,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   getMigrationReport,
@@ -42,31 +42,31 @@ export const AppMainMenu = () => {
         <DropdownMenuTrigger asChild>
           <Button
             size="icon"
-            variant="secondary"
+            variant="outline"
             className="size-8"
             aria-label="App Menu"
           >
-            <EllipsisHorizontalIcon className="size-6" />
+            <SlidersVerticalIcon className="size-6" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="start">
           <DropdownMenuItem onClick={() => setImportDialogIsOpen(true)}>
-            <ArrowDownTrayIcon className="size-5" />
+            <DownloadIcon className="size-5" />
             Import Fluxite Codex...
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setExportDialogIsOpen(true)}>
-            <ArrowUpTrayIcon className="size-5" />
+            <UploadIcon className="size-5" />
             Export Fluxite Codex...
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setSettingsDialogIsOpen(true)}>
-            <CogIcon className="size-5" />
+            <SettingsIcon className="size-5" />
             Settings...
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuSub>
             <DropdownMenuSubTrigger className="flex gap-2">
-              <WrenchScrewdriverIcon className="size-5 text-muted-foreground" />
+              <WrenchIcon className="size-5 text-muted-foreground" />
               Debug
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
@@ -83,13 +83,13 @@ export const AppMainMenu = () => {
                   }
                 }}
               >
-                <DocumentTextIcon className="size-5" />
+                <FileTextIcon className="size-5" />
                 View Migration Report
               </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
           <DropdownMenuItem onClick={() => setAboutDialogIsOpen(true)}>
-            <QuestionMarkCircleIcon className="size-5" />
+            <CircleQuestionMarkIcon className="size-5" />
             {`About ${APP_NAME}`}
           </DropdownMenuItem>
         </DropdownMenuContent>

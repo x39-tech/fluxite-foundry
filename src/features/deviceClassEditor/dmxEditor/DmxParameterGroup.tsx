@@ -1,4 +1,4 @@
-import { PlusCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { CirclePlusIcon, XIcon } from "lucide-react";
 import { DmxMappingGroup, EntityId } from "app/persistentState";
 import { Button } from "components/scn-ui/Button";
 import {
@@ -48,7 +48,7 @@ export const DmxParameterGroup = ({
               className="text-primary"
               aria-label="Add to Mapping Group"
             >
-              <PlusCircleIcon className="size-5" />
+              <CirclePlusIcon className="size-5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
@@ -74,7 +74,7 @@ export const DmxParameterGroup = ({
           aria-label="Remove Mapping Group"
           onClick={() => removeParameterMappingGroup(chunkId, mappingGroupId)}
         >
-          <XMarkIcon className="size-5" />
+          <XIcon className="size-5" />
         </Button>
       </div>
       {mappingGroup.mappings.map((mapping, index) => (

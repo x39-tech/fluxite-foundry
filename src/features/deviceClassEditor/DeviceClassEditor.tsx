@@ -6,7 +6,7 @@ import {
   Actions,
   DockLocation,
 } from "flexlayout-react";
-import { PlusIcon } from "@heroicons/react/24/outline";
+import { PlusIcon } from "lucide-react";
 import { throttle } from "lodash";
 import { nanoid } from "nanoid";
 import { APP_NAME } from "consts";

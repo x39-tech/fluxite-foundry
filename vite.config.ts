@@ -3,6 +3,7 @@ import { defineConfig, Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import tailwindcss from "@tailwindcss/vite";
 import checker from "vite-plugin-checker";
+import svgr from "vite-plugin-svgr";
 import tsconfigPaths from "vite-tsconfig-paths";
 import wasm from "vite-plugin-wasm";
 import topLevelAwait from "vite-plugin-top-level-await";
@@ -72,6 +73,7 @@ export default defineConfig({
   plugins: [
     fcdPlugin(),
     react(),
+    svgr(),
     tailwindcss(),
     wasm(),
     topLevelAwait(),

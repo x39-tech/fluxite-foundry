@@ -8,15 +8,13 @@ import {
   useState,
 } from "react";
 import {
-  AdjustmentsHorizontalIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/24/outline";
-import {
   ChevronDownIcon,
   ChevronUpIcon,
   PlusIcon,
-  TrashIcon,
-} from "@heroicons/react/24/solid";
+  SearchIcon,
+  Settings2Icon,
+  Trash2Icon,
+} from "lucide-react";
 import { EntityId } from "app/persistentState";
 import { cn, ItemEditor } from "utils/utils";
 import { Toggle } from "./scn-ui/Toggle";
@@ -147,7 +145,7 @@ export const ListItemsEditor = ({
         <div className="flex flex-col max-h-full min-w-3xs border rounded-lg py-5 px-4 gap-2">
           {searchPlaceholder && (
             <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none" />
+              <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none" />
               <Input
                 type="search"
                 className="pl-9"
@@ -183,7 +181,7 @@ export const ListItemsEditor = ({
                     className={`absolute right-1 ${editor.id === selectedEditorId ? "visible" : "invisible"}`}
                     onClick={() => deleteEditor(editor)}
                   >
-                    <TrashIcon className="size-4" />
+                    <Trash2Icon className="size-4" />
                   </Button>
                 </div>
                 {idx !== visibleEditors.length - 1 && <Separator />}
@@ -217,7 +215,7 @@ export const ListItemsEditor = ({
                       variant="destructive"
                       onClick={() => deleteEditor(editor)}
                     >
-                      <TrashIcon />
+                      <Trash2Icon />
                       Delete
                     </Button>
                   </div>
@@ -267,7 +265,7 @@ export const ListItemsEditor = ({
                       variant="destructive"
                       onClick={() => deleteEditor(editor)}
                     >
-                      <TrashIcon />
+                      <Trash2Icon />
                       Delete
                     </Button>
                   </div>
@@ -371,30 +369,32 @@ const ItemEditorIcon = ({ index }: Props) => {
     <div
       className={`w-[44px] h-[44px] rounded-full flex justify-center items-center ${color.bg}`}
     >
-      <AdjustmentsHorizontalIcon className={`size-6 ${color.svg}`} />
+      <Settings2Icon className={`size-6 ${color.svg}`} />
     </div>
   );
 };
 
+// Stroke only, no fill: Lucide icons are drawn as strokes over fill="none", and
+// the designs show the slider knobs hollow rather than solid.
 const COLORS = [
   {
     bg: "bg-teal-100",
-    svg: "fill-teal-500 stroke-teal-500",
+    svg: "stroke-teal-500",
   },
   {
     bg: "bg-purple-100",
-    svg: "fill-purple-500 stroke-purple-500",
+    svg: "stroke-purple-500",
   },
   {
     bg: "bg-indigo-100",
-    svg: "fill-indigo-500 stroke-indigo-500",
+    svg: "stroke-indigo-500",
   },
   {
     bg: "bg-pink-100",
-    svg: "fill-pink-500 stroke-pink-500",
+    svg: "stroke-pink-500",
   },
   {
     bg: "bg-orange-100",
-    svg: "fill-orange-500 stroke-orange-500",
+    svg: "stroke-orange-500",
   },
 ];

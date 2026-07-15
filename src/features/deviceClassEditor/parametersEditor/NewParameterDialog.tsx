@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CheckIcon } from "@heroicons/react/24/solid";
+import { CheckIcon } from "lucide-react";
 import { Button } from "components/scn-ui/Button";
 import { TextEditorTableRow } from "components/EditorFields/DeprecatedTextEditorField";
 import { SimplePropsTable } from "components/SimplePropsTable";

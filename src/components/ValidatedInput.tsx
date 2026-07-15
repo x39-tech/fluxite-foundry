@@ -1,5 +1,5 @@
 import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
-import { ExclamationCircleIcon } from "@heroicons/react/16/solid";
+import { CircleAlertIcon } from "lucide-react";
 import { InputValidationResult } from "utils/inputValidation";
 import { Popover, PopoverAnchor, PopoverContent } from "./scn-ui/Popover";
 import { Alert, AlertDescription } from "./scn-ui/Alert";
@@ -115,7 +115,7 @@ export const ValidatedInput = ({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <Alert variant="destructive">
-          <ExclamationCircleIcon />
+          <CircleAlertIcon />
           <AlertDescription>
             {validationResult.feedback || "An unknown error occurred."}
           </AlertDescription>

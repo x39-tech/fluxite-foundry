@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDownIcon, ListBulletIcon } from "@heroicons/react/24/solid";
+import { ChevronDownIcon, ListIcon } from "lucide-react";
 import { useTextWidth } from "hooks/useTextWidth";
 import { Button } from "./scn-ui/Button";
 import { Popover, PopoverContent, PopoverTrigger } from "./scn-ui/Popover";
@@ -52,7 +52,7 @@ export const StringSelector = ({
             style={{ width: buttonWidth > 0 ? `${buttonWidth}px` : "auto" }}
             disabled={items.length === 0}
           >
-            <ListBulletIcon />
+            <ListIcon />
             {buttonDisplayName || placeholderText || "Select an item..."}
             <div className="flex-grow" />
             <ChevronDownIcon />

@@ -27,9 +27,8 @@ import { Checkbox } from "./scn-ui/Checkbox";
 import { ValidatedInput } from "./ValidatedInput";
 import { validateNewItemId } from "utils/inputValidation";
 import { SmallIconButton } from "./SmallIconButton";
-import { TrashIcon } from "@heroicons/react/24/solid";
+import { PlusIcon, Trash2Icon } from "lucide-react";
 import { getUniqueItemId } from "utils/utils";
-import { PlusIcon } from "@heroicons/react/24/outline";
 import {
   LocalizedClassEnumChoice,
   LocalizedInstanceEnumChoice,
@@ -194,7 +193,7 @@ export const EnumChoicesEditor = ({
                         <SmallIconButton
                           onClick={() => deleteEnumChoice(choice.id)}
                         >
-                          <TrashIcon className="size-5 fill-red-500" />
+                          <Trash2Icon className="size-5 stroke-red-500" />
                         </SmallIconButton>
                       </TableCell>
                     </TableRow>

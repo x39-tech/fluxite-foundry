@@ -1,9 +1,5 @@
 import { useState, useMemo, JSX } from "react";
-import {
-  CheckIcon,
-  ChevronDownIcon,
-  ListBulletIcon,
-} from "@heroicons/react/24/solid";
+import { CheckIcon, ChevronDownIcon, ListIcon } from "lucide-react";
 import { Library } from "@cpwg-community/delver";
 import {
   ImportedItemClass,
@@ -189,7 +185,7 @@ export function ItemClassSelector({
             style={{ width: buttonWidth > 0 ? `${buttonWidth}px` : "auto" }}
             {...props}
           >
-            <ListBulletIcon />
+            <ListIcon />
             {selectedClass
               ? getItemClassNameOrId(
                   selectedClass,

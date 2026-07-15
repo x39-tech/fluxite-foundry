@@ -1,9 +1,5 @@
 import { useState, useRef, forwardRef, useCallback } from "react";
-import {
-  ChevronUpIcon,
-  ChevronDownIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/solid";
+import { ChevronDownIcon, ChevronUpIcon, XIcon } from "lucide-react";
 import { cn } from "utils/utils";
 import { Input } from "./scn-ui/Input";
 
@@ -232,7 +228,7 @@ export const IntegerInput = forwardRef<
               )}
               tabIndex={-1}
             >
-              <XMarkIcon className="size-3.5" />
+              <XIcon className="size-3.5" />
               <span className="sr-only">Clear value</span>
             </button>
           )}

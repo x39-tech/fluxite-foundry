@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+/// <reference types="vite-plugin-svgr/client" />
 
 // Allow importing .fcd files as JSON
 declare module "*.fcd" {

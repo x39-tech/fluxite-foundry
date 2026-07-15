@@ -1,5 +1,5 @@
 import { useEffect, useId, useState } from "react";
-import { CheckIcon } from "@heroicons/react/24/solid";
+import { CheckIcon } from "lucide-react";
 import { useCurrentLocale, useCodexDatabase } from "app/store";
 import { getUniqueItemId } from "utils/utils";
 import { validateNewItemId } from "utils/inputValidation";

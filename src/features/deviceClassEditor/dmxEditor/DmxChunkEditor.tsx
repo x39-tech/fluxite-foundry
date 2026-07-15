@@ -1,5 +1,4 @@
-import { PlusIcon } from "@heroicons/react/24/solid";
-import { QuestionMarkCircleIcon } from "@heroicons/react/16/solid";
+import { CircleQuestionMarkIcon, PlusIcon } from "lucide-react";
 import { EntityId } from "app/persistentState";
 import { Button } from "components/scn-ui/Button";
 import { Label } from "components/scn-ui/Label";
@@ -41,7 +40,7 @@ export const DmxChunkEditor = ({ chunkId }: Props) => {
             <Label>Offsets Used</Label>
             <Tooltip>
               <TooltipTrigger>
-                <QuestionMarkCircleIcon className="size-4 text-muted-foreground" />
+                <CircleQuestionMarkIcon className="size-4 text-muted-foreground" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
                 The DMX slot offsets this group occupies, relative to the start

@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
+import { CircleQuestionMarkIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./scn-ui/Tooltip";
 import { AppInput } from "./AppInput";
 
@@ -15,7 +15,7 @@ export const ItemClassDisplay = ({ id, value, tooltipRenderer }: Props) => {
       <AppInput disabled id={id} value={value} />
       <Tooltip>
         <TooltipTrigger className="absolute right-2 top-2">
-          <QuestionMarkCircleIcon className="size-5 opacity-50" />
+          <CircleQuestionMarkIcon className="size-5 opacity-50" />
         </TooltipTrigger>
         <TooltipContent>{tooltipRenderer()}</TooltipContent>
       </Tooltip>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TrashIcon } from "@heroicons/react/24/solid";
+import { Trash2Icon } from "lucide-react";
 import { Toggle } from "components/scn-ui/Toggle";
 import { Button } from "components/scn-ui/Button";
 import { NavbarDivider } from "./NavbarDivider";
@@ -42,7 +42,7 @@ export const EditorTitleTab = ({
           className={`absolute right-1 ${hovered ? "visible" : "invisible"}`}
           onClick={() => onDelete(id)}
         >
-          <TrashIcon className="size-4" />
+          <Trash2Icon className="size-4" />
         </Button>
       </div>
       <NavbarDivider />

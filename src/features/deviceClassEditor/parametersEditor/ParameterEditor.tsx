@@ -1,6 +1,6 @@
 import { useId } from "react";
 import { capitalCase } from "change-case";
-import { ExclamationTriangleIcon } from "@heroicons/react/16/solid";
+import { TriangleAlertIcon } from "lucide-react";
 import { FieldSet } from "components/FieldSet";
 import { Label } from "components/scn-ui/Label";
 import { AppInput } from "components/AppInput";
@@ -52,7 +52,7 @@ export const ParameterEditor = ({ id }: Props) => {
   if (!paramClass) {
     return (
       <Alert>
-        <ExclamationTriangleIcon />
+        <TriangleAlertIcon />
         <AlertTitle>
           <span>
             Class <code>{param.class.codexId}</code> not found.
