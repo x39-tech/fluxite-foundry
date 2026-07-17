@@ -17,10 +17,9 @@
     "format": "prettier --write .",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
-    "tauri:dev:updater": "tauri dev --config tauri.updater-dev.conf.json",
     "tauri:build:macos": "tauri build --target universal-apple-darwin",
     "tauri:build:windows": "tauri build",
-    "tauri:build:windows:offline": "tauri build --config tauri.windows-offline.conf.json"
+    "tauri:build:windows:offline": "tauri build --config src-tauri/tauri.windows-offline.conf.json"
   },
   "dependencies": {
     "@cpwg-community/delver": "^0.1.0-alpha.10",

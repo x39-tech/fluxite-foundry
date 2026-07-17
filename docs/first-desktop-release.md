@@ -44,7 +44,7 @@ This should be tested both on macOS and Windows.
 
 Endpoints support `{{target}}`, `{{arch}}`, `{{current_version}}` and `{{bundle_type}}` templating, which the real manifest may want.
 
-A `scripts/make-update-manifest.mjs` would help here and will be needed by CI regardless. The fiddly parts are the platform keys (`darwin-aarch64` vs `windows-x86_64`) and reading the `.sig` files.
+`scripts/make-update-manifest.mjs` builds the manifest from the `.sig` files the bundler leaves next to each artifact, inferring the platform keys (`darwin-aarch64` vs `windows-x86_64`) from the artifact paths. CI will need it to build the real manifest.
 
 ## 2. Choose a build host (particularly for macOS)
 

@@ -4,9 +4,11 @@ import { errorMessage } from "utils/utils";
 
 const offerUpdate = (update: AvailableUpdate) => {
   toast(`Version ${update.version} is available`, {
+    // Ensure only one copy of the toast per version
+    id: `update-${update.version}`,
     description: update.notes,
-    // The user decides when to restart, so this must not time out.
     duration: Infinity,
+    closeButton: true,
     action: {
       label: "Install and restart",
       onClick: () => void installUpdate(update),
