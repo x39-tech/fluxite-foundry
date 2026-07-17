@@ -75,6 +75,7 @@ function getBuildInfo() {
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: "./",
   define: {
     __BUILD_STRING__: JSON.stringify(getBuildInfo().buildString),
     __APP_VERSION__: JSON.stringify(appVersion),

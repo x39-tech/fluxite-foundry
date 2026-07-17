@@ -6,24 +6,26 @@
 # committed. To make schema changes, create a new version directory with its own
 # state.ts and migrate.ts files.
 #
-# This script is designed to run in GitLab CI merge request pipelines. It
-# compares state files against the merge request target branch.
+# This script is designed to run in pull request CI. It compares state files
+# against the pull request's target branch, which is read from GITHUB_BASE_REF
+# or from an explicit TARGET_BRANCH override when running locally.
 
 set -e
 
 STATE_PATTERN="src/app/persistentState/v*/state.ts"
 
-# Check if we're in a merge request pipeline
-if [ -z "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" ]; then
-  echo "Not in a merge request pipeline, skipping state immutability check."
+TARGET_BRANCH="${TARGET_BRANCH:-$GITHUB_BASE_REF}"
+
+# Check if we're in a pull request pipeline
+if [ -z "$TARGET_BRANCH" ]; then
+  echo "Not in a pull request pipeline, skipping state immutability check."
   exit 0
 fi
 
-TARGET_BRANCH="$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
 echo "Checking state immutability against target branch: $TARGET_BRANCH"
 
 # Fetch the target branch so we can compare against it.
-# GitLab CI may do a shallow clone that doesn't include the target branch.
+# CI checkouts are typically shallow and omit the target branch.
 git fetch origin "$TARGET_BRANCH" --depth=1
 
 # Get state files that exist on the target branch
