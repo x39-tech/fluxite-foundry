@@ -3,7 +3,6 @@ import {
   ParameterClass,
   StructureClass,
   parseFluxiteCodexDocument,
-  Error as E173Error,
   ResourceClass,
   CommandClass,
 } from "@cpwg-community/delver";
@@ -15,6 +14,7 @@ import {
   LocalizationKey,
 } from "app/persistentState";
 import { fcLocalize, localize, LocalizedString } from "utils/localizationUtils";
+import { errorMessage } from "utils/utils";
 
 import core from "e173/libraries/core/draft-2026-1/library.fcd";
 import intensityColor from "e173/libraries/intensity-color/draft-2026-1/library.fcd";
@@ -186,17 +186,10 @@ export function loadLibrariesFromDocument(
   try {
     document = parseFluxiteCodexDocument(doc_obj);
   } catch (err) {
-    const e173err = err as E173Error;
-    let errMsg = `Error loading Fluxite Codex library document: ${e173err.type}: ${e173err.description}`;
-    if (e173err.path) {
-      errMsg += `at ${e173err.path}`;
-    } else if (e173err.line && e173err.column) {
-      errMsg += `at line ${e173err.line}, column ${e173err.column}`;
-    }
-    return errMsg;
+    return `Error loading Fluxite Codex library document: ${errorMessage(err)}`;
   }
 
-  const libraries = document.e173doc.libraries;
+  const libraries = document.document.e173doc.libraries;
   if (!libraries) {
     // Nothing to load
     return true;

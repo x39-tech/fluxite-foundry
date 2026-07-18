@@ -8,7 +8,6 @@ import { resolve } from "path";
 import {
   Condition,
   DeviceClass,
-  E173Document,
   EstaDmx,
   MappingGroup,
   parseFluxiteCodexDocument,
@@ -204,9 +203,15 @@ function readDeviceClassFromFile(
 ): DeviceClass {
   const absolutePath = resolve(process.cwd(), filePath);
   const content = readFileSync(absolutePath, "utf-8");
-  const doc: E173Document = parseFluxiteCodexDocument(content);
+  const { document, errors } = parseFluxiteCodexDocument(content);
 
-  const deviceClasses = doc.e173doc.deviceClasses;
+  if (errors.length > 0) {
+    throw new Error(
+      `Validation errors in ${filePath}: ${errors.map((e) => e.message).join(", ")}`,
+    );
+  }
+
+  const deviceClasses = document.e173doc.deviceClasses;
   if (!deviceClasses) {
     throw new Error(`No device classes found in ${filePath}`);
   }
