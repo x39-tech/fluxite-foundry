@@ -1,7 +1,7 @@
 import { Draft, produceWithPatches } from "immer";
 import * as FlexLayout from "flexlayout-react";
 import { useShallow } from "zustand/react/shallow";
-import { DmxDriver, Error as E173Error } from "@cpwg-community/delver";
+import { DmxDriver, DelverError } from "@cpwg-community/delver";
 import {
   AppPersistentState,
   CodexId,
@@ -145,7 +145,7 @@ export function updateDmxController(editor: DeviceClassEditorState) {
         };
       });
     } catch (e) {
-      const err = e as E173Error;
+      const err = e as DelverError;
       updateAppRuntimeState((state) => {
         state.dmxController = {
           state: "error",

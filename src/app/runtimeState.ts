@@ -1,4 +1,4 @@
-import { DmxDriver, Error as E173Error } from "@cpwg-community/delver";
+import { DmxDriver, DelverError } from "@cpwg-community/delver";
 import { CodexDatabase } from "codex/codexDatabase";
 
 export interface AppRuntimeState {
@@ -23,5 +23,5 @@ export interface DmxControllerAvailable {
 
 export interface DmxControllerError {
   state: "error";
-  error: E173Error;
+  error: DelverError;
 }

@@ -3,8 +3,8 @@ import {
   E173Archive,
   parseFluxiteCodexDocument,
   parseFluxiteCodexArchive,
-  Error as E173Error,
   DeviceClass,
+  ValidationError,
 } from "@cpwg-community/delver";
 import JSZip from "jszip";
 import {
@@ -60,19 +60,24 @@ export async function validateInputFile(
     }
 
     try {
-      const codex = parseFluxiteCodexDocument(content);
-      const deviceClasses = extractDeviceClasses(codex, file.name);
+      const result = parseFluxiteCodexDocument(content);
+      if (result.errors.length > 0) {
+        return {
+          valid: false,
+          feedbackKind: FeedbackKind.ValidationFailed,
+          feedback: formatValidationErrors(result.errors),
+        };
+      }
+      const deviceClasses = extractDeviceClasses(result.document, file.name);
       return {
         valid: true,
         deviceClasses,
       };
     } catch (e) {
-      const err = e as E173Error;
-      const path = err.path ? ` (at ${err.path})` : "";
       return {
         valid: false,
         feedbackKind: FeedbackKind.ValidationFailed,
-        feedback: `Document validation failed: ${err.type}: ${err.description}${path}`,
+        feedback: `Document validation failed: ${errorMessage(e)}`,
       };
     }
   } else {
@@ -103,12 +108,10 @@ async function processCodexArchive(file: File): Promise<CodexImportResult> {
     try {
       archive = parseFluxiteCodexArchive(archiveContent);
     } catch (e) {
-      const err = e as E173Error;
-      const path = err.path ? ` (at ${err.path})` : undefined;
       return {
         valid: false,
         feedbackKind: FeedbackKind.ValidationFailed,
-        feedback: `Archive validation failed: ${err.type}: ${err.description}${path}`,
+        feedback: `Archive validation failed: ${errorMessage(e)}`,
       };
     }
 
@@ -128,8 +131,15 @@ async function processCodexArchive(file: File): Promise<CodexImportResult> {
       if (jsonFile) {
         try {
           const content = await jsonFile.async("string");
-          const codex = parseFluxiteCodexDocument(content);
-          const deviceClasses = extractDeviceClasses(codex, filename);
+          const result = parseFluxiteCodexDocument(content);
+          if (result.errors.length > 0) {
+            return {
+              valid: false,
+              feedbackKind: FeedbackKind.ValidationFailed,
+              feedback: `${filename}:\n${formatValidationErrors(result.errors)}`,
+            };
+          }
+          const deviceClasses = extractDeviceClasses(result.document, filename);
           allDeviceClasses.push(...deviceClasses);
         } catch (e) {
           // Skip files that can't be parsed as Fluxite Codex documents
@@ -154,6 +164,10 @@ async function processCodexArchive(file: File): Promise<CodexImportResult> {
       feedback: `Failed to read ZIP archive: ${errorMessage(e)}`,
     };
   }
+}
+
+function formatValidationErrors(errors: ValidationError[]): string {
+  return errors.map((error) => `${error.pointer}: ${error.message}`).join("\n");
 }
 
 function extractDeviceClasses(
@@ -199,12 +213,12 @@ export async function getDeviceClassFromArchive(
 
   try {
     const content = await jsonFile.async("string");
-    const codex = parseFluxiteCodexDocument(content);
+    const result = parseFluxiteCodexDocument(content);
 
     const qualifiedId = buildQualifiedId(EntityType.Dev, dc.orgId, dc.id);
 
-    if (codex.e173doc.deviceClasses?.[qualifiedId]?.[dc.version]) {
-      return codex.e173doc.deviceClasses[qualifiedId][dc.version];
+    if (result.document.e173doc.deviceClasses?.[qualifiedId]?.[dc.version]) {
+      return result.document.e173doc.deviceClasses[qualifiedId][dc.version];
     }
     return null;
   } catch (_e) {
@@ -218,12 +232,12 @@ export async function getDeviceClassFromDocument(
 ): Promise<DeviceClass | null> {
   try {
     const content = await readFileToString(docFile);
-    const codex = parseFluxiteCodexDocument(content);
+    const result = parseFluxiteCodexDocument(content);
 
     const qualifiedId = buildQualifiedId(EntityType.Dev, dc.orgId, dc.id);
 
-    if (codex.e173doc.deviceClasses?.[qualifiedId]?.[dc.version]) {
-      return codex.e173doc.deviceClasses[qualifiedId][dc.version];
+    if (result.document.e173doc.deviceClasses?.[qualifiedId]?.[dc.version]) {
+      return result.document.e173doc.deviceClasses[qualifiedId][dc.version];
     }
     return null;
   } catch (_e) {

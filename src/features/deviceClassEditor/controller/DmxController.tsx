@@ -138,11 +138,8 @@ export const DmxController = () => {
         </p>
       );
     case "error": {
-      const pathText = dmxController.error.path
-        ? ` (at ${dmxController.error.path})`
-        : "";
       return (
-        <p>{`Error compiling DMX test controller: ${dmxController.error.type}: ${dmxController.error.description}${pathText}`}</p>
+        <p>{`Error compiling DMX test controller: ${dmxController.error.message}`}</p>
       );
     }
   }

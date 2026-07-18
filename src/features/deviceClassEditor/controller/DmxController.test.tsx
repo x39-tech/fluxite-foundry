@@ -79,19 +79,19 @@ test("Shows message when DMX controller is not created", () => {
 test("Shows error message when DMX controller has error", () => {
   mockUseMappableParameters.mockReturnValue({});
 
+  const error = Object.assign(new Error("Test error message (at /foo)"), {
+    kind: "Controller",
+  });
   mockUseDmxController.mockReturnValue({
     state: "error",
-    error: {
-      type: "compilation_error",
-      description: "Test error message",
-    },
+    error,
   });
 
   render(<DmxController />);
 
   expect(
     screen.getByText(
-      /Error compiling DMX test controller: compilation_error: Test error message/,
+      /Error compiling DMX test controller: Test error message \(at \/foo\)/,
     ),
   ).toBeInTheDocument();
 });
