@@ -40,7 +40,7 @@ import {
   modifyEnumChoice,
   modifyEnumChoiceLocalizedValue,
 } from "features/deviceClassEditor/state";
-import { CodexId, EnumChoiceParent } from "app/persistentState";
+import { ClassMemberId, CodexId, EnumChoiceParent } from "app/persistentState";
 
 interface Props {
   id?: string;
@@ -48,8 +48,8 @@ interface Props {
   parent: EnumChoiceParent;
   classChoices: LocalizedClassEnumChoice[];
   instanceChoices?: LocalizedInstanceEnumChoice[];
-  exclusions?: string[];
-  onExclusionChanged: (choiceId: string, excluded: boolean) => void;
+  exclusions?: readonly ClassMemberId[];
+  onExclusionChanged: (choiceId: ClassMemberId, excluded: boolean) => void;
 }
 
 interface ClassDisplayChoice extends LocalizedClassEnumChoice {
@@ -68,14 +68,12 @@ export const EnumChoicesEditor = ({
   const idPrefix = useId();
   const locale = useCurrentLocale();
 
+  const excludedSet = new Set<string>(exclusions ?? []);
   const classDisplayChoices: ClassDisplayChoice[] = classChoices.map(
-    (choice) => {
-      if (exclusions?.includes(choice.codexId)) {
-        return { ...choice, removed: true };
-      } else {
-        return { ...choice, removed: false };
-      }
-    },
+    (choice) => ({
+      ...choice,
+      removed: excludedSet.has(choice.id ?? choice.codexId),
+    }),
   );
 
   const instanceChoiceIds = instanceChoices?.map((choice) => choice.codexId);
@@ -144,7 +142,10 @@ export const EnumChoicesEditor = ({
                         checked={!choice.removed}
                         onCheckedChange={(checked) =>
                           typeof checked === "boolean" &&
-                          onExclusionChanged(choice.codexId, !checked)
+                          onExclusionChanged(
+                            choice.id ?? choice.codexId,
+                            !checked,
+                          )
                         }
                       />
                     </TableCell>

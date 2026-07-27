@@ -115,7 +115,7 @@ export const ResourceEditor = ({ id }: Props) => {
           <Label htmlFor={`${idPrefix}-class`}>Class</Label>
           <ItemClassDisplay
             id={`${idPrefix}-class`}
-            value={resource.class.codexId}
+            value={resourceClass.codexId}
             tooltipRenderer={() => (
               <ResourceClassDisplay resourceClass={resourceClass} />
             )}

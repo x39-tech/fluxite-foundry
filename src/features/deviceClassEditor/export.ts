@@ -18,27 +18,73 @@ import {
   ResourceClass,
   SerializerClass,
   StructureClass,
+  Trigger,
   UnitName,
 } from "@cpwg-community/delver";
 import {
+  ClassMemberId,
   DeviceClassEditorState,
   DmxChunkRefCondition,
   DmxConditionGroup,
   DmxMappingChunkValuesSchema,
   DmxSerializerState,
+  DmxTrigger,
   EntityId,
   ParameterCountSchema,
   ParameterReference,
 } from "app/persistentState";
 import { select, selectWithIds } from "app/stateUtils";
+import {
+  classReferenceCodexId,
+  commandArgKeyToCodex,
+  commandExclusionsToCodex,
+  commandCurrentCodexId,
+  paramExclusionsToCodex,
+  parameterCurrentCodexId,
+} from "./referenceResolution";
 import { z } from "zod";
 
 type InternalParameterCount = z.infer<typeof ParameterCountSchema>;
 
-function convertParamReference(ref: ParameterReference): FCParamReference {
+function convertParamReference(
+  editor: DeviceClassEditorState,
+  ref: ParameterReference,
+): FCParamReference {
   return {
-    id: ref.codexId,
+    id: parameterCurrentCodexId(editor, ref),
     index: ref.index,
+  };
+}
+
+function convertTrigger(
+  editor: DeviceClassEditorState,
+  trigger: DmxTrigger,
+): Trigger {
+  const command = editor.commands[trigger.command];
+  const commandCodexId = commandCurrentCodexId(editor, trigger.command);
+
+  return {
+    command: commandCodexId,
+    mappings: trigger.mappings.map((tm) => ({
+      conditions: Object.fromEntries(
+        Object.entries(tm.conditions).map(([key, cond]) => [
+          // Condition keys are argument member ids in the command's class ID
+          // space. Resolve back to the Codex codexId when the class is local.
+          command
+            ? commandArgKeyToCodex(editor, command.class, key as ClassMemberId)
+            : key,
+          {
+            argumentMin: cond.argumentMin,
+            argumentMax: cond.argumentMax,
+          },
+        ]),
+      ),
+      sequence: tm.sequence.map((step) => ({
+        chunkStart: step.chunkStart,
+        chunkEnd: step.chunkEnd,
+        hold: step.hold,
+      })),
+    })),
   };
 }
 
@@ -430,7 +476,7 @@ function exportParameters(
     }
 
     const exportedParam: Parameter = {
-      class: param.class.codexId,
+      class: classReferenceCodexId(param.class, editor.parameterClasses),
       library:
         param.class.type === "imported" ? param.class.library : undefined,
       access: param.access as ParameterAccess[],
@@ -458,7 +504,11 @@ function exportParameters(
       exportedParam.choices = {};
 
       if (param.enumExclusions) {
-        exportedParam.choices.excluded = param.enumExclusions;
+        exportedParam.choices.excluded = paramExclusionsToCodex(
+          editor,
+          param.class,
+          param.enumExclusions,
+        );
       }
 
       if (additionalChoices.length > 0) {
@@ -491,7 +541,7 @@ function exportResources(
     }
 
     const exportedResource: Resource = {
-      class: resource.class.codexId,
+      class: classReferenceCodexId(resource.class, editor.resourceClasses),
       library:
         resource.class.type === "imported" ? resource.class.library : undefined,
       access: resource.access as Access[],
@@ -523,7 +573,7 @@ function exportCommands(
     }
 
     const exportedCmd: Command = {
-      class: cmd.class.codexId,
+      class: classReferenceCodexId(cmd.class, editor.commandClasses),
       library: cmd.class.type === "imported" ? cmd.class.library : undefined,
       completionNotification: cmd.completionNotification,
       "@friendlyName": cmd.localized.friendlyName,
@@ -532,9 +582,13 @@ function exportCommands(
     // Handle argument choices (excluded and additional)
     if (cmd.argEnumExclusions) {
       exportedCmd.argumentChoices = {};
-      for (const [argCodexId, excluded] of Object.entries(
+      const codexExclusions = commandExclusionsToCodex(
+        editor,
+        cmd.class,
+        "arg",
         cmd.argEnumExclusions,
-      )) {
+      );
+      for (const [argCodexId, excluded] of Object.entries(codexExclusions)) {
         exportedCmd.argumentChoices[argCodexId] = {
           excluded,
         };
@@ -594,9 +648,13 @@ function exportCommands(
     // Handle return choices (excluded and additional)
     if (cmd.returnEnumExclusions) {
       exportedCmd.returnChoices = {};
-      for (const [retCodexId, excluded] of Object.entries(
+      const codexExclusions = commandExclusionsToCodex(
+        editor,
+        cmd.class,
+        "return",
         cmd.returnEnumExclusions,
-      )) {
+      );
+      for (const [retCodexId, excluded] of Object.entries(codexExclusions)) {
         exportedCmd.returnChoices[retCodexId] = {
           excluded,
         };
@@ -665,7 +723,7 @@ function exportDmxSerializer(
     return;
   }
 
-  const estaDmx = convertDmxSerializerToEstaDmx(editor.dmxSerializer);
+  const estaDmx = convertDmxSerializerToEstaDmx(editor, editor.dmxSerializer);
 
   if (Object.keys(estaDmx.chunks).length > 0) {
     codexClass.serializers = codexClass.serializers || {};
@@ -680,7 +738,10 @@ function exportDmxSerializer(
   }
 }
 
-function convertDmxSerializerToEstaDmx(dmx: DmxSerializerState): EstaDmx {
+function convertDmxSerializerToEstaDmx(
+  editor: DeviceClassEditorState,
+  dmx: DmxSerializerState,
+): EstaDmx {
   const result: EstaDmx = {
     chunks: {},
   };
@@ -711,7 +772,7 @@ function convertDmxSerializerToEstaDmx(dmx: DmxSerializerState): EstaDmx {
 
         return {
           mappings: mg.mappings.map((m) => ({
-            mappedParam: convertParamReference(m.mappedParam),
+            mappedParam: convertParamReference(editor, m.mappedParam),
             ranges: m.ranges.map((r) => ({
               start: r.start,
               end: r.end,
@@ -720,14 +781,16 @@ function convertDmxSerializerToEstaDmx(dmx: DmxSerializerState): EstaDmx {
             ...(m.unmappedParams
               ? {
                   unmappedParams: m.unmappedParams.map((up) => ({
-                    parameter: convertParamReference(up.parameter),
+                    parameter: convertParamReference(editor, up.parameter),
                     start: up.start,
                     end: up.end,
                   })),
                 }
               : {}),
           })),
-          ...(mg.triggers.length > 0 ? { triggers: mg.triggers } : {}),
+          ...(mg.triggers.length > 0
+            ? { triggers: mg.triggers.map((t) => convertTrigger(editor, t)) }
+            : {}),
           ...(conditions.length > 0 ? { conditions } : {}),
         };
       });

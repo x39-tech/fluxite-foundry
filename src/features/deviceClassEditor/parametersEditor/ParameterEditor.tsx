@@ -55,7 +55,13 @@ export const ParameterEditor = ({ id }: Props) => {
         <TriangleAlertIcon />
         <AlertTitle>
           <span>
-            Class <code>{param.class.codexId}</code> not found.
+            {param.class.type === "imported" ? (
+              <>
+                Class <code>{param.class.codexId}</code> not found.
+              </>
+            ) : (
+              <>Referenced class not found. It may have been deleted.</>
+            )}
           </span>
         </AlertTitle>
         <AlertDescription>
@@ -84,7 +90,7 @@ export const ParameterEditor = ({ id }: Props) => {
           <Label htmlFor={`${idPrefix}-class`}>Class</Label>
           <ItemClassDisplay
             id={`${idPrefix}-class`}
-            value={param.class.codexId}
+            value={paramClass.codexId}
             tooltipRenderer={() => (
               <ParameterClassDisplay paramClass={paramClass} />
             )}

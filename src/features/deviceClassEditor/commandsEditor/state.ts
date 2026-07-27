@@ -256,7 +256,7 @@ export function createNewCommand(
       if (!pc) {
         return;
       }
-      classRef = { type: "local", codexId: pc.codexId, id: pc.id };
+      classRef = { type: "local", id: pc.id };
     } else {
       classRef = { type: "imported", codexId: cmdClass, library };
     }
