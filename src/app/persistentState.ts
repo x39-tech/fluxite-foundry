@@ -1,4 +1,4 @@
-import * as StateV3 from "./persistentState/v3/state";
+import * as StateV4 from "./persistentState/v4/state";
 import { MIGRATIONS } from "./persistentStateMigrations";
 import {
   MigrationReport,
@@ -14,11 +14,11 @@ import {
 // 4. Update the re-export and VERSION below to point to the new version
 
 // Re-exports from the current (most recent) state version.
-export * from "./persistentState/v3/state";
-export const VERSION = StateV3.VERSION;
+export * from "./persistentState/v4/state";
+export const VERSION = StateV4.VERSION;
 
-export type AppPersistentState = StateV3.AppPersistentState;
-const AppStateSchema = StateV3.AppStateSchema;
+export type AppPersistentState = StateV4.AppPersistentState;
+const AppStateSchema = StateV4.AppStateSchema;
 
 // Migration infrastructure
 

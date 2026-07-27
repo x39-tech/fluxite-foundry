@@ -1,6 +1,11 @@
 import { describe, test, expect } from "vitest";
 import { getImportedDeviceClassEditor } from "./import";
-import { CodexId, LocalizationKey } from "app/persistentState";
+import {
+  CodexId,
+  DeviceClassEditorState,
+  EntityId,
+  LocalizationKey,
+} from "app/persistentState";
 import type {
   DeviceClass,
   ParameterClass,
@@ -220,6 +225,21 @@ function addCmd(
     ...(friendlyName && { "@friendlyName": friendlyName }),
     ...rest,
   };
+}
+
+// Returns the EntityId of the enum choice with the given codexId. Used to
+// assert on exclusions, which reference local choices by their EntityId.
+function findEnumChoiceId(
+  editor: DeviceClassEditorState,
+  codexId: string,
+): EntityId {
+  const entry = Object.entries(editor.enumChoices).find(
+    ([, choice]) => choice.codexId === codexId,
+  );
+  if (!entry) {
+    throw new Error(`No enum choice with codexId "${codexId}"`);
+  }
+  return EntityId(entry[0]);
 }
 
 // Localization helpers
@@ -694,8 +714,13 @@ describe("getImportedDeviceClassEditor", () => {
       const params = Object.values(editor.parameters);
       expect(params).toHaveLength(1);
       expect(params[0].codexId).toBe("brightness");
-      expect(params[0].class.type).toBe("local");
-      expect(params[0].class.codexId).toBe("test.param.class");
+      const paramClass = params[0].class;
+      expect(paramClass.type).toBe("local");
+      if (paramClass.type === "local") {
+        expect(editor.parameterClasses[paramClass.id].codexId).toBe(
+          "test.param.class",
+        );
+      }
       expect(params[0].access).toEqual(["readActual", "write"]);
       expect(params[0].lifetime).toBe("runtime");
     });
@@ -792,7 +817,13 @@ describe("getImportedDeviceClassEditor", () => {
 
     test("imports parameter with enum exclusions", () => {
       const dc = createMinimalDeviceClass();
-      addParamClass(dc, "test.enum", { dataType: "enum" });
+      addParamClass(dc, "test.enum", {
+        dataType: "enum",
+        choices: [
+          { id: "excluded1", "@name": "Excluded One" },
+          { id: "excluded2", "@name": "Excluded Two" },
+        ],
+      });
       addParam(dc, "mode", "test.enum", {
         choices: { excluded: ["excluded1", "excluded2"] },
       });
@@ -805,7 +836,11 @@ describe("getImportedDeviceClassEditor", () => {
       );
 
       const param = Object.values(editor.parameters)[0];
-      expect(param.enumExclusions).toEqual(["excluded1", "excluded2"]);
+      // For a local class, exclusions resolve to the enum choices' EntityIds.
+      const choiceIds = ["excluded1", "excluded2"].map((codexId) =>
+        findEnumChoiceId(editor, codexId),
+      );
+      expect(param.enumExclusions).toEqual(choiceIds);
     });
 
     test("imports parameter with additional enum choices", () => {
@@ -919,7 +954,15 @@ describe("getImportedDeviceClassEditor", () => {
       const dc = createMinimalDeviceClass();
       addCmdClass(dc, "test.command", {
         arguments: {
-          mode: { "@name": "Mode", dataType: "enum", required: true },
+          mode: {
+            "@name": "Mode",
+            dataType: "enum",
+            required: true,
+            choices: [
+              { id: "disabled", "@name": "Disabled" },
+              { id: "maintenance", "@name": "Maintenance" },
+            ],
+          },
         },
       });
       addCmd(dc, "configure", "test.command", {
@@ -936,10 +979,18 @@ describe("getImportedDeviceClassEditor", () => {
       );
 
       const cmd = Object.values(editor.commands)[0];
-      expect(cmd.argEnumExclusions?.[CodexId("mode")]).toEqual([
-        "disabled",
-        "maintenance",
-      ]);
+      // For a local command class, exclusions are keyed by the argument's
+      // EntityId, and the excluded choices resolve to their enum choice
+      // EntityIds.
+      const modeArgId = EntityId(
+        Object.entries(editor.commandClassArguments).find(
+          ([, arg]) => arg.codexId === "mode",
+        )![0],
+      );
+      const choiceIds = ["disabled", "maintenance"].map((codexId) =>
+        findEnumChoiceId(editor, codexId),
+      );
+      expect(cmd.argEnumExclusions?.[modeArgId]).toEqual(choiceIds);
     });
 
     test("populates commandEditors array", () => {
@@ -1005,6 +1056,8 @@ describe("DMX serializer import", () => {
 
   test("imports mapping with parameter reference", () => {
     const dc = createMinimalDeviceClass();
+    addParamClass(dc, "example.pan");
+    addParam(dc, "pan", "example.pan");
     const dmx = createEstaDmx();
     const chunk = createChunk([0]);
     chunk.mappingGroups.push(
@@ -1028,7 +1081,10 @@ describe("DMX serializer import", () => {
 
     const mapping = Object.values(editor.dmxSerializer!.mappingGroups)[0]
       .mappings[0];
-    expect(mapping.mappedParam.codexId).toBe("pan");
+    const panId = Object.entries(editor.parameters).find(
+      ([, p]) => p.codexId === "pan",
+    )![0];
+    expect(mapping.mappedParam.id).toBe(panId);
     expect(mapping.mappedParam.index).toBe(2);
   });
 
@@ -1115,6 +1171,10 @@ describe("DMX serializer import", () => {
 
   test("imports unmapped parameters", () => {
     const dc = createMinimalDeviceClass();
+    addParamClass(dc, "example.intensity");
+    addParam(dc, "intensity", "example.intensity");
+    addParamClass(dc, "example.pan");
+    addParam(dc, "pan", "example.pan");
     const dmx = createEstaDmx();
     const chunk = createChunk([0]);
     chunk.mappingGroups.push(
@@ -1141,7 +1201,10 @@ describe("DMX serializer import", () => {
     const unmapped = Object.values(editor.dmxSerializer!.mappingGroups)[0]
       .mappings[0].unmappedParams;
     expect(unmapped).toHaveLength(1);
-    expect(unmapped![0].parameter.codexId).toBe("pan");
+    const panId = Object.entries(editor.parameters).find(
+      ([, p]) => p.codexId === "pan",
+    )![0];
+    expect(unmapped![0].parameter.id).toBe(panId);
     expect(unmapped![0].parameter.index).toBe(1);
     expect(unmapped![0].start).toBe(0);
     expect(unmapped![0].end).toBe(180);
@@ -1180,9 +1243,11 @@ describe("DMX serializer import", () => {
     const triggers = Object.values(editor.dmxSerializer!.mappingGroups)[0]
       .triggers;
     expect(triggers).toHaveLength(1);
-    expect(triggers[0].command).toBe("reset");
+    // The minimal device class defines no "reset" command, so the reference
+    // resolves to a synthetic missing id (with a nanoid suffix).
+    expect(triggers[0].command).toMatch(/^missing-reset-/);
     expect(triggers[0].mappings).toHaveLength(1);
-    expect(triggers[0].mappings[0].conditions["mode"]).toEqual({
+    expect(triggers[0].mappings[0].conditions[CodexId("mode")]).toEqual({
       argumentMin: 1,
       argumentMax: 5,
     });

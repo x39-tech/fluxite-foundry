@@ -19,13 +19,19 @@ import { Alert, AlertDescription, AlertTitle } from "components/scn-ui/Alert";
 import { unitToString } from "utils/utils";
 import { validateNewItemId } from "utils/inputValidation";
 import { useCurrentLocale } from "app/store";
-import { CodexId, EntityId, EnumChoiceParent } from "app/persistentState";
+import {
+  ClassMemberId,
+  CodexId,
+  EntityId,
+  EnumChoiceParent,
+} from "app/persistentState";
 import {
   modifyCommand,
   modifyCommandLocalizedValue,
   useCommandCodexIds,
   useCommandInfo,
 } from "./state";
+import { classMemberId } from "../referenceResolution";
 
 interface Props {
   id: EntityId;
@@ -61,7 +67,13 @@ export const CommandEditor = ({ id }: Props) => {
         <TriangleAlertIcon />
         <AlertTitle>
           <span>
-            Class <code>{command.class.codexId}</code> not found.
+            {command.class.type === "imported" ? (
+              <>
+                Class <code>{command.class.codexId}</code> not found.
+              </>
+            ) : (
+              <>Referenced class not found. It may have been deleted.</>
+            )}
           </span>
         </AlertTitle>
         <AlertDescription>
@@ -90,7 +102,7 @@ export const CommandEditor = ({ id }: Props) => {
           <Label htmlFor={`${idPrefix}-class`}>Class</Label>
           <ItemClassDisplay
             id={`${idPrefix}-class`}
-            value={command.class.codexId}
+            value={commandClass.codexId}
             tooltipRenderer={() => (
               <CommandClassDisplay commandClass={commandClass} />
             )}
@@ -142,6 +154,10 @@ export const CommandEditor = ({ id }: Props) => {
             Object.entries(commandClass.arguments).map(
               ([argId, argument], index) => {
                 const argCodexId = CodexId(argId);
+                const argMemberId: ClassMemberId = classMemberId(
+                  argument.id,
+                  argCodexId,
+                );
                 const parent: EnumChoiceParent =
                   command.class.type === "imported"
                     ? {
@@ -222,23 +238,23 @@ export const CommandEditor = ({ id }: Props) => {
                             parent={parent}
                             classChoices={argument.choices}
                             instanceChoices={instanceArgEnumChoices[argCodexId]}
-                            exclusions={command.argEnumExclusions?.[argCodexId]}
+                            exclusions={
+                              command.argEnumExclusions?.[argMemberId]
+                            }
                             onExclusionChanged={(choiceId, excluded) =>
                               modifyCommand(id, (draft) => {
                                 draft.argEnumExclusions ||= {};
-                                draft.argEnumExclusions[argCodexId] ||= [];
+                                draft.argEnumExclusions[argMemberId] ||= [];
 
                                 const excludedList =
-                                  draft.argEnumExclusions[argCodexId];
+                                  draft.argEnumExclusions[argMemberId];
 
                                 if (excluded) {
-                                  if (
-                                    !excludedList.includes(CodexId(choiceId))
-                                  ) {
-                                    excludedList.push(CodexId(choiceId));
+                                  if (!excludedList.includes(choiceId)) {
+                                    excludedList.push(choiceId);
                                   }
                                 } else {
-                                  draft.argEnumExclusions[argCodexId] =
+                                  draft.argEnumExclusions[argMemberId] =
                                     excludedList.filter(
                                       (value) => value !== choiceId,
                                     );

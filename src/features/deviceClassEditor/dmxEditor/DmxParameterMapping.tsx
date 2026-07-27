@@ -1,10 +1,10 @@
 import { useId, useState } from "react";
 import { PlusIcon, TriangleAlertIcon, XIcon } from "lucide-react";
 import {
-  CodexId,
   DmxMapping,
   DmxMappingRange,
   DmxUnmappedParam,
+  EntityId,
   fcDataTypes,
   ParameterReference,
 } from "app/persistentState";
@@ -63,7 +63,7 @@ interface DmxParameterMappingProps {
  * Returns both the serialized string (for display) and the ParameterReference.
  */
 function generateParameterCandidates(
-  mappableParams: Record<CodexId, MappableParameter>,
+  mappableParams: Record<EntityId, MappableParameter>,
 ): { ref: ParameterReference; str: string; mappable: MappableParameter }[] {
   const candidates: {
     ref: ParameterReference;
@@ -71,29 +71,60 @@ function generateParameterCandidates(
     mappable: MappableParameter;
   }[] = [];
 
-  for (const [codexId, mappable] of Object.entries(mappableParams)) {
+  for (const [id, mappable] of Object.entries(mappableParams)) {
+    const codexId = mappable.param.codexId;
     const count = mappable.param.count;
     const countValue = count?.type === "fixed" ? count.value : undefined;
     if (countValue !== undefined && countValue > 1) {
       for (let i = 0; i < countValue; i++) {
-        const ref: ParameterReference = { codexId: CodexId(codexId), index: i };
         candidates.push({
-          ref,
-          str: serializeParameterReference(ref),
+          ref: { id: EntityId(id), index: i },
+          str: serializeParameterReference({ codexId, index: i }),
           mappable,
         });
       }
     } else {
-      const ref: ParameterReference = { codexId: CodexId(codexId) };
       candidates.push({
-        ref,
-        str: serializeParameterReference(ref),
+        ref: { id: EntityId(id) },
+        str: serializeParameterReference({ codexId }),
         mappable,
       });
     }
   }
 
   return candidates;
+}
+
+function referenceDisplayString(
+  ref: ParameterReference,
+  mappableParams: Record<EntityId, MappableParameter>,
+): string | undefined {
+  const codexId = mappableParams[ref.id]?.param.codexId;
+  if (codexId === undefined) return undefined;
+  return serializeParameterReference({ codexId, index: ref.index });
+}
+
+/**
+ * Resolves a selector string (a current codexId, optionally indexed) back to a
+ * stored reference plus its mappable parameter. Returns undefined when no
+ * current parameter has that codexId.
+ */
+function resolveSelectionString(
+  str: string,
+  mappableParams: Record<EntityId, MappableParameter>,
+): { ref: ParameterReference; mappable: MappableParameter } | undefined {
+  const parsed = parseParameterReference(str);
+  const mappable = Object.values(mappableParams).find(
+    (m) => m.param.codexId === parsed.codexId,
+  );
+  if (!mappable) return undefined;
+  return {
+    ref: {
+      id: mappable.entityId,
+      ...(parsed.index !== undefined ? { index: parsed.index } : {}),
+    },
+    mappable,
+  };
 }
 
 const SectionHeading = ({
@@ -141,9 +172,10 @@ export const DmxParameterMapping = ({
   const mappableParams = useMappableParameters();
   const allCandidates = generateParameterCandidates(mappableParams);
 
-  const mappedParamStr = serializeParameterReference(mapping.mappedParam);
+  const mappedParamStr =
+    referenceDisplayString(mapping.mappedParam, mappableParams) ?? "";
   const mappedParameterCandidateStrs = allCandidates.map((c) => c.str);
-  const mappedParamMappable = mappableParams[mapping.mappedParam.codexId];
+  const mappedParamMappable = mappableParams[mapping.mappedParam.id];
 
   // The mapping is valid if the mapped parameter exists and is in the candidates list
   const isValidMapping =
@@ -155,7 +187,9 @@ export const DmxParameterMapping = ({
     if (candidate.str === mappedParamStr) return false;
     if (
       mapping.unmappedParams?.some(
-        (up) => serializeParameterReference(up.parameter) === candidate.str,
+        (up) =>
+          referenceDisplayString(up.parameter, mappableParams) ===
+          candidate.str,
       )
     ) {
       return false;
@@ -172,12 +206,14 @@ export const DmxParameterMapping = ({
           className="!min-w-48 overflow-y-auto"
           items={mappedParameterCandidateStrs}
           selectedItem={mappedParamStr}
-          onSelectedItemChanged={(newVal) =>
+          onSelectedItemChanged={(newVal) => {
+            const resolved = resolveSelectionString(newVal, mappableParams);
+            if (!resolved) return;
             onUpdate({
-              mappedParam: parseParameterReference(newVal),
+              mappedParam: resolved.ref,
               ranges: [],
-            })
-          }
+            });
+          }}
         />
       </FieldSet>
       <Button variant="ghost" className="text-primary" onClick={onRemove}>
@@ -209,7 +245,11 @@ export const DmxParameterMapping = ({
         <SectionHeading addLabel="Add Range" disabled onAdd={() => {}}>
           Mapping Ranges
         </SectionHeading>
-        <div className="text-sm">Parameter mapping has bad data</div>
+        <div className="text-sm">
+          {mappedParamMappable === undefined
+            ? "This mapping references a deleted parameter. Choose a parameter above to fix it."
+            : "Parameter mapping has bad data"}
+        </div>
         <SectionHeading
           addLabel="Add Unmapped Parameter"
           disabled
@@ -415,7 +455,9 @@ type ParameterCandidate = {
 
 const InvalidUnmappedParamTableRow = () => (
   <TableRow>
-    <TableCell colSpan={4}>Invalid data in unmapped parameter</TableCell>
+    <TableCell colSpan={4}>
+      Unmapped parameter references a deleted parameter
+    </TableCell>
   </TableRow>
 );
 
@@ -428,14 +470,14 @@ const RemoveUnmappedParamButton = ({ onClick }: { onClick: () => void }) => (
 interface UnmappedParameterTableRowProps {
   index: number;
   param: DmxUnmappedParam;
-  mappableParams: Record<CodexId, MappableParameter>;
+  mappableParams: Record<EntityId, MappableParameter>;
   eligibleCandidates: ParameterCandidate[];
   mapping: DmxMapping;
   onUpdate: (mapping: DmxMapping) => void;
 }
 
 const UnmappedParameterTableRow = (props: UnmappedParameterTableRowProps) => {
-  const mappable = props.mappableParams[props.param.parameter.codexId];
+  const mappable = props.mappableParams[props.param.parameter.id];
   if (!mappable) {
     return <InvalidUnmappedParamTableRow />;
   }
@@ -462,7 +504,8 @@ const UnmappedParameterTableRowBoolean = ({
 }: UnmappedParameterTableRowProps) => {
   const selectValues = ["false", "true"];
 
-  const paramStr = serializeParameterReference(param.parameter);
+  const paramStr =
+    referenceDisplayString(param.parameter, mappableParams) ?? "";
   const allEligibleStrs = [...eligibleCandidates.map((c) => c.str), paramStr];
 
   const effectiveEnd = getEffectiveEnd(param.start, param.end);
@@ -523,7 +566,8 @@ const UnmappedParameterTableRowNumeric = ({
   mapping,
   onUpdate,
 }: UnmappedParameterTableRowProps) => {
-  const paramStr = serializeParameterReference(param.parameter);
+  const paramStr =
+    referenceDisplayString(param.parameter, mappableParams) ?? "";
   const allEligibleStrs = [...eligibleCandidates.map((c) => c.str), paramStr];
 
   const effectiveEnd = getEffectiveEnd(param.start, param.end);
@@ -584,8 +628,9 @@ const UnmappedParameterTableRowEnum = ({
   mapping,
   onUpdate,
 }: UnmappedParameterTableRowProps) => {
-  const mappable = mappableParams[param.parameter.codexId];
-  const paramStr = serializeParameterReference(param.parameter);
+  const mappable = mappableParams[param.parameter.id];
+  const paramStr =
+    referenceDisplayString(param.parameter, mappableParams) ?? "";
   const allEligibleStrs = [...eligibleCandidates.map((c) => c.str), paramStr];
   const enumChoices = mappable?.enumChoices ?? [];
   const effectiveEnd = getEffectiveEnd(param.start, param.end);
@@ -754,18 +799,18 @@ function replaceUnmappedParam(
   mapping: DmxMapping,
   paramIndex: number,
   newValue: string,
-  mappableParams: Record<CodexId, MappableParameter>,
+  mappableParams: Record<EntityId, MappableParameter>,
 ): DmxMapping {
-  const newRef = parseParameterReference(newValue);
-  const newMappable = mappableParams[newRef.codexId];
+  const resolved = resolveSelectionString(newValue, mappableParams);
+  if (!resolved) return mapping;
   return {
     ...mapping,
     unmappedParams: [
       ...mapping.unmappedParams!.slice(0, paramIndex),
       getNewUnmappedParam(
-        newRef,
-        newMappable.paramClass.dataType,
-        newMappable.enumChoices,
+        resolved.ref,
+        resolved.mappable.paramClass.dataType,
+        resolved.mappable.enumChoices,
       ),
       ...mapping.unmappedParams!.slice(paramIndex + 1),
     ],

@@ -424,14 +424,17 @@ function addDmxMappingGroup(
     chunkId,
     index,
     mappings: mappings.map((m) => ({
+      // Tests key the reference id by codexId; with no matching parameter in
+      // the editor, export falls back to emitting the raw id, so the Codex
+      // output's id equals this codexId.
       mappedParam: {
-        codexId: CodexId(m.mappedParam.codexId),
+        id: EntityId(m.mappedParam.codexId),
         index: m.mappedParam.index,
       },
       ranges: (m.ranges ?? []).map(rangeToChunkValues),
       unmappedParams: m.unmappedParams?.map((u) => ({
         parameter: {
-          codexId: CodexId(u.parameter.codexId),
+          id: EntityId(u.parameter.codexId),
           index: u.parameter.index,
         },
         start: u.start,
@@ -1493,6 +1496,39 @@ describe("exportDmxSerializer", () => {
       estaDmx.chunks["0"].mappingGroups[0].mappings[0].mappedParam,
     ).toEqual({ id: "intensity" });
     expect(estaDmx.chunks["0"].mappingGroups[0].conditions).toBeUndefined();
+  });
+
+  test("exports a mapping's current parameter codexId, resolved through the EntityId", () => {
+    // The mapping references the parameter only by its stable EntityId. Export
+    // must emit the parameter's current codexId, resolved through that id, so a
+    // rename is reflected without the reference storing any codexId of its own.
+    const editor = createMinimalEditor();
+    addParamClass(editor, "pc-1", "example.intensity");
+    const paramId = addParam(editor, "param-entity", "intensity", {
+      type: "local",
+      id: EntityId("pc-1"),
+    });
+
+    const dmx = createDmxState();
+    editor.dmxSerializer = dmx;
+    const chunkId = addDmxChunk(dmx, "chunk-1", [0]);
+    dmx.mappingGroups[EntityId("mg-1")] = {
+      chunkId,
+      index: 0,
+      mappings: [
+        {
+          mappedParam: { id: paramId },
+          ranges: [],
+        },
+      ],
+      triggers: [],
+    };
+
+    const result = exportDeviceClass(editor);
+    const estaDmx = result.serializers!.dmx!.value.default!;
+    expect(
+      estaDmx.chunks["0"].mappingGroups[0].mappings[0].mappedParam,
+    ).toEqual({ id: "intensity" });
   });
 
   test("generates chunk ID based on offsets", () => {

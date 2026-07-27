@@ -19,6 +19,14 @@ import {
 } from "utils/utils";
 import { updateDmxController } from "./state";
 import {
+  commandArgKeyToEditor,
+  commandExclusionsToEditor,
+  paramExclusionsToEditor,
+  resolveCommandId,
+  toEditorParameterReference,
+} from "./referenceResolution";
+import {
+  ClassMemberId,
   ClassReference,
   CodexId,
   DeviceClassEditorState,
@@ -171,7 +179,7 @@ export function getImportedDeviceClassEditor(
   importCommands(codexClass, editor, localCommandClasses);
 
   if (dmx) {
-    editor.dmxSerializer = convertEstaDmxToEditorState(dmx);
+    editor.dmxSerializer = convertEstaDmxToEditorState(editor, dmx);
   }
 
   return editor;
@@ -472,7 +480,6 @@ function importParameters(
         }
       : {
           type: "local",
-          codexId: CodexId(param.class),
           id: EntityId(localParamClasses[param.class]),
         };
 
@@ -494,7 +501,13 @@ function importParameters(
       count,
       access: param.access,
       lifetime: param.lifetime,
-      enumExclusions: param.choices?.excluded,
+      enumExclusions: param.choices?.excluded
+        ? paramExclusionsToEditor(
+            editor,
+            classRef,
+            param.choices.excluded.map((c) => CodexId(c)),
+          )
+        : undefined,
       atomicIdentifier: param.atomicIdentifier,
       minimum: param.minimum,
       maximum: param.maximum,
@@ -549,7 +562,6 @@ function importResources(
         }
       : {
           type: "local",
-          codexId: CodexId(resource.class),
           id: localResourceClasses[CodexId(resource.class)],
         };
 
@@ -584,7 +596,6 @@ function importCommands(
         }
       : {
           type: "local",
-          codexId: classCodexId,
           id: localCommandClasses[classCodexId].id,
         };
 
@@ -598,12 +609,12 @@ function importCommands(
       },
     };
 
+    const rawArgExclusions: Record<string, CodexId[]> = {};
     for (const [argId, choices] of Object.entries(cmd.argumentChoices || {})) {
       const argCodexId = CodexId(argId);
 
       if (choices.excluded) {
-        newCmd.argEnumExclusions ||= {};
-        newCmd.argEnumExclusions[argCodexId] = choices.excluded.map(CodexId);
+        rawArgExclusions[argCodexId] = choices.excluded.map((c) => CodexId(c));
       }
       for (const [index, choice] of (choices.additional || []).entries()) {
         const choiceId = newEntityId();
@@ -633,13 +644,23 @@ function importCommands(
         // TODO description
       }
     }
+    if (Object.keys(rawArgExclusions).length > 0) {
+      newCmd.argEnumExclusions = commandExclusionsToEditor(
+        editor,
+        classRef,
+        "arg",
+        rawArgExclusions,
+      );
+    }
 
+    const rawReturnExclusions: Record<string, CodexId[]> = {};
     for (const [retId, choices] of Object.entries(cmd.returnChoices || {})) {
       const retCodexId = CodexId(retId);
 
       if (choices.excluded) {
-        newCmd.returnEnumExclusions ||= {};
-        newCmd.returnEnumExclusions[retCodexId] = choices.excluded.map(CodexId);
+        rawReturnExclusions[retCodexId] = choices.excluded.map((c) =>
+          CodexId(c),
+        );
       }
       for (const [index, choice] of (choices.additional || []).entries()) {
         const choiceId = newEntityId();
@@ -668,6 +689,14 @@ function importCommands(
         addLocalizationReference(choiceId, "enumName", choice["@name"], editor);
         // TODO description
       }
+    }
+    if (Object.keys(rawReturnExclusions).length > 0) {
+      newCmd.returnEnumExclusions = commandExclusionsToEditor(
+        editor,
+        classRef,
+        "return",
+        rawReturnExclusions,
+      );
     }
 
     editor.commands[cmdId] = newCmd;
@@ -768,7 +797,10 @@ async function loadResourceAssets(
 // DMX Conversion
 // ---------------------------------------------------------------------------
 
-function convertEstaDmxToEditorState(estaDmx: EstaDmx): DmxSerializerState {
+function convertEstaDmxToEditorState(
+  editor: DeviceClassEditorState,
+  estaDmx: EstaDmx,
+): DmxSerializerState {
   const result: DmxSerializerState = {
     chunks: {},
     mappingGroups: {},
@@ -802,8 +834,8 @@ function convertEstaDmxToEditorState(estaDmx: EstaDmx): DmxSerializerState {
       result.mappingGroups[mappingGroupId] = {
         chunkId: newChunkId,
         index,
-        mappings: (mg.mappings ?? []).map((m) => convertMapping(m)),
-        triggers: (mg.triggers ?? []).map((t) => convertTrigger(t)),
+        mappings: (mg.mappings ?? []).map((m) => convertMapping(editor, m)),
+        triggers: (mg.triggers ?? []).map((t) => convertTrigger(editor, t)),
       };
 
       // Convert conditions for this mapping group
@@ -868,18 +900,24 @@ function convertConditionsToNormalized(
   }
 }
 
-function convertMapping(m: {
-  mappedParam: { id: string; index?: number };
-  ranges: MappingRange[];
-  unmappedParams?: UnmappedParam[];
-}): DmxMapping {
+function convertMapping(
+  editor: DeviceClassEditorState,
+  m: {
+    mappedParam: { id: string; index?: number };
+    ranges: MappingRange[];
+    unmappedParams?: UnmappedParam[];
+  },
+): DmxMapping {
   return {
-    mappedParam: {
-      codexId: CodexId(m.mappedParam.id),
-      index: m.mappedParam.index,
-    },
+    mappedParam: toEditorParameterReference(
+      editor,
+      CodexId(m.mappedParam.id),
+      m.mappedParam.index,
+    ),
     ranges: m.ranges.map(convertMappingRange),
-    unmappedParams: m.unmappedParams?.map(convertUnmappedParam),
+    unmappedParams: m.unmappedParams?.map((up) =>
+      convertUnmappedParam(editor, up),
+    ),
   };
 }
 
@@ -905,24 +943,38 @@ function convertMappingRange(r: MappingRange): DmxMappingRange {
   };
 }
 
-function convertUnmappedParam(up: UnmappedParam): DmxUnmappedParam {
+function convertUnmappedParam(
+  editor: DeviceClassEditorState,
+  up: UnmappedParam,
+): DmxUnmappedParam {
   return {
-    parameter: {
-      codexId: CodexId(up.parameter.id),
-      index: up.parameter.index,
-    },
+    parameter: toEditorParameterReference(
+      editor,
+      CodexId(up.parameter.id),
+      up.parameter.index,
+    ),
     start: up.start,
     end: up.end,
   };
 }
 
-function convertTrigger(t: Trigger): DmxTrigger {
+function convertTrigger(
+  editor: DeviceClassEditorState,
+  t: Trigger,
+): DmxTrigger {
+  const commandId = resolveCommandId(editor, CodexId(t.command));
+  const command = editor.commands[commandId];
+
   return {
-    command: CodexId(t.command),
+    command: commandId,
     mappings: t.mappings.map((tm) => ({
       conditions: Object.fromEntries(
         Object.entries(tm.conditions).map(([key, cond]) => [
-          key,
+          // Condition keys are argument codexIds in the codex format. Store
+          // them as EntityIds when the command's class is local.
+          command
+            ? commandArgKeyToEditor(editor, command.class, CodexId(key))
+            : (CodexId(key) as ClassMemberId),
           {
             argumentMin: cond.argumentMin,
             argumentMax: cond.argumentMax,

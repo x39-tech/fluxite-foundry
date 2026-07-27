@@ -14,6 +14,26 @@ import { DmxParameterMapping } from "./DmxParameterMapping";
 import { createDeviceClassEditor } from "features/topNavBar/state";
 import { updateCurrentEditor } from "../state";
 import { createNewParameter } from "../parametersEditor/state";
+import { useAppPersistentStore } from "app/store";
+import { ParameterReference } from "app/persistentState";
+
+// Builds a stored ParameterReference for the parameter with the given codexId,
+// resolving its EntityId from the current editor. Mappings reference parameters
+// by EntityId, so this must match a real parameter for the mapping to be valid.
+function paramRef(codexId: CodexId, index?: number): ParameterReference {
+  const state = useAppPersistentStore.getState();
+  const editor = Object.values(state.deviceClassEditors)[0];
+  const entry = Object.entries(editor.parameters).find(
+    ([, p]) => p.codexId === codexId,
+  );
+  if (!entry) {
+    throw new Error(`No parameter with codexId ${codexId} in test editor`);
+  }
+  return {
+    id: EntityId(entry[0]),
+    ...(index !== undefined ? { index } : {}),
+  };
+}
 
 // Helper to create a test parameter class
 function createTestParamClass(
@@ -68,11 +88,11 @@ describe("DmxParameterMapping - Unmapped Parameter Table Rows", () => {
 
     it("displays start value in end field when end is undefined", () => {
       const mapping: DmxMapping = {
-        mappedParam: { codexId: BOOL_PARAM_CODEX_ID },
+        mappedParam: paramRef(BOOL_PARAM_CODEX_ID),
         ranges: [],
         unmappedParams: [
           {
-            parameter: { codexId: BOOL_PARAM_CODEX_ID },
+            parameter: paramRef(BOOL_PARAM_CODEX_ID),
             start: true,
             end: undefined,
           },
@@ -103,11 +123,11 @@ describe("DmxParameterMapping - Unmapped Parameter Table Rows", () => {
     it("stores end as undefined when user selects same value as start", async () => {
       const user = userEvent.setup();
       const mapping: DmxMapping = {
-        mappedParam: { codexId: BOOL_PARAM_CODEX_ID },
+        mappedParam: paramRef(BOOL_PARAM_CODEX_ID),
         ranges: [],
         unmappedParams: [
           {
-            parameter: { codexId: BOOL_PARAM_CODEX_ID },
+            parameter: paramRef(BOOL_PARAM_CODEX_ID),
             start: false,
             end: true,
           },
@@ -155,11 +175,11 @@ describe("DmxParameterMapping - Unmapped Parameter Table Rows", () => {
 
     it("displays start value in end field when end is undefined", () => {
       const mapping: DmxMapping = {
-        mappedParam: { codexId: NUM_PARAM_CODEX_ID },
+        mappedParam: paramRef(NUM_PARAM_CODEX_ID),
         ranges: [],
         unmappedParams: [
           {
-            parameter: { codexId: NUM_PARAM_CODEX_ID },
+            parameter: paramRef(NUM_PARAM_CODEX_ID),
             start: 42,
             end: undefined,
           },
@@ -185,11 +205,11 @@ describe("DmxParameterMapping - Unmapped Parameter Table Rows", () => {
 
     it("stores end as undefined when user enters same value as start", () => {
       const mapping: DmxMapping = {
-        mappedParam: { codexId: NUM_PARAM_CODEX_ID },
+        mappedParam: paramRef(NUM_PARAM_CODEX_ID),
         ranges: [],
         unmappedParams: [
           {
-            parameter: { codexId: NUM_PARAM_CODEX_ID },
+            parameter: paramRef(NUM_PARAM_CODEX_ID),
             start: 10,
             end: 100,
           },
@@ -279,11 +299,11 @@ describe("DmxParameterMapping - Unmapped Parameter Table Rows", () => {
 
     it("displays start value in end field when end is undefined", () => {
       const mapping: DmxMapping = {
-        mappedParam: { codexId: ENUM_PARAM_CODEX_ID },
+        mappedParam: paramRef(ENUM_PARAM_CODEX_ID),
         ranges: [],
         unmappedParams: [
           {
-            parameter: { codexId: ENUM_PARAM_CODEX_ID },
+            parameter: paramRef(ENUM_PARAM_CODEX_ID),
             start: 1, // Choice B
             end: undefined,
           },
@@ -312,11 +332,11 @@ describe("DmxParameterMapping - Unmapped Parameter Table Rows", () => {
     it("stores end as undefined when user selects same value as start", async () => {
       const user = userEvent.setup();
       const mapping: DmxMapping = {
-        mappedParam: { codexId: ENUM_PARAM_CODEX_ID },
+        mappedParam: paramRef(ENUM_PARAM_CODEX_ID),
         ranges: [],
         unmappedParams: [
           {
-            parameter: { codexId: ENUM_PARAM_CODEX_ID },
+            parameter: paramRef(ENUM_PARAM_CODEX_ID),
             start: 0, // Choice A
             end: 2, // Choice C
           },

@@ -88,7 +88,7 @@ export function useDmxController(): DmxController {
  * Hook that returns parameters that can be mapped to DMX.
  * Filters to only number/boolean/enum data types and computes effective enum choices.
  */
-export function useMappableParameters(): Record<CodexId, MappableParameter> {
+export function useMappableParameters(): Record<EntityId, MappableParameter> {
   const locale = useCurrentLocale();
   const database = useCodexDatabase();
 
@@ -170,7 +170,7 @@ export function useMappableParameters(): Record<CodexId, MappableParameter> {
         param.enumExclusions,
       );
 
-      acc[param.codexId] = {
+      acc[EntityId(entityId)] = {
         param,
         paramClass,
         entityId: EntityId(entityId),
@@ -179,7 +179,7 @@ export function useMappableParameters(): Record<CodexId, MappableParameter> {
 
       return acc;
     },
-    {} as Record<CodexId, MappableParameter>,
+    {} as Record<EntityId, MappableParameter>,
   );
 }
 
@@ -426,15 +426,16 @@ export function addParameterMapping(mappingGroupId: EntityId) {
     const mappingGroup = dmx.mappingGroups[mappingGroupId];
     if (!mappingGroup) return;
 
-    const firstParam = Object.values(editor.parameters)[0];
-    if (!firstParam) return;
+    const firstEntry = Object.entries(editor.parameters)[0];
+    if (!firstEntry) return;
+    const [firstParamId, firstParam] = firstEntry;
 
     const countValue =
       firstParam.count?.type === "fixed" ? firstParam.count.value : undefined;
     const mappedParam =
       countValue !== undefined && countValue > 1
-        ? { codexId: firstParam.codexId, index: 0 }
-        : { codexId: firstParam.codexId };
+        ? { id: EntityId(firstParamId), index: 0 }
+        : { id: EntityId(firstParamId) };
 
     mappingGroup.mappings.push({
       mappedParam,

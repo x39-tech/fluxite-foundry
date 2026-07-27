@@ -2,12 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import { IJsonRowNode } from "flexlayout-react";
 import { nanoid } from "nanoid";
 import { twMerge } from "tailwind-merge";
-import {
-  CodexId,
-  EntityId,
-  FCUnit,
-  ParameterReference,
-} from "app/persistentState";
+import { CodexId, EntityId, FCUnit } from "app/persistentState";
 
 export interface ItemEditor {
   id: EntityId;
@@ -239,6 +234,13 @@ export function assignOrDelete<T, K extends OptionalKeys<T>>(
 // Regex to match parameter reference syntax: "paramId" or "paramId[index]"
 const PARAM_REF_REGEX = /^([^[\]]+)(?:\[(\d+)\])?$/;
 
+// A parameter reference identified by codexId and index (as opposed to
+// ParameterReference which uses an EntityId).
+export interface CodexParameterReference {
+  codexId: CodexId;
+  index?: number;
+}
+
 /**
  * Parses a parameter reference string from Fluxite Codex format.
  * Examples:
@@ -246,7 +248,9 @@ const PARAM_REF_REGEX = /^([^[\]]+)(?:\[(\d+)\])?$/;
  *   "frame[0]" -> { codexId: "frame", index: 0 }
  *   "frame[1]" -> { codexId: "frame", index: 1 }
  */
-export function parseParameterReference(refString: string): ParameterReference {
+export function parseParameterReference(
+  refString: string,
+): CodexParameterReference {
   const match = refString.match(PARAM_REF_REGEX);
   if (!match) {
     // If the regex doesn't match, treat the entire string as the codexId
@@ -270,7 +274,9 @@ export function parseParameterReference(refString: string): ParameterReference {
  *   { codexId: "frame", index: 0 } -> "frame[0]"
  *   { codexId: "frame", index: 1 } -> "frame[1]"
  */
-export function serializeParameterReference(ref: ParameterReference): string {
+export function serializeParameterReference(
+  ref: CodexParameterReference,
+): string {
   if (ref.index !== undefined) {
     return `${ref.codexId}[${ref.index}]`;
   }

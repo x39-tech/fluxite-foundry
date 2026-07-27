@@ -19,9 +19,10 @@ import {
   Unlocalized,
 } from "app/persistentState";
 import { fcLocalize, localize, LocalizedString } from "utils/localizationUtils";
-import { select, selectWithIds } from "app/stateUtils";
+import { selectWithIds } from "app/stateUtils";
 
 export interface LocalizedClassEnumChoice {
+  id?: EntityId;
   codexId: CodexId;
   name: LocalizedString;
   description?: LocalizedString;
@@ -36,6 +37,7 @@ export interface LocalizedInstanceEnumChoice {
 }
 
 export interface LocalizedCommandClassArgument {
+  id?: EntityId;
   codexId: CodexId;
   name: LocalizedString;
   descripton?: LocalizedString;
@@ -46,6 +48,7 @@ export interface LocalizedCommandClassArgument {
 }
 
 export interface LocalizedCommandClassReturnValue {
+  id?: EntityId;
   codexId: CodexId;
   name: LocalizedString;
   descripton?: LocalizedString;
@@ -159,6 +162,7 @@ export function lookupDeviceParameterClass(
           : undefined;
 
         return {
+          id: e.id,
           codexId: e.codexId,
           name,
           description,
@@ -378,7 +382,7 @@ export function lookupDeviceCommandClass(
             : undefined;
 
           const localizedArgChoices = localizeEnumChoices(
-            select(
+            selectWithIds(
               enumChoices,
               (choice) =>
                 choice.parent.type === "cmdClassArg" &&
@@ -391,6 +395,7 @@ export function lookupDeviceCommandClass(
           return [
             arg.codexId,
             {
+              id: arg.id,
               codexId: arg.codexId,
               name: localizedArgName,
               descripton: localizedArgDesc,
@@ -420,7 +425,7 @@ export function lookupDeviceCommandClass(
             : undefined;
 
           const localizedArgChoices = localizeEnumChoices(
-            select(
+            selectWithIds(
               enumChoices,
               (choice) =>
                 choice.parent.type === "cmdClassRet" &&
@@ -433,6 +438,7 @@ export function lookupDeviceCommandClass(
           return [
             returnVal.codexId,
             {
+              id: returnVal.id,
               codexId: returnVal.codexId,
               name: localizedArgName,
               descripton: localizedArgDesc,
@@ -458,7 +464,7 @@ export function lookupDeviceCommandClass(
 }
 
 function localizeEnumChoices(
-  choices: EnumChoice[],
+  choices: (EnumChoice & { id: EntityId })[],
   localizations: Record<LocalizationKey, Localization>,
   locale: string,
 ): LocalizedClassEnumChoice[] {
@@ -468,6 +474,7 @@ function localizeEnumChoices(
       ? localize(localizations, e.localized.description, locale)
       : undefined;
     return {
+      id: e.id,
       codexId: e.codexId,
       name,
       description,

@@ -73,7 +73,6 @@ function createTestParameter(
       codexId,
       class: {
         type: "local",
-        codexId: classCodexId,
         id: EntityId(`class_${classCodexId}`),
       },
       count: count !== undefined ? { type: "fixed", value: count } : undefined,
@@ -128,9 +127,7 @@ describe("dmxEditor/state.ts", () => {
         const mappingGroup = dmx?.mappingGroups[mappingGroupId];
 
         expect(mappingGroup?.mappings.length).toBe(1);
-        expect(mappingGroup?.mappings[0].mappedParam.codexId).toBe(
-          TEST_PARAM_CODEX_ID,
-        );
+        expect(mappingGroup?.mappings[0].mappedParam.id).toBe(TEST_PARAM_ID);
         expect(mappingGroup?.mappings[0].mappedParam.index).toBe(undefined);
         expect(mappingGroup?.mappings[0].ranges).toEqual([]);
       });
@@ -158,9 +155,7 @@ describe("dmxEditor/state.ts", () => {
         const mappingGroup = dmx?.mappingGroups[mappingGroupId];
 
         expect(mappingGroup?.mappings.length).toBe(1);
-        expect(mappingGroup?.mappings[0].mappedParam.codexId).toBe(
-          TEST_PARAM_CODEX_ID,
-        );
+        expect(mappingGroup?.mappings[0].mappedParam.id).toBe(TEST_PARAM_ID);
         expect(mappingGroup?.mappings[0].mappedParam.index).toBe(undefined);
       });
 
@@ -187,9 +182,7 @@ describe("dmxEditor/state.ts", () => {
         const mappingGroup = dmx?.mappingGroups[mappingGroupId];
 
         expect(mappingGroup?.mappings.length).toBe(1);
-        expect(mappingGroup?.mappings[0].mappedParam.codexId).toBe(
-          TEST_PARAM_CODEX_ID,
-        );
+        expect(mappingGroup?.mappings[0].mappedParam.id).toBe(TEST_PARAM_ID);
         expect(mappingGroup?.mappings[0].mappedParam.index).toBe(0);
         expect(mappingGroup?.mappings[0].ranges).toEqual([]);
       });
