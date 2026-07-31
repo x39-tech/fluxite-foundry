@@ -2,7 +2,8 @@ import { create } from "zustand";
 import { persist, devtools } from "zustand/middleware";
 import { produce } from "immer";
 import { AppRuntimeState } from "./runtimeState";
-import { loadDefaultLibraries, CodexDatabase } from "codex/codexDatabase";
+import { loadDefaultLibraries } from "codex/libraryStore";
+import { LibraryStore } from "codex/library";
 import {
   getCurrentEditor,
   updateDmxController,
@@ -46,8 +47,8 @@ export const useAppPersistentStore = create<AppPersistentState>()(
   ),
 );
 
-export function useCodexDatabase(): CodexDatabase {
-  return useAppRuntimeStore((state) => state.codexDatabase);
+export function useLibraryStore(): LibraryStore {
+  return useAppRuntimeStore((state) => state.libraries);
 }
 
 export function useTheme(): Theme {
@@ -123,7 +124,7 @@ function getDefaultRuntimeState(): AppRuntimeState {
     dmxController: {
       state: "not-created",
     },
-    codexDatabase: loadDefaultLibraries(),
+    libraries: loadDefaultLibraries(),
     systemDarkModePreference: getSystemDarkModePreference(),
   };
 }

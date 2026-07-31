@@ -1,0 +1,179 @@
+{
+  "$schema": "https://gitlab.com/esta-cpwg/e173/-/raw/main/schemas/draft-2026-1/full/codex-document.json",
+  "e173doc": {
+    "deviceClasses": {
+      "com.example.dev.dangling-references": {
+        "1.0.0": {
+          "libraries": {
+            "org.esta.lib.core": "1.0.0"
+          },
+          "@description": "device_description",
+          "publishDate": "2024-01-01T00:00:00.000Z",
+          "author": "Test Author",
+          "info": {
+            "manufacturer": {
+              "name": "Test Manufacturer"
+            },
+            "model": {
+              "name": "Test Model",
+              "category": "lighting",
+              "subcategory": "fixed-profile"
+            },
+            "compatibility": {}
+          },
+          "history": {
+            "2024-01-01T00:00:00.000Z": "Initial release"
+          },
+          "deviceLibrary": {
+            "parameterClasses": {
+              "hue": {
+                "@name": "hue_name",
+                "dataType": "enum",
+                "choices": [{ "id": "red", "@name": "red_name" }]
+              }
+            },
+            "commandClasses": {
+              "store-preset": {
+                "@name": "store_preset_name",
+                "arguments": {
+                  "slot": {
+                    "@name": "slot_name",
+                    "dataType": "enum",
+                    "required": true,
+                    "choices": [{ "id": "a", "@name": "a_name" }]
+                  }
+                },
+                "returns": {
+                  "status": {
+                    "@name": "status_name",
+                    "dataType": "enum",
+                    "required": true,
+                    "choices": [{ "id": "ok", "@name": "ok_name" }]
+                  }
+                }
+              }
+            }
+          },
+          "parameters": {
+            "dimmer": {
+              "class": "no-such-param-class",
+              "access": ["readActual"],
+              "lifetime": "static"
+            },
+            "color": {
+              "class": "hue",
+              "access": ["readActual"],
+              "lifetime": "static",
+              "choices": {
+                "excluded": ["no-such-choice"]
+              }
+            }
+          },
+          "resources": {
+            "logo": {
+              "class": "no-such-resource-class",
+              "access": ["read"],
+              "lifetime": "static"
+            }
+          },
+          "commands": {
+            "reset": {
+              "class": "no-such-command-class",
+              "completionNotification": false
+            },
+            "store": {
+              "class": "store-preset",
+              "completionNotification": false,
+              "argumentChoices": {
+                "no-such-arg": {
+                  "excluded": ["no-such-choice"],
+                  "additional": [{ "id": "extra", "@name": "extra_name" }]
+                }
+              },
+              "returnChoices": {
+                "no-such-return": {
+                  "excluded": ["no-such-choice"]
+                }
+              }
+            }
+          },
+          "serializers": {
+            "dmx": {
+              "library": "org.esta.lib.core",
+              "class": "esta-dmx",
+              "access": ["read"],
+              "lifetime": "static",
+              "default": {
+                "chunks": {
+                  "0": {
+                    "offsets": [0],
+                    "mappingGroups": [
+                      {
+                        "mappings": [
+                          {
+                            "mappedParam": "no-such-param",
+                            "ranges": [
+                              {
+                                "start": 0,
+                                "end": 1,
+                                "chunkStart": 0,
+                                "chunkEnd": 255
+                              }
+                            ],
+                            "unmappedParams": [
+                              {
+                                "parameter": "no-such-unmapped-param",
+                                "start": 0
+                              }
+                            ]
+                          }
+                        ],
+                        "triggers": [
+                          {
+                            "command": "no-such-command",
+                            "mappings": [
+                              {
+                                "conditions": {
+                                  "no-such-arg": {
+                                    "argumentMin": 1,
+                                    "argumentMax": 5
+                                  }
+                                },
+                                "sequence": [
+                                  {
+                                    "chunkStart": 0,
+                                    "chunkEnd": 255,
+                                    "hold": { "milliseconds": 500 }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "localizations": {
+            "en-US": {
+              "strings": {
+                "device_description": "A device with broken references",
+                "hue_name": "Hue",
+                "red_name": "Red",
+                "store_preset_name": "Store Preset",
+                "slot_name": "Slot",
+                "a_name": "A",
+                "status_name": "Status",
+                "ok_name": "OK",
+                "extra_name": "Extra"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

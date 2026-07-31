@@ -150,7 +150,7 @@ describe("migrateV3toV4 - ParameterReference", () => {
     expect(ref.index).toBe(2);
   });
 
-  test("points a dangling reference at a synthetic missing id", () => {
+  test("keeps a dangling reference's codexId verbatim", () => {
     const editor = createV3Editor({
       parameters: {},
       dmxSerializer: {
@@ -175,7 +175,7 @@ describe("migrateV3toV4 - ParameterReference", () => {
     const ref =
       migratedEditor(editor).dmxSerializer!.mappingGroups["mg-1" as V4.EntityId]
         .mappings[0].mappedParam;
-    expect(ref.id).toMatch(/missing-gone.+/);
+    expect(ref.id).toBe("gone");
   });
 
   test("resolves unmapped parameter references", () => {
@@ -409,7 +409,7 @@ describe("migrateV3toV4 - DmxTrigger", () => {
     });
   });
 
-  test("points a dangling trigger command at a synthetic id and keeps codexId condition keys when the command is unresolvable", () => {
+  test("keeps a dangling trigger command and its codexId condition keys verbatim", () => {
     const editor = createV3Editor({
       commands: {},
       dmxSerializer: {
@@ -441,7 +441,7 @@ describe("migrateV3toV4 - DmxTrigger", () => {
     const trigger =
       migratedEditor(editor).dmxSerializer!.mappingGroups["mg-1" as V4.EntityId]
         .triggers[0];
-    expect(trigger.command).toMatch(/missing-gone.+/);
+    expect(trigger.command).toBe("gone");
     expect(trigger.mappings[0].conditions).toEqual({
       mode: { argumentMin: 1 },
     });

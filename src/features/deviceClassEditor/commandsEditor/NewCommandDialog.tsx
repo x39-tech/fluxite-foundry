@@ -1,6 +1,6 @@
 import { useEffect, useId, useState } from "react";
 import { CheckIcon } from "lucide-react";
-import { useCurrentLocale, useCodexDatabase } from "app/store";
+import { useCurrentLocale, useLibraryStore } from "app/store";
 import { getUniqueItemId } from "utils/utils";
 import { validateNewItemId } from "utils/inputValidation";
 import {
@@ -11,11 +11,13 @@ import {
   DialogTitle,
 } from "components/scn-ui/Dialog";
 import { FieldSet } from "components/FieldSet";
-import { ItemClassSelector } from "components/ItemClassSelector";
+import {
+  ItemClassSelector,
+  SelectedItemClass,
+} from "components/ItemClassSelector";
 import { Label } from "components/scn-ui/Label";
 import { ValidatedInput } from "components/ValidatedInput";
 import { Button } from "components/scn-ui/Button";
-import { ItemClassWithId } from "codex/codexDatabase";
 import { CodexId } from "app/persistentState";
 import { createNewCommand, useCommandCodexIds } from "./state";
 import { CommandClassDisplay } from "./CommandClassDisplay";
@@ -27,7 +29,7 @@ interface Props {
 }
 
 export const NewCommandDialog = ({ isOpen, onClose }: Props) => {
-  const database = useCodexDatabase();
+  const libraryStore = useLibraryStore();
   const commandCodexIds = useCommandCodexIds();
   const locale = useCurrentLocale();
 
@@ -35,9 +37,9 @@ export const NewCommandDialog = ({ isOpen, onClose }: Props) => {
   const idId = useId();
   const friendlyNameId = useId();
 
-  const [newItemClass, setNewItemClass] = useState<ItemClassWithId | undefined>(
-    undefined,
-  );
+  const [newItemClass, setNewItemClass] = useState<
+    SelectedItemClass | undefined
+  >(undefined);
   const [newItemId, setNewItemId] = useState(getUniqueItemId(commandCodexIds));
   const [newItemFriendlyName, setNewItemFriendlyName] = useState("My New Item");
 
@@ -49,19 +51,8 @@ export const NewCommandDialog = ({ isOpen, onClose }: Props) => {
     }
   }, [isOpen]);
 
-  const renderItemClassTooltip = (item: ItemClassWithId) => {
-    if (item.type === "local") {
-      // TODO: handle local command classes
-      return <></>;
-    }
-
-    const resolvedClass = lookupCommandClass(
-      database,
-      item.codexId,
-      item.libraryId,
-      item.libraryVersion,
-      locale,
-    );
+  const renderItemClassTooltip = (item: SelectedItemClass) => {
+    const resolvedClass = lookupCommandClass(item.resolved, locale);
     return <CommandClassDisplay commandClass={resolvedClass!} />;
   };
 
@@ -77,14 +68,10 @@ export const NewCommandDialog = ({ isOpen, onClose }: Props) => {
             <ItemClassSelector
               id={classSelectorId}
               selectedClass={newItemClass}
-              librarySelector={(library) =>
-                (library.commandClasses &&
-                  Object.entries(library.commandClasses)) ||
-                []
-              }
+              kind="commandClasses"
               onSelectedClassChanged={setNewItemClass}
               tooltipRenderer={renderItemClassTooltip}
-              database={database}
+              libraryStore={libraryStore}
             />
           </FieldSet>
           <FieldSet>
@@ -112,9 +99,7 @@ export const NewCommandDialog = ({ isOpen, onClose }: Props) => {
             onClick={() => {
               if (newItemClass) {
                 createNewCommand(
-                  newItemClass.type === "imported"
-                    ? newItemClass.libraryId
-                    : undefined,
+                  newItemClass.libraryId,
                   newItemClass.codexId,
                   CodexId(newItemId),
                   newItemFriendlyName,

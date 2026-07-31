@@ -11,20 +11,22 @@ import {
 import { getWithId, selectWithIds } from "app/stateUtils";
 import { ItemEditor } from "utils/utils";
 import { localize, LocalizedString } from "utils/localizationUtils";
-import { useCurrentLocale, useCodexDatabase } from "app/store";
+import { useCurrentLocale, useLibraryStore } from "app/store";
 import {
   removeReferencedLocalization,
   updateCurrentEditor,
   updateLocalizedValue,
   useCurrentEditorPart,
   useCurrentEditorPartShallow,
+  useDeviceLibrary,
+  useLibraries,
 } from "../state";
 import {
   LocalizedInstanceEnumChoice,
-  lookupDeviceParameterClass,
   lookupParameterClass,
   ResolvedParameterClass,
 } from "../stateTransformations";
+import { resolveClassRef } from "../classResolution";
 import { newEntityId } from "app/stateUtils";
 
 export interface LocalizedParameter extends Unlocalized<Parameter> {
@@ -78,48 +80,26 @@ export function useParameterInfo(id: EntityId):
       instanceEnumChoices: LocalizedInstanceEnumChoice[];
     }
   | undefined {
-  const editorPart = useCurrentEditorPartShallow((editor) => {
-    return [
-      editor.parameters[id],
-      editor.libraries,
-      editor.parameterClasses,
-      editor.enumChoices,
-      editor.localizations,
-    ] as const;
-  });
+  const deviceLibrary = useDeviceLibrary();
+  const importedLibs = useLibraries();
+  const param = useCurrentEditorPart((editor) => editor.parameters[id]);
   const locale = useCurrentLocale();
-  const database = useCodexDatabase();
+  const libraryStore = useLibraryStore();
 
-  if (!editorPart) return undefined;
+  if (!deviceLibrary || !importedLibs || !param) return undefined;
 
-  const [param, libraries, deviceParamClasses, enumChoices, localizations] =
-    editorPart;
+  const { enumChoices, localizations } = deviceLibrary;
 
-  if (!param) return undefined;
-
-  let paramClass = undefined;
-  if (param.class.type === "imported") {
-    const libraryVersion = libraries[param.class.library];
-    if (!libraryVersion) {
-      return undefined;
-    }
-
-    paramClass = lookupParameterClass(
-      database,
-      param.class.codexId,
-      param.class.library,
-      libraryVersion,
-      locale,
-    );
-  } else {
-    paramClass = lookupDeviceParameterClass(
-      deviceParamClasses,
-      localizations,
-      enumChoices,
-      param.class.id,
-      locale,
-    );
-  }
+  const resolved = resolveClassRef(
+    param.class,
+    importedLibs,
+    deviceLibrary,
+    libraryStore,
+    "parameterClasses",
+  );
+  const paramClass = resolved
+    ? lookupParameterClass(resolved, locale)
+    : undefined;
 
   const friendlyName = param.localized.friendlyName
     ? localize(localizations, param.localized.friendlyName, locale)

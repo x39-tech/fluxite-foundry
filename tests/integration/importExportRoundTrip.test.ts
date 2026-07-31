@@ -21,6 +21,7 @@ interface RoundTripTestCase {
   filePath: string;
   qualifiedId: string;
   version: string;
+  allowValidationErrors?: boolean;
 }
 
 // Add new test cases here to extend testing
@@ -31,6 +32,13 @@ const testCases: RoundTripTestCase[] = [
       "src/e173/examples/draft-2026-1/device-classes/martin_mac_encore_performance_cld.fcd",
     qualifiedId: "com.martin.dev.encore-performance-cold",
     version: "1.0.0",
+  },
+  {
+    name: "Dangling references",
+    filePath: "tests/integration/fixtures/dangling_references.fcd",
+    qualifiedId: "com.example.dev.dangling-references",
+    version: "1.0.0",
+    allowValidationErrors: true,
   },
 ];
 
@@ -196,16 +204,17 @@ function compareDeviceClasses(
   expect(normalizedExported).toEqual(normalizedOriginal);
 }
 
-function readDeviceClassFromFile(
-  filePath: string,
-  qualifiedId: string,
-  version: string,
-): DeviceClass {
+function readDeviceClassFromFile({
+  filePath,
+  qualifiedId,
+  version,
+  allowValidationErrors,
+}: RoundTripTestCase): DeviceClass {
   const absolutePath = resolve(process.cwd(), filePath);
   const content = readFileSync(absolutePath, "utf-8");
   const { document, errors } = parseFluxiteCodexDocument(content);
 
-  if (errors.length > 0) {
+  if (errors.length > 0 && !allowValidationErrors) {
     throw new Error(
       `Validation errors in ${filePath}: ${errors.map((e) => e.message).join(", ")}`,
     );
@@ -238,11 +247,7 @@ function readDeviceClassFromFile(
 describe("Import/Export Round Trip", () => {
   describe.each(testCases)("$name", (testCase) => {
     test("round-trip import and export produces equivalent result", () => {
-      const original = readDeviceClassFromFile(
-        testCase.filePath,
-        testCase.qualifiedId,
-        testCase.version,
-      );
+      const original = readDeviceClassFromFile(testCase);
 
       const parsed = parseQualifiedId(testCase.qualifiedId);
       if (!parsed) {

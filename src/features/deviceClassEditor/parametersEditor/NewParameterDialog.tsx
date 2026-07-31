@@ -3,7 +3,10 @@ import { CheckIcon } from "lucide-react";
 import { Button } from "components/scn-ui/Button";
 import { TextEditorTableRow } from "components/EditorFields/DeprecatedTextEditorField";
 import { SimplePropsTable } from "components/SimplePropsTable";
-import { ItemClassSelector } from "components/ItemClassSelector";
+import {
+  ItemClassSelector,
+  SelectedItemClass,
+} from "components/ItemClassSelector";
 import {
   Dialog,
   DialogContent,
@@ -14,11 +17,10 @@ import {
 } from "components/scn-ui/Dialog";
 import { ParameterClassDisplay } from "./ParameterClassDisplay";
 import { validateNewItemId } from "utils/inputValidation";
-import { useCurrentLocale, useCodexDatabase } from "app/store";
+import { useCurrentLocale, useLibraryStore } from "app/store";
 import { getUniqueItemId } from "utils/utils";
 import { createNewParameter, useParameterCodexIds } from "./state";
 import { lookupParameterClass } from "../stateTransformations";
-import { ItemClassWithId } from "codex/codexDatabase";
 import { CodexId } from "app/persistentState";
 
 interface Props {
@@ -27,13 +29,13 @@ interface Props {
 }
 
 export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
-  const database = useCodexDatabase();
+  const libraryStore = useLibraryStore();
   const parameterIds = useParameterCodexIds();
   const locale = useCurrentLocale();
 
-  const [newItemClass, setNewItemClass] = useState<ItemClassWithId | undefined>(
-    undefined,
-  );
+  const [newItemClass, setNewItemClass] = useState<
+    SelectedItemClass | undefined
+  >(undefined);
   const [newItemId, setNewItemId] = useState(getUniqueItemId(parameterIds));
 
   // Flush relevant parts of the state when the dialog was just opened
@@ -43,19 +45,8 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
     }
   }, [isOpen]);
 
-  const renderItemClassTooltip = (item: ItemClassWithId) => {
-    if (item.type === "local") {
-      // TODO: handle
-      return <></>;
-    }
-
-    const resolvedClass = lookupParameterClass(
-      database,
-      item.codexId,
-      item.libraryId,
-      item.libraryVersion,
-      locale,
-    );
+  const renderItemClassTooltip = (item: SelectedItemClass) => {
+    const resolvedClass = lookupParameterClass(item.resolved, locale);
     return <ParameterClassDisplay paramClass={resolvedClass!} />;
   };
 
@@ -76,14 +67,10 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
                 <ItemClassSelector
                   selectedClass={newItemClass}
                   aria-labelledby="class-label"
-                  librarySelector={(library) =>
-                    (library.parameterClasses &&
-                      Object.entries(library.parameterClasses)) ||
-                    []
-                  }
+                  kind="parameterClasses"
                   onSelectedClassChanged={setNewItemClass}
                   tooltipRenderer={renderItemClassTooltip}
-                  database={database}
+                  libraryStore={libraryStore}
                 />
               </td>
             </tr>
@@ -103,9 +90,7 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
             onClick={() => {
               if (newItemClass) {
                 createNewParameter(
-                  newItemClass.type === "imported"
-                    ? newItemClass.libraryId
-                    : undefined,
+                  newItemClass.libraryId,
                   newItemClass.codexId,
                   CodexId(newItemId),
                 );

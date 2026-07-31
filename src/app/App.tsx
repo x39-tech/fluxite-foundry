@@ -4,11 +4,11 @@ import { DeviceClassEditor } from "features/deviceClassEditor/DeviceClassEditor"
 import { TopNavBar } from "features/topNavBar/TopNavBar";
 import { Toaster } from "components/scn-ui/Sonner";
 import { checkForUpdateOnStartup } from "features/updater/updatePrompt";
-import { codexDatabaseIsEmpty } from "codex/codexDatabase";
+import { libraryStoreIsEmpty } from "codex/libraryStore";
 import { LibraryErrorDialog } from "./libraryErrorDialog";
 import {
   useDarkMode,
-  useCodexDatabase,
+  useLibraryStore,
   setSystemDarkModePreference,
 } from "./store";
 import { EditorType, editorTypes } from "./persistentState";
@@ -19,7 +19,7 @@ const EDITORS: Record<EditorType, () => JSX.Element> = {
 };
 
 export const App = () => {
-  const database = useCodexDatabase();
+  const libraries = useLibraryStore();
   const darkMode = useDarkMode();
   const editors = useOpenEditors();
   const currentEditor = editors.editors[editors.selectedEditor];
@@ -56,7 +56,7 @@ export const App = () => {
       <TopNavBar />
       <div className="display-area">
         {currentEditor ? EDITORS[currentEditor.type]() : <div />}
-        <LibraryErrorDialog show={codexDatabaseIsEmpty(database)} />
+        <LibraryErrorDialog show={libraryStoreIsEmpty(libraries)} />
       </div>
       <Toaster />
     </div>

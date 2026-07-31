@@ -1,5 +1,5 @@
-import { Localization, LocalizationKey } from "app/persistentState";
 import { DefinitionLocalization } from "@cpwg-community/delver";
+import { LocalizationKey, LocalizationDb } from "app/persistentState";
 
 /**
  * Recursively collects all values from keys that start with '@' in an object.
@@ -62,6 +62,28 @@ export function collectLocalizableKeys(
   return keys;
 }
 
+// Read-only view of a localization table (`Localization` without the items[]
+// reference array).
+export interface LocalizationStrings {
+  strings: LocalizationDb;
+}
+
+// Imports a localization table from the Fluxite Codex format into the app state
+// format.
+export function importLocalizations<T extends LocalizationStrings>(
+  source: Record<string, DefinitionLocalization> | undefined,
+  target: Record<LocalizationKey, T>,
+  newEntry: () => T,
+) {
+  for (const [langId, localization] of Object.entries(source || {})) {
+    for (const [keyStr, str] of Object.entries(localization.strings || {})) {
+      const key = LocalizationKey(keyStr);
+      target[key] ||= newEntry();
+      target[key].strings[langId] = str;
+    }
+  }
+}
+
 // If locale is missing that means the value is a localization key which can
 // be displayed as a fallback
 export interface LocalizedString {
@@ -71,7 +93,7 @@ export interface LocalizedString {
 }
 
 export function localize(
-  db: Record<LocalizationKey, Localization>,
+  db: Record<LocalizationKey, LocalizationStrings>,
   key: LocalizationKey,
   desiredLocale: string,
 ): LocalizedString {
@@ -100,34 +122,5 @@ export function localize(
   return {
     desiredLocale,
     value: key,
-  };
-}
-
-export function fcLocalize(
-  db: Record<string, DefinitionLocalization> | undefined,
-  stringKey: string,
-  desiredLocale: string,
-): LocalizedString {
-  const desired = db?.[desiredLocale]?.strings?.[stringKey];
-  if (desired !== undefined) {
-    return {
-      value: desired,
-      locale: desiredLocale,
-      desiredLocale,
-    };
-  }
-
-  const fallback = db?.["en-US"]?.strings?.[stringKey];
-  if (fallback !== undefined) {
-    return {
-      value: fallback,
-      locale: "en-US",
-      desiredLocale,
-    };
-  }
-
-  return {
-    desiredLocale,
-    value: stringKey,
   };
 }

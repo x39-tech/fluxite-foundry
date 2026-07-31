@@ -38,16 +38,19 @@ describe("EnumChoicesEditor", () => {
 
   const classChoices: LocalizedClassEnumChoice[] = [
     {
+      id: CodexId("auto"),
       codexId: CodexId("auto"),
       name: { desiredLocale: "en-US", value: "Auto" },
       description: { desiredLocale: "en-US", value: "Auto mode" },
     },
     {
+      id: CodexId("manual"),
       codexId: CodexId("manual"),
       name: { desiredLocale: "en-US", value: "Manual" },
       description: { desiredLocale: "en-US", value: "Manual mode" },
     },
     {
+      id: CodexId("eco"),
       codexId: CodexId("eco"),
       name: { desiredLocale: "en-US", value: "Eco" },
     },

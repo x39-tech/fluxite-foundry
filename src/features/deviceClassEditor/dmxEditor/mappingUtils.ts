@@ -1,5 +1,5 @@
 import {
-  ClassMemberId,
+  LocalOrImportedId,
   CodexId,
   DmxSequenceStep,
   HoldValue,
@@ -8,7 +8,6 @@ import {
   LocalizedClassEnumChoice,
   LocalizedInstanceEnumChoice,
 } from "../stateTransformations";
-import { classMemberId } from "../referenceResolution";
 import { LocalizedString } from "utils/localizationUtils";
 
 export interface SequenceWarning {
@@ -154,14 +153,12 @@ export interface EffectiveEnumChoice {
 export function getEffectiveEnumChoices(
   classChoices: LocalizedClassEnumChoice[],
   instanceChoices: LocalizedInstanceEnumChoice[],
-  exclusions: readonly ClassMemberId[] | undefined,
+  exclusions: readonly LocalOrImportedId[] | undefined,
 ): EffectiveEnumChoice[] {
   const excludedSet = new Set<string>(exclusions ?? []);
 
-  // Exclusions reference a local class choice by its EntityId, or an imported
-  // one by its codexId. Match on whichever this choice carries.
   const filteredClassChoices = classChoices.filter(
-    (choice) => !excludedSet.has(classMemberId(choice.id, choice.codexId)),
+    (choice) => !excludedSet.has(choice.id),
   );
 
   // Instance choices are already sorted by index

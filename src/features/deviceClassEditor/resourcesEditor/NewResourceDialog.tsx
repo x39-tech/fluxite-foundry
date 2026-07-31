@@ -1,6 +1,6 @@
 import { useEffect, useId, useState } from "react";
 import { CheckIcon } from "lucide-react";
-import { useCurrentLocale, useCodexDatabase } from "app/store";
+import { useCurrentLocale, useLibraryStore } from "app/store";
 import { getUniqueItemId } from "utils/utils";
 import { validateNewItemId } from "utils/inputValidation";
 import {
@@ -12,12 +12,14 @@ import {
 } from "components/scn-ui/Dialog";
 import { Label } from "components/scn-ui/Label";
 import { Button } from "components/scn-ui/Button";
-import { ItemClassSelector } from "components/ItemClassSelector";
+import {
+  ItemClassSelector,
+  SelectedItemClass,
+} from "components/ItemClassSelector";
 import { ValidatedInput } from "components/ValidatedInput";
 import { FieldSet } from "components/FieldSet";
 import { ResourceClassDisplay } from "./ResourceClassDisplay";
 import { createNewResource, useResourceCodexIds } from "./state";
-import { ItemClassWithId } from "codex/codexDatabase";
 import { lookupResourceClass } from "../stateTransformations";
 import { CodexId } from "app/persistentState";
 
@@ -27,15 +29,15 @@ interface Props {
 }
 
 export const NewResourceDialog = ({ isOpen, onClose }: Props) => {
-  const database = useCodexDatabase();
+  const libraryStore = useLibraryStore();
   const resourceIds = useResourceCodexIds();
   const locale = useCurrentLocale();
 
   const idPrefix = useId();
 
-  const [newItemClass, setNewItemClass] = useState<ItemClassWithId | undefined>(
-    undefined,
-  );
+  const [newItemClass, setNewItemClass] = useState<
+    SelectedItemClass | undefined
+  >(undefined);
   const [newItemId, setNewItemId] = useState(getUniqueItemId(resourceIds));
   const [newItemFriendlyName, setNewItemFriendlyName] = useState("My New Item");
 
@@ -47,19 +49,8 @@ export const NewResourceDialog = ({ isOpen, onClose }: Props) => {
     }
   }, [isOpen]);
 
-  const renderItemClassTooltip = (item: ItemClassWithId) => {
-    if (item.type === "local") {
-      // TODO: handle
-      return <></>;
-    }
-
-    const resolvedClass = lookupResourceClass(
-      database,
-      item.codexId,
-      item.libraryId,
-      item.libraryVersion,
-      locale,
-    );
+  const renderItemClassTooltip = (item: SelectedItemClass) => {
+    const resolvedClass = lookupResourceClass(item.resolved, locale);
     return <ResourceClassDisplay resourceClass={resolvedClass!} />;
   };
 
@@ -75,14 +66,10 @@ export const NewResourceDialog = ({ isOpen, onClose }: Props) => {
             <ItemClassSelector
               id={`${idPrefix}-class`}
               selectedClass={newItemClass}
-              librarySelector={(library) =>
-                (library.resourceClasses &&
-                  Object.entries(library.resourceClasses)) ||
-                []
-              }
+              kind="resourceClasses"
               onSelectedClassChanged={setNewItemClass}
               tooltipRenderer={renderItemClassTooltip}
-              database={database}
+              libraryStore={libraryStore}
             />
           </FieldSet>
           <FieldSet>
@@ -108,8 +95,7 @@ export const NewResourceDialog = ({ isOpen, onClose }: Props) => {
             aria-label="Add"
             disabled={!newItemClass}
             onClick={() => {
-              if (newItemClass && newItemClass.type === "imported") {
-                // TODO: handle local classes
+              if (newItemClass) {
                 createNewResource(
                   newItemClass.libraryId,
                   newItemClass.codexId,

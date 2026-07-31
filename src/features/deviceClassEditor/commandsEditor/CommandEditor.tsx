@@ -20,7 +20,7 @@ import { unitToString } from "utils/utils";
 import { validateNewItemId } from "utils/inputValidation";
 import { useCurrentLocale } from "app/store";
 import {
-  ClassMemberId,
+  LocalOrImportedId,
   CodexId,
   EntityId,
   EnumChoiceParent,
@@ -31,7 +31,6 @@ import {
   useCommandCodexIds,
   useCommandInfo,
 } from "./state";
-import { classMemberId } from "../referenceResolution";
 
 interface Props {
   id: EntityId;
@@ -154,10 +153,7 @@ export const CommandEditor = ({ id }: Props) => {
             Object.entries(commandClass.arguments).map(
               ([argId, argument], index) => {
                 const argCodexId = CodexId(argId);
-                const argMemberId: ClassMemberId = classMemberId(
-                  argument.id,
-                  argCodexId,
-                );
+                const argMemberId: LocalOrImportedId = argument.id;
                 const parent: EnumChoiceParent =
                   command.class.type === "imported"
                     ? {

@@ -1244,8 +1244,8 @@ describe("DMX serializer import", () => {
       .triggers;
     expect(triggers).toHaveLength(1);
     // The minimal device class defines no "reset" command, so the reference
-    // resolves to a synthetic missing id (with a nanoid suffix).
-    expect(triggers[0].command).toMatch(/^missing-reset-/);
+    // keeps the codexId the document named and simply resolves to nothing.
+    expect(triggers[0].command).toBe("reset");
     expect(triggers[0].mappings).toHaveLength(1);
     expect(triggers[0].mappings[0].conditions[CodexId("mode")]).toEqual({
       argumentMin: 1,
