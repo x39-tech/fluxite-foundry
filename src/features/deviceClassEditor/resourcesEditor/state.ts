@@ -1,5 +1,5 @@
 import { Draft } from "immer";
-import { useCurrentLocale, useCodexDatabase } from "app/store";
+import { useCurrentLocale, useLibraryStore } from "app/store";
 import { assetStorage } from "app/assetStorage";
 import { CodexId, EntityId, Resource, Unlocalized } from "app/persistentState";
 import { ItemEditor } from "utils/utils";
@@ -8,12 +8,14 @@ import {
   updateCurrentEditor,
   useCurrentEditorPart,
   useCurrentEditorPartShallow,
+  useDeviceLibrary,
+  useLibraries,
 } from "../state";
 import {
-  lookupDeviceResourceClass,
   lookupResourceClass,
   ResolvedResourceClass,
 } from "../stateTransformations";
+import { resolveClassRef } from "../classResolution";
 
 // ---------------------------------------------------------------------------
 // Read
@@ -50,43 +52,24 @@ export function useResourceEditors(): ItemEditor[] {
 export function useResourceInfo(
   id: EntityId,
 ): { resource: Resource; resourceClass?: ResolvedResourceClass } | undefined {
-  const editorPart = useCurrentEditorPartShallow((editor) => {
-    return [
-      editor.resources[id],
-      editor.libraries,
-      editor.resourceClasses,
-      editor.localizations,
-    ] as const;
-  });
-  if (!editorPart) return undefined;
-
-  const [resource, libraries, deviceResourceClasses, localizations] =
-    editorPart;
-  const database = useCodexDatabase();
+  const deviceLibrary = useDeviceLibrary();
+  const importedLibs = useLibraries();
+  const resource = useCurrentEditorPart((editor) => editor.resources[id]);
+  const libraryStore = useLibraryStore();
   const locale = useCurrentLocale();
 
-  let resourceClass = undefined;
-  if (resource.class.type === "imported") {
-    const libraryVersion = libraries?.[resource.class.library];
-    if (!libraryVersion) {
-      return undefined;
-    }
+  if (!deviceLibrary || !importedLibs || !resource) return undefined;
 
-    resourceClass = lookupResourceClass(
-      database,
-      resource.class.codexId,
-      resource.class.library,
-      libraryVersion,
-      locale,
-    );
-  } else {
-    resourceClass = lookupDeviceResourceClass(
-      deviceResourceClasses,
-      localizations,
-      resource.class.id,
-      locale,
-    );
-  }
+  const resolved = resolveClassRef(
+    resource.class,
+    importedLibs,
+    deviceLibrary,
+    libraryStore,
+    "resourceClasses",
+  );
+  const resourceClass = resolved
+    ? lookupResourceClass(resolved, locale)
+    : undefined;
 
   return {
     resource,

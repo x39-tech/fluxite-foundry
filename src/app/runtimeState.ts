@@ -1,9 +1,9 @@
 import { DmxDriver, DelverError } from "@cpwg-community/delver";
-import { CodexDatabase } from "codex/codexDatabase";
+import { LibraryStore } from "codex/library";
 
 export interface AppRuntimeState {
   dmxController: DmxController;
-  codexDatabase: CodexDatabase;
+  libraries: LibraryStore;
   systemDarkModePreference: boolean;
 }
 

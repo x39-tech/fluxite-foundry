@@ -27,6 +27,7 @@ import {
   select,
   selectWithIds,
 } from "app/stateUtils";
+import { Library } from "codex/library";
 import { exportDeviceClass } from "./export";
 
 // ---------------------------------------------------------------------------
@@ -65,6 +66,20 @@ export function useCurrentEditorPartShallow<T>(
       return reducer(currentEditor);
     }),
   );
+}
+
+export function useDeviceLibrary(): Library | undefined {
+  return useCurrentEditorPartShallow((editor) => ({
+    parameterClasses: editor.parameterClasses,
+    structureClasses: editor.structureClasses,
+    serializerClasses: editor.serializerClasses,
+    resourceClasses: editor.resourceClasses,
+    commandClasses: editor.commandClasses,
+    commandClassArguments: editor.commandClassArguments,
+    commandClassReturnValues: editor.commandClassReturnValues,
+    enumChoices: editor.enumChoices,
+    localizations: editor.localizations,
+  }));
 }
 
 export function useLibraries(): Record<string, string> | undefined {

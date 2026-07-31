@@ -1,33 +1,37 @@
 import { Draft } from "immer";
-import { useCurrentLocale, useCodexDatabase } from "app/store";
+import { useCurrentLocale, useLibraryStore } from "app/store";
 import {
   ClassReference,
   CodexId,
   Command,
-  CommandArgument,
-  CommandClass,
-  CommandReturnValue,
   EntityId,
   EnumChoice,
-  Localization,
   LocalizationKey,
   LocalizationReferencedItem,
   Unlocalized,
 } from "app/persistentState";
-import { localize, LocalizedString } from "utils/localizationUtils";
+import {
+  localize,
+  LocalizationStrings,
+  LocalizedString,
+} from "utils/localizationUtils";
 import {
   addNewItemLocalization,
   removeReferencedLocalization,
   updateCurrentEditor,
   updateLocalizedValue,
+  useCurrentEditorPart,
   useCurrentEditorPartShallow,
+  useDeviceLibrary,
+  useLibraries,
 } from "../state";
 import {
   LocalizedInstanceEnumChoice,
   lookupCommandClass,
-  lookupDeviceCommandClass,
   ResolvedCommandClass,
 } from "../stateTransformations";
+import { resolveClassRef, resolveMemberId } from "../classResolution";
+import type { ResolvedClassRef } from "../classResolution";
 import { ItemEditor } from "utils/utils";
 import { getWithId, newEntityId, selectWithIds } from "app/stateUtils";
 
@@ -75,45 +79,24 @@ export function useCommandInfo(id: EntityId):
       instanceReturnEnumChoices: Record<CodexId, LocalizedInstanceEnumChoice[]>;
     }
   | undefined {
-  const editorPart = useCurrentEditorPartShallow((editor) => {
-    return [
-      editor.commands[id],
-      editor.libraries,
-      editor.commandClasses,
-      editor.commandClassArguments,
-      editor.commandClassReturnValues,
-      editor.enumChoices,
-      editor.localizations,
-    ] as const;
-  });
+  const deviceLibrary = useDeviceLibrary();
+  const importedLibs = useLibraries();
+  const command = useCurrentEditorPart((editor) => editor.commands[id]);
   const locale = useCurrentLocale();
-  const database = useCodexDatabase();
+  const libraryStore = useLibraryStore();
 
-  if (!editorPart) return undefined;
+  if (!deviceLibrary || !importedLibs || !command) return undefined;
 
-  const [
-    command,
-    libraries,
-    commandClasses,
-    commandClassArguments,
-    commandClassReturnValues,
-    enumChoices,
-    localizations,
-  ] = editorPart;
+  const { enumChoices, localizations } = deviceLibrary;
 
-  if (!command) return undefined;
-
-  const cmdClass = resolveCommandClass(
-    command,
-    libraries,
-    commandClasses,
-    commandClassArguments,
-    commandClassReturnValues,
-    enumChoices,
-    localizations,
-    database,
-    locale,
+  const resolved = resolveClassRef(
+    command.class,
+    importedLibs,
+    deviceLibrary,
+    libraryStore,
+    "commandClasses",
   );
+  const cmdClass = resolved ? lookupCommandClass(resolved, locale) : undefined;
 
   const friendlyName = command.localized.friendlyName
     ? localize(localizations, command.localized.friendlyName, locale)
@@ -130,7 +113,7 @@ export function useCommandInfo(id: EntityId):
     locale,
     id,
     "cmdArg",
-    commandClassArguments,
+    resolved,
   );
 
   const instanceReturnEnumChoices = collectInstanceEnumChoices(
@@ -139,7 +122,7 @@ export function useCommandInfo(id: EntityId):
     locale,
     id,
     "cmdRet",
-    commandClassReturnValues,
+    resolved,
   );
 
   return {
@@ -150,51 +133,16 @@ export function useCommandInfo(id: EntityId):
   };
 }
 
-function resolveCommandClass(
-  command: Command,
-  libraries: Record<string, string>,
-  commandClasses: Record<EntityId, CommandClass>,
-  commandClassArguments: Record<EntityId, CommandArgument>,
-  commandClassReturnValues: Record<EntityId, CommandReturnValue>,
-  enumChoices: Record<EntityId, EnumChoice>,
-  localizations: Record<LocalizationKey, Localization>,
-  database: ReturnType<typeof useCodexDatabase>,
-  locale: string,
-): ResolvedCommandClass | undefined {
-  if (command.class.type === "imported") {
-    const libraryVersion = libraries[command.class.library];
-    if (!libraryVersion) return undefined;
-
-    return lookupCommandClass(
-      database,
-      command.class.codexId,
-      command.class.library,
-      libraryVersion,
-      locale,
-    );
-  }
-
-  return lookupDeviceCommandClass(
-    commandClasses,
-    commandClassArguments,
-    commandClassReturnValues,
-    enumChoices,
-    localizations,
-    command.class.id,
-    locale,
-  );
-}
-
 type CmdEnumParentType = "cmdArg" | "cmdRet";
 type CmdEnumParent = Extract<EnumChoice["parent"], { type: CmdEnumParentType }>;
 
 function collectInstanceEnumChoices(
   enumChoices: Record<EntityId, EnumChoice>,
-  localizations: Record<LocalizationKey, Localization>,
+  localizations: Record<LocalizationKey, LocalizationStrings>,
   locale: string,
   commandId: EntityId,
   parentType: CmdEnumParentType,
-  classItems: Record<EntityId, { codexId: CodexId }>,
+  resolved: ResolvedClassRef | undefined,
 ): Record<CodexId, LocalizedInstanceEnumChoice[]> {
   const choices = selectWithIds(
     enumChoices,
@@ -203,11 +151,24 @@ function collectInstanceEnumChoices(
   );
 
   const grouped: Record<CodexId, LocalizedInstanceEnumChoice[]> = {};
+  if (!resolved) return grouped;
+
+  const memberKind =
+    parentType === "cmdArg" ? "commandArguments" : "commandReturnValues";
+  const classItems =
+    parentType === "cmdArg"
+      ? resolved.library.commandClassArguments
+      : resolved.library.commandClassReturnValues;
 
   for (const choice of choices) {
     const parent = choice.parent as CmdEnumParent;
-    const codexId =
-      parent.idType === "imported" ? parent.id : classItems[parent.id]?.codexId;
+    const memberId = resolveMemberId(
+      resolved,
+      memberKind,
+      resolved.classId,
+      parent.id,
+    );
+    const codexId = memberId ? classItems[memberId]?.codexId : undefined;
     if (!codexId) continue;
 
     if (!grouped[codexId]) {

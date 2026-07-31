@@ -40,7 +40,11 @@ import {
   modifyEnumChoice,
   modifyEnumChoiceLocalizedValue,
 } from "features/deviceClassEditor/state";
-import { ClassMemberId, CodexId, EnumChoiceParent } from "app/persistentState";
+import {
+  LocalOrImportedId,
+  CodexId,
+  EnumChoiceParent,
+} from "app/persistentState";
 
 interface Props {
   id?: string;
@@ -48,8 +52,8 @@ interface Props {
   parent: EnumChoiceParent;
   classChoices: LocalizedClassEnumChoice[];
   instanceChoices?: LocalizedInstanceEnumChoice[];
-  exclusions?: readonly ClassMemberId[];
-  onExclusionChanged: (choiceId: ClassMemberId, excluded: boolean) => void;
+  exclusions?: readonly LocalOrImportedId[];
+  onExclusionChanged: (choiceId: LocalOrImportedId, excluded: boolean) => void;
 }
 
 interface ClassDisplayChoice extends LocalizedClassEnumChoice {
@@ -72,7 +76,7 @@ export const EnumChoicesEditor = ({
   const classDisplayChoices: ClassDisplayChoice[] = classChoices.map(
     (choice) => ({
       ...choice,
-      removed: excludedSet.has(choice.id ?? choice.codexId),
+      removed: excludedSet.has(choice.id),
     }),
   );
 
@@ -142,10 +146,7 @@ export const EnumChoicesEditor = ({
                         checked={!choice.removed}
                         onCheckedChange={(checked) =>
                           typeof checked === "boolean" &&
-                          onExclusionChanged(
-                            choice.id ?? choice.codexId,
-                            !checked,
-                          )
+                          onExclusionChanged(choice.id, !checked)
                         }
                       />
                     </TableCell>

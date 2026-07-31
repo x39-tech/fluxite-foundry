@@ -1,4 +1,3 @@
-import { nanoid } from "nanoid";
 import * as V3 from "../v3/state";
 import * as V4 from "./state";
 
@@ -13,18 +12,16 @@ import * as V4 from "./state";
 // target by reverse-looking-up the relevant table. Two cases need care:
 //
 //   - Unresolvable references (the target's CodexId matches nothing, i.e. the
-//     reference was already dangling in the saved state) are pointed at a
-//     synthetic "missing-" EntityId, to preserve the behavior of a broken
-//     reference.
+//     reference was already dangling in the saved state) keep the CodexId
+//     string verbatim, reinterpreted as an EntityId. It still resolves to
+//     nothing, and the string stays available for display and for export.
 //
 //   - Class-member references (enum-choice exclusions, command-argument keys)
 //     are only local when the owning class is local. When the class is
 //     imported, the member lives in the library and keeps its CodexId.
 
-// Produces a recognizable, non-resolving EntityId for a reference whose target
-// no longer exists.
-function missingEntityId(codexId: string): V4.EntityId {
-  return V4.EntityId(`missing-${codexId}-${nanoid()}`);
+function unresolvedEntityId(codexId: string): V4.EntityId {
+  return V4.EntityId(codexId);
 }
 
 function buildCodexToEntity(
@@ -45,7 +42,7 @@ function migrateParameterReference(
   ref: V3.ParameterReference,
   paramIds: Map<string, V4.EntityId>,
 ): V4.ParameterReference {
-  const id = paramIds.get(ref.codexId) ?? missingEntityId(ref.codexId);
+  const id = paramIds.get(ref.codexId) ?? unresolvedEntityId(ref.codexId);
   return {
     id,
     ...(ref.index !== undefined ? { index: ref.index } : {}),
@@ -61,14 +58,14 @@ function migrateClassReference(classRef: V3.ClassReference): V4.ClassReference {
   return classRef;
 }
 
-// Resolves a class-member CodexId to an EntityId when the owning class is
-// local, or keeps the CodexId when it is imported. `localIds` maps member
-// CodexId -> member EntityId for the local case.
-function migrateClassMemberId(
+// Resolves a sub-item CodexId to an EntityId when the owning class is local, or
+// keeps the CodexId when it is imported. `localIds` maps member CodexId ->
+// member EntityId for the local case.
+function migrateLocalOrImportedId(
   memberCodexId: string,
   classIsLocal: boolean,
   localIds: Map<string, V4.EntityId>,
-): V4.ClassMemberId {
+): V4.LocalOrImportedId {
   if (!classIsLocal) {
     return V4.CodexId(memberCodexId);
   }
@@ -116,7 +113,7 @@ function migrateParameter(
     ...rest,
     class: migratedClass,
     enumExclusions: enumExclusions.map((codexId) =>
-      migrateClassMemberId(codexId, classIsLocal, choiceIds),
+      migrateLocalOrImportedId(codexId, classIsLocal, choiceIds),
     ),
   } as V4.Parameter;
 }
@@ -129,11 +126,11 @@ function migrateCommandExclusions(
   classIsLocal: boolean,
   argIds: Map<string, V4.EntityId>,
   choiceIdsByArgId: Map<string, Map<string, V4.EntityId>>,
-): Record<string, V4.ClassMemberId[]> {
-  const result: Record<string, V4.ClassMemberId[]> = {};
+): Record<string, V4.LocalOrImportedId[]> {
+  const result: Record<string, V4.LocalOrImportedId[]> = {};
 
   for (const [argCodexId, excludedChoiceIds] of Object.entries(exclusions)) {
-    const argKey = migrateClassMemberId(argCodexId, classIsLocal, argIds);
+    const argKey = migrateLocalOrImportedId(argCodexId, classIsLocal, argIds);
     const argEntityId = classIsLocal ? argIds.get(argCodexId) : undefined;
     const choiceIds =
       argEntityId !== undefined
@@ -141,7 +138,7 @@ function migrateCommandExclusions(
         : new Map<string, V4.EntityId>();
 
     result[argKey] = excludedChoiceIds.map((choiceCodexId) =>
-      migrateClassMemberId(choiceCodexId, classIsLocal, choiceIds),
+      migrateLocalOrImportedId(choiceCodexId, classIsLocal, choiceIds),
     );
   }
 
@@ -227,7 +224,7 @@ function migrateTrigger(
   commandClassArguments: Record<string, V3.CommandArgument>,
 ): V4.DmxTrigger {
   const commandEntityId = commandIds.get(trigger.command);
-  const command = commandEntityId ?? missingEntityId(trigger.command);
+  const command = commandEntityId ?? unresolvedEntityId(trigger.command);
 
   // Condition keys are command-argument CodexIds in the ID space of the
   // referenced command's class. Resolve to EntityIds when that class is local.
@@ -252,7 +249,7 @@ function migrateTrigger(
       for (const [argCodexId, condition] of Object.entries(
         mapping.conditions,
       )) {
-        const key = migrateClassMemberId(argCodexId, classIsLocal, argIds);
+        const key = migrateLocalOrImportedId(argCodexId, classIsLocal, argIds);
         conditions[key] = condition;
       }
       return { ...mapping, conditions };
@@ -353,10 +350,9 @@ function migrateEditor(
  * - ParameterReference now references a parameter by EntityId instead of by
  *   CodexId.
  * - DmxTrigger.command is now an EntityId instead of a CodexId.
- * - Parameter.enumExclusions, Command.argEnumExclusions /
- *   returnEnumExclusions, and DmxTriggerMapping.conditions keys now hold
- *   ClassMemberIds: EntityIds when the owning class is local, CodexIds when it
- *   is imported.
+ * - Parameter.enumExclusions, Command.argEnumExclusions / returnEnumExclusions,
+ *   and DmxTriggerMapping.conditions keys now hold LocalOrImportedIds:
+ *   EntityIds when the owning class is local, CodexIds when it is imported.
  * - Local ClassReferences (on parameters, resources, commands) drop their
  *   denormalized codexId; a local class is referenced by EntityId alone.
  */

@@ -2,9 +2,8 @@
 // format and the app's display strings use CodexIds. These helpers translate
 // between the two at the import/export boundary and for display.
 
-import { nanoid } from "nanoid";
 import {
-  ClassMemberId,
+  LocalOrImportedId,
   ClassReference,
   CodexId,
   DeviceClassEditorState,
@@ -29,15 +28,15 @@ function codexToId(
 // --- Parameter references -------------------------------------------------
 
 // Resolves a Codex parameter reference (codexId + optional index) to a stored
-// ParameterReference. An unresolvable codexId becomes a synthetic "missing-"
-// EntityId so the reference still reads as broken downstream.
+// ParameterReference. An unresolvable codexId is kept verbatim so the reference
+// still reads as broken downstream.
 export function toEditorParameterReference(
   editor: Pick<DeviceClassEditorState, "parameters">,
   codexId: CodexId,
   index?: number,
 ): ParameterReference {
   const id =
-    codexToId(editor.parameters).get(codexId) ?? missingEntityId(codexId);
+    codexToId(editor.parameters).get(codexId) ?? codexIdAsEntityId(codexId);
   return { id, ...(index !== undefined ? { index } : {}) };
 }
 
@@ -65,7 +64,7 @@ export function resolveCommandId(
   editor: Pick<DeviceClassEditorState, "commands">,
   codexId: CodexId,
 ): EntityId {
-  return codexToId(editor.commands).get(codexId) ?? missingEntityId(codexId);
+  return codexToId(editor.commands).get(codexId) ?? codexIdAsEntityId(codexId);
 }
 
 // --- Class references -----------------------------------------------------
@@ -114,30 +113,30 @@ function paramClassChoiceMaps(
 function memberToEditor(
   codexId: CodexId,
   localCodexToId: Map<CodexId, EntityId> | undefined,
-): ClassMemberId {
+): LocalOrImportedId {
   if (!localCodexToId) return codexId;
-  return localCodexToId.get(codexId) ?? missingEntityId(codexId);
+  return localCodexToId.get(codexId) ?? codexIdAsEntityId(codexId);
 }
 
 // Translates a stored class-member id back into the codexId a Codex document
 // should carry. An undefined map means the owning class is imported, so the
 // member is already a CodexId.
 function memberToCodex(
-  member: ClassMemberId,
+  member: LocalOrImportedId,
   localIdToCodex: Map<EntityId, CodexId> | undefined,
 ): CodexId {
   if (!localIdToCodex) return member as CodexId;
   return localIdToCodex.get(member as EntityId) ?? (member as CodexId);
 }
 
-// The id used to reference a class member from editor state: its local EntityId
-// when the member belongs to a local class, otherwise its CodexId. This is the
+// The id used to reference a sub-item from editor state: its local EntityId
+// when the parent belongs to a local class, otherwise its CodexId. This is the
 // same local-vs-imported rule the resolvers above apply, expressed for callers
 // (mostly UI) that already hold the member's fields rather than a lookup map.
-export function classMemberId(
+export function localOrImportedId(
   localId: EntityId | undefined,
   codexId: CodexId,
-): ClassMemberId {
+): LocalOrImportedId {
   return localId ?? codexId;
 }
 
@@ -146,7 +145,7 @@ export function paramExclusionsToEditor(
   editor: Pick<DeviceClassEditorState, "enumChoices">,
   paramClass: ClassReference,
   excludedCodexIds: CodexId[],
-): ClassMemberId[] {
+): LocalOrImportedId[] {
   const maps =
     paramClass.type === "local"
       ? paramClassChoiceMaps(editor, paramClass.id)
@@ -159,7 +158,7 @@ export function paramExclusionsToEditor(
 export function paramExclusionsToCodex(
   editor: Pick<DeviceClassEditorState, "enumChoices">,
   paramClass: ClassReference,
-  excluded: ClassMemberId[],
+  excluded: LocalOrImportedId[],
 ): CodexId[] {
   const maps =
     paramClass.type === "local"
@@ -251,14 +250,14 @@ export function commandExclusionsToEditor(
   cmdClass: ClassReference,
   kind: CommandMemberKind,
   exclusions: Record<string, CodexId[]>,
-): Record<string, ClassMemberId[]> {
+): Record<string, LocalOrImportedId[]> {
   const tables = commandMemberTables(editor, kind);
   const memberMaps =
     cmdClass.type === "local"
       ? commandMemberMaps(tables, cmdClass.id)
       : undefined;
 
-  const result: Record<string, ClassMemberId[]> = {};
+  const result: Record<string, LocalOrImportedId[]> = {};
   for (const [memberCodexId, choiceCodexIds] of Object.entries(exclusions)) {
     const memberKey = memberToEditor(
       memberCodexId as CodexId,
@@ -284,7 +283,7 @@ export function commandExclusionsToCodex(
   editor: CommandExclusionsEditor,
   cmdClass: ClassReference,
   kind: CommandMemberKind,
-  exclusions: Record<string, ClassMemberId[]>,
+  exclusions: Record<string, LocalOrImportedId[]>,
 ): Record<string, CodexId[]> {
   const tables = commandMemberTables(editor, kind);
   const memberMaps =
@@ -295,7 +294,7 @@ export function commandExclusionsToCodex(
   const result: Record<string, CodexId[]> = {};
   for (const [memberKey, choiceMembers] of Object.entries(exclusions)) {
     const memberCodexId = memberToCodex(
-      memberKey as ClassMemberId,
+      memberKey as LocalOrImportedId,
       memberMaps?.entityToCodex,
     );
     // For a local class the stored key is the member's entity id, which scopes
@@ -319,7 +318,7 @@ export function commandArgKeyToEditor(
   editor: CommandExclusionsEditor,
   cmdClass: ClassReference,
   argCodexId: CodexId,
-): ClassMemberId {
+): LocalOrImportedId {
   const maps =
     cmdClass.type === "local"
       ? commandMemberMaps(commandMemberTables(editor, "arg"), cmdClass.id)
@@ -330,7 +329,7 @@ export function commandArgKeyToEditor(
 export function commandArgKeyToCodex(
   editor: CommandExclusionsEditor,
   cmdClass: ClassReference,
-  member: ClassMemberId,
+  member: LocalOrImportedId,
 ): CodexId {
   const maps =
     cmdClass.type === "local"
@@ -339,15 +338,10 @@ export function commandArgKeyToCodex(
   return memberToCodex(member, maps?.entityToCodex);
 }
 
-// Produces a recognizable, non-resolving EntityId for a reference whose target
-// no longer exists.
-function missingEntityId(codexId: string): EntityId {
-  return EntityId(`missing-${codexId}-${nanoid()}`);
+export function codexIdAsEntityId(codexId: string): EntityId {
+  return EntityId(codexId);
 }
 
-// Reinterprets an EntityId as a CodexId. Used only when a reference no longer
-// resolves and there is no real codexId to emit: surfacing the broken EntityId
-// string is clearer than inventing a plausible-but-wrong codexId.
-function entityIdAsCodexId(id: EntityId): CodexId {
+export function entityIdAsCodexId(id: EntityId): CodexId {
   return id as unknown as CodexId;
 }

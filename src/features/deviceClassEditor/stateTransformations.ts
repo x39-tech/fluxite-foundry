@@ -1,28 +1,20 @@
+import { DataType, Unit } from "@cpwg-community/delver";
 import {
-  EnumChoice as FCEnumChoice,
-  DefinitionLocalization,
-  DataType,
-  Unit,
-} from "@cpwg-community/delver";
-import { CodexDatabase } from "codex/codexDatabase";
-import {
+  LocalOrImportedId,
   CodexId,
-  CommandArgument,
   CommandClass,
-  CommandReturnValue,
   EntityId,
-  EnumChoice,
-  Localization,
   LocalizationKey,
   ParameterClass,
   ResourceClass,
   Unlocalized,
 } from "app/persistentState";
-import { fcLocalize, localize, LocalizedString } from "utils/localizationUtils";
+import { localize, LocalizedString } from "utils/localizationUtils";
 import { selectWithIds } from "app/stateUtils";
+import { ResolvedClassRef } from "./classResolution";
 
 export interface LocalizedClassEnumChoice {
-  id?: EntityId;
+  id: LocalOrImportedId;
   codexId: CodexId;
   name: LocalizedString;
   description?: LocalizedString;
@@ -37,7 +29,7 @@ export interface LocalizedInstanceEnumChoice {
 }
 
 export interface LocalizedCommandClassArgument {
-  id?: EntityId;
+  id: LocalOrImportedId;
   codexId: CodexId;
   name: LocalizedString;
   descripton?: LocalizedString;
@@ -48,7 +40,7 @@ export interface LocalizedCommandClassArgument {
 }
 
 export interface LocalizedCommandClassReturnValue {
-  id?: EntityId;
+  id: LocalOrImportedId;
   codexId: CodexId;
   name: LocalizedString;
   descripton?: LocalizedString;
@@ -59,441 +51,186 @@ export interface LocalizedCommandClassReturnValue {
 }
 
 export interface ResolvedParameterClass extends Unlocalized<ParameterClass> {
-  libraryId?: string;
-  libraryVersion?: string;
   name: LocalizedString;
   description?: LocalizedString;
   choices: LocalizedClassEnumChoice[];
 }
 
 export interface ResolvedResourceClass extends Unlocalized<ResourceClass> {
-  libraryId?: string;
-  libraryVersion?: string;
   name: LocalizedString;
   description?: LocalizedString;
 }
 
 export interface ResolvedCommandClass extends Unlocalized<CommandClass> {
-  libraryId?: string;
-  libraryVersion?: string;
   name: LocalizedString;
   description?: LocalizedString;
-  arguments: Record<string, LocalizedCommandClassArgument>;
-  returnValues: Record<string, LocalizedCommandClassReturnValue>;
+  arguments: Record<CodexId, LocalizedCommandClassArgument>;
+  returnValues: Record<CodexId, LocalizedCommandClassReturnValue>;
 }
 
 export function lookupParameterClass(
-  database: Readonly<CodexDatabase>,
-  classId: CodexId,
-  libraryId: string,
-  libraryVersion: string,
+  resolved: ResolvedClassRef,
   locale: string,
 ): ResolvedParameterClass | undefined {
-  const library = database.libraries[libraryId]?.[libraryVersion];
-  if (!library) {
+  const { library, classId } = resolved;
+  const cls = library.parameterClasses[classId];
+  if (!cls) {
     return undefined;
   }
 
-  const cls = library.parameterClasses?.[classId];
-
-  if (cls) {
-    const localizedName = fcLocalize(
-      library.localizations,
-      cls["@name"],
-      locale,
-    );
-    const localizedDesc = cls["@description"]
-      ? fcLocalize(library.localizations, cls["@description"], locale)
-      : undefined;
-
-    const localizedChoices = fcLocalizeEnumChoices(
-      cls.choices || [],
-      library.localizations,
-      locale,
-    );
-
-    return {
-      codexId: classId,
-      libraryId,
-      libraryVersion,
-      name: localizedName,
-      description: localizedDesc,
-      unit: cls.unit,
-      dataType: cls.dataType,
-      choices: localizedChoices,
-    };
-  } else {
-    return undefined;
-  }
-}
-
-export function lookupDeviceParameterClass(
-  parameterClasses: Record<EntityId, ParameterClass>,
-  localizations: Record<LocalizationKey, Localization>,
-  enumChoices: Record<EntityId, EnumChoice>,
-  classId: EntityId,
-  locale: string,
-): ResolvedParameterClass | undefined {
-  const cls = parameterClasses[classId];
-
-  if (cls) {
-    const choices = selectWithIds(
-      enumChoices,
-      (e) => e.parent.type === "paramClass" && e.parent.id === classId,
-    );
-    choices.sort((e1, e2) => e1.index - e2.index);
-
-    const name = localize(localizations, cls.localized.name, locale);
-
-    const description = cls.localized.description
-      ? localize(localizations, cls.localized.description, locale)
-      : undefined;
-
-    return {
-      codexId: cls.codexId,
-      name,
-      description,
-      unit: cls.unit,
-      dataType: cls.dataType,
-      choices: choices.map((e) => {
-        const name = localize(localizations, e.localized.name, locale);
-        const description = e.localized.description
-          ? localize(localizations, e.localized.description, locale)
-          : undefined;
-
-        return {
-          id: e.id,
-          codexId: e.codexId,
-          name,
-          description,
-        };
-      }),
-    };
-  } else {
-    return undefined;
-  }
+  return {
+    codexId: cls.codexId,
+    name: localize(library.localizations, cls.localized.name, locale),
+    description: optionalLocalize(resolved, cls.localized.description, locale),
+    unit: cls.unit,
+    dataType: cls.dataType,
+    choices: localizeClassEnumChoices(resolved, "paramClass", classId, locale),
+  };
 }
 
 export function lookupResourceClass(
-  database: Readonly<CodexDatabase>,
-  classId: CodexId,
-  libraryId: string,
-  libraryVersion: string,
+  resolved: ResolvedClassRef,
   locale: string,
 ): ResolvedResourceClass | undefined {
-  const library = database.libraries[libraryId]?.[libraryVersion];
-  if (!library) {
+  const { library, classId } = resolved;
+  const cls = library.resourceClasses[classId];
+  if (!cls) {
     return undefined;
   }
 
-  const cls = library.resourceClasses?.[classId];
-
-  if (cls) {
-    const localizedName = fcLocalize(
-      library.localizations,
-      cls["@name"],
-      locale,
-    );
-    const localizedDesc = cls["@description"]
-      ? fcLocalize(library.localizations, cls["@description"], locale)
-      : undefined;
-
-    return {
-      codexId: classId,
-      libraryId,
-      libraryVersion,
-      name: localizedName,
-      description: localizedDesc,
-      mediaType: cls.mediaType,
-    };
-  } else {
-    return undefined;
-  }
-}
-
-export function lookupDeviceResourceClass(
-  resourceClasses: Record<EntityId, ResourceClass>,
-  localizations: Record<LocalizationKey, Localization>,
-  classId: EntityId,
-  locale: string,
-): ResolvedResourceClass | undefined {
-  const cls = resourceClasses[classId];
-  if (cls) {
-    const name = localize(localizations, cls.localized.name, locale);
-
-    const description = cls.localized.description
-      ? localize(localizations, cls.localized.description, locale)
-      : undefined;
-
-    return {
-      codexId: cls.codexId,
-      name,
-      description,
-      mediaType: cls.mediaType,
-    };
-  } else {
-    return undefined;
-  }
+  return {
+    codexId: cls.codexId,
+    name: localize(library.localizations, cls.localized.name, locale),
+    description: optionalLocalize(resolved, cls.localized.description, locale),
+    mediaType: cls.mediaType,
+  };
 }
 
 export function lookupCommandClass(
-  database: Readonly<CodexDatabase>,
-  classId: CodexId,
-  libraryId: string,
-  libraryVersion: string,
+  resolved: ResolvedClassRef,
   locale: string,
 ): ResolvedCommandClass | undefined {
-  const library = database.libraries[libraryId]?.[libraryVersion];
-  if (!library) {
+  const { library, classId } = resolved;
+  const cls = library.commandClasses[classId];
+  if (!cls) {
     return undefined;
   }
 
-  const cls = library.commandClasses?.[classId];
-
-  if (cls) {
-    const localizedName = fcLocalize(
-      library.localizations,
-      cls["@name"],
-      locale,
+  const cmdArguments: Record<CodexId, LocalizedCommandClassArgument> =
+    Object.fromEntries(
+      selectWithIds(
+        library.commandClassArguments,
+        (arg) => arg.parentId === classId,
+      ).map((arg) => [
+        arg.codexId,
+        {
+          id: localOrImportedId(resolved, arg.id, arg.codexId),
+          codexId: arg.codexId,
+          name: localize(library.localizations, arg.localized.name, locale),
+          descripton: optionalLocalize(
+            resolved,
+            arg.localized.description,
+            locale,
+          ),
+          dataType: arg.dataType as DataType,
+          unit: arg.unit as Unit,
+          required: arg.required,
+          choices: localizeClassEnumChoices(
+            resolved,
+            "cmdClassArg",
+            arg.id,
+            locale,
+          ),
+        },
+      ]),
     );
-    const localizedDesc = cls["@description"]
-      ? fcLocalize(library.localizations, cls["@description"], locale)
-      : undefined;
 
-    const cmdArguments: Record<CodexId, LocalizedCommandClassArgument> =
-      Object.fromEntries(
-        Object.entries(cls.arguments || {}).map(([argId, arg]) => {
-          const argCodexId = CodexId(argId);
-
-          const localizedArgName = fcLocalize(
-            library.localizations,
-            arg["@name"],
+  const returnValues: Record<CodexId, LocalizedCommandClassReturnValue> =
+    Object.fromEntries(
+      selectWithIds(
+        library.commandClassReturnValues,
+        (ret) => ret.parentId === classId,
+      ).map((ret) => [
+        ret.codexId,
+        {
+          id: localOrImportedId(resolved, ret.id, ret.codexId),
+          codexId: ret.codexId,
+          name: localize(library.localizations, ret.localized.name, locale),
+          descripton: optionalLocalize(
+            resolved,
+            ret.localized.description,
             locale,
-          );
-          const localizedArgDesc = arg["@description"]
-            ? fcLocalize(library.localizations, arg["@description"], locale)
-            : undefined;
-
-          const localizedArgChoices = fcLocalizeEnumChoices(
-            arg.choices || [],
-            library.localizations,
+          ),
+          dataType: ret.dataType as DataType,
+          unit: ret.unit as Unit,
+          required: ret.required,
+          choices: localizeClassEnumChoices(
+            resolved,
+            "cmdClassRet",
+            ret.id,
             locale,
-          );
+          ),
+        },
+      ]),
+    );
 
-          return [
-            argCodexId,
-            {
-              codexId: argCodexId,
-              name: localizedArgName,
-              descripton: localizedArgDesc,
-              dataType: arg.dataType,
-              unit: arg.unit,
-              required: arg.required,
-              choices: localizedArgChoices,
-            },
-          ];
-        }),
-      );
-
-    const returnValues: Record<CodexId, LocalizedCommandClassReturnValue> =
-      Object.fromEntries(
-        Object.entries(cls.returns || {}).map(([returnId, returnVal]) => {
-          const returnCodexId = CodexId(returnId);
-
-          const localizedReturnName = fcLocalize(
-            library.localizations,
-            returnVal["@name"],
-            locale,
-          );
-          const localizedReturnDesc = returnVal["@description"]
-            ? fcLocalize(
-                library.localizations,
-                returnVal["@description"],
-                locale,
-              )
-            : undefined;
-
-          const localizedReturnChoices = fcLocalizeEnumChoices(
-            returnVal.choices || [],
-            library.localizations,
-            locale,
-          );
-
-          return [
-            returnCodexId,
-            {
-              codexId: returnCodexId,
-              name: localizedReturnName,
-              descripton: localizedReturnDesc,
-              dataType: returnVal.dataType,
-              unit: returnVal.unit,
-              required: returnVal.required,
-              choices: localizedReturnChoices,
-            },
-          ];
-        }),
-      );
-
-    return {
-      codexId: classId,
-      libraryId,
-      libraryVersion,
-      name: localizedName,
-      description: localizedDesc,
-      arguments: cmdArguments,
-      returnValues,
-    };
-  } else {
-    return undefined;
-  }
+  return {
+    codexId: cls.codexId,
+    name: localize(library.localizations, cls.localized.name, locale),
+    description: optionalLocalize(resolved, cls.localized.description, locale),
+    arguments: cmdArguments,
+    returnValues,
+  };
 }
 
-export function lookupDeviceCommandClass(
-  commandClasses: Record<EntityId, CommandClass>,
-  commandClassArguments: Record<EntityId, CommandArgument>,
-  commandClassReturnValues: Record<EntityId, CommandReturnValue>,
-  enumChoices: Record<EntityId, EnumChoice>,
-  localizations: Record<LocalizationKey, Localization>,
-  classId: EntityId,
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+// The id persistent state uses to reference a member of this class.
+function localOrImportedId(
+  resolved: ResolvedClassRef,
+  entityId: EntityId,
+  codexId: CodexId,
+): LocalOrImportedId {
+  return resolved.index ? codexId : entityId;
+}
+
+function optionalLocalize(
+  resolved: ResolvedClassRef,
+  key: LocalizationKey | undefined,
   locale: string,
-): ResolvedCommandClass | undefined {
-  const cls = commandClasses[classId];
-  if (cls) {
-    const name = localize(localizations, cls.localized.name, locale);
-
-    const description = cls.localized.description
-      ? localize(localizations, cls.localized.description, locale)
-      : undefined;
-
-    const cmdArguments: Record<string, LocalizedCommandClassArgument> =
-      Object.fromEntries(
-        selectWithIds(
-          commandClassArguments,
-          (arg) => arg.parentId === classId,
-        ).map((arg) => {
-          const localizedArgName = localize(
-            localizations,
-            arg.localized.name,
-            locale,
-          );
-
-          const localizedArgDesc = arg.localized.description
-            ? localize(localizations, arg.localized.description, locale)
-            : undefined;
-
-          const localizedArgChoices = localizeEnumChoices(
-            selectWithIds(
-              enumChoices,
-              (choice) =>
-                choice.parent.type === "cmdClassArg" &&
-                choice.parent.id === arg.id,
-            ),
-            localizations,
-            locale,
-          );
-
-          return [
-            arg.codexId,
-            {
-              id: arg.id,
-              codexId: arg.codexId,
-              name: localizedArgName,
-              descripton: localizedArgDesc,
-              dataType: arg.dataType as DataType,
-              unit: arg.unit as Unit,
-              required: arg.required,
-              choices: localizedArgChoices,
-            },
-          ];
-        }),
-      );
-
-    const cmdReturnValues: Record<string, LocalizedCommandClassReturnValue> =
-      Object.fromEntries(
-        selectWithIds(
-          commandClassReturnValues,
-          (returnVal) => returnVal.parentId === classId,
-        ).map((returnVal) => {
-          const localizedArgName = localize(
-            localizations,
-            returnVal.localized.name,
-            locale,
-          );
-
-          const localizedArgDesc = returnVal.localized.description
-            ? localize(localizations, returnVal.localized.description, locale)
-            : undefined;
-
-          const localizedArgChoices = localizeEnumChoices(
-            selectWithIds(
-              enumChoices,
-              (choice) =>
-                choice.parent.type === "cmdClassRet" &&
-                choice.parent.id === returnVal.id,
-            ),
-            localizations,
-            locale,
-          );
-
-          return [
-            returnVal.codexId,
-            {
-              id: returnVal.id,
-              codexId: returnVal.codexId,
-              name: localizedArgName,
-              descripton: localizedArgDesc,
-              dataType: returnVal.dataType as DataType,
-              unit: returnVal.unit as Unit,
-              required: returnVal.required,
-              choices: localizedArgChoices,
-            },
-          ];
-        }),
-      );
-
-    return {
-      codexId: cls.codexId,
-      name,
-      description,
-      arguments: cmdArguments,
-      returnValues: cmdReturnValues,
-    };
-  } else {
-    return undefined;
-  }
+): LocalizedString | undefined {
+  return key
+    ? localize(resolved.library.localizations, key, locale)
+    : undefined;
 }
 
-function localizeEnumChoices(
-  choices: (EnumChoice & { id: EntityId })[],
-  localizations: Record<LocalizationKey, Localization>,
+function localizeClassEnumChoices(
+  resolved: ResolvedClassRef,
+  parentType: "paramClass" | "cmdClassArg" | "cmdClassRet",
+  parentId: EntityId,
   locale: string,
 ): LocalizedClassEnumChoice[] {
-  return choices.map((e) => {
-    const name = localize(localizations, e.localized.name, locale);
-    const description = e.localized.description
-      ? localize(localizations, e.localized.description, locale)
-      : undefined;
-    return {
-      id: e.id,
-      codexId: e.codexId,
-      name,
-      description,
-    };
-  });
-}
+  const choices = selectWithIds(
+    resolved.library.enumChoices,
+    (choice) =>
+      choice.parent.type === parentType && choice.parent.id === parentId,
+  );
+  choices.sort((e1, e2) => e1.index - e2.index);
 
-function fcLocalizeEnumChoices(
-  choices: FCEnumChoice[],
-  localizations: Record<string, DefinitionLocalization> | undefined,
-  locale: string,
-): LocalizedClassEnumChoice[] {
-  // TODO description
-  return choices.map((choice) => {
-    const localizedName = fcLocalize(localizations, choice["@name"], locale);
-
-    return {
-      name: localizedName,
-      codexId: CodexId(choice.id),
-    };
-  });
+  return choices.map((choice) => ({
+    id: localOrImportedId(resolved, choice.id, choice.codexId),
+    codexId: choice.codexId,
+    name: localize(
+      resolved.library.localizations,
+      choice.localized.name,
+      locale,
+    ),
+    description: optionalLocalize(
+      resolved,
+      choice.localized.description,
+      locale,
+    ),
+  }));
 }

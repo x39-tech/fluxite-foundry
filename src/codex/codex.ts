@@ -1,7 +1,7 @@
 import { useAppRuntimeStore } from "app/store";
 import dayjs from "dayjs";
 import { DeviceClass } from "@cpwg-community/delver";
-import { getNewestVersionOfEachLibrary } from "./codexDatabase";
+import { getNewestVersionOfEachLibrary } from "./libraryStore";
 
 const DEFAULT_AUTHOR = "Firstname Lastname";
 const DEFAULT_COMPANY = "ACME Inc.";
@@ -10,7 +10,7 @@ export function getDefaultDeviceClass(deviceClassId: string): DeviceClass {
   const modelName = toTitleCase(deviceClassId.replaceAll("-", " "));
 
   const libraries = getNewestVersionOfEachLibrary(
-    useAppRuntimeStore.getState().codexDatabase,
+    useAppRuntimeStore.getState().libraries,
   ).reduce<Record<string, string>>((acc, lib) => {
     acc[lib.id] = lib.version;
     return acc;

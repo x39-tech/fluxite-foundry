@@ -5,7 +5,7 @@ import {
   getDefaultState,
   LocalizationKey,
 } from "app/persistentState";
-import { loadDefaultLibraries } from "codex/codexDatabase";
+import { loadDefaultLibraries } from "codex/libraryStore";
 
 /**
  * Resets the entire persistent store to its default state.
@@ -25,7 +25,7 @@ export function resetAppRuntimeStore() {
       dmxController: {
         state: "not-created",
       },
-      codexDatabase: loadDefaultLibraries(),
+      libraries: loadDefaultLibraries(),
       systemDarkModePreference: false,
     },
     true,

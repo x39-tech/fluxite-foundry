@@ -15,20 +15,21 @@ import {
 import {
   updateCurrentEditor,
   useCurrentEditorPart,
-  useCurrentEditorPartShallow,
+  useDeviceLibrary,
+  useLibraries,
 } from "../state";
 import { newEntityId, selectWithIds } from "app/stateUtils";
 import {
   useAppRuntimeStore,
-  useCodexDatabase,
+  useLibraryStore,
   useCurrentLocale,
 } from "app/store";
 import {
-  lookupDeviceParameterClass,
   lookupParameterClass,
   ResolvedParameterClass,
   LocalizedInstanceEnumChoice,
 } from "../stateTransformations";
+import { resolveClassRef } from "../classResolution";
 import { EffectiveEnumChoice, getEffectiveEnumChoices } from "./mappingUtils";
 import { localize } from "utils/localizationUtils";
 import { ItemEditor } from "utils/utils";
@@ -90,54 +91,27 @@ export function useDmxController(): DmxController {
  */
 export function useMappableParameters(): Record<EntityId, MappableParameter> {
   const locale = useCurrentLocale();
-  const database = useCodexDatabase();
+  const libraryStore = useLibraryStore();
+  const importedLibs = useLibraries();
+  const deviceLibrary = useDeviceLibrary();
+  const parameters = useCurrentEditorPart((editor) => editor.parameters);
 
-  const editorPart = useCurrentEditorPartShallow((editor) => {
-    return [
-      editor.parameters,
-      editor.libraries,
-      editor.parameterClasses,
-      editor.enumChoices,
-      editor.localizations,
-    ] as const;
-  });
+  if (!deviceLibrary || !importedLibs || !parameters) return {};
 
-  if (!editorPart) return {};
-
-  const [
-    parameters,
-    libraries,
-    deviceParamClasses,
-    enumChoices,
-    localizations,
-  ] = editorPart;
+  const { enumChoices, localizations } = deviceLibrary;
 
   return Object.entries(parameters).reduce(
     (acc, [entityId, param]) => {
-      let paramClass: ResolvedParameterClass | undefined = undefined;
-
-      if (param.class.type === "imported") {
-        const libraryVersion = libraries[param.class.library];
-        if (!libraryVersion) {
-          return acc;
-        }
-
-        paramClass = lookupParameterClass(
-          database,
-          param.class.codexId,
-          param.class.library,
-          libraryVersion,
-          locale,
-        );
-      } else {
-        paramClass = lookupDeviceParameterClass(
-          deviceParamClasses,
-          localizations,
-          enumChoices,
-          param.class.id,
-          locale,
-        );
-      }
+      const resolved = resolveClassRef(
+        param.class,
+        importedLibs,
+        deviceLibrary,
+        libraryStore,
+        "parameterClasses",
+      );
+      const paramClass: ResolvedParameterClass | undefined = resolved
+        ? lookupParameterClass(resolved, locale)
+        : undefined;
 
       if (!paramClass || !isMappableParamClass(paramClass)) {
         return acc;

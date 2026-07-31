@@ -44,7 +44,7 @@ export const AboutDialog = ({ isOpen, onClose }: Props) => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              GitLab repository
+              GitHub repository
             </a>
             . Please consider{" "}
             <a

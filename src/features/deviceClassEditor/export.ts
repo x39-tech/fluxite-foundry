@@ -22,7 +22,7 @@ import {
   UnitName,
 } from "@cpwg-community/delver";
 import {
-  ClassMemberId,
+  LocalOrImportedId,
   DeviceClassEditorState,
   DmxChunkRefCondition,
   DmxConditionGroup,
@@ -37,6 +37,7 @@ import { select, selectWithIds } from "app/stateUtils";
 import {
   classReferenceCodexId,
   commandArgKeyToCodex,
+  entityIdAsCodexId,
   commandExclusionsToCodex,
   commandCurrentCodexId,
   paramExclusionsToCodex,
@@ -71,7 +72,11 @@ function convertTrigger(
           // Condition keys are argument member ids in the command's class ID
           // space. Resolve back to the Codex codexId when the class is local.
           command
-            ? commandArgKeyToCodex(editor, command.class, key as ClassMemberId)
+            ? commandArgKeyToCodex(
+                editor,
+                command.class,
+                key as LocalOrImportedId,
+              )
             : key,
           {
             argumentMin: cond.argumentMin,
@@ -614,13 +619,9 @@ function exportCommands(
         let argCodexId: string;
         if (choice.parent.type === "cmdArg" && "idType" in choice.parent) {
           if (choice.parent.idType === "local") {
-            // Need to find the codexId for this argument
-            const arg = editor.commandClassArguments[choice.parent.id];
-            if (arg) {
-              argCodexId = arg.codexId;
-            } else {
-              continue;
-            }
+            argCodexId =
+              editor.commandClassArguments[choice.parent.id]?.codexId ??
+              entityIdAsCodexId(choice.parent.id);
           } else {
             argCodexId = choice.parent.id;
           }
@@ -680,13 +681,9 @@ function exportCommands(
         let retCodexId: string;
         if (choice.parent.type === "cmdRet" && "idType" in choice.parent) {
           if (choice.parent.idType === "local") {
-            // Need to find the codexId for this return value
-            const ret = editor.commandClassReturnValues[choice.parent.id];
-            if (ret) {
-              retCodexId = ret.codexId;
-            } else {
-              continue;
-            }
+            retCodexId =
+              editor.commandClassReturnValues[choice.parent.id]?.codexId ??
+              entityIdAsCodexId(choice.parent.id);
           } else {
             retCodexId = choice.parent.id;
           }

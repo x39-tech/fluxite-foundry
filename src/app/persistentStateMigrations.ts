@@ -34,7 +34,7 @@ export const MIGRATIONS: Migration[] = [
     description: `
 - ParameterReference references parameters by EntityId instead of by CodexId.
 - DmxTrigger.command is an EntityId instead of a CodexId.
-- enumExclusions, argEnumExclusions, returnEnumExclusions and trigger condition keys use ClassMemberId (EntityId for local classes, CodexId for imported).
+- enumExclusions, argEnumExclusions, returnEnumExclusions and trigger condition keys use LocalOrImportedIds (EntityId for local classes, CodexId for imported).
 `,
   },
 ];

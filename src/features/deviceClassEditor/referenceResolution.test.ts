@@ -11,7 +11,7 @@ import {
   Parameter,
 } from "app/persistentState";
 import {
-  classMemberId,
+  localOrImportedId,
   classReferenceCodexId,
   commandArgKeyToCodex,
   commandArgKeyToEditor,
@@ -135,10 +135,10 @@ describe("parameter references", () => {
     );
   });
 
-  test("unresolvable codexId becomes a synthetic missing id", () => {
-    expect(toEditorParameterReference(editor, CodexId("nope")).id).toMatch(
-      /^missing-nope-/,
-    );
+  test("unresolvable codexId is kept verbatim and reverses to itself", () => {
+    const ref = toEditorParameterReference(editor, CodexId("nope"));
+    expect(ref.id).toBe("nope");
+    expect(parameterCurrentCodexId(editor, ref)).toBe("nope");
   });
 
   test("first writer wins for duplicate codexIds", () => {
@@ -153,9 +153,9 @@ describe("parameter references", () => {
   });
 
   test("currentCodexId surfaces the raw id when unresolvable", () => {
-    expect(
-      parameterCurrentCodexId(editor, { id: EntityId("missing-gain-xyz") }),
-    ).toBe("missing-gain-xyz");
+    expect(parameterCurrentCodexId(editor, { id: EntityId("gone") })).toBe(
+      "gone",
+    );
   });
 });
 
@@ -166,8 +166,10 @@ describe("command references", () => {
     expect(commandCurrentCodexId(editor, id)).toBe("reset");
   });
 
-  test("unresolvable command becomes a synthetic missing id", () => {
-    expect(resolveCommandId(editor, CodexId("nope"))).toMatch(/^missing-nope-/);
+  test("unresolvable command is kept verbatim and reverses to itself", () => {
+    const id = resolveCommandId(editor, CodexId("nope"));
+    expect(id).toBe("nope");
+    expect(commandCurrentCodexId(editor, id)).toBe("nope");
   });
 });
 
@@ -194,11 +196,14 @@ describe("parameter enum exclusions", () => {
     ]);
   });
 
-  test("unresolvable local exclusion becomes a synthetic missing id", () => {
-    const [stored] = paramExclusionsToEditor(editor, localParamClass, [
+  test("unresolvable local exclusion is kept verbatim", () => {
+    const stored = paramExclusionsToEditor(editor, localParamClass, [
       CodexId("blue"),
     ]);
-    expect(stored).toMatch(/^missing-blue-/);
+    expect(stored).toEqual(["blue"]);
+    expect(paramExclusionsToCodex(editor, localParamClass, stored)).toEqual([
+      "blue",
+    ]);
   });
 });
 
@@ -256,13 +261,15 @@ describe("command argument condition keys", () => {
   });
 });
 
-describe("classMemberId", () => {
+describe("localOrImportedId", () => {
   test("prefers the local entity id when present", () => {
-    expect(classMemberId(EntityId("ec_red"), CodexId("red"))).toBe("ec_red");
+    expect(localOrImportedId(EntityId("ec_red"), CodexId("red"))).toBe(
+      "ec_red",
+    );
   });
 
   test("falls back to the codexId for imported members", () => {
-    expect(classMemberId(undefined, CodexId("red"))).toBe("red");
+    expect(localOrImportedId(undefined, CodexId("red"))).toBe("red");
   });
 });
 

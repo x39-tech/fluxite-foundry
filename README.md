@@ -4,7 +4,7 @@ Fluxite Foundry is a proof-of-concept web application which implements the upcom
 
 To access documentation and/or participate in development for the standard format itself, please consider [joining the Control Protocols Working Group](https://tsp.esta.org/tsp/working_groups/index.html).
 
-The application is published to GitLab Pages, available [here](https://foundry.fluxite.dev). Please feel free to test it out.
+The application is published to GitHub Pages, available [here](https://foundry.fluxite.dev). Please feel free to test it out.
 
 The application is currently in an **extremely preliminary state**, even more so than the Fluxite Codex standard itself. It essentially amounts to a proof-of-concept. There is a long TODO list which will be addressed going forward, and progress will be reported at each quarterly ESTA technical standards program meeting.
 

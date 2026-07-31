@@ -296,12 +296,12 @@ export const ClassReferenceSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-// Identifies a member of a class (an enum choice, a command argument) in
-// whichever ID space that class uses. When the owning ClassReference is
-// "local", the member is an entity in this editor and this is an EntityId.
-// When it is "imported", the member only exists in the library and this is a
+// Identifies a sub-item (an enum choice, a command argument) in whichever ID
+// space that its parent's class uses. When the owning ClassReference is
+// "local", the member is an entity in this editor and this is an EntityId. When
+// it is "imported", the member only exists in the library and this is a
 // CodexId.
-export const ClassMemberIdSchema = z.union([EntityIdSchema, CodexIdSchema]);
+export const LocalOrImportedIdSchema = z.union([EntityIdSchema, CodexIdSchema]);
 
 // Reference to a Parameter instance.
 //
@@ -424,7 +424,7 @@ export const ParameterSchema = z.object({
   access: z.array(ParameterAccessSchema),
   lifetime: LifetimeSchema,
   // IDs are in the ID space of `class` above.
-  enumExclusions: z.array(ClassMemberIdSchema).optional(),
+  enumExclusions: z.array(LocalOrImportedIdSchema).optional(),
   // Additional choices are in a separate table
   atomicIdentifier: z.string().optional(),
   minimum: ParameterValueSchema.optional(),
@@ -455,10 +455,10 @@ export const CommandSchema = z.object({
   class: ClassReferenceSchema,
   // [argId] -> excludedId[]. Both sides are in the ID space of `class` above.
   argEnumExclusions: z
-    .record(ClassMemberIdSchema, z.array(ClassMemberIdSchema))
+    .record(LocalOrImportedIdSchema, z.array(LocalOrImportedIdSchema))
     .optional(),
   returnEnumExclusions: z
-    .record(ClassMemberIdSchema, z.array(ClassMemberIdSchema))
+    .record(LocalOrImportedIdSchema, z.array(LocalOrImportedIdSchema))
     .optional(),
   completionNotification: z.boolean(),
   localized: z.object({
@@ -583,7 +583,7 @@ export const DmxArgumentConditionSchema = z.object({
 export const DmxTriggerMappingSchema = z.object({
   // Keyed by command argument ID, in the ID space of the class of the command
   // referenced by the enclosing DmxTrigger.
-  conditions: z.record(ClassMemberIdSchema, DmxArgumentConditionSchema),
+  conditions: z.record(LocalOrImportedIdSchema, DmxArgumentConditionSchema),
   sequence: z.array(DmxSequenceStepSchema),
 });
 
@@ -723,7 +723,7 @@ export type LocalizationReferencedItem = z.infer<
 >;
 export type LocalizationDb = z.infer<typeof LocalizationDbSchema>;
 export type ClassReference = z.infer<typeof ClassReferenceSchema>;
-export type ClassMemberId = z.infer<typeof ClassMemberIdSchema>;
+export type LocalOrImportedId = z.infer<typeof LocalOrImportedIdSchema>;
 export type EntityId = z.infer<typeof EntityIdSchema>;
 export type CodexId = z.infer<typeof CodexIdSchema>;
 export type FCUnit = z.infer<typeof FCUnitSchema>;

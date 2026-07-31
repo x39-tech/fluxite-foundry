@@ -17,8 +17,10 @@ import {
   getUniqueItemId,
   OrgId,
 } from "utils/utils";
+import { importLocalizations } from "utils/localizationUtils";
 import { updateDmxController } from "./state";
 import {
+  codexIdAsEntityId,
   commandArgKeyToEditor,
   commandExclusionsToEditor,
   paramExclusionsToEditor,
@@ -26,7 +28,7 @@ import {
   toEditorParameterReference,
 } from "./referenceResolution";
 import {
-  ClassMemberId,
+  LocalOrImportedId,
   ClassReference,
   CodexId,
   DeviceClassEditorState,
@@ -47,6 +49,7 @@ import {
   ParameterCount,
 } from "app/persistentState";
 import { getDefaultDeviceClass } from "codex/codex";
+import { emptyLibraryIndex, importClasses, LibraryIndex } from "codex/library";
 import { assetStorage } from "app/assetStorage";
 
 export interface ArchiveToImport {
@@ -98,15 +101,6 @@ export function getNewDeviceClassEditor(
     getDefaultDeviceClass(deviceClassId),
   );
 }
-
-type LocalCommandClasses = Record<
-  CodexId,
-  {
-    id: EntityId;
-    args: Record<CodexId, EntityId>;
-    returns: Record<CodexId, EntityId>;
-  }
->;
 
 export function getImportedDeviceClassEditor(
   orgId: OrgId,
@@ -164,19 +158,25 @@ export function getImportedDeviceClassEditor(
     windowLayout: JSON.stringify(getDefaultWindowLayout()),
   };
 
-  const localParamClasses = {};
-  const localResourceClasses = {};
-  const localCommandClasses = {};
+  // This is used only temporarily for the purpose of importing items that
+  // reference device library classes, as opposed to the permanent indexes
+  // present in ImportedLibrary.
+  const deviceLibraryIndex = emptyLibraryIndex();
 
-  importLocalizations(codexClass, editor);
-  importParameterClasses(codexClass, editor, localParamClasses);
-  importStructureClasses(codexClass, editor);
-  importSerializerClasses(codexClass, editor);
-  importResourceClasses(codexClass, editor, localResourceClasses);
-  importCommandClasses(codexClass, editor, localCommandClasses);
-  importParameters(codexClass, editor, localParamClasses);
-  importResources(codexClass, editor, localResourceClasses);
-  importCommands(codexClass, editor, localCommandClasses);
+  importLocalizations(codexClass.localizations, editor.localizations, () => ({
+    strings: LocalizationDbSchema.parse({}),
+    items: [],
+  }));
+  importClasses(
+    codexClass.deviceLibrary ?? {},
+    editor,
+    deviceLibraryIndex,
+    (itemId, itemType, locKey) =>
+      addLocalizationReference(itemId, itemType, locKey, editor),
+  );
+  importParameters(codexClass, editor, deviceLibraryIndex);
+  importResources(codexClass, editor, deviceLibraryIndex);
+  importCommands(codexClass, editor, deviceLibraryIndex);
 
   if (dmx) {
     editor.dmxSerializer = convertEstaDmxToEditorState(editor, dmx);
@@ -185,291 +185,10 @@ export function getImportedDeviceClassEditor(
   return editor;
 }
 
-function importLocalizations(
-  imported: DeviceClass,
-  editor: DeviceClassEditorState,
-) {
-  for (const [langId, localization] of Object.entries(
-    imported.localizations || {},
-  )) {
-    for (const [keyStr, str] of Object.entries(localization.strings || {})) {
-      const key = LocalizationKey(keyStr);
-      editor.localizations[key] ||= {
-        strings: LocalizationDbSchema.parse({}),
-        items: [],
-      };
-      editor.localizations[key].strings[langId] = str;
-    }
-  }
-}
-
-function importParameterClasses(
-  imported: DeviceClass,
-  editor: DeviceClassEditorState,
-  localParamClasses: Record<CodexId, EntityId>,
-) {
-  for (const [id, cls] of Object.entries(
-    imported.deviceLibrary?.parameterClasses || {},
-  )) {
-    const codexId = CodexId(id);
-    const classId = newEntityId();
-    editor.parameterClasses[classId] = {
-      codexId,
-      dataType: cls.dataType,
-      unit: cls.unit,
-      localized: {
-        name: LocalizationKey(cls["@name"]),
-        description: optionalLocalizationKey(cls["@description"]),
-      },
-    };
-    localParamClasses[codexId] = classId;
-
-    addLocalizationReference(classId, "paramClassName", cls["@name"], editor);
-    addLocalizationReference(
-      classId,
-      "paramClassDesc",
-      cls["@description"],
-      editor,
-    );
-
-    for (const [index, choice] of (cls.choices || []).entries()) {
-      const choiceId = newEntityId();
-      editor.enumChoices[choiceId] = {
-        parent: {
-          type: "paramClass",
-          id: classId,
-        },
-        codexId: CodexId(choice.id),
-        index,
-        localized: {
-          name: LocalizationKey(choice["@name"]),
-          // TODO: description
-        },
-      };
-      addLocalizationReference(choiceId, "enumName", choice["@name"], editor);
-      // TODO: description
-    }
-  }
-}
-
-function importStructureClasses(
-  imported: DeviceClass,
-  editor: DeviceClassEditorState,
-) {
-  for (const [id, cls] of Object.entries(
-    imported.deviceLibrary?.structureClasses || {},
-  )) {
-    const codexId = CodexId(id);
-    const classId = newEntityId();
-    editor.structureClasses[classId] = {
-      codexId,
-      multipleAllowed: cls.multipleAllowed,
-      localized: {
-        name: LocalizationKey(cls["@name"]),
-        description: optionalLocalizationKey(cls["@description"]),
-      },
-    };
-
-    addLocalizationReference(classId, "structClassName", cls["@name"], editor);
-    addLocalizationReference(
-      classId,
-      "structClassDesc",
-      cls["@description"],
-      editor,
-    );
-  }
-}
-
-function importSerializerClasses(
-  imported: DeviceClass,
-  editor: DeviceClassEditorState,
-) {
-  for (const [id, cls] of Object.entries(
-    imported.deviceLibrary?.serializerClasses || {},
-  )) {
-    const codexId = CodexId(id);
-    const classId = newEntityId();
-    editor.serializerClasses[classId] = {
-      codexId,
-      localized: {
-        name: LocalizationKey(cls["@name"]),
-        description: optionalLocalizationKey(cls["@description"]),
-      },
-    };
-
-    addLocalizationReference(classId, "serClassName", cls["@name"], editor);
-    addLocalizationReference(
-      classId,
-      "serClassDesc",
-      cls["@description"],
-      editor,
-    );
-  }
-}
-
-function importResourceClasses(
-  imported: DeviceClass,
-  editor: DeviceClassEditorState,
-  localResourceClasses: Record<string, string>,
-) {
-  for (const [id, cls] of Object.entries(
-    imported.deviceLibrary?.resourceClasses || {},
-  )) {
-    const codexId = CodexId(id);
-    const classId = newEntityId();
-    editor.resourceClasses[classId] = {
-      codexId,
-      mediaType: cls.mediaType,
-      localized: {
-        name: LocalizationKey(cls["@name"]),
-        description: optionalLocalizationKey(cls["@description"]),
-      },
-    };
-    localResourceClasses[id] = classId;
-
-    addLocalizationReference(classId, "resClassName", cls["@name"], editor);
-    addLocalizationReference(
-      classId,
-      "resClassDesc",
-      cls["@description"],
-      editor,
-    );
-  }
-}
-
-function importCommandClasses(
-  imported: DeviceClass,
-  editor: DeviceClassEditorState,
-  localCommandClasses: LocalCommandClasses,
-) {
-  for (const [id, cls] of Object.entries(
-    imported.deviceLibrary?.commandClasses || {},
-  )) {
-    const classId = newEntityId();
-    const codexId = CodexId(id);
-    editor.commandClasses[classId] = {
-      codexId,
-      localized: {
-        name: LocalizationKey(cls["@name"]),
-        description: optionalLocalizationKey(cls["@description"]),
-      },
-    };
-    localCommandClasses[codexId] = {
-      id: classId,
-      args: {},
-      returns: {},
-    };
-
-    addLocalizationReference(classId, "cmdClassName", cls["@name"], editor);
-    addLocalizationReference(
-      classId,
-      "cmdClassDesc",
-      cls["@description"],
-      editor,
-    );
-
-    for (const [argCodexIdStr, arg] of Object.entries(cls.arguments || {})) {
-      const argCodexId = CodexId(argCodexIdStr);
-      const argId = newEntityId();
-      editor.commandClassArguments[argId] = {
-        parentId: classId,
-        codexId: argCodexId,
-        dataType: arg.dataType,
-        unit: arg.unit,
-        required: arg.required,
-        localized: {
-          name: LocalizationKey(arg["@name"]),
-          description: optionalLocalizationKey(arg["@description"]),
-        },
-      };
-      localCommandClasses[codexId].args[argCodexId] = argId;
-
-      addLocalizationReference(argId, "cmdArgName", cls["@name"], editor);
-      addLocalizationReference(
-        argId,
-        "cmdArgDesc",
-        cls["@description"],
-        editor,
-      );
-
-      for (const [index, choice] of (arg.choices || []).entries()) {
-        const choiceId = newEntityId();
-        editor.enumChoices[choiceId] = {
-          parent: {
-            type: "cmdClassArg",
-            id: argId,
-          },
-          codexId: CodexId(choice.id),
-          index,
-          localized: {
-            name: LocalizationKey(choice["@name"]),
-            // TODO description
-          },
-        };
-        addLocalizationReference(
-          choiceId,
-          "cmdEnumName",
-          choice["@name"],
-          editor,
-        );
-        // TODO description
-      }
-    }
-
-    for (const [retCodexIdStr, ret] of Object.entries(cls.returns || {})) {
-      const retCodexId = CodexId(retCodexIdStr);
-      const retId = newEntityId();
-      editor.commandClassReturnValues[retId] = {
-        parentId: classId,
-        codexId: retCodexId,
-        dataType: ret.dataType,
-        unit: ret.unit,
-        required: ret.required,
-        localized: {
-          name: LocalizationKey(ret["@name"]),
-          description: optionalLocalizationKey(ret["@description"]),
-        },
-      };
-      localCommandClasses[codexId].returns[retCodexId] = retId;
-
-      addLocalizationReference(retId, "cmdRetName", cls["@name"], editor);
-      addLocalizationReference(
-        retId,
-        "cmdRetDesc",
-        cls["@description"],
-        editor,
-      );
-
-      for (const [index, choice] of (ret.choices || []).entries()) {
-        const choiceId = newEntityId();
-        editor.enumChoices[choiceId] = {
-          parent: {
-            type: "cmdClassRet",
-            id: retId,
-          },
-          codexId: CodexId(choice.id),
-          index,
-          localized: {
-            name: LocalizationKey(choice["@name"]),
-            // TODO description
-          },
-        };
-        addLocalizationReference(
-          choiceId,
-          "cmdEnumName",
-          choice["@name"],
-          editor,
-        );
-        // TODO description
-      }
-    }
-  }
-}
-
 function importParameters(
   imported: DeviceClass,
   editor: DeviceClassEditorState,
-  localParamClasses: Record<string, string>,
+  classIndex: LibraryIndex,
 ) {
   for (const [id, param] of Object.entries(imported.parameters || {})) {
     const classRef: ClassReference = param.library
@@ -480,7 +199,7 @@ function importParameters(
         }
       : {
           type: "local",
-          id: EntityId(localParamClasses[param.class]),
+          id: localClassId(classIndex.parameterClasses, param.class),
         };
 
     let count: ParameterCount | undefined = undefined;
@@ -551,7 +270,7 @@ function importParameters(
 function importResources(
   imported: DeviceClass,
   editor: DeviceClassEditorState,
-  localResourceClasses: Record<CodexId, EntityId>,
+  classIndex: LibraryIndex,
 ) {
   for (const [id, resource] of Object.entries(imported.resources || {})) {
     const classRef: ClassReference = resource.library
@@ -562,7 +281,7 @@ function importResources(
         }
       : {
           type: "local",
-          id: localResourceClasses[CodexId(resource.class)],
+          id: localClassId(classIndex.resourceClasses, resource.class),
         };
 
     const resId = newEntityId();
@@ -584,10 +303,11 @@ function importResources(
 function importCommands(
   imported: DeviceClass,
   editor: DeviceClassEditorState,
-  localCommandClasses: LocalCommandClasses,
+  classIndex: LibraryIndex,
 ) {
   for (const [id, cmd] of Object.entries(imported.commands || {})) {
     const classCodexId = CodexId(cmd.class);
+    const localClass = classIndex.commandClasses.get(classCodexId);
     const classRef: ClassReference = cmd.library
       ? {
           type: "imported",
@@ -596,7 +316,7 @@ function importCommands(
         }
       : {
           type: "local",
-          id: localCommandClasses[classCodexId].id,
+          id: localClassId(classIndex.commandClasses, cmd.class),
         };
 
     const cmdId = newEntityId();
@@ -624,7 +344,11 @@ function importCommands(
               ? {
                   type: "cmdArg",
                   idType: "local",
-                  id: localCommandClasses[classCodexId].args[argCodexId],
+                  id: localMemberId(
+                    classIndex.commandArguments,
+                    localClass,
+                    argCodexId,
+                  ),
                   cmdId,
                 }
               : {
@@ -670,7 +394,11 @@ function importCommands(
               ? {
                   type: "cmdRet",
                   idType: "local",
-                  id: localCommandClasses[classCodexId].returns[retCodexId],
+                  id: localMemberId(
+                    classIndex.commandReturnValues,
+                    localClass,
+                    retCodexId,
+                  ),
                   cmdId,
                 }
               : {
@@ -703,6 +431,25 @@ function importCommands(
     editor.commandEditors.push(cmdId);
     addLocalizationReference(cmdId, "cmdName", cmd["@friendlyName"], editor);
   }
+}
+
+// Resolves a codexId the document uses to reference one of its own classes to
+// the EntityId the class was imported under. A broken reference just uses the
+// codexId as an EntityId, which is the app-wide pattern.
+function localClassId(
+  classIndex: Map<CodexId, EntityId>,
+  codexId: string,
+): EntityId {
+  return classIndex.get(CodexId(codexId)) ?? codexIdAsEntityId(codexId);
+}
+
+function localMemberId(
+  memberIndex: Map<EntityId, Map<CodexId, EntityId>>,
+  ownerId: EntityId | undefined,
+  codexId: CodexId,
+): EntityId {
+  const id = ownerId && memberIndex.get(ownerId)?.get(codexId);
+  return id ?? codexIdAsEntityId(codexId);
 }
 
 function addLocalizationReference(
@@ -974,7 +721,7 @@ function convertTrigger(
           // them as EntityIds when the command's class is local.
           command
             ? commandArgKeyToEditor(editor, command.class, CodexId(key))
-            : (CodexId(key) as ClassMemberId),
+            : (CodexId(key) as LocalOrImportedId),
           {
             argumentMin: cond.argumentMin,
             argumentMax: cond.argumentMax,
