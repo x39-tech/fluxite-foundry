@@ -3,6 +3,8 @@ import {
   CircleQuestionMarkIcon,
   DownloadIcon,
   FileTextIcon,
+  HardDriveDownloadIcon,
+  HardDriveUploadIcon,
   RefreshCwIcon,
   SettingsIcon,
   SlidersVerticalIcon,
@@ -19,6 +21,8 @@ import { AboutDialog } from "./AboutDialog";
 import { ImportFluxiteCodexDialog } from "./ImportFluxiteCodexDialog";
 import { ExportFluxiteCodexDialog } from "./ExportFluxiteCodexDialog";
 import { SettingsDialog } from "./SettingsDialog";
+import { ExportStateDialog } from "./ExportStateDialog";
+import { ImportStateDialog } from "./ImportStateDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,6 +40,8 @@ export const AppMainMenu = () => {
   const [exportDialogIsOpen, setExportDialogIsOpen] = useState(false);
   const [settingsDialogIsOpen, setSettingsDialogIsOpen] = useState(false);
   const [aboutDialogIsOpen, setAboutDialogIsOpen] = useState(false);
+  const [exportStateDialogIsOpen, setExportStateDialogIsOpen] = useState(false);
+  const [importStateDialogIsOpen, setImportStateDialogIsOpen] = useState(false);
 
   return (
     <>
@@ -95,6 +101,18 @@ export const AppMainMenu = () => {
                 <FileTextIcon className="size-5" />
                 View Migration Report
               </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setExportStateDialogIsOpen(true)}
+              >
+                <HardDriveUploadIcon className="size-5" />
+                Export State...
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setImportStateDialogIsOpen(true)}
+              >
+                <HardDriveDownloadIcon className="size-5" />
+                Import State...
+              </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
           {isTauri() && (
@@ -127,6 +145,18 @@ export const AppMainMenu = () => {
         <SettingsDialog
           isOpen={true}
           onClose={() => setSettingsDialogIsOpen(false)}
+        />
+      )}
+      {exportStateDialogIsOpen && (
+        <ExportStateDialog
+          isOpen={true}
+          onClose={() => setExportStateDialogIsOpen(false)}
+        />
+      )}
+      {importStateDialogIsOpen && (
+        <ImportStateDialog
+          isOpen={true}
+          onClose={() => setImportStateDialogIsOpen(false)}
         />
       )}
       {aboutDialogIsOpen && (

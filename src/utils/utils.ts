@@ -276,3 +276,8 @@ export function serializeParameterReference(ref: ParameterReference): string {
   }
   return ref.codexId;
 }
+
+/** Reload the app. */
+export function reloadApp(): void {
+  window.location.reload();
+}

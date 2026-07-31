@@ -23,11 +23,13 @@ export const useAppRuntimeStore = create<AppRuntimeState>()(
   devtools(() => getDefaultRuntimeState(), { name: "ff-runtime-state" }),
 );
 
+export const PERSISTENT_STATE_STORAGE_KEY = "ff-persistent-state-gen2";
+
 export const useAppPersistentStore = create<AppPersistentState>()(
   persist(
     devtools(() => getDefaultState(), { name: "ff-persistent-state" }),
     {
-      name: "ff-persistent-state-gen2",
+      name: PERSISTENT_STATE_STORAGE_KEY,
       version: STATE_VERSION,
       migrate: migrateState,
       onRehydrateStorage: () => {

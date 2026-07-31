@@ -10,19 +10,24 @@ export interface Asset {
   sha256: string;
 }
 
-interface AssetMeta {
+export interface AssetMeta {
   id: string;
   timestamp: number;
   originalFileName?: string;
   dataId: number;
 }
 
-interface AssetData {
+export interface AssetData {
   id: number;
   sha1: string;
   sha256: string;
   mediaType?: string;
   data: ArrayBuffer;
+}
+
+export interface AssetDump {
+  meta: AssetMeta[];
+  data: AssetData[];
 }
 
 class AssetDatabase extends Dexie {
@@ -131,6 +136,42 @@ class AssetStorageManager {
     if ((await this.db.assetMeta.where({ dataId: dataId }).count()) == 0) {
       await this.db.assetData.delete(dataId);
     }
+  }
+
+  /**
+   * Read every record in the database, including the asset bytes themselves.
+   *
+   * This loads the whole database into memory, so it is only suitable for
+   * moving the database somewhere else, like into a state snapshot file.
+   */
+  async dump(): Promise<AssetDump> {
+    const [meta, data] = await Promise.all([
+      this.db.assetMeta.toArray(),
+      this.db.assetData.toArray(),
+    ]);
+    return { meta, data };
+  }
+
+  /**
+   * Discard the current contents of the database and replace them with the
+   * records from a dump.
+   *
+   * The asset data records are inserted with the primary keys they already
+   * carry, rather than letting the table auto-increment fresh ones, because
+   * each metadata record refers to its data by that key.
+   */
+  async restore(dump: AssetDump): Promise<void> {
+    await this.db.transaction(
+      "rw",
+      this.db.assetMeta,
+      this.db.assetData,
+      async () => {
+        await this.db.assetMeta.clear();
+        await this.db.assetData.clear();
+        await this.db.assetData.bulkAdd(dump.data);
+        await this.db.assetMeta.bulkAdd(dump.meta);
+      },
+    );
   }
 
   async getStorageInfo(): Promise<{ count: number; totalSize: number }> {
