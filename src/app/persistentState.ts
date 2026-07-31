@@ -1,5 +1,9 @@
 import * as StateV4 from "./persistentState/v4/state";
-import { MIGRATIONS } from "./persistentStateMigrations";
+import {
+  CHAIN_END_VERSION,
+  getMigration,
+  Migration,
+} from "./persistentStateMigrations";
 import {
   MigrationReport,
   MigrationStep,
@@ -8,10 +12,13 @@ import {
 } from "./migrationReport";
 
 // When creating a new state version:
-// 1. Create a new vN/ directory with state.ts and migrate.ts
-// 2. Import the new state module and migration function in persistentStateMigrations.ts
-// 3. Add the new migration to the MIGRATIONS array in persistentStateMigrations.ts
-// 4. Update the re-export and VERSION below to point to the new version
+// 1. Export a snapshot of the outgoing version into persistentState/testdata/
+//    (see docs/state-management.md); it can only be produced while that version
+//    is still current.
+// 2. Create a new vN/ directory with state.ts and migrate.ts
+// 3. Import the new state module and migration function in persistentStateMigrations.ts
+// 4. Add the new migration to the MIGRATIONS array in persistentStateMigrations.ts
+// 5. Update the re-export and VERSION below to point to the new version
 
 // Re-exports from the current (most recent) state version.
 export * from "./persistentState/v4/state";
@@ -19,6 +26,13 @@ export const VERSION = StateV4.VERSION;
 
 export type AppPersistentState = StateV4.AppPersistentState;
 const AppStateSchema = StateV4.AppStateSchema;
+
+if (CHAIN_END_VERSION !== VERSION) {
+  throw new Error(
+    `The migration chain ends at v${CHAIN_END_VERSION} but the current state version is v${VERSION}. ` +
+      `Add the missing migration to persistentStateMigrations.ts.`,
+  );
+}
 
 // Migration infrastructure
 
@@ -35,6 +49,38 @@ export function getDefaultState(): AppPersistentState {
     },
     deviceClassEditors: {},
   };
+}
+
+/**
+ * Once a state parses at version N, migrations are typed functions and a
+ * structurally wrong result is hard to produce. What types cannot catch is Zod
+ * refinements (`z.int().nonnegative()` is just `number` to TypeScript), branded
+ * types, which are casts, and object spread, which is not excess-checked.
+ * Checking every intermediate result pins those to the step that produced them
+ * instead of surfacing them as one opaque failure at the end.
+ *
+ * Only used in development and in tests.
+ *
+ * @returns a message naming the step, or undefined if the step is fine or was
+ * not checked.
+ */
+function validateStepResult(
+  migration: Migration,
+  state: unknown,
+): string | undefined {
+  if (!import.meta.env.DEV) {
+    return undefined;
+  }
+
+  const result = migration.toSchema.safeParse(state);
+  if (result.success) {
+    return undefined;
+  }
+
+  return (
+    `Migration from v${migration.fromVersion} to v${migration.toVersion} produced state ` +
+    `that does not match the v${migration.toVersion} schema. Error: ${result.error.message}`
+  );
 }
 
 export function migrateState(
@@ -91,7 +137,7 @@ export function migrateState(
 
   // Run migrations sequentially: v → v+1 → v+2 → ... → VERSION
   for (let v = fromVersion; v < VERSION; v++) {
-    const migration = MIGRATIONS[v - 1]; // MIGRATIONS[0] = v1→v2, MIGRATIONS[1] = v2→v3, etc.
+    const migration = getMigration(v);
 
     if (!migration) {
       return failWithReport(
@@ -109,6 +155,8 @@ export function migrateState(
     // Run the migration
     state = migration.migrate(state);
 
+    const stepError = validateStepResult(migration, state);
+
     // Generate diff and record the step
     const diff = generateDiff(previousState, state);
     const stateAfter = structuredClone(state);
@@ -118,8 +166,13 @@ export function migrateState(
       description: migration.description,
       stateAfter,
       diff,
+      error: stepError,
     });
     previousState = stateAfter;
+
+    if (stepError) {
+      return failWithReport(stepError);
+    }
   }
 
   // Validate final result
