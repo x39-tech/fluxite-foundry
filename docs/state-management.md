@@ -173,6 +173,18 @@ When you need to change the persistent state schema:
 
 8. **Run tests** to verify everything works: `npm run test`
 
+### State Snapshots
+
+The **Debug** menu has **Export State...** and **Import State...**, which write and read a _state snapshot_: a JSON file containing the whole persistent state, the state version it was written at, and (optionally) the entire contents of the IndexedDB asset database with the asset bytes base64-encoded.
+
+This exists mainly to test migrations. Export a snapshot from a build, add a new state version, then import the snapshot and check the migration report.
+
+Import writes the snapshot's state to localStorage in the shape the Zustand persist middleware expects, tagged with the snapshot's own version, and then reloads the app. Migration then runs on the normal load path.
+
+Snapshots keep the state version and the snapshot file format version separate. `SNAPSHOT_FORMAT_VERSION` only needs to change if the outer object around the state changes. Only `formatVersion`, `stateVersion` and `state` are required, so a snapshot can be trimmed down or hand-written when constructing a migration test case.
+
+If a snapshot includes assets, importing it replaces the asset database wholesale. If it does not, the stored assets are left alone.
+
 ### CI Protection
 
 The `check_state_immutability` CI job prevents modifications to existing `state.ts` files. If you need to change a committed schema, you must create a new version instead. Migration files (`migrate.ts`) remain editable so bugs in prior migrations can be fixed if necessary.
