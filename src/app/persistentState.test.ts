@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getDefaultState, migrateState, VERSION } from "./persistentState";
 import { clearMigrationReport, getMigrationReport } from "./migrationReport";
-import { MIGRATIONS } from "./persistentStateMigrations";
+import { getMigration, MIGRATIONS } from "./persistentStateMigrations";
 
 const createV1Editor = () => ({
   orgId: { type: "user", id: "test-user-id" },
@@ -198,6 +198,24 @@ describe("migrateState", () => {
       migrateState(unmigratable, 1);
 
       expect(getMigrationReport()?.initialState).toEqual(unmigratable);
+    });
+
+    it("names the step that produced an invalid state", () => {
+      const broken = getMigration(2);
+      vi.spyOn(broken!, "migrate").mockImplementation((state) => ({
+        ...(state as object),
+        appSettings: "not an app settings object",
+      }));
+
+      migrateState(createV1State(), 1);
+
+      const report = getMigrationReport();
+      expect(report?.success).toBe(false);
+      expect(report?.error).toContain("Migration from v2 to v3");
+
+      const failedStep = report?.steps.at(-1);
+      expect(failedStep?.fromVersion).toBe(2);
+      expect(failedStep?.error).toBe(report?.error);
     });
   });
 });

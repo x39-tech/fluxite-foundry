@@ -27,6 +27,7 @@ export interface MigrationStep {
   description: string;
   stateAfter: unknown;
   diff: jsondiffpatch.Delta | undefined;
+  error?: string;
 }
 
 /**
@@ -153,10 +154,15 @@ function generateStepHtml(
     ? (formatHtmlDiff(step.diff, stateBefore) ?? "")
     : "<p><em>No changes</em></p>";
 
+  const errorHtml = step.error
+    ? `<p class="step-error">${escapeHtml(step.error)}</p>`
+    : "";
+
   return `
     <section class="step">
       <h2>Step ${index + 1}: v${step.fromVersion} → v${step.toVersion}</h2>
       <p class="description">${escapeHtml(step.description)}</p>
+      ${errorHtml}
 
       <details open>
         <summary>View Diff</summary>
@@ -278,6 +284,15 @@ function generateCustomCss(): string {
     .description {
       color: var(--text-muted);
       margin: 0 0 1rem 0;
+    }
+
+    .step-error {
+      background-color: rgba(239, 68, 68, 0.2);
+      color: var(--error-color);
+      border-radius: 0.375rem;
+      padding: 0.75rem 1rem;
+      margin: 0 0 1rem 0;
+      white-space: pre-wrap;
     }
 
     .diff {

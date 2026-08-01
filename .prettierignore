@@ -8,3 +8,5 @@ src/generated/
 src/e173/
 
 tools/sacn-server/
+
+src/app/persistentState/testdata/*.json

@@ -95,7 +95,6 @@ The persistent state schema is versioned and immutable once committed. This allo
 src/app/persistentState/
 ├── v1/
 │   ├── state.ts        # V1 schema (immutable)
-│   └── state.test.ts
 ├── v2/
 │   ├── state.ts        # V2 schema (immutable)
 │   ├── migrate.ts      # Migration V1 → V2 (mutable)
@@ -103,24 +102,22 @@ src/app/persistentState/
 └── ...
 ```
 
-Each version directory contains:
+Each version directory generally contains:
 
 - `state.ts` - The Zod schema for that version. Once committed, this file is **immutable** and protected by CI.
 - `migrate.ts` - The migration function from the previous version. This file remains **mutable** so bugs can be fixed.
-- Test files for both schema and migration.
+- A test file for the migration.
 
 ### How Migrations Work
 
-Migrations are **sequential**: to migrate from V1 to V3, the system runs V1→V2, then V2→V3. This approach:
+Migrations are sequential: to migrate from V1 to V3, the system runs V1→V2, then V2→V3.
 
-- Keeps each migration simple and focused
-- Avoids a combinatorial explosion of migration paths
-- Makes testing straightforward
+The chain lives in `persistentStateMigrations.ts`. Each entry names the two version modules it steps between and the migration function, and nothing else: the version numbers and the schemas are read off the modules, so they cannot disagree with each other. `defineMigration` infers the state types from the migration function's own signature and checks the modules against them, which makes naming the wrong module — or skipping a version — a compile error at that entry. The chain is looked up by version, not by array index, and is checked for contiguity when the module loads. It makes no claim about which version is current: `persistentState.ts` is the only place that says that, and it throws at load if the chain does not reach it.
 
 The migration runner in `persistentState.ts`:
 
 1. Starts with the persisted state and its version number
-2. Finds the migration for the current version and applies it
+2. Finds the migration out of the current version and applies it
 3. Repeats until reaching the current version
 4. Validates the result against the current Zod schema
 5. Falls back to default state if migration fails
@@ -129,19 +126,21 @@ The migration runner in `persistentState.ts`:
 
 When you need to change the persistent state schema:
 
-1. **Create the new version directory:**
+1. **Write the outgoing version's snapshot,** if it doesn't have one already. Run `npm run state-history:generate` while the current version is still current, and commit the resulting `src/app/persistentState/testdata/vN.json`. See [the snapshot history README](../src/app/persistentState/testdata/README.md).
+
+2. **Create the new version directory:**
 
    ```
    src/app/persistentState/vN/
    ```
 
-2. **Create `state.ts`** with the new schema:
+3. **Create `state.ts`** with the new schema:
    - Copy the previous version's `state.ts` as a starting point
    - Update `VERSION` to the new number
    - Make your schema changes
    - Export the schema and types as before
 
-3. **Create `migrate.ts`** with the migration function:
+4. **Create `migrate.ts`** with the migration function:
 
    ```typescript
    import { AppPersistentState as PrevState } from "../v(N-1)/state";
@@ -155,23 +154,23 @@ When you need to change the persistent state schema:
    }
    ```
 
-4. **Create `migrate.test.ts`** with migration tests:
+5. **Create `migrate.test.ts`** with migration tests:
    - Test that each changed field migrates correctly
    - Test that unchanged fields are preserved
    - Test that the result validates against the new schema
 
-5. **Update `persistentStateMigrations.ts`:**
-   - Import the new migration function
+6. **Update `persistentStateMigrations.ts`:**
+   - Import the new state module and migration function
    - Add the migration to the `MIGRATIONS` array
 
-6. **Update `persistentState.ts`:**
+7. **Update `persistentState.ts`:**
    - Import the new state module
    - Update the re-export to point to the new version
    - Update `VERSION` to the new number
 
-7. **Update code that uses changed fields** throughout the codebase.
+8. **Update code that uses changed fields** throughout the codebase.
 
-8. **Run tests** to verify everything works: `npm run test`
+9. **Run tests** to verify everything works: `npm run test`
 
 ### State Snapshots
 
@@ -184,6 +183,12 @@ Import writes the snapshot's state to localStorage in the shape the Zustand pers
 Snapshots keep the state version and the snapshot file format version separate. `SNAPSHOT_FORMAT_VERSION` only needs to change if the outer object around the state changes. Only `formatVersion`, `stateVersion` and `state` are required, so a snapshot can be trimmed down or hand-written when constructing a migration test case.
 
 If a snapshot includes assets, importing it replaces the asset database wholesale. If it does not, the stored assets are left alone.
+
+### The Snapshot History
+
+`src/app/persistentState/testdata/` holds one snapshot per version the app has ever written state at. `snapshotHistory.test.ts` loads each one, migrates it to the current version, and asserts the result validates, so every migration is exercised against a whole realistic document and not only against the small hand-built states in each version's `migrate.test.ts`. The same test fails if any version below the current one has no snapshot.
+
+See [the snapshot history README](../src/app/persistentState/testdata/README.md) for where the snapshots come from, how to add one, and what they do and do not cover.
 
 ### CI Protection
 
