@@ -14,6 +14,7 @@ import {
 } from "app/persistentState";
 import {
   updateCurrentEditor,
+  useCurrentEditorId,
   useCurrentEditorPart,
   useDeviceLibrary,
   useLibraries,
@@ -81,9 +82,16 @@ export function useDmxChunkEditors(): ItemEditor[] {
   }, [chunks]);
 }
 
+/** The DMX test driver built from the document being edited, if it has one. */
 export function useDmxController(): DmxController {
-  return useAppRuntimeStore((state) => state.dmxController);
+  const editorId = useCurrentEditorId();
+  return useAppRuntimeStore(
+    (state) =>
+      (editorId ? state.dmxControllers[editorId] : undefined) ?? NO_CONTROLLER,
+  );
 }
+
+const NO_CONTROLLER: DmxController = { state: "not-created" };
 
 /**
  * Hook that returns parameters that can be mapped to DMX.

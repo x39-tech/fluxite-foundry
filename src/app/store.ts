@@ -1,13 +1,9 @@
 import { create } from "zustand";
 import { persist, devtools } from "zustand/middleware";
-import { produce } from "immer";
+import { Patch, produce, produceWithPatches } from "immer";
 import { AppRuntimeState } from "./runtimeState";
 import { loadDefaultLibraries } from "codex/libraryStore";
 import { LibraryStore } from "codex/library";
-import {
-  getCurrentEditor,
-  updateDmxController,
-} from "features/deviceClassEditor/state";
 import {
   VERSION as STATE_VERSION,
   getDefaultState,
@@ -33,16 +29,6 @@ export const useAppPersistentStore = create<AppPersistentState>()(
       name: PERSISTENT_STATE_STORAGE_KEY,
       version: STATE_VERSION,
       migrate: migrateState,
-      onRehydrateStorage: () => {
-        return (state, error) => {
-          if (state && !error) {
-            const currentEditor = getCurrentEditor(state);
-            if (currentEditor) {
-              updateDmxController(currentEditor);
-            }
-          }
-        };
-      },
     },
   ),
 );
@@ -84,10 +70,53 @@ export function useCurrentLocale(): string {
 // Write
 // ---------------------------------------------------------------------------
 
+export type StatePatchListener = (
+  patches: Patch[],
+  inversePatches: Patch[],
+) => void;
+
+const patchListeners = new Set<StatePatchListener>();
+
+/**
+ * Every change to the persistent state goes through here.
+ *
+ * Listeners run once the store has been updated, and only when the recipe
+ * actually changed something.
+ */
 export function updateAppPersistentState(
   recipe: (state: AppPersistentState) => void,
 ) {
-  useAppPersistentStore.setState(produce(recipe));
+  let produced: { patches: Patch[]; inversePatches: Patch[] } | undefined;
+
+  useAppPersistentStore.setState((state) => {
+    const [nextState, patches, inversePatches] = produceWithPatches(
+      state,
+      recipe,
+    );
+    produced = { patches, inversePatches };
+    return nextState;
+  });
+
+  if (!produced || produced.patches.length === 0) {
+    return;
+  }
+
+  for (const listener of patchListeners) {
+    listener(produced.patches, produced.inversePatches);
+  }
+}
+
+/**
+ * Registers a listener for the patches describing each persistent state update,
+ * and returns a function that removes it again.
+ */
+export function subscribeToStatePatches(
+  listener: StatePatchListener,
+): () => void {
+  patchListeners.add(listener);
+  return () => {
+    patchListeners.delete(listener);
+  };
 }
 
 export function updateAppRuntimeState(
@@ -121,9 +150,7 @@ function getSystemDarkModePreference(): boolean {
 
 function getDefaultRuntimeState(): AppRuntimeState {
   return {
-    dmxController: {
-      state: "not-created",
-    },
+    dmxControllers: {},
     libraries: loadDefaultLibraries(),
     systemDarkModePreference: getSystemDarkModePreference(),
   };

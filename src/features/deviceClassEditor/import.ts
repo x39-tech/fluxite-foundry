@@ -18,7 +18,6 @@ import {
   OrgId,
 } from "utils/utils";
 import { importLocalizations } from "features/localizations/localize";
-import { updateDmxController } from "./state";
 import {
   codexIdAsEntityId,
   commandArgKeyToEditor,
@@ -82,8 +81,6 @@ export async function importDeviceClassEditor(
     deviceClassEditors[newId] = newDeviceClass;
     openEditors.editors.push({ type: "deviceClass", id: newId });
     openEditors.selectedEditor = openEditors.editors.length - 1;
-
-    updateDmxController(deviceClassEditors[newId]);
   });
 }
 

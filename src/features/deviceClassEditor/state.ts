@@ -1,7 +1,6 @@
-import { Draft, produceWithPatches } from "immer";
+import { Draft } from "immer";
 import * as FlexLayout from "flexlayout-react";
 import { useShallow } from "zustand/react/shallow";
-import { DmxDriver, DelverError } from "@cpwg-community/delver";
 import {
   AppPersistentState,
   CodexId,
@@ -13,11 +12,7 @@ import {
   LocalizationKey,
 } from "app/persistentState";
 import { Unlocalized } from "features/localizations/types";
-import {
-  useAppPersistentStore,
-  updateAppPersistentState,
-  updateAppRuntimeState,
-} from "app/store";
+import { useAppPersistentStore, updateAppPersistentState } from "app/store";
 import {
   enumChoiceParentsEqual,
   newEntityId,
@@ -25,7 +20,6 @@ import {
   selectWithIds,
 } from "app/stateUtils";
 import { Library } from "codex/library";
-import { exportDeviceClass } from "./export";
 import {
   createDeviceClassLocalizations,
   getParentLocIdPrefix,
@@ -37,7 +31,7 @@ import {
 // Read
 // ---------------------------------------------------------------------------
 
-export function useCurrentEditorId(): string | undefined {
+export function useCurrentEditorId(): EntityId | undefined {
   return useAppPersistentStore(
     (state) => state.openEditors.editors[state.openEditors.selectedEditor]?.id,
   );
@@ -101,43 +95,12 @@ export function updateCurrentEditor(
   updater: (editor: Draft<DeviceClassEditorState>) => void,
 ) {
   updateAppPersistentState((state) => {
-    const [nextState, patches, _invPatches] = produceWithPatches(
-      state,
-      (state) => {
-        const currentEditor = getCurrentEditor(state);
-        if (!currentEditor) {
-          return state;
-        }
-
-        updater(currentEditor);
-      },
-    );
-
-    if (
-      patches.some((patch) => {
-        if (
-          patch.path.length >= 3 &&
-          patch.path[0] == "deviceClassEditors" &&
-          typeof patch.path[2] == "string"
-        ) {
-          return [
-            "libraries",
-            "parameterClasses",
-            "commandClasses",
-            "parameters",
-            "commands",
-            "commandClassArguments",
-            "commandClassReturnValues",
-            "enumChoices",
-            "dmxSerializer",
-          ].includes(patch.path[2]);
-        }
-      })
-    ) {
-      updateDmxController(getCurrentEditor(nextState)!);
+    const currentEditor = getCurrentEditor(state);
+    if (!currentEditor) {
+      return;
     }
 
-    return nextState;
+    updater(currentEditor);
   });
 }
 
@@ -145,33 +108,6 @@ export function setWindowLayout(model: FlexLayout.IJsonModel) {
   updateCurrentEditor(
     (editor) => (editor.windowLayout = JSON.stringify(model.layout)),
   );
-}
-
-// ---------------------------------------------------------------------------
-// Write
-// ---------------------------------------------------------------------------
-
-export function updateDmxController(editor: DeviceClassEditorState) {
-  if (editor.dmxSerializer) {
-    try {
-      const deviceClass = exportDeviceClass(editor);
-      const driver = new DmxDriver(deviceClass, "dmx");
-      updateAppRuntimeState((state) => {
-        state.dmxController = {
-          state: "available",
-          driver,
-        };
-      });
-    } catch (e) {
-      const err = e as DelverError;
-      updateAppRuntimeState((state) => {
-        state.dmxController = {
-          state: "error",
-          error: err,
-        };
-      });
-    }
-  }
 }
 
 export function addEnumChoice(

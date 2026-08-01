@@ -5,10 +5,6 @@ import {
   DeviceClassEditorState,
   OpenEditors,
 } from "app/persistentState";
-import {
-  getCurrentEditor,
-  updateDmxController,
-} from "features/deviceClassEditor/state";
 import { newEntityId } from "app/stateUtils";
 import { getNewDeviceClassEditor } from "features/deviceClassEditor/import";
 
@@ -49,15 +45,12 @@ export function createDeviceClassEditor() {
     deviceClassEditors[newId] = getNewDeviceClassEditor(existingIds);
     openEditors.editors.push({ type: "deviceClass", id: newId });
     openEditors.selectedEditor = openEditors.editors.length - 1;
-
-    updateDmxController(deviceClassEditors[newId]);
   });
 }
 
 export function setSelectedEditor(index: number) {
   updateAppPersistentState((state) => {
     state.openEditors.selectedEditor = index;
-    updateDmxController(getCurrentEditor(state)!);
   });
 }
 

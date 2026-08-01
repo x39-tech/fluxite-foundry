@@ -83,6 +83,16 @@ updateAppPersistentState((state) => {
 });
 ```
 
+Every change must go through `updateAppPersistentState`, because side-effect listeners such as `subscribeToStatePatches` are wired in through that update path. Any function that the app logic uses to update the persistent state must be a wrapper around this function.
+
+## Side Effects
+
+If a state change needs to result in a side-effect that is not expressible via React plumbing such as `useEffect`, the side-effect should be registered on the store using `useAppPersistentStore.subscribe`. Do not simply fire these side-effects from the same place that the state is updated, because then they will not be replayed properly on undo and redo.
+
+See `features/deviceClassEditor/effects.ts` and its behavior around DMX drivers as an example of this type of side-effect subscription.
+
+Because state changes are done using Immer, side-effect subscribers can compare old and new state by a simple referential comparison of top-level fields.
+
 ## Documents and Entities
 
 As mentioned above, we try to keep our state in a somewhat normalized form. This applies particularly to _documents_, which is our name for a piece of state that can be saved and loaded separately from others, and presents as a single "editor" in the app.
