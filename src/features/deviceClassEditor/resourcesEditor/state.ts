@@ -1,6 +1,5 @@
 import { Draft } from "immer";
 import { useCurrentLocale, useLibraryStore } from "app/store";
-import { assetStorage } from "app/assetStorage";
 import { CodexId, EntityId, Resource } from "app/persistentState";
 import { Unlocalized } from "features/localizations/types";
 import { ItemEditor } from "utils/utils";
@@ -138,7 +137,11 @@ export function modifyResource(
 
 export function deleteResource(id: EntityId) {
   updateCurrentEditor((editor) => {
-    // TODO remove asset IDs
+    const resource = editor.resources[id];
+    if (resource?.default) {
+      delete editor.resourceAssets[resource.default];
+    }
+
     delete editor.resources[id];
     editor.resourceEditors = editor.resourceEditors.filter(
       (value) => value !== id,
@@ -146,15 +149,13 @@ export function deleteResource(id: EntityId) {
   });
 }
 
-export async function updateResourceAsset(
-  resourceId: EntityId,
-  oldAssetId?: string,
-  newAssetId?: string,
-) {
-  if (oldAssetId) {
-    await assetStorage.deleteAsset(oldAssetId);
-  }
-
+/**
+ * Points a resource at a different asset, or at none.
+ *
+ * The old asset is not cleaned up here, that is the job of
+ * app/assetLifecycle.ts.
+ */
+export function updateResourceAsset(resourceId: EntityId, newAssetId?: string) {
   updateCurrentEditor((editor) => {
     const resource = editor.resources[resourceId];
     if (!resource) {

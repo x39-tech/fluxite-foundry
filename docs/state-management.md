@@ -154,6 +154,17 @@ Each document containing _localizable_ entities (entities containing at least on
 
 Binary assets (images, media) are stored in IndexedDB via Dexie with deduplication by SHA-256 hash.
 
+### Asset Lifecycle
+
+An asset belongs to the documents that refer to it. To better support undo and redo functionality, an asset is not deleted when its last referrer is removed. Instead, assets are cleaned up at two different times:
+
+1. When a document is closed, all assets that document referred to which no other document currently refers to are deleted.
+2. On app startup, all assets that are not referenced by any document in the rehydrated app persistent state are deleted.
+
+This logic lives in `app/assetLifecycle.ts`.
+
+Each type of document describes where its assets are as a `DocumentAssets` object, so the app core does not need to know what a document looks like.
+
 ## State Versioning and Migrations
 
 The persistent state schema is versioned and immutable once committed. This allows the app to load state saved by any previous version and migrate it to the current schema.
