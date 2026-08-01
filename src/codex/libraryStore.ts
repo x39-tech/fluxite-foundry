@@ -1,6 +1,6 @@
 import { parseFluxiteCodexDocument } from "@cpwg-community/delver";
 import semver from "semver";
-import { localize, LocalizedString } from "utils/localizationUtils";
+import { localize, LocalizedString } from "features/localizations/localize";
 import { errorMessage } from "utils/utils";
 import { ImportedLibrary, LibraryStore, normalizeLibrary } from "./library";
 

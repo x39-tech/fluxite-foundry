@@ -11,6 +11,8 @@ State is managed using Zustand with Immer for immutable updates. The application
 
 We maintain and migrate the persistent state like a primitive database. The format of entities defined by Fluxite Codex is converted to a native form for this application which is validated by [Zod](https://zod.dev). We try to keep state in a somewhat normalized form and not to nest entities too deeply, to help with migration and transformation. Generally, an entity defined by a user of this app, such as a parameter, command, command argument, enum choice, etc., is stored in a top-level map with a primary [nanoid](https://github.com/ai/nanoid) key, similar to a relational database table. Keys are stored using the branded type `EntityId`. This causes some structures to differ from how they are represented in Fluxite Codex.
 
+See "Documents and Entities" below for more details about the heuristics we use to shape the state.
+
 Additionally, we do not reference types defined in external libraries or schemas in the persistent state, since that would create problems with maintaining versions of the state over time as they get out of sync with the types defined by the external dependencies. The goal is to support migrations from arbitrarily old saved states to newer ones.
 
 This is why you might see duplication between the definitions in the persistent state and those in the external `delver` library, for example. This is intentional and worth the tradeoff.
@@ -80,6 +82,63 @@ updateAppPersistentState((state) => {
   state.appSettings.theme = "dark"; // Direct mutation - Immer handles immutability
 });
 ```
+
+## Documents and Entities
+
+As mentioned above, we try to keep our state in a somewhat normalized form. This applies particularly to _documents_, which is our name for a piece of state that can be saved and loaded separately from others, and presents as a single "editor" in the app.
+
+Within a document we generally find tables of entities. For example, a simplified form of a `DeviceClassEditor`:
+
+```typescript
+export interface DeviceClassEditorState {
+  deviceClassId: string;
+  deviceClassVersion: string;
+
+  parameters: Record<EntityId, Parameter>;
+  commands: Record<EntityId, Command>;
+
+  enumChoices: Record<EntityId, EnumChoice>;
+}
+```
+
+Note the consequences of normalization here: an `EnumChoice` is a child of a `Parameter` (and other entities as well, but we are simplifying here), but is stored in a separate table with a `parent` field pointing back at the respective `Parameter` by its `EntityId`.
+
+We refer to types that live in these top-level tables of a document as _entities_. But note that some members of a document are _not_ entities (in this example, `deviceClassId` and `deviceClassVersion` are simple string values). Also, some entities might have nested data inside them. We follow a set of heuristics to determine whether a piece of a document's data should be an entity:
+
+1. It has a unique identity.
+2. Something needs to remember or reference its identity across time.
+3. It can be created or deleted independently of its parent.
+4. Something needs to list all of them at once.
+5. It has localized fields (see "Localizations" below).
+6. It is not derivable from other state data.
+
+These are not hard-and-fast rules, but the more "yes" answers you have to these criteria, the more likely it is that the thing you are trying to define should be an entity. There are exceptions; for example, `DeviceClassBasicData` has `compatibleFirmwareVersions`, which is an array of strings, each of which can be created and deleted independently in the app's UI. Even though this satisfies 2 above, we don't make these entities because they are simple string values and don't satisfy the other heuristics.
+
+We also follow some structural rules when it comes to entities:
+
+1. Entity tables live at the top level of a document and are not nested.
+2. Entity tables should not be optional. `{}` is sufficient to represent an empty table.
+3. Entities should not be defined inside a discriminated union arm.
+4. If entities need to be ordered, prefer to store an ordered list of IDs alongside the entity table.
+
+Note that we have some existing violations of these rules in the app, due to history. This is a state we are working toward, not one we have completely achieved yet.
+
+## Localizations
+
+Each document owns its localized strings, in a `localizations` table keyed by a branded `LocalizationKey`. Every localized field of an entity lives under `localized`, by convention:
+
+```typescript
+const parameter = {
+  codexId: "intensity",
+  localized: {
+    friendlyName: someLocalizationKey,
+  },
+};
+```
+
+That convention allows us to build powerful tools for managing localized data and deriving back-references from localization strings to the entities that reference them; this code lives in `features/localizations/`.
+
+Each document containing _localizable_ entities (entities containing at least one localizable field) must also define a `LocalizationRegistry` which contains the set of metadata for each localizable field on each entity within the document.
 
 ## Asset Storage (IndexedDB)
 

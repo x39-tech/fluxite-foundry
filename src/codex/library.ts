@@ -27,10 +27,8 @@ import {
   SerializerClass,
   StructureClass,
 } from "app/persistentState";
-import {
-  importLocalizations,
-  LocalizationStrings,
-} from "utils/localizationUtils";
+import { importLocalizations } from "features/localizations/localize";
+import { LocalizationStrings } from "features/localizations/types";
 import { newEntityId, optionalLocalizationKey } from "app/stateUtils";
 
 // ---------------------------------------------------------------------------
@@ -90,9 +88,10 @@ export interface ImportedLibrary {
 
 export type LibraryStore = Record<string, Record<string, ImportedLibrary>>;
 
-// Records that a localizable string is referenced by an entity, so the edit
-// path can garbage-collect unreferenced localizations. Imported libraries are
-// never edited, so the normalizer has no use for it.
+// Records that a localizable string is referenced by an entity. What refers to
+// a string is derived from the document itself now (see
+// features/localizations); this type/pattern is deprecated and will soon be
+// removed.
 export type AddLocalizationReference = (
   itemId: EntityId,
   itemType: LocalizationReferencedItem["itemType"],
@@ -317,8 +316,8 @@ function importCommandClasses(
       };
       argIds.set(argCodexId, argId);
 
-      addLocRef?.(argId, "cmdArgName", cls["@name"]);
-      addLocRef?.(argId, "cmdArgDesc", cls["@description"]);
+      addLocRef?.(argId, "cmdArgName", arg["@name"]);
+      addLocRef?.(argId, "cmdArgDesc", arg["@description"]);
 
       importEnumChoices(
         arg.choices,
@@ -348,8 +347,8 @@ function importCommandClasses(
       };
       retIds.set(retCodexId, retId);
 
-      addLocRef?.(retId, "cmdRetName", cls["@name"]);
-      addLocRef?.(retId, "cmdRetDesc", cls["@description"]);
+      addLocRef?.(retId, "cmdRetName", ret["@name"]);
+      addLocRef?.(retId, "cmdRetDesc", ret["@description"]);
 
       importEnumChoices(
         ret.choices,

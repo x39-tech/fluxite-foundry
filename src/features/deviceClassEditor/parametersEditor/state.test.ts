@@ -577,7 +577,7 @@ describe("parametersEditor/state.ts", () => {
               index: 0,
               localized: {
                 name: LocalizationKey(
-                  `enumChoice_${TEST_ENUM_CHOICE_CODEX_ID}`,
+                  `enumChoice_${TEST_CLASS_ENUM_CHOICE_CODEX_ID}`,
                 ),
               },
             },

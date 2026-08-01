@@ -2579,6 +2579,28 @@
                 "itemType": "paramClassName"
               }
             ]
+          },
+          "gobo_rotate_shake_rate_name": {
+            "strings": {
+              "en-US": "Shake Rate"
+            },
+            "items": [
+              {
+                "itemId": "lhN6qAxMHE7IgTfTQMiUM",
+                "itemType": "paramClassName"
+              }
+            ]
+          },
+          "gobo_rotate_shake_rate_description": {
+            "strings": {
+              "en-US": "The rate of oscillation of a selected gobo around a single axis."
+            },
+            "items": [
+              {
+                "itemId": "lhN6qAxMHE7IgTfTQMiUM",
+                "itemType": "paramClassDesc"
+              }
+            ]
           }
         },
         "windowLayout": "{\"type\":\"row\",\"weight\":100,\"id\":\"aeDSn2FX3D6qCwS80_mkv\",\"children\":[{\"type\":\"tabset\",\"weight\":50,\"id\":\"ijQE9cTJHrlTpqvYK138z\",\"children\":[{\"type\":\"tab\",\"name\":\"Parameters Editor\",\"component\":\"parametersEditor\",\"id\":\"xHA80-CXXcDrJFaYm9Dsh\"}]},{\"type\":\"tabset\",\"weight\":50,\"id\":\"pU-0r8_nxb2iPPyi4IbGz\",\"children\":[{\"type\":\"tab\",\"name\":\"Device Info Editor\",\"component\":\"deviceInfoEditor\",\"id\":\"EHOEGoRPSWypotizBwsGs\"}]}]}",

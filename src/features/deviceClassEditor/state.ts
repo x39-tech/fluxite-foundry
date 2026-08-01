@@ -10,17 +10,14 @@ import {
   EnumChoice,
   EnumChoiceParent,
   Localization,
-  LocalizationDbSchema,
   LocalizationKey,
-  LocalizationReferencedItem,
-  Unlocalized,
 } from "app/persistentState";
+import { Unlocalized } from "features/localizations/types";
 import {
   useAppPersistentStore,
   updateAppPersistentState,
   updateAppRuntimeState,
 } from "app/store";
-import { getUniqueItemId } from "utils/utils";
 import {
   enumChoiceParentsEqual,
   newEntityId,
@@ -29,6 +26,12 @@ import {
 } from "app/stateUtils";
 import { Library } from "codex/library";
 import { exportDeviceClass } from "./export";
+import {
+  createDeviceClassLocalizations,
+  getParentLocIdPrefix,
+  removeDeviceClassLocalizations,
+  setDeviceClassLocalizedValue,
+} from "./localizationRegistry";
 
 // ---------------------------------------------------------------------------
 // Read
@@ -171,80 +174,6 @@ export function updateDmxController(editor: DeviceClassEditorState) {
   }
 }
 
-function getParentLocIdPrefix(
-  editor: Draft<DeviceClassEditorState>,
-  parent: EnumChoiceParent,
-): string | undefined {
-  switch (parent.type) {
-    case "paramAdditional": {
-      const codexId = editor.parameters[parent.id]?.codexId;
-      return codexId ? `param_${codexId}` : undefined;
-    }
-    case "paramClass": {
-      const codexId = editor.parameterClasses[parent.id]?.codexId;
-      return codexId ? `paramClass_${codexId}` : undefined;
-    }
-    case "cmdClassArg": {
-      const arg = editor.commandClassArguments[parent.id];
-      const ccCodexId = editor.commandClasses[arg.parentId]?.codexId;
-      if (!arg || !ccCodexId) {
-        return undefined;
-      }
-      return `commandClass_${ccCodexId}_arg_${arg.codexId}`;
-    }
-    case "cmdClassRet": {
-      const arg = editor.commandClassArguments[parent.id];
-      const ccCodexId = editor.commandClasses[arg.parentId]?.codexId;
-      if (!arg || !ccCodexId) {
-        return undefined;
-      }
-      return `commandClass_${ccCodexId}_return_${arg.codexId}`;
-    }
-    case "cmdArg": {
-      const cmdCodexId = editor.commands[parent.cmdId].codexId;
-      const argCodexId =
-        parent.idType === "local"
-          ? editor.commandClassArguments[parent.id].codexId
-          : parent.id;
-
-      if (!cmdCodexId || !argCodexId) {
-        return undefined;
-      }
-      return `command_${cmdCodexId}_arg_${argCodexId}`;
-    }
-    case "cmdRet": {
-      const cmdCodexId = editor.commands[parent.cmdId].codexId;
-      const retCodexId =
-        parent.idType === "local"
-          ? editor.commandClassReturnValues[parent.id].codexId
-          : parent.id;
-
-      if (!cmdCodexId || !retCodexId) {
-        return undefined;
-      }
-      return `command_${cmdCodexId}_return_${retCodexId}`;
-    }
-  }
-}
-
-const ENUM_CHOICE_LOCALIZED_INFO: Record<
-  keyof EnumChoice["localized"],
-  {
-    itemType: LocalizationReferencedItem["itemType"];
-    constructKey: (prefix: string, codexId: string) => string;
-  }
-> = {
-  name: {
-    itemType: "enumName",
-    constructKey: (prefix, codexId) => `${prefix}_enumChoice_${codexId}_name`,
-  },
-  description: {
-    itemType: "enumDesc",
-    constructKey: (prefix, codexId) =>
-      `${prefix}_enumChoice_${codexId}_description`,
-  },
-};
-
 export function addEnumChoice(
   parent: EnumChoiceParent,
   codexId: CodexId,
@@ -253,8 +182,7 @@ export function addEnumChoice(
   locale: string,
 ) {
   updateCurrentEditor((editor) => {
-    const keyPrefix = getParentLocIdPrefix(editor, parent);
-    if (!keyPrefix) {
+    if (!getParentLocIdPrefix(editor, parent)) {
       return;
     }
 
@@ -267,42 +195,18 @@ export function addEnumChoice(
     }
 
     const newChoiceId = newEntityId();
-
-    const nameKey = addNewItemLocalization(
-      editor,
-      ENUM_CHOICE_LOCALIZED_INFO["name"].constructKey(keyPrefix, codexId),
-      {
-        itemId: newChoiceId,
-        itemType: ENUM_CHOICE_LOCALIZED_INFO["name"].itemType,
-      },
-      locale,
-      name,
-    );
-
-    const descKey = description
-      ? addNewItemLocalization(
-          editor,
-          ENUM_CHOICE_LOCALIZED_INFO["description"].constructKey(
-            keyPrefix,
-            codexId,
-          ),
-          {
-            itemId: newChoiceId,
-            itemType: ENUM_CHOICE_LOCALIZED_INFO["description"].itemType,
-          },
-          locale,
-          description,
-        )
-      : undefined;
+    const choice = { parent, codexId, index: allChoices.length };
 
     editor.enumChoices[newChoiceId] = {
-      parent,
-      codexId,
-      index: allChoices.length,
-      localized: {
-        name: nameKey,
-        description: descKey,
-      },
+      ...choice,
+      localized: createDeviceClassLocalizations(
+        editor,
+        "enumChoices",
+        newChoiceId,
+        choice,
+        { name, description },
+        locale,
+      ),
     };
   });
 }
@@ -330,27 +234,12 @@ export function modifyEnumChoiceLocalizedValue(
   locale: string,
 ) {
   updateCurrentEditor((editor) => {
-    const enumChoice = editor.enumChoices[id];
-    if (!enumChoice) {
-      return;
-    }
-
-    const keyPrefix = getParentLocIdPrefix(editor, enumChoice.parent);
-    if (!keyPrefix) {
-      return;
-    }
-
-    const info = ENUM_CHOICE_LOCALIZED_INFO[key];
-    updateLocalizedValue(editor, enumChoice, {
-      fieldKey: key,
+    setDeviceClassLocalizedValue(
+      editor,
+      { table: "enumChoices", entityId: id, field: key },
       newValue,
       locale,
-      constructKey: () => info.constructKey(keyPrefix, enumChoice.codexId),
-      referencedItem: {
-        itemId: id,
-        itemType: info.itemType,
-      },
-    });
+    );
   });
 }
 
@@ -372,14 +261,9 @@ export function deleteEnumChoice(id: EntityId) {
         editor.enumChoices[choice.id].index = index;
       });
 
-    removeReferencedLocalization(editor, choiceToRemove.localized.name, {
-      itemType: "enumName",
-      itemId: id,
-    });
-    removeReferencedLocalization(editor, choiceToRemove.localized.description, {
-      itemType: "enumDesc",
-      itemId: id,
-    });
+    removeDeviceClassLocalizations(editor, [
+      { table: "enumChoices", entityId: id },
+    ]);
 
     delete editor.enumChoices[id];
   });
@@ -394,101 +278,4 @@ export function getCurrentEditor<S extends AppPersistentState>(
     return undefined;
   }
   return state.deviceClassEditors[currentEditor.id];
-}
-
-export function addNewItemLocalization(
-  editor: Draft<DeviceClassEditorState>,
-  desiredKey: string,
-  referencedItem: LocalizationReferencedItem,
-  locale: string,
-  initialValue: string,
-): LocalizationKey {
-  const key = LocalizationKey(
-    getUniqueItemId(Object.keys(editor.localizations), desiredKey),
-  );
-
-  editor.localizations[key] = {
-    strings: LocalizationDbSchema.parse({
-      [locale]: initialValue,
-    }),
-    items: [referencedItem],
-  };
-
-  return key;
-}
-
-export function removeReferencedLocalization(
-  editor: Draft<DeviceClassEditorState>,
-  key: LocalizationKey | undefined,
-  referencedItem: LocalizationReferencedItem,
-) {
-  const loc = key ? editor.localizations[key] : undefined;
-  if (loc) {
-    const newItems = loc.items.filter(
-      (item) =>
-        item.itemType !== referencedItem.itemType ||
-        ("itemId" in item &&
-          "itemId" in referencedItem &&
-          item.itemId !== referencedItem.itemId),
-    );
-    if (newItems.length === 0) {
-      delete editor.localizations[key!];
-    } else {
-      loc.items = newItems;
-    }
-  }
-}
-
-/**
- * Helper function to update a localized value on an entity.
- * Handles creating, updating, and removing localizations based on the new value.
- */
-export function updateLocalizedValue<
-  T extends { localized: Record<string, LocalizationKey | undefined> },
->(
-  editor: Draft<DeviceClassEditorState>,
-  entity: Draft<T>,
-  options: {
-    fieldKey: string;
-    newValue: string;
-    locale: string;
-    constructKey: () => string;
-    referencedItem: LocalizationReferencedItem;
-    isRequired?: boolean;
-  },
-): void {
-  const {
-    fieldKey,
-    newValue,
-    locale,
-    constructKey,
-    referencedItem,
-    isRequired = false,
-  } = options;
-
-  const localizationKey = entity.localized[fieldKey];
-  const localization = localizationKey
-    ? editor.localizations[localizationKey]
-    : undefined;
-
-  if (newValue === "" && !isRequired) {
-    // Remove localization when value is blank and field is optional
-    if (localization && localizationKey) {
-      removeReferencedLocalization(editor, localizationKey, referencedItem);
-    }
-    delete entity.localized[fieldKey];
-  } else if (!localization) {
-    // Create new localization
-    const locKey = addNewItemLocalization(
-      editor,
-      constructKey(),
-      referencedItem,
-      locale,
-      newValue,
-    );
-    entity.localized[fieldKey] = locKey;
-  } else {
-    // Update existing localization
-    localization.strings[locale] = newValue;
-  }
 }

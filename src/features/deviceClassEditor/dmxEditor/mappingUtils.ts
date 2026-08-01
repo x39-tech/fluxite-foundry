@@ -8,7 +8,7 @@ import {
   LocalizedClassEnumChoice,
   LocalizedInstanceEnumChoice,
 } from "../stateTransformations";
-import { LocalizedString } from "utils/localizationUtils";
+import { LocalizedString } from "features/localizations/localize";
 
 export interface SequenceWarning {
   type: "indefinite_not_last";

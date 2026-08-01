@@ -26,7 +26,7 @@ import {
 import { Button, ButtonProps } from "components/scn-ui/Button";
 import { useTextWidth } from "hooks/useTextWidth";
 import { useCurrentLocale } from "app/store";
-import { localize } from "utils/localizationUtils";
+import { localize } from "features/localizations/localize";
 import { CodexId, EntityId } from "app/persistentState";
 import { ResolvedClassRef } from "features/deviceClassEditor/classResolution";
 
