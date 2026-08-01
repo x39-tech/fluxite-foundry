@@ -7,24 +7,21 @@ import {
   EntityId,
   EnumChoice,
   LocalizationKey,
-  LocalizationReferencedItem,
-  Unlocalized,
 } from "app/persistentState";
+import { localize, LocalizedString } from "features/localizations/localize";
+import { LocalizationStrings, Unlocalized } from "features/localizations/types";
 import {
-  localize,
-  LocalizationStrings,
-  LocalizedString,
-} from "utils/localizationUtils";
-import {
-  addNewItemLocalization,
-  removeReferencedLocalization,
   updateCurrentEditor,
-  updateLocalizedValue,
   useCurrentEditorPart,
   useCurrentEditorPartShallow,
   useDeviceLibrary,
   useLibraries,
 } from "../state";
+import {
+  createDeviceClassLocalizations,
+  removeDeviceClassLocalizations,
+  setDeviceClassLocalizedValue,
+} from "../localizationRegistry";
 import {
   LocalizedInstanceEnumChoice,
   lookupCommandClass,
@@ -223,25 +220,22 @@ export function createNewCommand(
     }
 
     const cmdId = newEntityId();
-
-    const nameKey = addNewItemLocalization(
-      editor,
-      `command_${codexId}`,
-      {
-        itemId: cmdId,
-        itemType: "cmdName",
-      },
-      locale,
-      friendlyName,
-    );
-
-    editor.commands[cmdId] = {
+    const command = {
       codexId,
-      localized: {
-        friendlyName: nameKey,
-      },
       class: classRef,
       completionNotification: false,
+    };
+
+    editor.commands[cmdId] = {
+      ...command,
+      localized: createDeviceClassLocalizations(
+        editor,
+        "commands",
+        cmdId,
+        command,
+        { friendlyName },
+        locale,
+      ),
     };
 
     editor.commandEditors.push(cmdId);
@@ -262,19 +256,6 @@ export function modifyCommand(
   });
 }
 
-const COMMAND_LOCALIZED_INFO: Record<
-  keyof Command["localized"],
-  {
-    itemType: LocalizationReferencedItem["itemType"];
-    constructKey: (codexId: string) => string;
-  }
-> = {
-  friendlyName: {
-    itemType: "cmdName",
-    constructKey: (codexId) => `command_${codexId}`,
-  },
-};
-
 export function modifyCommandLocalizedValue(
   id: EntityId,
   key: keyof Command["localized"],
@@ -282,22 +263,12 @@ export function modifyCommandLocalizedValue(
   locale: string,
 ) {
   updateCurrentEditor((editor) => {
-    const command = editor.commands[id];
-    if (!command) {
-      return;
-    }
-
-    const info = COMMAND_LOCALIZED_INFO[key];
-    updateLocalizedValue(editor, command, {
-      fieldKey: key,
+    setDeviceClassLocalizedValue(
+      editor,
+      { table: "commands", entityId: id, field: key },
       newValue,
       locale,
-      constructKey: () => info.constructKey(command.codexId),
-      referencedItem: {
-        itemId: id,
-        itemType: info.itemType,
-      },
-    });
+    );
   });
 }
 
@@ -315,22 +286,17 @@ export function deleteCommand(id: EntityId) {
         choice.parent.cmdId === id,
     );
 
+    removeDeviceClassLocalizations(editor, [
+      { table: "commands", entityId: id },
+      ...enumChoices.map((choice) => ({
+        table: "enumChoices" as const,
+        entityId: choice.id,
+      })),
+    ]);
+
     for (const choice of enumChoices) {
-      removeReferencedLocalization(editor, choice.localized.name, {
-        itemType: "enumName",
-        itemId: choice.id,
-      });
-      removeReferencedLocalization(editor, choice.localized.description, {
-        itemType: "enumDesc",
-        itemId: choice.id,
-      });
       delete editor.enumChoices[choice.id];
     }
-
-    removeReferencedLocalization(editor, command.localized.friendlyName, {
-      itemType: "cmdName",
-      itemId: id,
-    });
 
     delete editor.commands[id];
     editor.commandEditors = editor.commandEditors.filter(

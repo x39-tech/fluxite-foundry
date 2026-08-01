@@ -7,9 +7,9 @@ import {
   LocalizationKey,
   ParameterClass,
   ResourceClass,
-  Unlocalized,
 } from "app/persistentState";
-import { localize, LocalizedString } from "utils/localizationUtils";
+import { Unlocalized } from "features/localizations/types";
+import { localize, LocalizedString } from "features/localizations/localize";
 import { selectWithIds } from "app/stateUtils";
 import { ResolvedClassRef } from "./classResolution";
 

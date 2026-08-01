@@ -31,7 +31,7 @@ import {
 } from "../stateTransformations";
 import { resolveClassRef } from "../classResolution";
 import { EffectiveEnumChoice, getEffectiveEnumChoices } from "./mappingUtils";
-import { localize } from "utils/localizationUtils";
+import { localize } from "features/localizations/localize";
 import { ItemEditor } from "utils/utils";
 
 /** Data types that can be mapped to DMX values */

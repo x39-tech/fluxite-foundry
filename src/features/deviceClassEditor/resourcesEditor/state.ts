@@ -1,7 +1,8 @@
 import { Draft } from "immer";
 import { useCurrentLocale, useLibraryStore } from "app/store";
 import { assetStorage } from "app/assetStorage";
-import { CodexId, EntityId, Resource, Unlocalized } from "app/persistentState";
+import { CodexId, EntityId, Resource } from "app/persistentState";
+import { Unlocalized } from "features/localizations/types";
 import { ItemEditor } from "utils/utils";
 import { newEntityId } from "app/stateUtils";
 import {

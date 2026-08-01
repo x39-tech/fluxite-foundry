@@ -3,24 +3,25 @@ import {
   ClassReference,
   CodexId,
   EntityId,
-  LocalizationReferencedItem,
   Parameter,
   ParameterClass,
-  Unlocalized,
 } from "app/persistentState";
 import { getWithId, selectWithIds } from "app/stateUtils";
 import { ItemEditor } from "utils/utils";
-import { localize, LocalizedString } from "utils/localizationUtils";
+import { Unlocalized } from "features/localizations/types";
+import { localize, LocalizedString } from "features/localizations/localize";
 import { useCurrentLocale, useLibraryStore } from "app/store";
 import {
-  removeReferencedLocalization,
   updateCurrentEditor,
-  updateLocalizedValue,
   useCurrentEditorPart,
   useCurrentEditorPartShallow,
   useDeviceLibrary,
   useLibraries,
 } from "../state";
+import {
+  removeDeviceClassLocalizations,
+  setDeviceClassLocalizedValue,
+} from "../localizationRegistry";
 import {
   LocalizedInstanceEnumChoice,
   lookupParameterClass,
@@ -195,19 +196,6 @@ export function modifyParameter(
   });
 }
 
-const PARAM_LOCALIZED_INFO: Record<
-  keyof Parameter["localized"],
-  {
-    itemType: LocalizationReferencedItem["itemType"];
-    constructKey: (codexId: string) => string;
-  }
-> = {
-  friendlyName: {
-    itemType: "paramName",
-    constructKey: (codexId) => `param_${codexId}`,
-  },
-};
-
 export function modifyParameterLocalizedValue(
   id: EntityId,
   key: keyof Parameter["localized"],
@@ -215,22 +203,12 @@ export function modifyParameterLocalizedValue(
   locale: string,
 ) {
   updateCurrentEditor((editor) => {
-    const param = editor.parameters[id];
-    if (!param) {
-      return;
-    }
-
-    const info = PARAM_LOCALIZED_INFO[key];
-    updateLocalizedValue(editor, param, {
-      fieldKey: key,
+    setDeviceClassLocalizedValue(
+      editor,
+      { table: "parameters", entityId: id, field: key },
       newValue,
       locale,
-      constructKey: () => info.constructKey(param.codexId),
-      referencedItem: {
-        itemId: id,
-        itemType: info.itemType,
-      },
-    });
+    );
   });
 }
 
@@ -247,22 +225,17 @@ export function deleteParameter(id: EntityId) {
         choice.parent.type === "paramAdditional" && choice.parent.id === id,
     );
 
+    removeDeviceClassLocalizations(editor, [
+      { table: "parameters", entityId: id },
+      ...enumChoices.map((choice) => ({
+        table: "enumChoices" as const,
+        entityId: choice.id,
+      })),
+    ]);
+
     for (const choice of enumChoices) {
-      removeReferencedLocalization(editor, choice.localized.name, {
-        itemType: "enumName",
-        itemId: choice.id,
-      });
-      removeReferencedLocalization(editor, choice.localized.description, {
-        itemType: "enumDesc",
-        itemId: choice.id,
-      });
       delete editor.enumChoices[choice.id];
     }
-
-    removeReferencedLocalization(editor, param.localized.friendlyName, {
-      itemType: "paramName",
-      itemId: id,
-    });
 
     delete editor.parameters[id];
     editor.parameterEditors = editor.parameterEditors.filter(

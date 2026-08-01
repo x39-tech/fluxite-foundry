@@ -17,7 +17,7 @@ import {
   getUniqueItemId,
   OrgId,
 } from "utils/utils";
-import { importLocalizations } from "utils/localizationUtils";
+import { importLocalizations } from "features/localizations/localize";
 import { updateDmxController } from "./state";
 import {
   codexIdAsEntityId,
@@ -167,6 +167,9 @@ export function getImportedDeviceClassEditor(
     strings: LocalizationDbSchema.parse({}),
     items: [],
   }));
+  editor.localizations[editor.basicData.localized.description]?.items.push({
+    itemType: "devClassDesc",
+  });
   importClasses(
     codexClass.deviceLibrary ?? {},
     editor,

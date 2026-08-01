@@ -1,18 +1,54 @@
 import { getByText, screen } from "@testing-library/react";
 import { useAppPersistentStore, useAppRuntimeStore } from "app/store";
 import {
+  AppPersistentState,
   EntityId,
   getDefaultState,
+  LocalizationDbSchema,
   LocalizationKey,
 } from "app/persistentState";
 import { loadDefaultLibraries } from "codex/libraryStore";
+import { checkIntegrity } from "features/localizations/registry";
+import { DEVICE_CLASS_LOCALIZATIONS } from "features/deviceClassEditor/localizationRegistry";
 
 /**
  * Resets the entire persistent store to its default state.
  * Use this in beforeEach() to ensure test isolation.
  */
 export function resetAppPersistentStore() {
+  watchLocalizationIntegrity();
   useAppPersistentStore.setState(getDefaultState(), true);
+}
+
+/**
+ * Throws if any open document's localized fields and string table disagree.
+ * A mutation that leaves a field pointing at a string that is not there, a
+ * string with no value at all, or a required field with no string, is a bug in
+ * the mutation.
+ */
+export function assertLocalizationIntegrity(state: AppPersistentState) {
+  for (const [id, editor] of Object.entries(state.deviceClassEditors)) {
+    const problems = checkIntegrity(editor, DEVICE_CLASS_LOCALIZATIONS);
+    if (problems.length > 0) {
+      throw new Error(
+        `Device class editor ${id} has inconsistent localizations:\n` +
+          problems.map((problem) => `  ${problem.message}`).join("\n"),
+      );
+    }
+  }
+}
+
+let integrityWatched = false;
+
+// Checks integrity after every change to the persistent store, so that a state
+// test does not have to assert it by hand to be told which mutation broke it.
+function watchLocalizationIntegrity() {
+  if (integrityWatched) {
+    return;
+  }
+
+  integrityWatched = true;
+  useAppPersistentStore.subscribe(assertLocalizationIntegrity);
 }
 
 /**
@@ -48,6 +84,7 @@ export function resetAllStores() {
 export function createEmptyDeviceClassEditor() {
   const state = useAppPersistentStore.getState();
   const editorId = EntityId("test-editor-id");
+  const descriptionKey = LocalizationKey("test description");
 
   state.deviceClassEditors[editorId] = {
     orgId: { type: "org", id: "test-org" },
@@ -65,7 +102,7 @@ export function createEmptyDeviceClassEditor() {
       modelSubcategory: "fixed-profile",
       compatibleFirmwareVersions: undefined,
       localized: {
-        description: LocalizationKey("test description"),
+        description: descriptionKey,
       },
     },
     libraries: {},
@@ -84,7 +121,12 @@ export function createEmptyDeviceClassEditor() {
     commandClassArguments: {},
     commandClassReturnValues: {},
     enumChoices: {},
-    localizations: {},
+    localizations: {
+      [descriptionKey]: {
+        strings: LocalizationDbSchema.parse({ "en-US": "Test description" }),
+        items: [{ itemType: "devClassDesc" }],
+      },
+    },
     windowLayout: "",
   };
 

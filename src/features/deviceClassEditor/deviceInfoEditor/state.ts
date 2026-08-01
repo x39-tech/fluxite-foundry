@@ -1,15 +1,9 @@
 import { Draft } from "immer";
-import {
-  updateCurrentEditor,
-  updateLocalizedValue,
-  useCurrentEditorPartShallow,
-} from "../state";
-import {
-  DeviceClassBasicData,
-  LocalizationReferencedItem,
-  Unlocalized,
-} from "app/persistentState";
-import { localize, LocalizedString } from "utils/localizationUtils";
+import { updateCurrentEditor, useCurrentEditorPartShallow } from "../state";
+import { setDeviceClassLocalizedValue } from "../localizationRegistry";
+import { DeviceClassBasicData } from "app/persistentState";
+import { Unlocalized } from "features/localizations/types";
+import { localize, LocalizedString } from "features/localizations/localize";
 import { useCurrentLocale } from "app/store";
 
 export interface LocalizedBasicData extends Unlocalized<DeviceClassBasicData> {
@@ -56,35 +50,17 @@ export function modifyBasicData(
   });
 }
 
-const BASIC_DATA_LOCALIZED_INFO: Record<
-  keyof DeviceClassBasicData["localized"],
-  {
-    itemType: LocalizationReferencedItem["itemType"];
-    constructKey: () => string;
-  }
-> = {
-  description: {
-    itemType: "devClassDesc",
-    constructKey: () => `devClass_description`,
-  },
-};
-
 export function modifyBasicDataLocalizedValue(
   key: keyof DeviceClassBasicData["localized"],
   newValue: string,
   locale: string,
 ) {
   updateCurrentEditor((editor) => {
-    const basicData = editor.basicData;
-    updateLocalizedValue(editor, basicData, {
-      fieldKey: key,
+    setDeviceClassLocalizedValue(
+      editor,
+      { table: "basicData", field: key },
       newValue,
       locale,
-      constructKey: BASIC_DATA_LOCALIZED_INFO[key].constructKey,
-      referencedItem: {
-        itemType: "devClassDesc",
-      },
-      isRequired: true, // description field is required in the schema
-    });
+    );
   });
 }

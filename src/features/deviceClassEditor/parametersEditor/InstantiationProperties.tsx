@@ -5,7 +5,8 @@ import { Label } from "components/scn-ui/Label";
 import { SelectField } from "components/EditorFields/SelectField";
 import { IntegerInput } from "components/IntegerInput";
 import { LocalizedParameter, modifyParameter } from "./state";
-import { EntityId, Parameter, Unlocalized } from "app/persistentState";
+import { EntityId, Parameter } from "app/persistentState";
+import { Unlocalized } from "features/localizations/types";
 
 const instantiationTypes = {
   SINGLE: "Single",
