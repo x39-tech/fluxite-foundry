@@ -83,11 +83,11 @@ export const ResourceEditor = ({ id }: Props) => {
           values={resourceClass.mediaType}
           displayValues={resourceClass.mediaType}
           selectedValue={resource.mediaType || resourceClass.mediaType[0]}
-          onSelectionChanged={async (newValue) => {
+          onSelectionChanged={(newValue) => {
             modifyResource(id, (draft) => {
               draft.mediaType = newValue;
             });
-            await updateResourceAsset(id, assetId, undefined);
+            updateResourceAsset(id);
           }}
         />
       </FieldSet>
@@ -179,12 +179,8 @@ export const ResourceEditor = ({ id }: Props) => {
           id={`${idPrefix}-defaultValue`}
           assetId={defaultValId}
           mediaType={resource.mediaType}
-          onChange={async (newAssetId) =>
-            await updateResourceAsset(id, assetId, newAssetId)
-          }
-          onDelete={async () =>
-            await updateResourceAsset(id, assetId, undefined)
-          }
+          onChange={(newAssetId) => updateResourceAsset(id, newAssetId)}
+          onDelete={() => updateResourceAsset(id)}
         />
       </FieldSet>
     </div>

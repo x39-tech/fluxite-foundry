@@ -31,7 +31,7 @@ export interface AssetDump {
 }
 
 class AssetDatabase extends Dexie {
-  assetMeta!: Table<AssetMeta>;
+  assetMeta!: Table<AssetMeta, string>;
   assetData!: EntityTable<AssetData, "id">;
 
   constructor() {
@@ -122,6 +122,13 @@ class AssetStorageManager {
       sha1: data.sha1,
       sha256: data.sha256,
     };
+  }
+
+  /**
+   * The id of every asset in the database, read without loading any bytes.
+   */
+  async listAssetIds(): Promise<string[]> {
+    return this.db.assetMeta.toCollection().primaryKeys();
   }
 
   async deleteAsset(id: string): Promise<void> {
