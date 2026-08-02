@@ -11,7 +11,7 @@
     "typecheck": "tsc",
     "test": "NODE_OPTIONS='--no-deprecation --experimental-wasm-modules --disable-warning=ExperimentalWarning' vitest run",
     "test:watch": "NODE_OPTIONS='--no-deprecation --experimental-wasm-modules --disable-warning=ExperimentalWarning' vitest",
-    "coverage": "vitest run --coverage",
+    "coverage": "NODE_OPTIONS='--no-deprecation --experimental-wasm-modules --disable-warning=ExperimentalWarning' vitest run --coverage",
     "state-version:capture": "NODE_OPTIONS='--no-deprecation --experimental-wasm-modules --disable-warning=ExperimentalWarning' vite-node scripts/capture-state-version.ts",
     "lint": "eslint .",
     "formatcheck": "prettier --check .",
