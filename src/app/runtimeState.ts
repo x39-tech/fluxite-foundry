@@ -11,6 +11,22 @@ export interface AppRuntimeState {
   systemDarkModePreference: boolean;
   // Each document's undo/redo stack. See app/undo.ts
   history: Record<EntityId, DocumentHistory>;
+  // The save file each document came from or was last written to. A document
+  // with no entry has never been written to a file. See app/documentFile.ts
+  documentFiles: Record<EntityId, DocumentFile>;
+}
+
+/** What a document knows about the save file it belongs to. */
+export interface DocumentFile {
+  /** The name of the file, including its extension. */
+  fileName: string;
+  /** Where the file is, when the platform says (only relevant on desktop). */
+  path?: string;
+  /**
+   * Whether the document has changed since it was last read from or written to
+   * that file, which is to say whether the file is out of date.
+   */
+  dirty: boolean;
 }
 
 export interface DocumentHistory {

@@ -28,7 +28,7 @@ Fluxite Foundry is a React and TypeScript application. I don't like TypeScript v
 
 We deploy as a web app continuously to GitHub Pages, and as a desktop app for Windows and macOS wrapped with [Tauri](https://v2.tauri.app/). Tauri loads the same built front end into the operating system's own webview and wraps it in a small Rust process.
 
-All functionality should stay in the frontend unless it is something that can only be done on a native app, such as sending live sACN from the test DMX controller. There are also a few places where the multi-platform support requires forked logic for the same functionality, like exporting files.
+All functionality should stay in the frontend unless it is something that can only be done on a native app, such as sending live sACN from the test DMX controller. There are also a few places where the multi-platform support requires forked logic for the same functionality, like opening and saving files.
 
 ### Single Build
 

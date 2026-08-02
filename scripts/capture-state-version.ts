@@ -19,13 +19,18 @@ import encoreDocument from "../src/e173/examples/draft-2026-1/device-classes/mar
 import movableDocument from "../src/e173/examples/draft-2026-1/device-classes/movable.fcd?raw";
 
 /**
- * Adds the current state version's snapshot to the snapshot history, by
- * importing the example device classes shipped with the E1.73 spec through the
- * app's own import path.
+ * Captures the required file artifacts for this state version:
+ *
+ * - its snapshot, a filled out state for the migration integration tests
+ * - its save file envelope, a minimal state used for importing a save file at
+ *   this version.
+ *
+ * Run this when a state version is created, after the new state's shape is
+ * settled, and commit the resulting files.
  */
 
 // Relative to the repo root, since this only runs through the npm script.
-const HISTORY_DIR = "src/app/persistentState/testdata";
+const VERSION_DIR = `src/app/persistentState/v${VERSION}`;
 
 const EXAMPLE_DOCUMENTS = [encoreDocument, movableDocument];
 
@@ -83,27 +88,47 @@ function buildStateToCapture(): AppPersistentState {
   return state;
 }
 
-const state = buildStateToCapture();
+/** The smallest state this version can hold a document in. */
+function buildEnvelopeToCapture(): AppPersistentState {
+  const state = getDefaultState();
 
-const validation = AppStateSchema.safeParse(state);
-if (!validation.success) {
-  throw new Error(
-    `Refusing to write a v${VERSION} snapshot that does not match the v${VERSION} schema: ${validation.error.message}`,
-  );
+  return {
+    ...state,
+    appSettings: {
+      ...state.appSettings,
+      orgId: { type: "org", id: "com.example" },
+    },
+    session: { openDocuments: [], selectedDocumentId: undefined, layouts: {} },
+    documents: {},
+  };
 }
 
-const path = `${HISTORY_DIR}/v${VERSION}.json`;
-writeFileSync(
-  path,
-  `${JSON.stringify(
-    {
-      formatVersion: SNAPSHOT_FORMAT_VERSION,
-      exportedAt: new Date().toISOString(),
-      stateVersion: VERSION,
-      state,
-    },
-    null,
-    2,
-  )}\n`,
-);
-console.log(`Wrote ${path}`);
+function validated(
+  state: AppPersistentState,
+  what: string,
+): AppPersistentState {
+  const result = AppStateSchema.safeParse(state);
+  if (!result.success) {
+    throw new Error(
+      `Refusing to write a v${VERSION} ${what} that does not match the v${VERSION} schema: ${result.error.message}`,
+    );
+  }
+  return state;
+}
+
+function write(path: string, contents: unknown) {
+  writeFileSync(path, `${JSON.stringify(contents, null, 2)}\n`);
+  console.log(`Wrote ${path}`);
+}
+
+write(`${VERSION_DIR}/snapshot.json`, {
+  formatVersion: SNAPSHOT_FORMAT_VERSION,
+  exportedAt: new Date().toISOString(),
+  stateVersion: VERSION,
+  state: validated(buildStateToCapture(), "snapshot"),
+});
+
+write(`${VERSION_DIR}/envelope.json`, {
+  stateVersion: VERSION,
+  state: validated(buildEnvelopeToCapture(), "envelope"),
+});

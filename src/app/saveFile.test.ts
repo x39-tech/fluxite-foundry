@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { isTauri } from "@tauri-apps/api/core";
-import { saveFile } from "./saveFile";
+import { saveFile, writeFileToPath } from "./saveFile";
 
 vi.mock("@tauri-apps/api/core", () => ({
   isTauri: vi.fn(),
@@ -35,7 +35,7 @@ describe("saveFile", () => {
 
       const result = await saveFile(new Blob(["contents"]), "my-device.fcd");
 
-      expect(result).toBe("saved");
+      expect(result).toEqual({ status: "saved" });
       expect(clickSpy).toHaveBeenCalled();
       expect(anchor.download).toBe("my-device.fcd");
     });
@@ -56,7 +56,10 @@ describe("saveFile", () => {
 
       const result = await saveFile(new Blob(["contents"]), "my-device.fcd");
 
-      expect(result).toBe("saved");
+      expect(result).toEqual({
+        status: "saved",
+        path: "/Users/someone/my-device.fcd",
+      });
       expect(writeFile).toHaveBeenCalledWith(
         "/Users/someone/my-device.fcd",
         new Uint8Array(await new Blob(["contents"]).arrayBuffer()),
@@ -83,8 +86,35 @@ describe("saveFile", () => {
 
       const result = await saveFile(new Blob(["contents"]), "my-device.fcd");
 
-      expect(result).toBe("cancelled");
+      expect(result).toEqual({ status: "cancelled" });
       expect(writeFile).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe("writeFileToPath", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("writes to the path without asking the user anything", async () => {
+    runningOnDesktop(true);
+
+    await writeFileToPath(new Blob(["contents"]), "/Users/someone/my-doc.ffd");
+
+    expect(save).not.toHaveBeenCalled();
+    expect(writeFile).toHaveBeenCalledWith(
+      "/Users/someone/my-doc.ffd",
+      new Uint8Array(await new Blob(["contents"]).arrayBuffer()),
+    );
+  });
+
+  it("refuses in the browser, which has no paths to write to", async () => {
+    runningOnDesktop(false);
+
+    await expect(
+      writeFileToPath(new Blob(["contents"]), "/Users/someone/my-doc.ffd"),
+    ).rejects.toThrow("desktop");
+    expect(writeFile).not.toHaveBeenCalled();
   });
 });

@@ -1,6 +1,7 @@
 // Document undo and redo implementations
 
 import { applyPatches, Patch } from "immer";
+import { patchesByDocument } from "./documents";
 import { AppPersistentState, EntityId } from "./persistentState";
 import { HistoryEntry } from "./runtimeState";
 import {
@@ -248,33 +249,6 @@ function forgetClosedDocuments(change: StateChange) {
   });
 
   reportReleasedAssets(released);
-}
-
-/**
- * Sorts the patches that address the contents of a document by the document
- * they belong to, and drops the rest.
- *
- * A path of ["documents", id] with nothing after it is a whole document coming
- * or going, which belongs to no document's history.
- */
-function patchesByDocument(patches: Patch[]): Map<EntityId, Patch[]> {
-  const byDocument = new Map<EntityId, Patch[]>();
-
-  for (const patch of patches) {
-    if (patch.path.length < 3 || patch.path[0] !== "documents") {
-      continue;
-    }
-
-    const documentId = EntityId(String(patch.path[1]));
-    const forDocument = byDocument.get(documentId);
-    if (forDocument) {
-      forDocument.push(patch);
-    } else {
-      byDocument.set(documentId, [patch]);
-    }
-  }
-
-  return byDocument;
 }
 
 // The assets a document referred to on either side of a change. Replaying the

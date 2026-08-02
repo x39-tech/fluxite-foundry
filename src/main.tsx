@@ -12,6 +12,7 @@ import {
   cleanupAssets,
 } from "./app/assetLifecycle";
 import { initUndo } from "./app/undo";
+import { initDocumentFiles } from "./app/documentFile";
 import "./index.css";
 import "./flexlayout.scss";
 
@@ -22,6 +23,7 @@ initUndo({
   documentAssetIds: assetIdsOfDocument,
   onAssetsReleased: cleanupAssets,
 });
+initDocumentFiles();
 initDeviceClassEditorEffects();
 void applyNativeWindowControlsInset();
 

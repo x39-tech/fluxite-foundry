@@ -3,9 +3,11 @@ import {
   CircleQuestionMarkIcon,
   DownloadIcon,
   FileTextIcon,
+  FolderOpenIcon,
   HardDriveDownloadIcon,
   HardDriveUploadIcon,
   RefreshCwIcon,
+  SaveIcon,
   SettingsIcon,
   SlidersVerticalIcon,
   UploadIcon,
@@ -14,6 +16,13 @@ import {
 import { isTauri } from "@tauri-apps/api/core";
 import { toast } from "sonner";
 import { getMigrationReport, openMigrationReport } from "app/migrationReport";
+import {
+  openDocumentFile,
+  saveDocument,
+  saveDocumentAs,
+} from "app/documentFile";
+import { useCurrentDocumentId } from "app/documents";
+import { EntityId } from "app/persistentState";
 import { checkForUpdateInteractively } from "features/updater/updatePrompt";
 import { errorMessage } from "utils/utils";
 import { APP_NAME } from "consts";
@@ -37,12 +46,32 @@ import {
 import { Button } from "components/scn-ui/Button";
 
 export const AppMainMenu = () => {
+  const currentDocumentId = useCurrentDocumentId();
   const [importDialogIsOpen, setImportDialogIsOpen] = useState(false);
   const [exportDialogIsOpen, setExportDialogIsOpen] = useState(false);
   const [settingsDialogIsOpen, setSettingsDialogIsOpen] = useState(false);
   const [aboutDialogIsOpen, setAboutDialogIsOpen] = useState(false);
   const [exportStateDialogIsOpen, setExportStateDialogIsOpen] = useState(false);
   const [importStateDialogIsOpen, setImportStateDialogIsOpen] = useState(false);
+
+  const openDocument = async () => {
+    try {
+      await openDocumentFile();
+    } catch (error) {
+      toast.error(`Error opening document: ${errorMessage(error)}`);
+    }
+  };
+
+  const save = async (documentId: EntityId, alwaysAsk: boolean) => {
+    try {
+      await (alwaysAsk ? saveDocumentAs : saveDocument)(documentId);
+    } catch (error) {
+      toast.error(`Error saving document: ${errorMessage(error)}`);
+    }
+  };
+
+  // In the browser, we just use "Save" to mean "Save As" in all cases and there
+  // is only one menu option. In Tauri, we expose both Save and Save As.
 
   return (
     <>
@@ -59,6 +88,31 @@ export const AppMainMenu = () => {
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="start">
           <UndoRedoMenuItems />
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => void openDocument()}>
+            <FolderOpenIcon className="size-5" />
+            Open...
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            disabled={currentDocumentId === undefined}
+            onClick={() =>
+              currentDocumentId && void save(currentDocumentId, false)
+            }
+          >
+            <SaveIcon className="size-5" />
+            Save
+          </DropdownMenuItem>
+          {isTauri() && (
+            <DropdownMenuItem
+              disabled={currentDocumentId === undefined}
+              onClick={() =>
+                currentDocumentId && void save(currentDocumentId, true)
+              }
+            >
+              <SaveIcon className="size-5" />
+              Save As...
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setImportDialogIsOpen(true)}>
             <DownloadIcon className="size-5" />
