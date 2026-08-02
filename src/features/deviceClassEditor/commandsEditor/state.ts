@@ -16,6 +16,7 @@ import {
   useCurrentEditorPartShallow,
   useDeviceLibrary,
   useLibraries,
+  useSourceLocale,
 } from "../state";
 import {
   createDeviceClassLocalizations,
@@ -80,6 +81,7 @@ export function useCommandInfo(id: EntityId):
   const importedLibs = useLibraries();
   const command = useCurrentEditorPart((editor) => editor.commands[id]);
   const locale = useCurrentLocale();
+  const sourceLocale = useSourceLocale();
   const libraryStore = useLibraryStore();
 
   if (!deviceLibrary || !importedLibs || !command) return undefined;
@@ -93,10 +95,17 @@ export function useCommandInfo(id: EntityId):
     libraryStore,
     "commandClasses",
   );
-  const cmdClass = resolved ? lookupCommandClass(resolved, locale) : undefined;
+  const cmdClass = resolved
+    ? lookupCommandClass(resolved, locale, sourceLocale)
+    : undefined;
 
   const friendlyName = command.localized.friendlyName
-    ? localize(localizations, command.localized.friendlyName, locale)
+    ? localize(
+        localizations,
+        command.localized.friendlyName,
+        locale,
+        sourceLocale,
+      )
     : undefined;
 
   const localizedCommand: LocalizedCommand = {
@@ -108,6 +117,7 @@ export function useCommandInfo(id: EntityId):
     enumChoices,
     localizations,
     locale,
+    sourceLocale,
     id,
     "cmdArg",
     resolved,
@@ -117,6 +127,7 @@ export function useCommandInfo(id: EntityId):
     enumChoices,
     localizations,
     locale,
+    sourceLocale,
     id,
     "cmdRet",
     resolved,
@@ -137,6 +148,7 @@ function collectInstanceEnumChoices(
   enumChoices: Record<EntityId, EnumChoice>,
   localizations: Record<LocalizationKey, LocalizationStrings>,
   locale: string,
+  sourceLocale: string | undefined,
   commandId: EntityId,
   parentType: CmdEnumParentType,
   resolved: ResolvedClassRef | undefined,
@@ -174,9 +186,19 @@ function collectInstanceEnumChoices(
 
     grouped[codexId].push({
       ...choice,
-      name: localize(localizations, choice.localized.name, locale),
+      name: localize(
+        localizations,
+        choice.localized.name,
+        locale,
+        sourceLocale,
+      ),
       description: choice.localized.description
-        ? localize(localizations, choice.localized.description, locale)
+        ? localize(
+            localizations,
+            choice.localized.description,
+            locale,
+            sourceLocale,
+          )
         : undefined,
     });
   }
