@@ -264,19 +264,11 @@ export type LocalizableFieldsForKey<
   K extends keyof Doc,
 > = LocalizableFieldsOfEntity<LocalizableEntityOf<Doc, K>>;
 
-/** What a key-construction function is given. */
-export interface LocalizationKeyContext<Doc, Entity> {
-  document: Doc;
-  entity: Unlocalized<Entity>;
-  /** Undefined for a singleton. */
-  entityId: EntityId | undefined;
-}
-
 /**
  * An entry in a localization registry; metadata about a specific localizable
  * field.
  */
-export interface LocalizableFieldSpec<Doc, Entity> {
+export interface LocalizableFieldSpec {
   /** What to call the field in the localizations editor. */
   label: string;
 
@@ -285,17 +277,6 @@ export interface LocalizableFieldSpec<Doc, Entity> {
    * optional one drops it.
    */
   required?: boolean;
-
-  /**
-   * Builds the LocalizationKey for this field. This should typically be a value
-   * that disambiguates the field from other fields in the same entity and
-   * across the document. For example, for a member of a device class's
-   * parameters table, you might use `param_${context.entity.codexId}`
-   *
-   * Returns undefined when the key cannot be constructed, which happens when
-   * it is derived from a related entity that is missing.
-   */
-  makeKey: (context: LocalizationKeyContext<Doc, Entity>) => string | undefined;
 }
 
 /**
@@ -316,27 +297,24 @@ export type RequiredFlagFor<
  * registry that forgets `required: true` on a mandatory field, or claims it on
  * an optional one, is a compile error.
  */
-export type LocalizableFieldSpecs<Doc, Entity> = {
-  [Field in LocalizableFieldsOfEntity<Entity>]: LocalizableFieldSpec<
-    Doc,
-    Entity
-  > &
+export type LocalizableFieldSpecs<Entity> = {
+  [Field in LocalizableFieldsOfEntity<Entity>]: LocalizableFieldSpec &
     RequiredFlagFor<Entity, Field & keyof LocalizableRecordOf<Entity>>;
 };
 
 /** A spec for a localizable table of entities in a document. */
-export interface LocalizableTableSpec<Doc, Entity> {
+export interface LocalizableTableSpec<Entity> {
   kind: "table";
   /** What to call one entity of this kind in the localizations editor. */
   label: string;
-  fields: LocalizableFieldSpecs<Doc, Entity>;
+  fields: LocalizableFieldSpecs<Entity>;
 }
 
 /** A spec for a localizable singleton object in a document. */
-export interface LocalizableSingletonSpec<Doc, Entity> {
+export interface LocalizableSingletonSpec<Entity> {
   kind: "singleton";
   label: string;
-  fields: LocalizableFieldSpecs<Doc, Entity>;
+  fields: LocalizableFieldSpecs<Entity>;
 }
 
 /**
@@ -398,8 +376,8 @@ export interface LocalizableSingletonSpec<Doc, Entity> {
  */
 export type LocalizationRegistry<Doc> = {
   [K in LocalizableEntryKey<Doc>]: K extends LocalizableTableKey<Doc>
-    ? LocalizableTableSpec<Doc, LocalizableEntityOf<Doc, K>>
-    : LocalizableSingletonSpec<Doc, NonNullable<Doc[K]>>;
+    ? LocalizableTableSpec<LocalizableEntityOf<Doc, K>>
+    : LocalizableSingletonSpec<NonNullable<Doc[K]>>;
 };
 
 /**

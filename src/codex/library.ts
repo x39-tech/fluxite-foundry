@@ -19,7 +19,6 @@ import {
   CommandReturnValue,
   EntityId,
   EnumChoice,
-  LocalizationDbSchema,
   LocalizationKey,
   ParameterClass,
   ResourceClass,
@@ -28,7 +27,7 @@ import {
 } from "app/persistentState";
 import { importLocalizations } from "features/localizations/localize";
 import { LocalizationStrings } from "features/localizations/types";
-import { newEntityId, optionalLocalizationKey } from "app/stateUtils";
+import { newEntityId } from "app/stateUtils";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -127,9 +126,7 @@ export function normalizeLibrary(
   const library = emptyLibrary();
   const index = emptyLibraryIndex();
 
-  importLocalizations(fcLibrary.localizations, library.localizations, () => ({
-    strings: LocalizationDbSchema.parse({}),
-  }));
+  importLocalizations(fcLibrary.localizations, library.localizations);
   importClasses(fcLibrary, library, index);
 
   return {
@@ -148,22 +145,35 @@ export function normalizeLibrary(
 // device class.
 // ---------------------------------------------------------------------------
 
+/**
+ * Translates a key the file used into the key the target holds it under.
+ *
+ * An imported library keeps the file's keys, because its strings are only ever
+ * read. Editable document types need a translation because their localizations
+ * are editable, so they make them entities with opaque entity IDs.
+ */
+export type MapLocalizationKey = (fileKey: string) => LocalizationKey;
+
+const keepFileKey: MapLocalizationKey = (fileKey) => LocalizationKey(fileKey);
+
 export function importClasses(
   source: FCDeviceLibrary,
   target: Library,
   index: LibraryIndex,
+  mapKey: MapLocalizationKey = keepFileKey,
 ) {
-  importParameterClasses(source, target, index);
-  importStructureClasses(source, target, index);
-  importSerializerClasses(source, target, index);
-  importResourceClasses(source, target, index);
-  importCommandClasses(source, target, index);
+  importParameterClasses(source, target, index, mapKey);
+  importStructureClasses(source, target, index, mapKey);
+  importSerializerClasses(source, target, index, mapKey);
+  importResourceClasses(source, target, index, mapKey);
+  importCommandClasses(source, target, index, mapKey);
 }
 
 function importParameterClasses(
   source: FCDeviceLibrary,
   target: Library,
   index: LibraryIndex,
+  mapKey: MapLocalizationKey,
 ) {
   for (const [id, cls] of Object.entries(source.parameterClasses || {})) {
     const codexId = CodexId(id);
@@ -173,8 +183,8 @@ function importParameterClasses(
       dataType: cls.dataType,
       unit: cls.unit,
       localized: {
-        name: LocalizationKey(cls["@name"]),
-        description: optionalLocalizationKey(cls["@description"]),
+        name: mapKey(cls["@name"]),
+        description: optionalMappedKey(cls["@description"], mapKey),
       },
     };
     index.parameterClasses.set(codexId, classId);
@@ -184,6 +194,7 @@ function importParameterClasses(
       { type: "paramClass", id: classId },
       target,
       index,
+      mapKey,
     );
   }
 }
@@ -192,6 +203,7 @@ function importStructureClasses(
   source: FCDeviceLibrary,
   target: Library,
   index: LibraryIndex,
+  mapKey: MapLocalizationKey,
 ) {
   for (const [id, cls] of Object.entries(source.structureClasses || {})) {
     const codexId = CodexId(id);
@@ -200,8 +212,8 @@ function importStructureClasses(
       codexId,
       multipleAllowed: cls.multipleAllowed,
       localized: {
-        name: LocalizationKey(cls["@name"]),
-        description: optionalLocalizationKey(cls["@description"]),
+        name: mapKey(cls["@name"]),
+        description: optionalMappedKey(cls["@description"], mapKey),
       },
     };
     index.structureClasses.set(codexId, classId);
@@ -212,6 +224,7 @@ function importSerializerClasses(
   source: FCDeviceLibrary,
   target: Library,
   index: LibraryIndex,
+  mapKey: MapLocalizationKey,
 ) {
   for (const [id, cls] of Object.entries(source.serializerClasses || {})) {
     const codexId = CodexId(id);
@@ -219,8 +232,8 @@ function importSerializerClasses(
     target.serializerClasses[classId] = {
       codexId,
       localized: {
-        name: LocalizationKey(cls["@name"]),
-        description: optionalLocalizationKey(cls["@description"]),
+        name: mapKey(cls["@name"]),
+        description: optionalMappedKey(cls["@description"], mapKey),
       },
     };
     index.serializerClasses.set(codexId, classId);
@@ -231,6 +244,7 @@ function importResourceClasses(
   source: FCDeviceLibrary,
   target: Library,
   index: LibraryIndex,
+  mapKey: MapLocalizationKey,
 ) {
   for (const [id, cls] of Object.entries(source.resourceClasses || {})) {
     const codexId = CodexId(id);
@@ -239,8 +253,8 @@ function importResourceClasses(
       codexId,
       mediaType: cls.mediaType,
       localized: {
-        name: LocalizationKey(cls["@name"]),
-        description: optionalLocalizationKey(cls["@description"]),
+        name: mapKey(cls["@name"]),
+        description: optionalMappedKey(cls["@description"], mapKey),
       },
     };
     index.resourceClasses.set(codexId, classId);
@@ -251,6 +265,7 @@ function importCommandClasses(
   source: FCDeviceLibrary,
   target: Library,
   index: LibraryIndex,
+  mapKey: MapLocalizationKey,
 ) {
   for (const [id, cls] of Object.entries(source.commandClasses || {})) {
     const codexId = CodexId(id);
@@ -258,8 +273,8 @@ function importCommandClasses(
     target.commandClasses[classId] = {
       codexId,
       localized: {
-        name: LocalizationKey(cls["@name"]),
-        description: optionalLocalizationKey(cls["@description"]),
+        name: mapKey(cls["@name"]),
+        description: optionalMappedKey(cls["@description"], mapKey),
       },
     };
     index.commandClasses.set(codexId, classId);
@@ -276,8 +291,8 @@ function importCommandClasses(
         unit: arg.unit,
         required: arg.required,
         localized: {
-          name: LocalizationKey(arg["@name"]),
-          description: optionalLocalizationKey(arg["@description"]),
+          name: mapKey(arg["@name"]),
+          description: optionalMappedKey(arg["@description"], mapKey),
         },
       };
       argIds.set(argCodexId, argId);
@@ -287,6 +302,7 @@ function importCommandClasses(
         { type: "cmdClassArg", id: argId },
         target,
         index,
+        mapKey,
       );
     }
 
@@ -302,8 +318,8 @@ function importCommandClasses(
         unit: ret.unit,
         required: ret.required,
         localized: {
-          name: LocalizationKey(ret["@name"]),
-          description: optionalLocalizationKey(ret["@description"]),
+          name: mapKey(ret["@name"]),
+          description: optionalMappedKey(ret["@description"], mapKey),
         },
       };
       retIds.set(retCodexId, retId);
@@ -313,6 +329,7 @@ function importCommandClasses(
         { type: "cmdClassRet", id: retId },
         target,
         index,
+        mapKey,
       );
     }
   }
@@ -326,6 +343,7 @@ function importEnumChoices(
   },
   target: Library,
   index: LibraryIndex,
+  mapKey: MapLocalizationKey,
 ) {
   const choiceIds = new Map<CodexId, EntityId>();
   index.enumChoices.set(parent.id, choiceIds);
@@ -338,11 +356,18 @@ function importEnumChoices(
       codexId: choiceCodexId,
       index: choiceIndex,
       localized: {
-        name: LocalizationKey(choice["@name"]),
+        name: mapKey(choice["@name"]),
         // TODO: description
       },
     };
     choiceIds.set(choiceCodexId, choiceId);
     // TODO: description
   }
+}
+
+function optionalMappedKey(
+  fileKey: string | undefined,
+  mapKey: MapLocalizationKey,
+): LocalizationKey | undefined {
+  return fileKey === undefined ? undefined : mapKey(fileKey);
 }

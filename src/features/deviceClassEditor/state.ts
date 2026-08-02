@@ -28,7 +28,6 @@ import {
 import { Library } from "codex/library";
 import {
   createDeviceClassLocalizations,
-  getParentLocIdPrefix,
   removeDeviceClassLocalizations,
   setDeviceClassLocalizedValue,
 } from "./localizationRegistry";
@@ -103,10 +102,6 @@ export function addEnumChoice(
   locale: string,
 ) {
   updateCurrentEditor((editor) => {
-    if (!getParentLocIdPrefix(editor, parent)) {
-      return;
-    }
-
     const allChoices = select(editor.enumChoices, (choice) =>
       enumChoiceParentsEqual(parent, choice.parent),
     );
@@ -123,8 +118,6 @@ export function addEnumChoice(
       localized: createDeviceClassLocalizations(
         editor,
         "enumChoices",
-        newChoiceId,
-        choice,
         { name, description },
         locale,
       ),

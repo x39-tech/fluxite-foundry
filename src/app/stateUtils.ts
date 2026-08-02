@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import { EntityId, EnumChoiceParent, LocalizationKey } from "./persistentState";
+import { EntityId, EnumChoiceParent } from "./persistentState";
 
 export function enumChoiceParentsEqual(
   a: EnumChoiceParent,
@@ -17,12 +17,6 @@ export function enumChoiceParentsEqual(
 
 export function newEntityId(): EntityId {
   return EntityId(nanoid());
-}
-
-export function optionalLocalizationKey(
-  id: string | undefined,
-): LocalizationKey | undefined {
-  return id as LocalizationKey;
 }
 
 // Database-like queries on record types

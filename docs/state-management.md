@@ -174,9 +174,9 @@ A document also records the `sourceLocale` it was authored in, which says which 
 
 ### Localization Keys
 
-We treat localizations as entities, the same as all other entities, and they are thus keyed by opaque `EntityId`s (nanoids). The Fluxite Codex import/export format generally wants more meaningful names for localization keys, and its _overlay localization_ functionality makes the localization keys significant.
+We treat localizations as entities, the same as all other entities, and they are thus keyed by opaque nanoids. The Fluxite Codex import/export format generally wants more meaningful names for localization keys, and its _overlay localization_ functionality makes the localization keys significant.
 
-Therefore, our localization entities have an `exportKey` which is the key the localization is exported under, when it is set. This is set on import and in the future, a user will be able to edit it. If a localization was created in-app, it has no `exportKey` yet, so export will fall back to a synthesized readable key based on any entities that are referencing the string, e.g. `param_intensity_friendlyName` or similar.
+Therefore, our localization entities have an `exportKey` which is the key the localization is exported under, when it is set. This is set on import and in the future, a user will be able to edit it. If a localization was created in-app, it has no `exportKey` yet, so export will fall back to a synthesized readable key based on any entities that are referencing the string, e.g. `param_intensity_friendlyName` or similar. If the document is in a broken state and no entities are referencing the string, it just uses the `EntityId` directly.
 
 ## Asset Storage (IndexedDB)
 

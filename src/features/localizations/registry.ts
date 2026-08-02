@@ -5,7 +5,7 @@ import {
   LocalizationDbSchema,
   LocalizationKey,
 } from "app/persistentState";
-import { getUniqueItemId } from "utils/utils";
+import { nanoid } from "nanoid";
 import {
   LocalizationIndex,
   LocalizationRegistry,
@@ -21,7 +21,6 @@ import {
   LocalizableFieldsForKey,
   LocalizableRecordOf,
   LocalizationValues,
-  Unlocalized,
 } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -155,8 +154,6 @@ export function createLocalizedFields<
   document: Doc,
   registry: LocalizationRegistry<Doc>,
   table: K,
-  entityId: EntityId | undefined,
-  entity: Unlocalized<LocalizableEntityOf<Doc, K>>,
   values: LocalizationValues<Doc, K>,
   locale: string,
 ): LocalizableRecordOf<LocalizableEntityOf<Doc, K>> {
@@ -170,12 +167,7 @@ export function createLocalizedFields<
       continue;
     }
 
-    const key = spec.makeKey({ document, entity, entityId });
-    if (key === undefined) {
-      continue;
-    }
-
-    localized[field] = addLocalization(document, key, value, locale);
+    localized[field] = addLocalization(document, value, locale);
   }
 
   return localized as LocalizableRecordOf<LocalizableEntityOf<Doc, K>>;
@@ -225,12 +217,7 @@ export function setLocalizedValue<
     return;
   }
 
-  const newKey = spec.makeKey({ document, entity, entityId: target.entityId });
-  if (newKey === undefined) {
-    return;
-  }
-
-  entity.localized[field] = addLocalization(document, newKey, newValue, locale);
+  entity.localized[field] = addLocalization(document, newValue, locale);
 }
 
 /**
@@ -292,32 +279,26 @@ type EntityFor<Doc, K extends LocalizableEntryKey<Doc>> = LocalizableEntityOf<
 > &
   LocalizableEntity;
 
-/** Any one of the field specs a registry for `Doc` can hold. */
-type FieldSpecOf<Doc> = LocalizableFieldSpec<
-  Doc,
-  LocalizableEntityOf<Doc, LocalizableEntryKey<Doc>>
->;
-
 /** A registry entry reached by name rather than by key. */
-interface EntryByName<Doc> {
+interface EntryByName {
   kind: "table" | "singleton";
   label: string;
-  fields: Record<string, FieldSpecOf<Doc>>;
+  fields: Record<string, LocalizableFieldSpec>;
 }
 
 /** One localized field of one entity, as found by walking the document. */
-interface FieldOccurrence<Doc> {
+interface FieldOccurrence {
   table: string;
   entityId?: EntityId;
   field: string;
-  spec: FieldSpecOf<Doc>;
+  spec: LocalizableFieldSpec;
   key: LocalizationKey | undefined;
 }
 
 function entriesByName<Doc extends LocalizableDocument>(
   registry: LocalizationRegistry<Doc>,
-): [string, EntryByName<Doc>][] {
-  return Object.entries(registry) as [string, EntryByName<Doc>][];
+): [string, EntryByName][] {
+  return Object.entries(registry) as [string, EntryByName][];
 }
 
 // Reads one of the document's tables or singletons by name.
@@ -333,7 +314,7 @@ function localizationKeys(document: LocalizableDocument): LocalizationKey[] {
 function* localizedFields<Doc extends LocalizableDocument>(
   document: Doc,
   registry: LocalizationRegistry<Doc>,
-): Generator<FieldOccurrence<Doc>> {
+): Generator<FieldOccurrence> {
   for (const [table, entry] of entriesByName(registry)) {
     for (const { entityId, entity } of entitiesIn(document, table, entry)) {
       for (const [field, spec] of Object.entries(entry.fields)) {
@@ -349,10 +330,10 @@ function* localizedFields<Doc extends LocalizableDocument>(
   }
 }
 
-function* entitiesIn<Doc>(
+function* entitiesIn(
   document: LocalizableDocument,
   table: string,
-  entry: EntryByName<Doc>,
+  entry: EntryByName,
 ): Generator<{ entityId?: EntityId; entity: LocalizableEntity }> {
   const value = entryValue(document, table);
   if (!value) {
@@ -371,9 +352,7 @@ function* entitiesIn<Doc>(
   }
 }
 
-function referenceTo<Doc>(
-  occurrence: FieldOccurrence<Doc>,
-): LocalizationReference {
+function referenceTo(occurrence: FieldOccurrence): LocalizationReference {
   return {
     table: occurrence.table,
     entityId: occurrence.entityId,
@@ -396,9 +375,8 @@ function fieldSpecs<
 >(
   registry: LocalizationRegistry<Doc>,
   table: K,
-): LocalizableFieldSpecs<Doc, LocalizableEntityOf<Doc, K>> {
+): LocalizableFieldSpecs<LocalizableEntityOf<Doc, K>> {
   return registry[table].fields as LocalizableFieldSpecs<
-    Doc,
     LocalizableEntityOf<Doc, K>
   >;
 }
@@ -407,7 +385,7 @@ function fieldNames<
   Doc extends LocalizableDocument,
   K extends LocalizableEntryKey<Doc>,
 >(
-  fields: LocalizableFieldSpecs<Doc, LocalizableEntityOf<Doc, K>>,
+  fields: LocalizableFieldSpecs<LocalizableEntityOf<Doc, K>>,
 ): LocalizableFieldsForKey<Doc, K>[] {
   return Object.keys(fields) as LocalizableFieldsForKey<Doc, K>[];
 }
@@ -442,17 +420,13 @@ function refKey(table: string | number | symbol, entityId?: EntityId): string {
   return `${String(table)}\0${entityId ?? ""}`;
 }
 
-// Adds a string under a key derived from the desired one, made unique against
-// the keys the document already uses.
+// Adds a string under a fresh opaque key.
 function addLocalization(
   document: LocalizableDocument,
-  desiredKey: string,
   value: string,
   locale: string,
 ): LocalizationKey {
-  const key = LocalizationKey(
-    getUniqueItemId(Object.keys(document.localizations), desiredKey),
-  );
+  const key = LocalizationKey(nanoid());
 
   document.localizations[key] = {
     strings: LocalizationDbSchema.parse({ [locale]: value }),
