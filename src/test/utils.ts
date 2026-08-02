@@ -67,6 +67,7 @@ export function resetAppRuntimeStore() {
       dmxControllers: {},
       libraries: loadDefaultLibraries(),
       systemDarkModePreference: false,
+      history: {},
     },
     true,
   );

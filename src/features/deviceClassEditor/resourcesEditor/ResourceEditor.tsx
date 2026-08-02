@@ -7,6 +7,7 @@ import {
   useResourceCodexIds,
   useResourceInfo,
 } from "./state";
+import { asOneChange } from "app/store";
 import { RenderError } from "components/RenderError";
 import { FieldSet } from "components/FieldSet";
 import { Label } from "components/scn-ui/Label";
@@ -84,10 +85,12 @@ export const ResourceEditor = ({ id }: Props) => {
           displayValues={resourceClass.mediaType}
           selectedValue={resource.mediaType || resourceClass.mediaType[0]}
           onSelectionChanged={(newValue) => {
-            modifyResource(id, (draft) => {
-              draft.mediaType = newValue;
+            asOneChange("Change Media Type", () => {
+              modifyResource(id, (draft) => {
+                draft.mediaType = newValue;
+              });
+              updateResourceAsset(id);
             });
-            updateResourceAsset(id);
           }}
         />
       </FieldSet>

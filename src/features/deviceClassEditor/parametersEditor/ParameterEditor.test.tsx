@@ -25,7 +25,7 @@ function createParameterClass(
   dataType: "number" | "enum",
   choiceNames: string[] = [],
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Test Change", (editor) => {
     const classNameKey = LocalizationKey(`${codexId}_name`);
     editor.localizations[classNameKey] = {
       strings: LocalizationDbSchema.parse({ "en-US": codexId }),

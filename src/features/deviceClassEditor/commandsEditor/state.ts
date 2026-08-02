@@ -222,7 +222,7 @@ export function createNewCommand(
   friendlyName: string,
   locale: string,
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Add Command", (editor) => {
     if (Object.values(editor.commands).some((cmd) => cmd.codexId === codexId)) {
       return;
     }
@@ -266,7 +266,7 @@ export function modifyCommand(
   id: EntityId,
   recipe: (state: Draft<Command>) => void,
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Edit Command", (editor) => {
     const command = editor.commands[id];
     if (!command) {
       return;
@@ -282,7 +282,7 @@ export function modifyCommandLocalizedValue(
   newValue: string,
   locale: string,
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Edit Command", (editor) => {
     setDeviceClassLocalizedValue(
       editor,
       { table: "commands", entityId: id, field: key },
@@ -293,7 +293,7 @@ export function modifyCommandLocalizedValue(
 }
 
 export function deleteCommand(id: EntityId) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Delete Command", (editor) => {
     const command = editor.commands[id];
     if (!command) {
       return;

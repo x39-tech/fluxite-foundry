@@ -51,7 +51,7 @@ export function useBasicData(): LocalizedBasicData | undefined {
 export function modifyBasicData(
   recipe: (state: Draft<Unlocalized<DeviceClassBasicData>>) => void,
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Edit Device Info", (editor) => {
     recipe(editor.basicData);
   });
 }
@@ -61,7 +61,7 @@ export function modifyBasicDataLocalizedValue(
   newValue: string,
   locale: string,
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Edit Device Info", (editor) => {
     setDeviceClassLocalizedValue(
       editor,
       { table: "basicData", field: key },

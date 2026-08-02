@@ -98,7 +98,7 @@ export function createNewResource(
   codexId: CodexId,
   _friendlyName: string,
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Add Resource", (editor) => {
     if (
       Object.values(editor.resources).some((res) => res.codexId === codexId)
     ) {
@@ -127,7 +127,7 @@ export function modifyResource(
   id: EntityId,
   recipe: (state: Draft<Unlocalized<Resource>>) => void,
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Edit Resource", (editor) => {
     const resource = editor.resources[id];
     if (!resource) {
       return;
@@ -138,7 +138,7 @@ export function modifyResource(
 }
 
 export function deleteResource(id: EntityId) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Delete Resource", (editor) => {
     const resource = editor.resources[id];
     if (resource?.default) {
       delete editor.resourceAssets[resource.default];
@@ -158,7 +158,7 @@ export function deleteResource(id: EntityId) {
  * app/assetLifecycle.ts.
  */
 export function updateResourceAsset(resourceId: EntityId, newAssetId?: string) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Change Resource File", (editor) => {
     const resource = editor.resources[resourceId];
     if (!resource) {
       return;

@@ -40,7 +40,7 @@ function createTestParamClass(
   dataType: FCDataType = "number",
   nameLocalizations: Record<string, string> = { "en-US": "Test Class" },
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Test Change", (editor) => {
     const locKey = LocalizationKey(`paramClass_${id}`);
     editor.localizations[locKey] = {
       strings: LocalizationDbSchema.parse(nameLocalizations),
@@ -62,7 +62,7 @@ function createTestParameter(
   classCodexId: CodexId = TEST_CLASS_CODEX_ID,
   count?: number,
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Test Change", (editor) => {
     editor.parameters[id] = {
       codexId,
       class: {
@@ -309,7 +309,7 @@ describe("dmxEditor/state.ts", () => {
           addParameterMapping(mappingGroupId);
           addParameterMapping(mappingGroupId);
 
-          updateCurrentEditor((editor) => {
+          updateCurrentEditor("Test Change", (editor) => {
             const mappingGroup =
               editor.dmxSerializer?.mappingGroups[mappingGroupId];
             if (mappingGroup) {

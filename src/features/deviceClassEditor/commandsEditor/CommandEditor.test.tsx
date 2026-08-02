@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { CommandEditor } from "./CommandEditor";
 import { createDeviceClassEditor } from "features/topNavBar/state";
 import { createNewCommand } from "./state";
-import { updateCurrentEditor } from "../state";
+import { DeviceClassDraft, updateCurrentEditor } from "../state";
 import {
   CodexId,
   EntityId,
@@ -16,11 +16,7 @@ import { newEntityId } from "app/stateUtils";
 const TEST_LOCALE = "en-US";
 
 // Helper to create a localization entry with proper types
-function addLocalization(
-  editor: Parameters<Parameters<typeof updateCurrentEditor>[0]>[0],
-  key: string,
-  value: string,
-) {
+function addLocalization(editor: DeviceClassDraft, key: string, value: string) {
   const locKey = LocalizationKey(key);
   editor.localizations[locKey] = {
     strings: LocalizationDbSchema.parse({ [TEST_LOCALE]: value }),
@@ -32,7 +28,7 @@ beforeEach(() => {
   createDeviceClassEditor();
 
   // Add test command classes to the device class editor with proper localizations
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Test Change", (editor) => {
     // Add localization strings
     const setPowerNameKey = addLocalization(
       editor,
@@ -142,7 +138,7 @@ describe("CommandEditor", () => {
 
       // Get the created command's EntityId
       let commandId: EntityId | undefined;
-      updateCurrentEditor((editor) => {
+      updateCurrentEditor("Test Change", (editor) => {
         const cmd = Object.entries(editor.commands).find(
           ([_, c]) => c.codexId === "set-power",
         );
@@ -174,7 +170,7 @@ describe("CommandEditor", () => {
       );
 
       let commandId: EntityId | undefined;
-      updateCurrentEditor((editor) => {
+      updateCurrentEditor("Test Change", (editor) => {
         const cmd = Object.entries(editor.commands).find(
           ([_, c]) => c.codexId === "set-power",
         );
@@ -200,7 +196,7 @@ describe("CommandEditor", () => {
       );
 
       let commandId: EntityId | undefined;
-      updateCurrentEditor((editor) => {
+      updateCurrentEditor("Test Change", (editor) => {
         const cmd = Object.entries(editor.commands).find(
           ([_, c]) => c.codexId === "set-power",
         );
@@ -228,7 +224,7 @@ describe("CommandEditor", () => {
       );
 
       let commandId: EntityId | undefined;
-      updateCurrentEditor((editor) => {
+      updateCurrentEditor("Test Change", (editor) => {
         const cmd = Object.entries(editor.commands).find(
           ([_, c]) => c.codexId === "set-power",
         );
@@ -262,7 +258,7 @@ describe("CommandEditor", () => {
       );
 
       let commandId: EntityId | undefined;
-      updateCurrentEditor((editor) => {
+      updateCurrentEditor("Test Change", (editor) => {
         const cmd = Object.entries(editor.commands).find(
           ([_, c]) => c.codexId === "set-power",
         );
@@ -294,7 +290,7 @@ describe("CommandEditor", () => {
       );
 
       let commandId: EntityId | undefined;
-      updateCurrentEditor((editor) => {
+      updateCurrentEditor("Test Change", (editor) => {
         const cmd = Object.entries(editor.commands).find(
           ([_, c]) => c.codexId === "set-power",
         );
@@ -334,7 +330,7 @@ describe("CommandEditor", () => {
       );
 
       let commandId: EntityId | undefined;
-      updateCurrentEditor((editor) => {
+      updateCurrentEditor("Test Change", (editor) => {
         const cmd = Object.entries(editor.commands).find(
           ([_, c]) => c.codexId === "command-1",
         );
@@ -367,7 +363,7 @@ describe("CommandEditor", () => {
       );
 
       let commandId: EntityId | undefined;
-      updateCurrentEditor((editor) => {
+      updateCurrentEditor("Test Change", (editor) => {
         const cmd = Object.entries(editor.commands).find(
           ([_, c]) => c.codexId === "set-power",
         );
@@ -391,7 +387,7 @@ describe("CommandEditor", () => {
       );
 
       let commandId: EntityId | undefined;
-      updateCurrentEditor((editor) => {
+      updateCurrentEditor("Test Change", (editor) => {
         const cmd = Object.entries(editor.commands).find(
           ([_, c]) => c.codexId === "set-power",
         );
@@ -419,7 +415,7 @@ describe("CommandEditor", () => {
 
     it("should display enum choices editor when argument has choices", () => {
       // Add a command class with an enum argument
-      updateCurrentEditor((editor) => {
+      updateCurrentEditor("Test Change", (editor) => {
         const setModeNameKey = addLocalization(
           editor,
           "set_mode_name",
@@ -487,7 +483,7 @@ describe("CommandEditor", () => {
       );
 
       let commandId: EntityId | undefined;
-      updateCurrentEditor((editor) => {
+      updateCurrentEditor("Test Change", (editor) => {
         const cmd = Object.entries(editor.commands).find(
           ([_, c]) => c.codexId === "set-mode",
         );

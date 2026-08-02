@@ -6,6 +6,7 @@ import {
   useAppRuntimeStore,
 } from "app/store";
 import { DmxController } from "app/runtimeState";
+import { initUndo, undo } from "app/undo";
 import { resetAllStores, createEmptyDeviceClassEditor } from "test/utils";
 import { closeDocument, setSelectedDocument } from "features/topNavBar/state";
 import { updateCurrentEditor, setWindowLayout } from "./state";
@@ -34,7 +35,7 @@ describe("DMX driver effect", () => {
   });
 
   test("leaves a document with no DMX serializer without a driver", () => {
-    updateCurrentEditor((editor) => {
+    updateCurrentEditor("Test Change", (editor) => {
       editor.dmxSerializer = undefined;
     });
 
@@ -44,7 +45,7 @@ describe("DMX driver effect", () => {
   });
 
   test("leaves a document with nothing mapped yet without a driver", () => {
-    updateCurrentEditor((editor) => {
+    updateCurrentEditor("Test Change", (editor) => {
       editor.dmxSerializer = {
         chunks: {},
         mappingGroups: {},
@@ -120,6 +121,26 @@ describe("DMX driver effect", () => {
     expect(controllerFor(FIRST_EDITOR)).toBeDefined();
   });
 
+  // An undo is a state change like any other, so the driver follows it without
+  // undo having to know that drivers exist.
+  test("rebuilds the driver when a change is undone", () => {
+    const stopUndo = initUndo();
+    stopEffects = initDeviceClassEditorEffects();
+    const before = controllerFor(FIRST_EDITOR);
+
+    addParameter();
+    const withParameter = controllerFor(FIRST_EDITOR);
+    undo(FIRST_EDITOR);
+
+    try {
+      expect(withParameter).not.toBe(before);
+      expect(controllerFor(FIRST_EDITOR)).not.toBe(withParameter);
+      expect(controllerFor(FIRST_EDITOR)?.state).toBe("available");
+    } finally {
+      stopUndo();
+    }
+  });
+
   test("stops following the state once stopped", () => {
     stopEffects = initDeviceClassEditorEffects();
     const before = controllerFor(FIRST_EDITOR);
@@ -150,7 +171,7 @@ function addDmxSerializer(editorId: EntityId) {
 }
 
 function addParameter() {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Test Change", (editor) => {
     editor.parameters[EntityId("param1")] = {
       codexId: CodexId("param1"),
       class: { type: "local", id: EntityId("class1") },

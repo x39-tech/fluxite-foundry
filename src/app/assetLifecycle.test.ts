@@ -1,5 +1,4 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
-import { applyPatches, Patch } from "immer";
 import { createEmptyDeviceClassEditor, resetAllStores } from "test/utils";
 import { closeDocument, setSelectedDocument } from "features/topNavBar/state";
 import { deviceClassAssets } from "features/deviceClassEditor/assets";
@@ -9,15 +8,14 @@ import {
   updateResourceAsset,
 } from "features/deviceClassEditor/resourcesEditor/state";
 import { CodexId, EntityId } from "./persistentState";
-import {
-  subscribeToStatePatches,
-  updateAppPersistentState,
-  useAppPersistentStore,
-} from "./store";
+import { updateAppPersistentState, useAppPersistentStore } from "./store";
 import { assetStorage } from "./assetStorage";
+import { initUndo, MAX_HISTORY_ENTRIES, undo } from "./undo";
 import {
+  assetIdsOfDocument,
   cleanupUnreferencedAssets,
   initAssetLifecycle,
+  cleanupAssets,
 } from "./assetLifecycle";
 
 const FIRST_EDITOR = EntityId("test-editor-id");
@@ -28,6 +26,7 @@ const RESOURCE = EntityId("resource-id");
 // that refers to assets so far.
 describe("asset lifecycle", () => {
   let stopLifecycle: () => void = () => {};
+  let stopUndo: () => void = () => {};
 
   beforeEach(async () => {
     await assetStorage.restore({ meta: [], data: [] });
@@ -38,9 +37,14 @@ describe("asset lifecycle", () => {
     // Started on an empty database, so the cleanup this sets off has nothing to
     // find and cannot race the assets a test goes on to store.
     stopLifecycle = initAssetLifecycle([deviceClassAssets]);
+    stopUndo = initUndo({
+      documentAssetIds: assetIdsOfDocument,
+      onAssetsReleased: cleanupAssets,
+    });
   });
 
   afterEach(() => {
+    stopUndo();
     stopLifecycle();
   });
 
@@ -84,13 +88,57 @@ describe("asset lifecycle", () => {
     updateResourceAsset(RESOURCE, original);
     const replacement = await storeAsset("replacement");
 
-    const undo = capturingUndo(() =>
-      updateResourceAsset(RESOURCE, replacement),
-    );
-    undo();
+    updateResourceAsset(RESOURCE, replacement);
+    undo(FIRST_EDITOR);
 
     expect(assetOf(RESOURCE)).toBe(original);
     expect(await contentOf(original)).toBe("original");
+  });
+
+  test("keeps an asset only a document's history can still reach", async () => {
+    const dropped = await storeAsset("dropped, but an undo away");
+    updateResourceAsset(RESOURCE, dropped);
+    updateResourceAsset(RESOURCE);
+
+    expect(await cleanupUnreferencedAssets()).toEqual([]);
+    expect(await contentOf(dropped)).toBe("dropped, but an undo away");
+  });
+
+  test("cleans up an asset once the history holding it has gone", async () => {
+    const dropped = await storeAsset("dropped, and the history with it");
+    updateResourceAsset(RESOURCE, dropped);
+    updateResourceAsset(RESOURCE);
+
+    closeDocument(FIRST_EDITOR);
+
+    await cleanupOf(dropped);
+  });
+
+  test("cleans up an asset an undo dropped when its document closes", async () => {
+    const asset = await storeAsset("given to a resource, then undone");
+    updateResourceAsset(RESOURCE, asset);
+
+    // Undoing puts the change on the redo stack, which is then the only thing
+    // that knows about the asset. The test above is the same story with the
+    // asset left on the undo stack instead.
+    undo(FIRST_EDITOR);
+    closeDocument(FIRST_EDITOR);
+
+    await cleanupOf(asset);
+  });
+
+  test("cleans up an asset that falls off the end of the history", async () => {
+    const dropped = await storeAsset("dropped a long time ago");
+    updateResourceAsset(RESOURCE, dropped);
+    updateResourceAsset(RESOURCE);
+
+    for (let i = 0; i < MAX_HISTORY_ENTRIES; i++) {
+      updateCurrentEditor("Rename Device", (editor) => {
+        editor.basicData.modelName = `Renamed ${i}`;
+      });
+    }
+
+    await cleanupOf(dropped);
   });
 
   test("keeps the bytes of a deleted resource's asset", async () => {
@@ -181,30 +229,8 @@ function assetOf(resourceId: EntityId): string | undefined {
   return fileName ? editor.resourceAssets[fileName] : undefined;
 }
 
-// Runs an update and returns a function undoing it, standing in for the undo
-// stack which will be implemented in the future.
-function capturingUndo(update: () => void): () => void {
-  let inversePatches: Patch[] = [];
-
-  const unsubscribe = subscribeToStatePatches((_patches, inverse) => {
-    inversePatches = inverse;
-  });
-  try {
-    update();
-  } finally {
-    unsubscribe();
-  }
-
-  return () => {
-    useAppPersistentStore.setState(
-      applyPatches(useAppPersistentStore.getState(), inversePatches),
-      true,
-    );
-  };
-}
-
 function addResource() {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Test Change", (editor) => {
     editor.resources[RESOURCE] = {
       codexId: CodexId("resource"),
       class: {

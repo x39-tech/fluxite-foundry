@@ -23,6 +23,7 @@ import { ExportFluxiteCodexDialog } from "./ExportFluxiteCodexDialog";
 import { SettingsDialog } from "./SettingsDialog";
 import { ExportStateDialog } from "./ExportStateDialog";
 import { ImportStateDialog } from "./ImportStateDialog";
+import { UndoRedoMenuItems } from "./UndoRedoMenuItems";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,6 +58,8 @@ export const AppMainMenu = () => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="start">
+          <UndoRedoMenuItems />
+          <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setImportDialogIsOpen(true)}>
             <DownloadIcon className="size-5" />
             Import Fluxite Codex...

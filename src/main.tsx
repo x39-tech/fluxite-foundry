@@ -6,13 +6,22 @@ import { applyNativeWindowControlsInset } from "./app/nativeWindowControls";
 import { applyPlatformTag } from "./app/platform";
 import { initDeviceClassEditorEffects } from "features/deviceClassEditor/effects";
 import { deviceClassAssets } from "features/deviceClassEditor/assets";
-import { initAssetLifecycle } from "./app/assetLifecycle";
+import {
+  assetIdsOfDocument,
+  initAssetLifecycle,
+  cleanupAssets,
+} from "./app/assetLifecycle";
+import { initUndo } from "./app/undo";
 import "./index.css";
 import "./flexlayout.scss";
 
 enablePatches();
 applyPlatformTag();
 initAssetLifecycle([deviceClassAssets]);
+initUndo({
+  documentAssetIds: assetIdsOfDocument,
+  onAssetsReleased: cleanupAssets,
+});
 initDeviceClassEditorEffects();
 void applyNativeWindowControlsInset();
 
