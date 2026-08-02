@@ -4,7 +4,7 @@ This document describes how application state is managed in Fluxite Foundry.
 
 ## Overview
 
-State is managed using Zustand with Immer for immutable updates. The application maintains two separate stores:
+State is managed using [Zustand](https://zustand.docs.pmnd.rs/) with [Immer](https://immerjs.github.io/immer/) for immutable updates. The application maintains two separate stores:
 
 1. **`useAppPersistentStore`** - Persisted to localStorage, survives page reloads. Each document it holds can also be saved to and opened from a save file; see "Save Files" below.
 2. **`useAppRuntimeStore`** - Runtime-only state (e.g., DMX controller, loaded libraries, system preferences)
@@ -21,7 +21,7 @@ The runtime state is more loosely defined, since it doesn't need to be migrated 
 
 ## Access Pattern
 
-Generally, hooks that access state are created in the `state.ts` file for a given feature. Hooks are composed based on `useAppPersistentStore()` and `useAppRuntimeStore()`, sometimes with multiple levels, for example:
+Hooks that access state are generally created in the `state.ts` file for a given feature. Hooks are composed based on `useAppPersistentStore()` and `useAppRuntimeStore()`, sometimes with multiple levels, for example:
 
 ```
 useLocalizations -> useCurrentEditorPart -> useAppPersistentStore
@@ -85,7 +85,7 @@ updateAppPersistentState((state) => {
 
 Every change must go through `updateAppPersistentState`, because side-effect listeners such as `subscribeToStatePatches` are wired in through that update path. Any function that the app logic uses to update the persistent state must be a wrapper around this function.
 
-Changes to a document go through `updateCurrentDocumentOfType`, or a per-document-type wrapper around it such as `updateCurrentEditor`. It takes a label, because every change to a document can be undone and the label is what the undo menu calls it. Write it as an imperative describing what the user did, e.g. `"Add Parameter"`.
+Changes to a document go through `updateCurrentDocumentOfType`, or a per-document-type wrapper around it such as `updateCurrentEditor`. It takes a label which allows labeling actions in the undo/redo menu. Write the label as an imperative in the present tense describing what the user did, e.g. `"Add Parameter"`.
 
 When one thing the user did takes more than one update, wrap the updates in `asOneChange` so that they are reported, and undone, as one:
 
@@ -124,8 +124,8 @@ The persistent state has three parts:
 
 ```typescript
 interface AppPersistentState {
-  appSettings; // theme, orgId, locale
-  session; // open document ids, selection, per-document window layouts
+  appSettings; // e.g. theme, orgId, locale
+  session; // e.g. open document ids, selection, per-document window layouts
   documents: Record<EntityId, Document>;
 }
 ```
@@ -156,20 +156,20 @@ Note the consequences of normalization here: an `EnumChoice` is a child of a `Pa
 
 We refer to types that live in these top-level tables of a document as _entities_. But note that some members of a document are _not_ entities (in this example, `deviceClassId` and `deviceClassVersion` are simple string values). Also, some entities might have nested data inside them. We follow a set of heuristics to determine whether a piece of a document's data should be an entity:
 
-1. It has a unique identity.
+1. It has a unique identity; two of them that are identical in most or all of their data would nevertheless be unique.
 2. Something needs to remember or reference its identity across time.
 3. It can be created or deleted independently of its parent.
 4. Something needs to list all of them at once.
 5. It has localized fields (see "Localizations" below).
 6. It is not derivable from other state data.
 
-These are not hard-and-fast rules, but the more "yes" answers you have to these criteria, the more likely it is that the thing you are trying to define should be an entity. There are exceptions; for example, `DeviceClassBasicData` has `compatibleFirmwareVersions`, which is an array of strings, each of which can be created and deleted independently in the app's UI. Even though this satisfies 2 above, we don't make these entities because they are simple string values and don't satisfy the other heuristics.
+These are not hard-and-fast rules, but the more "yes" answers you have to these criteria, the more likely it is that the thing you are trying to define should be an entity. There are exceptions; for example, `DeviceClassBasicData` has `compatibleFirmwareVersions`, which is an array of strings, each of which can be created and deleted independently in the app's UI. Even though this satisfies 3 above, we don't make these entities because they are simple string values and don't satisfy the other heuristics.
 
 We also follow some structural rules when it comes to entities:
 
 1. Entity tables live at the top level of a document and are not nested.
 2. Entity tables should not be optional. `{}` is sufficient to represent an empty table.
-3. Within a document, entities should not be defined inside a discriminated union arm. The document union itself is the exception, and the reason for the qualifier: a document type is an arm of `Document` and holds its own entity tables at its top level. The rule is about unions _inside_ a document, where an entity's table would come and go with the arm.
+3. Within a document, entities should not be defined inside a discriminated union arm.
 4. If entities need to be ordered, prefer to store an ordered list of IDs alongside the entity table.
 
 Note that we have some existing violations of these rules in the app, due to history. This is a state we are working toward, not one we have completely achieved yet.

@@ -117,6 +117,9 @@ export default defineConfig({
     globals: true,
     setupFiles: "src/test/setup.ts",
     environment: "happy-dom",
+    coverage: {
+      exclude: ["src-tauri/**", "scripts/**", "dist/**"],
+    },
   },
   css: {
     preprocessorOptions: {
