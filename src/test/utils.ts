@@ -68,6 +68,7 @@ export function resetAppRuntimeStore() {
       libraries: loadDefaultLibraries(),
       systemDarkModePreference: false,
       history: {},
+      documentFiles: {},
     },
     true,
   );

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { PlusIcon } from "lucide-react";
 import {
   Tooltip,
@@ -7,8 +8,11 @@ import {
 import { Button } from "components/scn-ui/Button";
 import { AppLogo } from "components/icons/AppLogo";
 import { Separator } from "components/scn-ui/Separator";
+import { EntityId } from "app/persistentState";
+import { getDocumentFile } from "app/documentFile";
 import { EditorTitleTab } from "./EditorTitleTab";
 import { AppMainMenu } from "./AppMainMenu";
+import { CloseDocumentDialog } from "./CloseDocumentDialog";
 import { NavbarDivider } from "./NavbarDivider";
 import {
   closeDocument,
@@ -25,6 +29,19 @@ export const TopNavBar = () => {
   const documentNames = useDocumentNames();
   const documentTypes = useDocumentTypes();
   const selectedDocumentId = useSelectedDocumentId();
+  const [closing, setClosing] = useState<
+    { id: EntityId; name: string } | undefined
+  >(undefined);
+
+  const requestClose = (id: EntityId, name: string) => {
+    const file = getDocumentFile(id);
+    if (file && !file.dirty) {
+      closeDocument(id);
+      return;
+    }
+
+    setClosing({ id, name });
+  };
 
   return (
     <>
@@ -54,7 +71,7 @@ export const TopNavBar = () => {
               id={id}
               active={id === selectedDocumentId}
               onSelect={() => setSelectedDocument(id)}
-              onDelete={() => closeDocument(id)}
+              onDelete={() => requestClose(id, name)}
             />
           );
         })}
@@ -81,6 +98,17 @@ export const TopNavBar = () => {
         </div>
       </div>
       <Separator className="shadow-[0px_2px_4px_#0000000F,0px_4px_6px_#0000001A] fixed top-[50px] z-1" />
+      {closing && (
+        <CloseDocumentDialog
+          documentId={closing.id}
+          name={closing.name}
+          onConfirm={() => {
+            closeDocument(closing.id);
+            setClosing(undefined);
+          }}
+          onCancel={() => setClosing(undefined)}
+        />
+      )}
     </>
   );
 };

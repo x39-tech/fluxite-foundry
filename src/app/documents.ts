@@ -7,11 +7,12 @@
 // that arm of the union, narrowed. See features/deviceClassEditor/state.ts for
 // what that looks like from the other side.
 
-import { Draft } from "immer";
+import { Draft, Patch } from "immer";
 import { useShallow } from "zustand/react/shallow";
 import {
   AppPersistentState,
   Document,
+  documentTypes,
   DocumentType,
   EntityId,
 } from "./persistentState";
@@ -70,6 +71,43 @@ export function getCurrentDocumentOfType<T extends DocumentType>(
 ): DocumentOfType<T> | undefined {
   const document = getCurrentDocument(state);
   return document?.type === type ? (document as DocumentOfType<T>) : undefined;
+}
+
+/**
+ * What to call a document where a user can see it.
+ */
+export function documentName(document: Document): string {
+  switch (document.type) {
+    case documentTypes.DEVICE_CLASS:
+      return document.basicData.modelName;
+  }
+}
+
+/**
+ * Sorts the patches that address the contents of a document by the document
+ * they belong to, and drops the rest.
+ *
+ * A path of ["documents", id] with nothing after it is a whole document coming
+ * or going, which is not a change to the contents of any document.
+ */
+export function patchesByDocument(patches: Patch[]): Map<EntityId, Patch[]> {
+  const byDocument = new Map<EntityId, Patch[]>();
+
+  for (const patch of patches) {
+    if (patch.path.length < 3 || patch.path[0] !== "documents") {
+      continue;
+    }
+
+    const documentId = EntityId(String(patch.path[1]));
+    const forDocument = byDocument.get(documentId);
+    if (forDocument) {
+      forDocument.push(patch);
+    } else {
+      byDocument.set(documentId, [patch]);
+    }
+  }
+
+  return byDocument;
 }
 
 export function useCurrentDocumentId(): EntityId | undefined {

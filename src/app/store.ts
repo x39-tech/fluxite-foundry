@@ -253,5 +253,6 @@ function getDefaultRuntimeState(): AppRuntimeState {
     libraries: loadDefaultLibraries(),
     systemDarkModePreference: getSystemDarkModePreference(),
     history: {},
+    documentFiles: {},
   };
 }

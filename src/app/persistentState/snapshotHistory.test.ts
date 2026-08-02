@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AppStateSchema, migrateState, VERSION } from "app/persistentState";
 import { getSchemaForVersion } from "app/persistentStateMigrations";
 import { clearMigrationReport, getMigrationReport } from "app/migrationReport";
-import { getSnapshotFor, SNAPSHOT_HISTORY } from "./testdata/snapshotHistory";
+import { getSnapshotFor, SNAPSHOT_HISTORY } from "./snapshotHistory";
 
 /**
  * Tests over the snapshot history. These test that a real document saved at any
@@ -14,7 +14,7 @@ import { getSnapshotFor, SNAPSHOT_HISTORY } from "./testdata/snapshotHistory";
 
 // Every version the app has ever written state at, and could still be handed.
 const historicalVersions = Array.from(
-  { length: VERSION - 1 },
+  { length: VERSION },
   (_, index) => index + 1,
 );
 
@@ -29,7 +29,10 @@ describe("the state snapshot history", () => {
   });
 
   it.each(historicalVersions)("has a snapshot for v%i", (version) => {
-    expect(getSnapshotFor(version)?.version).toBe(version);
+    expect(
+      getSnapshotFor(version)?.version,
+      `Run 'npm run state-version:capture' from a build where v${version} is current.`,
+    ).toBe(version);
   });
 
   it("is not empty", () => {
@@ -60,14 +63,15 @@ describe("the state snapshot history", () => {
 
     it("keeps its documents through the migration", () => {
       const state = entry.snapshot.state as {
-        deviceClassEditors: Record<string, unknown>;
+        // Before v5 the documents lived in `deviceClassEditors`, the one table
+        // there was, rather than in the `documents` union table.
+        deviceClassEditors?: Record<string, unknown>;
+        documents?: Record<string, unknown>;
       };
       const migrated = migrateState(entry.snapshot.state, entry.version);
 
-      // Before v5, we had only `deviceClassEditors` instead of the current
-      // `documents` discriminated union table.
       expect(Object.keys(migrated.documents)).toEqual(
-        Object.keys(state.deviceClassEditors),
+        Object.keys(state.documents ?? state.deviceClassEditors ?? {}),
       );
     });
   });

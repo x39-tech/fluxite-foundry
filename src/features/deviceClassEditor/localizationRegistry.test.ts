@@ -7,7 +7,7 @@ import {
   LocalizationKey,
   migrateState,
 } from "app/persistentState";
-import { SNAPSHOT_HISTORY } from "app/persistentState/testdata/snapshotHistory";
+import { SNAPSHOT_HISTORY } from "app/persistentState/snapshotHistory";
 import {
   buildLocalizationIndex,
   checkIntegrity,

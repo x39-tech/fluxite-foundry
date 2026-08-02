@@ -1,0 +1,18 @@
+{
+  "stateVersion": 5,
+  "state": {
+    "appSettings": {
+      "theme": "system",
+      "orgId": {
+        "type": "org",
+        "id": "com.example"
+      },
+      "locale": "en-US"
+    },
+    "session": {
+      "openDocuments": [],
+      "layouts": {}
+    },
+    "documents": {}
+  }
+}

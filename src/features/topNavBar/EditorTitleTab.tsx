@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Trash2Icon, SpotlightIcon } from "lucide-react";
-import { DocumentType } from "app/persistentState";
+import { DocumentType, EntityId } from "app/persistentState";
+import { useDocumentIsDirty } from "app/documentFile";
 import { Toggle } from "components/scn-ui/Toggle";
 import { Button } from "components/scn-ui/Button";
 import { NavbarDivider } from "./NavbarDivider";
@@ -8,10 +9,10 @@ import { NavbarDivider } from "./NavbarDivider";
 interface Props {
   name: string;
   type: DocumentType | undefined;
-  id: string;
+  id: EntityId;
   active: boolean;
-  onSelect: (id: string) => void;
-  onDelete: (id: string) => void;
+  onSelect: (id: EntityId) => void;
+  onDelete: (id: EntityId) => void;
 }
 
 export const EditorTitleTab = ({
@@ -23,6 +24,7 @@ export const EditorTitleTab = ({
   onDelete,
 }: Props) => {
   const [hovered, setHovered] = useState(false);
+  const dirty = useDocumentIsDirty(id);
 
   const leftSideElement = useMemo(() => {
     switch (type) {
@@ -47,6 +49,13 @@ export const EditorTitleTab = ({
         >
           {leftSideElement}
           {name}
+          {dirty && (
+            <span
+              className="size-2 rounded-full bg-primary"
+              role="img"
+              aria-label="Unsaved changes"
+            />
+          )}
         </Toggle>
         <Button
           size="icon"

@@ -17,7 +17,12 @@
 // added).
 
 import { assetStorage } from "./assetStorage";
-import { AppPersistentState, EntityId } from "./persistentState";
+import {
+  AppPersistentState,
+  Document,
+  DocumentType,
+  EntityId,
+} from "./persistentState";
 import { useAppPersistentStore } from "./store";
 import { assetIdsHeldByHistory } from "./undo";
 
@@ -28,10 +33,23 @@ import { assetIdsHeldByHistory } from "./undo";
  * for the same state.
  */
 export interface DocumentAssets {
+  /** The kind of document this describes. */
+  type: DocumentType;
   /** The ids of the documents of this type the state holds. */
   documentIds: (state: AppPersistentState) => EntityId[];
   /** The ids of the assets one of those documents refers to. */
   assetIds: (state: AppPersistentState, documentId: EntityId) => string[];
+  /**
+   * Points a document at assets that are stored under different ids than the
+   * ones it names.
+   *
+   * Give a function that remaps old asset IDs to new ones, and any of the old
+   * set found within the document will be replaced with the corresponding new ID.
+   */
+  remapAssetIds: (
+    document: Document,
+    newIdFor: (assetId: string) => string | undefined,
+  ) => Document;
 }
 
 /**
@@ -85,6 +103,20 @@ export function assetIdsOfDocument(
   }
 
   return [];
+}
+
+/**
+ * Points a document at assets stored under different ids than the ones it
+ * names. See {@link DocumentAssets.remapAssetIds}.
+ *
+ * A document of a type that was not registered is returned unchanged.
+ */
+export function remapDocumentAssetIds(
+  document: Document,
+  newIdFor: (assetId: string) => string | undefined,
+): Document {
+  const source = sources.find((candidate) => candidate.type === document.type);
+  return source ? source.remapAssetIds(document, newIdFor) : document;
 }
 
 /**

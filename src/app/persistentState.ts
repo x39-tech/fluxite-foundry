@@ -11,14 +11,13 @@ import {
   generateDiff,
 } from "./migrationReport";
 
-// When creating a new state version:
-// 1. Export a snapshot of the outgoing version into persistentState/testdata/
-//    (see docs/state-management.md); it can only be produced while that version
-//    is still current.
-// 2. Create a new vN/ directory with state.ts and migrate.ts
-// 3. Import the new state module and migration function in persistentStateMigrations.ts
-// 4. Add the new migration to the MIGRATIONS array in persistentStateMigrations.ts
-// 5. Update the re-export and VERSION below to point to the new version
+// When creating a new state version (see docs/state-management.md):
+// 1. Create a new vN/ directory with state.ts and migrate.ts
+// 2. Import the new state module and migration function in persistentStateMigrations.ts
+// 3. Add the new migration to the MIGRATIONS array in persistentStateMigrations.ts
+// 4. Update the re-export and VERSION below to point to the new version
+// 5. Run `npm run state-version:capture`, which writes the new version's
+//    snapshot and save file envelope into persistentState/vN/.
 
 // Re-exports from the current (most recent) state version.
 export * from "./persistentState/v5/state";

@@ -1,6 +1,8 @@
 import { isTauri } from "@tauri-apps/api/core";
 
-export type SaveFileResult = "saved" | "cancelled";
+export type SaveFileResult =
+  /** `path` is only ever set on the desktop. */
+  { status: "saved"; path?: string } | { status: "cancelled" };
 
 /**
  * Write a generated file out to wherever the user wants it.
@@ -54,13 +56,13 @@ const saveViaNativeDialog = async (
   });
 
   if (path === null) {
-    return "cancelled";
+    return { status: "cancelled" };
   }
 
   // Tauri adds the path chosen in the save dialog to the filesystem scope, so
   // this write is permitted even though the app has no standing access to it.
   await writeFile(path, new Uint8Array(await blob.arrayBuffer()));
-  return "saved";
+  return { status: "saved", path };
 };
 
 const saveViaBrowserDownload = (
@@ -76,7 +78,27 @@ const saveViaBrowserDownload = (
   } finally {
     URL.revokeObjectURL(url);
   }
-  return "saved";
+  return { status: "saved" };
+};
+
+/**
+ * Write a file straight to a specified path, without asking the user anything.
+ *
+ * Typically used on desktop when a path for a given file has already been
+ * chosen for a user (e.g. File -> Save as opposed to Save As).
+ *
+ * @throws in the browser, which has no paths to write to.
+ */
+export const writeFileToPath = async (
+  blob: Blob,
+  path: string,
+): Promise<void> => {
+  if (!isTauri()) {
+    throw new Error("Only the desktop app can write to a path.");
+  }
+
+  const { writeFile } = await import("@tauri-apps/plugin-fs");
+  await writeFile(path, new Uint8Array(await blob.arrayBuffer()));
 };
 
 const extensionOf = (fileName: string): string | undefined => {

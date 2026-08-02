@@ -10,6 +10,7 @@ import {
 import {
   closeDocument,
   documentIdsOfType,
+  documentName,
   documentOfType,
   setSelectedDocument,
 } from "app/documents";
@@ -96,12 +97,7 @@ function getOpenDocumentNames(state: AppPersistentState): string[] {
       return "";
     }
 
-    switch (document.type) {
-      case documentTypes.DEVICE_CLASS:
-        return document.basicData.modelName;
-      default:
-        return "";
-    }
+    return documentName(document);
   });
 }
 

@@ -9,4 +9,5 @@ src/e173/
 
 tools/sacn-server/
 
-src/app/persistentState/testdata/*.json
+src/app/persistentState/v*/snapshot.json
+src/app/persistentState/v*/envelope.json
