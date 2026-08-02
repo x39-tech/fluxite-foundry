@@ -85,6 +85,19 @@ updateAppPersistentState((state) => {
 
 Every change must go through `updateAppPersistentState`, because side-effect listeners such as `subscribeToStatePatches` are wired in through that update path. Any function that the app logic uses to update the persistent state must be a wrapper around this function.
 
+Changes to a document go through `updateCurrentDocumentOfType`, or a per-document-type wrapper around it such as `updateCurrentEditor`. It takes a label, because every change to a document can be undone and the label is what the undo menu calls it. Write it as an imperative describing what the user did, e.g. `"Add Parameter"`.
+
+When one thing the user did takes more than one update, wrap the updates in `asOneChange` so that they are reported, and undone, as one:
+
+```typescript
+asOneChange("Change Media Type", () => {
+  modifyResource(id, (draft) => {
+    draft.mediaType = newValue;
+  });
+  updateResourceAsset(id);
+});
+```
+
 ## Side Effects
 
 If a state change needs to result in a side-effect that is not expressible via React plumbing such as `useEffect`, the side-effect should be registered on the store using `useAppPersistentStore.subscribe`. Do not simply fire these side-effects from the same place that the state is updated, because then they will not be replayed properly on undo and redo.
@@ -92,6 +105,14 @@ If a state change needs to result in a side-effect that is not expressible via R
 See `features/deviceClassEditor/effects.ts` and its behavior around DMX drivers as an example of this type of side-effect subscription.
 
 Because state changes are done using Immer, side-effect subscribers can compare old and new state by a simple referential comparison of top-level fields.
+
+## Undo and Redo
+
+Undo is per document, and lives in `app/undo.ts`. Only changes within a document are eligible for undo/redo (e.g. creating, importing, closing are not undoable), and each document gets its own undo/redo stack.
+
+An undo or a redo is applied through `updateAppPersistentState` like any other change, marked as a replay so that it is not recorded as new history. Side effects that observe the state, such as the DMX driver rebuild, therefore follow an undo without knowing that undo exists.
+
+History lives in the runtime store, so it does not survive a reload and never travels in a save file.
 
 ## Documents and Entities
 
@@ -192,6 +213,8 @@ An asset belongs to the documents that refer to it. To better support undo and r
 This logic lives in `app/assetLifecycle.ts`.
 
 Each type of document describes where its assets are as a `DocumentAssets` object, so the app core does not need to know what a document looks like.
+
+An open document's undo history counts as a referrer alongside the document itself, because undoing an edit can restore a reference to an asset that the state as it stands has no path to. Each history entry records the assets its document referred to on both sides of the change.
 
 ## State Versioning and Migrations
 

@@ -70,10 +70,36 @@ export function useCurrentLocale(): string {
 // Write
 // ---------------------------------------------------------------------------
 
-export type StatePatchListener = (
-  patches: Patch[],
-  inversePatches: Patch[],
-) => void;
+/** One change made to the persistent state. */
+export interface StateChange {
+  /** The patches that made the change. */
+  patches: Patch[];
+  /** The patches that put it back again. */
+  inversePatches: Patch[];
+  /** The state as it now stands. */
+  state: AppPersistentState;
+  /** The state as it stood before the change. */
+  previousState: AppPersistentState;
+  /**
+   * What to call the change where a user can see it, in the undo menu for
+   * instance. A change with no label is not one a user asked for by name.
+   */
+  label?: string;
+  /**
+   * Whether the change is an undo or a redo of an earlier one, rather than
+   * something new. A replay must not be recorded as new history.
+   */
+  isReplay: boolean;
+}
+
+export interface UpdateOptions {
+  /** {@link StateChange.label} */
+  label?: string;
+  /** {@link StateChange.isReplay} */
+  isReplay?: boolean;
+}
+
+export type StatePatchListener = (change: StateChange) => void;
 
 const patchListeners = new Set<StatePatchListener>();
 
@@ -81,14 +107,19 @@ const patchListeners = new Set<StatePatchListener>();
  * Every change to the persistent state goes through here.
  *
  * Listeners run once the store has been updated, and only when the recipe
- * actually changed something.
+ * actually changed something. Inside {@link asOneChange} they run once for the
+ * group rather than once per update.
  */
 export function updateAppPersistentState(
   recipe: (state: AppPersistentState) => void,
+  options: UpdateOptions = {},
 ) {
   let produced: { patches: Patch[]; inversePatches: Patch[] } | undefined;
+  let previousState: AppPersistentState | undefined;
 
   useAppPersistentStore.setState((state) => {
+    previousState = state;
+
     const [nextState, patches, inversePatches] = produceWithPatches(
       state,
       recipe,
@@ -97,12 +128,64 @@ export function updateAppPersistentState(
     return nextState;
   });
 
-  if (!produced || produced.patches.length === 0) {
+  if (!produced || !previousState || produced.patches.length === 0) {
     return;
   }
 
-  for (const listener of patchListeners) {
-    listener(produced.patches, produced.inversePatches);
+  if (activeChangeGroup) {
+    activeChangeGroup.patches.push(...produced.patches);
+    // Undoing the group means undoing its updates back to front, so each
+    // update's own inverse goes in front of the ones already collected.
+    activeChangeGroup.inversePatches.unshift(...produced.inversePatches);
+    return;
+  }
+
+  notifyPatchListeners({
+    ...produced,
+    state: useAppPersistentStore.getState(),
+    previousState,
+    label: options.label,
+    isReplay: options.isReplay ?? false,
+  });
+}
+
+/**
+ * Reports everything `body` changes as one change rather than as one per call
+ * to {@link updateAppPersistentState}, so that a user action which touches
+ * several entities is one entry in the undo history.
+ *
+ * The state is still updated one call at a time; this logic only affects patch
+ * listeners registered using {@link subscribeToStatePatches}, e.g. undo/redo.
+ */
+export function asOneChange(label: string, body: () => void) {
+  if (activeChangeGroup) {
+    body();
+    return;
+  }
+
+  const group: ActiveChangeGroup = {
+    label,
+    patches: [],
+    inversePatches: [],
+    previousState: useAppPersistentStore.getState(),
+  };
+  activeChangeGroup = group;
+
+  try {
+    body();
+  } finally {
+    activeChangeGroup = undefined;
+
+    if (group.patches.length > 0) {
+      notifyPatchListeners({
+        patches: group.patches,
+        inversePatches: group.inversePatches,
+        state: useAppPersistentStore.getState(),
+        previousState: group.previousState,
+        label: group.label,
+        isReplay: false,
+      });
+    }
   }
 }
 
@@ -141,6 +224,22 @@ export function setSystemDarkModePreference(isDark: boolean) {
 // Helpers
 // ---------------------------------------------------------------------------
 
+// A group of updates that will be reported as one change. See asOneChange.
+interface ActiveChangeGroup {
+  label: string;
+  patches: Patch[];
+  inversePatches: Patch[];
+  previousState: AppPersistentState;
+}
+
+let activeChangeGroup: ActiveChangeGroup | undefined;
+
+function notifyPatchListeners(change: StateChange) {
+  for (const listener of patchListeners) {
+    listener(change);
+  }
+}
+
 function getSystemDarkModePreference(): boolean {
   if (typeof window !== "undefined" && window.matchMedia) {
     return window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -153,5 +252,6 @@ function getDefaultRuntimeState(): AppRuntimeState {
     dmxControllers: {},
     libraries: loadDefaultLibraries(),
     systemDarkModePreference: getSystemDarkModePreference(),
+    history: {},
   };
 }

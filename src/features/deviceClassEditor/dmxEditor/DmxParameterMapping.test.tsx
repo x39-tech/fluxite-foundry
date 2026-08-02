@@ -42,7 +42,7 @@ function createTestParamClass(
   dataType: FCDataType,
   name: string,
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Test Change", (editor) => {
     const locKey = LocalizationKey(`paramClass_${id}`);
     editor.localizations[locKey] = {
       strings: LocalizationDbSchema.parse({ "en-US": name }),
@@ -242,7 +242,7 @@ describe("DmxParameterMapping - Unmapped Parameter Table Rows", () => {
 
     beforeEach(() => {
       // Create enum parameter class with choices
-      updateCurrentEditor((editor) => {
+      updateCurrentEditor("Test Change", (editor) => {
         const classNameKey = LocalizationKey("enum_class_name");
         editor.localizations[classNameKey] = {
           strings: LocalizationDbSchema.parse({ "en-US": "Enum Class" }),

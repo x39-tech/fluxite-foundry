@@ -125,19 +125,27 @@ export function useDocumentLayout(
 /**
  * Updates the current document, when it is of the given type. Does nothing when
  * no document is selected or the selected one is of another type.
+ *
+ * The label is what the change is called in the undo menu, in the imperative
+ * ("Add Parameter"), because every change to a document is undoable. Use
+ * `asOneChange` if you need to group multiple actions into one undo entry.
  */
 export function updateCurrentDocumentOfType<T extends DocumentType>(
   type: T,
+  label: string,
   updater: (document: Draft<DocumentOfType<T>>) => void,
 ) {
-  updateAppPersistentState((state) => {
-    const document = getCurrentDocumentOfType(state, type);
-    if (!document) {
-      return;
-    }
+  updateAppPersistentState(
+    (state) => {
+      const document = getCurrentDocumentOfType(state, type);
+      if (!document) {
+        return;
+      }
 
-    updater(document as Draft<DocumentOfType<T>>);
-  });
+      updater(document as Draft<DocumentOfType<T>>);
+    },
+    { label },
+  );
 }
 
 export function setSelectedDocument(id: EntityId | undefined) {

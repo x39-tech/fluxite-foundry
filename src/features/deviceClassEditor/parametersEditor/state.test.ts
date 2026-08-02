@@ -40,7 +40,7 @@ function createTestParamClass(
   dataType: FCDataType,
   nameLocalizations: Record<string, string>,
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Test Change", (editor) => {
     const locKey = LocalizationKey(`paramClass_${id}`);
     editor.localizations[locKey] = {
       strings: LocalizationDbSchema.parse(nameLocalizations),
@@ -306,7 +306,7 @@ describe("parametersEditor/state.ts", () => {
 
         // First remove the localization
         act(() => {
-          updateCurrentEditor((editor) => {
+          updateCurrentEditor("Test Change", (editor) => {
             const param = editor.parameters[paramId];
             if (param?.localized.friendlyName) {
               delete editor.localizations[param.localized.friendlyName];
@@ -395,7 +395,7 @@ describe("parametersEditor/state.ts", () => {
         });
 
         // Verify localization was cleaned up
-        updateCurrentEditor((editor) => {
+        updateCurrentEditor("Test Change", (editor) => {
           if (localizationKey) {
             expect(editor.localizations[localizationKey]).toBeUndefined();
           }
@@ -436,7 +436,7 @@ describe("parametersEditor/state.ts", () => {
         const localizationKey =
           updatedParams?.[paramId]?.localized.friendlyName;
 
-        updateCurrentEditor((editor) => {
+        updateCurrentEditor("Test Change", (editor) => {
           expect(editor.localizations[localizationKey!]).toBeDefined();
           expect(
             buildLocalizationIndex(editor, DEVICE_CLASS_LOCALIZATIONS)[
@@ -464,7 +464,7 @@ describe("parametersEditor/state.ts", () => {
         });
 
         // Verify localization was removed
-        updateCurrentEditor((editor) => {
+        updateCurrentEditor("Test Change", (editor) => {
           expect(editor.localizations[localizationKey!]).toBeUndefined();
         });
       });
@@ -501,7 +501,7 @@ describe("parametersEditor/state.ts", () => {
 
         // Manually make param2 share the same localization key
         act(() => {
-          updateCurrentEditor((editor) => {
+          updateCurrentEditor("Test Change", (editor) => {
             if (param1Key) {
               const param2 = editor.parameters[paramIds[1]];
               const param2OldKey = param2?.localized.friendlyName;
@@ -523,7 +523,7 @@ describe("parametersEditor/state.ts", () => {
         });
 
         // Verify localization still exists because param2 references it
-        updateCurrentEditor((editor) => {
+        updateCurrentEditor("Test Change", (editor) => {
           expect(editor.localizations[param1Key!]).toBeDefined();
           expect(
             buildLocalizationIndex(editor, DEVICE_CLASS_LOCALIZATIONS)[
@@ -551,7 +551,7 @@ describe("parametersEditor/state.ts", () => {
           "en-US": "Test Enum",
         });
 
-        updateCurrentEditor((editor) => {
+        updateCurrentEditor("Test Change", (editor) => {
           editor.localizations[LocalizationKey("enumChoice_enumChoice1")] = {
             strings: LocalizationDbSchema.parse({ "en-US": "Choice 1" }),
           };
@@ -597,7 +597,7 @@ describe("parametersEditor/state.ts", () => {
         });
 
         // Verify enum choice was deleted
-        updateCurrentEditor((editor) => {
+        updateCurrentEditor("Test Change", (editor) => {
           expect(
             Object.values(editor.enumChoices).find(
               (choice) => choice.codexId === TEST_ENUM_CHOICE_CODEX_ID,
@@ -748,7 +748,7 @@ describe("parametersEditor/state.ts", () => {
         });
 
         // Verify both locales exist
-        updateCurrentEditor((editor) => {
+        updateCurrentEditor("Test Change", (editor) => {
           const locKey = editor.parameters[paramId]?.localized.friendlyName;
           if (locKey) {
             expect(editor.localizations[locKey].strings["en-US"]).toBe(
@@ -764,7 +764,7 @@ describe("parametersEditor/state.ts", () => {
 
     describe("Imported vs device parameter classes", () => {
       test("creates parameter with imported class correctly", () => {
-        updateCurrentEditor((editor) => {
+        updateCurrentEditor("Test Change", (editor) => {
           editor.libraries = {
             "some-library": "1.0.0",
           };

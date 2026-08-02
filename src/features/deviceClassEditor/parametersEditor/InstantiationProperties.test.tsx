@@ -69,7 +69,7 @@ describe("InstantiationProperties - Dynamic Mode", () => {
   async function setupDynamicParameter() {
     const user = userEvent.setup();
 
-    updateCurrentEditor((editor) => {
+    updateCurrentEditor("Test Change", (editor) => {
       const classNameKey = LocalizationKey("test_class_name");
       editor.localizations[classNameKey] = {
         strings: LocalizationDbSchema.parse({ "en-US": "Test Class" }),

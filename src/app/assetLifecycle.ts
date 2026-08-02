@@ -10,15 +10,16 @@
 //    rehydrated app persistent state are deleted.
 //
 // This currently doesn't guard against assets being created while a cleanup is
-// running. The two places where cleanup now runs do not run into this issue,
-// but a full-asset cleanup that runs at a time other than startup would need to
-// guard against assets being created during that time (race condition between
-// the asset going in the database and the state slice that refers to it being
+// running. The places where cleanup now runs do not run into this issue, but a
+// full-asset cleanup that runs at a time other than startup would need to guard
+// against assets being created during that time (race condition between the
+// asset going in the database and the state slice that refers to it being
 // added).
 
 import { assetStorage } from "./assetStorage";
 import { AppPersistentState, EntityId } from "./persistentState";
 import { useAppPersistentStore } from "./store";
+import { assetIdsHeldByHistory } from "./undo";
 
 /**
  * How documents of one type refer to assets.
@@ -35,7 +36,8 @@ export interface DocumentAssets {
 
 /**
  * Starts cleaning up assets, against the document types given: every stored
- * asset now, and a closing document's own assets from here on.
+ * asset that is unreachable now, and from here on the assets that a closing
+ * document lets go of.
  *
  * Returns a function that stops it again. Calling this twice replaces the
  * first registration rather than adding a second.
@@ -69,7 +71,35 @@ export function stopAssetLifecycle() {
 }
 
 /**
- * Deletes the assets that no open document refers to.
+ * The ids of the assets one document refers to, whatever type of document it
+ * is. Answers nothing about a document of a type that was not registered.
+ */
+export function assetIdsOfDocument(
+  state: AppPersistentState,
+  documentId: EntityId,
+): string[] {
+  for (const source of sources) {
+    if (source.documentIds(state).includes(documentId)) {
+      return source.assetIds(state, documentId);
+    }
+  }
+
+  return [];
+}
+
+/**
+ * Deletes any of these assets that nothing can reach any more.
+ */
+export function cleanupAssets(assetIds: string[]) {
+  cleanup(assetIds);
+}
+
+/**
+ * Deletes the assets that nothing can reach.
+ *
+ * Calling without `candidates` (doing a full sweep) is only safe when no asset
+ * can be in the middle of being attached to a document (e.g. at startup); see
+ * the note at the top of this file.
  *
  * @param candidates the assets to consider, or every stored asset if left out.
  * @returns the ids of the assets that were deleted.
@@ -156,8 +186,10 @@ function assetsOfClosedDocuments(
   return assets;
 }
 
+// Everything the app can reach: what the open documents refer to now, and what
+// their undo histories can bring back.
 function referencedAssetIds(state: AppPersistentState): Set<string> {
-  const referenced = new Set<string>();
+  const referenced = assetIdsHeldByHistory();
 
   for (const source of sources) {
     for (const documentId of source.documentIds(state)) {

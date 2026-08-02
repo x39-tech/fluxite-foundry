@@ -81,10 +81,19 @@ export function useLocalizations(): Record<LocalizationKey, Localization> {
 // Write
 // ---------------------------------------------------------------------------
 
+/** A device class document as it is handed to an updater, ready to change. */
+export type DeviceClassDraft = Draft<DeviceClassDocument>;
+
+/**
+ * Updates the current document, if it is a device class.
+ *
+ * The label names the change in the undo menu; see updateCurrentDocumentOfType.
+ */
 export function updateCurrentEditor(
-  updater: (editor: Draft<DeviceClassDocument>) => void,
+  label: string,
+  updater: (editor: DeviceClassDraft) => void,
 ) {
-  updateCurrentDocumentOfType(documentTypes.DEVICE_CLASS, updater);
+  updateCurrentDocumentOfType(documentTypes.DEVICE_CLASS, label, updater);
 }
 
 export function setWindowLayout(
@@ -101,7 +110,7 @@ export function addEnumChoice(
   description: string | undefined,
   locale: string,
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Add Enum Choice", (editor) => {
     const allChoices = select(editor.enumChoices, (choice) =>
       enumChoiceParentsEqual(parent, choice.parent),
     );
@@ -131,7 +140,7 @@ export function modifyEnumChoice(
     state: Draft<Omit<Unlocalized<EnumChoice>, "parentType" | "parentId">>,
   ) => void,
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Edit Enum Choice", (editor) => {
     const choice = editor.enumChoices[id];
     if (!choice) {
       return;
@@ -147,7 +156,7 @@ export function modifyEnumChoiceLocalizedValue(
   newValue: string,
   locale: string,
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Edit Enum Choice", (editor) => {
     setDeviceClassLocalizedValue(
       editor,
       { table: "enumChoices", entityId: id, field: key },
@@ -158,7 +167,7 @@ export function modifyEnumChoiceLocalizedValue(
 }
 
 export function deleteEnumChoice(id: EntityId) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Delete Enum Choice", (editor) => {
     const choiceToRemove = editor.enumChoices[id];
     if (!choiceToRemove) {
       return;

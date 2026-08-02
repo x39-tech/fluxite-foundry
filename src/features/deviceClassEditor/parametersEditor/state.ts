@@ -162,7 +162,7 @@ export function createNewParameter(
   paramClass: CodexId,
   codexId: CodexId,
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Add Parameter", (editor) => {
     if (
       Object.values(editor.parameters).some(
         (param) => param.codexId === codexId,
@@ -203,7 +203,7 @@ export function modifyParameter(
   id: EntityId,
   recipe: (state: Draft<Unlocalized<Parameter>>) => void,
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Edit Parameter", (editor) => {
     const param = editor.parameters[id];
     if (!param) {
       return;
@@ -219,7 +219,7 @@ export function modifyParameterLocalizedValue(
   newValue: string,
   locale: string,
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Edit Parameter", (editor) => {
     setDeviceClassLocalizedValue(
       editor,
       { table: "parameters", entityId: id, field: key },
@@ -230,7 +230,7 @@ export function modifyParameterLocalizedValue(
 }
 
 export function deleteParameter(id: EntityId) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Delete Parameter", (editor) => {
     const param = editor.parameters[id];
     if (!param) {
       return;

@@ -13,6 +13,7 @@ import {
   Parameter,
 } from "app/persistentState";
 import {
+  DeviceClassDraft,
   updateCurrentEditor,
   useCurrentEditorId,
   useCurrentEditorPart,
@@ -182,7 +183,7 @@ export function useMappableParameters(): Record<EntityId, MappableParameter> {
 // ---------------------------------------------------------------------------
 
 function getOrCreateDmxSerializer(
-  editor: Parameters<Parameters<typeof updateCurrentEditor>[0]>[0],
+  editor: DeviceClassDraft,
 ): DmxSerializerState {
   if (!editor.dmxSerializer) {
     editor.dmxSerializer = { chunks: {}, mappingGroups: {}, conditions: {} };
@@ -236,7 +237,7 @@ function isMappableParamClass(
 // ---------------------------------------------------------------------------
 
 export function addDmxChunk() {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Add DMX Chunk", (editor) => {
     const dmx = getOrCreateDmxSerializer(editor);
 
     const offsetsInUse = Object.values(dmx.chunks).reduce((acc, chunk) => {
@@ -271,7 +272,7 @@ export function addDmxChunk() {
 }
 
 export function removeDmxChunk(chunkId: EntityId) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Delete DMX Chunk", (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx) return;
 
@@ -335,7 +336,7 @@ function removeConditionAndChildren(
 }
 
 export function changeDmxChunkOffsets(chunkId: EntityId, newOffsets: string[]) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Change DMX Offsets", (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx) return;
 
@@ -370,7 +371,7 @@ export function changeDmxChunkOffsets(chunkId: EntityId, newOffsets: string[]) {
 // ---------------------------------------------------------------------------
 
 export function addParameterMappingGroup(chunkId: EntityId) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Add DMX Mapping Group", (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx || !dmx.chunks[chunkId]) return;
 
@@ -394,7 +395,7 @@ export function removeParameterMappingGroup(
   chunkId: EntityId,
   mappingGroupId: EntityId,
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Delete DMX Mapping Group", (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx) return;
 
@@ -413,7 +414,7 @@ export function removeParameterMappingGroup(
 // ---------------------------------------------------------------------------
 
 export function addParameterMapping(mappingGroupId: EntityId) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Add DMX Parameter Mapping", (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx) return;
 
@@ -443,7 +444,7 @@ export function updateParameterMapping(
   mappingIndex: number,
   newValue: DmxMapping,
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Edit DMX Parameter Mapping", (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx) return;
 
@@ -458,7 +459,7 @@ export function removeParameterMapping(
   mappingGroupId: EntityId,
   mappingIndex: number,
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Delete DMX Parameter Mapping", (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx) return;
 
@@ -477,7 +478,7 @@ export function addCondition(
   mappingGroupId: EntityId,
   parentChunkId: EntityId,
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Add DMX Mapping Condition", (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx) return;
 
@@ -543,7 +544,7 @@ export function updateCondition(
   conditionId: EntityId,
   newCondition: DmxCondition,
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Edit DMX Mapping Condition", (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx) return;
 
@@ -557,7 +558,7 @@ export function updateConditionMatch(
   conditionId: EntityId,
   match: "any" | "all",
 ) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Edit DMX Mapping Condition", (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx) return;
 
@@ -569,7 +570,7 @@ export function updateConditionMatch(
 }
 
 export function removeCondition(conditionId: EntityId) {
-  updateCurrentEditor((editor) => {
+  updateCurrentEditor("Delete DMX Mapping Condition", (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx) return;
 

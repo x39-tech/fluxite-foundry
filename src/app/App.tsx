@@ -4,6 +4,7 @@ import { TopNavBar } from "features/topNavBar/TopNavBar";
 import { Toaster } from "components/scn-ui/Sonner";
 import { checkForUpdateOnStartup } from "features/updater/updatePrompt";
 import { libraryStoreIsEmpty } from "codex/libraryStore";
+import { useUndoRedoShortcuts } from "hooks/useUndoRedoShortcuts";
 import { LibraryErrorDialog } from "./libraryErrorDialog";
 import {
   useDarkMode,
@@ -22,6 +23,8 @@ export const App = () => {
   const libraries = useLibraryStore();
   const darkMode = useDarkMode();
   const currentDocumentType = useCurrentDocumentType();
+
+  useUndoRedoShortcuts();
 
   // Apply dark mode class to body
   useEffect(() => {
