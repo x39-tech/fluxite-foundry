@@ -15,7 +15,6 @@ describe("localize", () => {
             "en-US": "Hello",
             "fr-FR": "Bonjour",
           }),
-          items: [],
         },
       };
       const result = localize(db, LocalizationKey("loc_key_1"), "en-US");
@@ -33,7 +32,6 @@ describe("localize", () => {
             "en-US": "Hello",
             "fr-FR": "Bonjour",
           }),
-          items: [],
         },
       };
       const result = localize(db, LocalizationKey("loc_key_1"), "de-DE");
@@ -48,7 +46,6 @@ describe("localize", () => {
       const db: Record<LocalizationKey, Localization> = {
         [LocalizationKey("loc_key_1")]: {
           strings: LocalizationDbSchema.parse({}),
-          items: [],
         },
       };
       const result = localize(db, LocalizationKey("loc_key_1"), "en-US");
@@ -73,7 +70,6 @@ describe("localize", () => {
       const db: Record<LocalizationKey, Localization> = {
         [LocalizationKey("loc_key_1")]: {
           strings: LocalizationDbSchema.parse({ "en-US": "" }),
-          items: [],
         },
       };
       const result = localize(db, LocalizationKey("loc_key_1"), "en-US");
@@ -88,7 +84,6 @@ describe("localize", () => {
       const db: Record<LocalizationKey, Localization> = {
         [LocalizationKey("loc_key_1")]: {
           strings: LocalizationDbSchema.parse({ "en-US": "" }),
-          items: [],
         },
       };
       const result = localize(db, LocalizationKey("loc_key_1"), "fr-FR");
@@ -106,7 +101,6 @@ describe("localize", () => {
             "en-US": "Hello",
             "fr-FR": "",
           }),
-          items: [],
         },
       };
       const result = localize(db, LocalizationKey("loc_key_1"), "fr-FR");
@@ -135,7 +129,6 @@ describe("localize", () => {
       const db = {
         [LocalizationKey("loc_key_1")]: {
           strings: undefined,
-          items: [],
         },
       } as unknown as Record<LocalizationKey, Localization>;
       const result = localize(db, LocalizationKey("loc_key_1"), "en-US");

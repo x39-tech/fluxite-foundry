@@ -6,7 +6,7 @@ import {
   LocalOrImportedId,
   ClassReference,
   CodexId,
-  DeviceClassEditorState,
+  DeviceClassDocument,
   EntityId,
   ParameterReference,
 } from "app/persistentState";
@@ -31,7 +31,7 @@ function codexToId(
 // ParameterReference. An unresolvable codexId is kept verbatim so the reference
 // still reads as broken downstream.
 export function toEditorParameterReference(
-  editor: Pick<DeviceClassEditorState, "parameters">,
+  editor: Pick<DeviceClassDocument, "parameters">,
   codexId: CodexId,
   index?: number,
 ): ParameterReference {
@@ -43,7 +43,7 @@ export function toEditorParameterReference(
 // The parameter's current codexId. A reference that no longer resolves falls
 // back to the raw entity ID.
 export function parameterCurrentCodexId(
-  editor: Pick<DeviceClassEditorState, "parameters">,
+  editor: Pick<DeviceClassDocument, "parameters">,
   ref: ParameterReference,
 ): CodexId {
   return editor.parameters[ref.id]?.codexId ?? entityIdAsCodexId(ref.id);
@@ -54,14 +54,14 @@ export function parameterCurrentCodexId(
 // The command's current codexId. A reference that no longer resolves falls back
 // to the raw entity ID.
 export function commandCurrentCodexId(
-  editor: Pick<DeviceClassEditorState, "commands">,
+  editor: Pick<DeviceClassDocument, "commands">,
   id: EntityId,
 ): CodexId {
   return editor.commands[id]?.codexId ?? entityIdAsCodexId(id);
 }
 
 export function resolveCommandId(
-  editor: Pick<DeviceClassEditorState, "commands">,
+  editor: Pick<DeviceClassDocument, "commands">,
   codexId: CodexId,
 ): EntityId {
   return codexToId(editor.commands).get(codexId) ?? codexIdAsEntityId(codexId);
@@ -90,7 +90,7 @@ export function classReferenceCodexId(
 // (excludes instance-level "additional" choices, which are never the target of
 // an exclusion).
 function paramClassChoiceMaps(
-  editor: Pick<DeviceClassEditorState, "enumChoices">,
+  editor: Pick<DeviceClassDocument, "enumChoices">,
   classId: EntityId,
 ): {
   codexToEntity: Map<CodexId, EntityId>;
@@ -142,7 +142,7 @@ export function localOrImportedId(
 
 // Parameter enum-choice exclusions.
 export function paramExclusionsToEditor(
-  editor: Pick<DeviceClassEditorState, "enumChoices">,
+  editor: Pick<DeviceClassDocument, "enumChoices">,
   paramClass: ClassReference,
   excludedCodexIds: CodexId[],
 ): LocalOrImportedId[] {
@@ -156,7 +156,7 @@ export function paramExclusionsToEditor(
 }
 
 export function paramExclusionsToCodex(
-  editor: Pick<DeviceClassEditorState, "enumChoices">,
+  editor: Pick<DeviceClassDocument, "enumChoices">,
   paramClass: ClassReference,
   excluded: LocalOrImportedId[],
 ): CodexId[] {
@@ -181,7 +181,7 @@ interface CommandMemberTables {
 
 function commandMemberTables(
   editor: Pick<
-    DeviceClassEditorState,
+    DeviceClassDocument,
     "commandClassArguments" | "commandClassReturnValues"
   >,
   kind: CommandMemberKind,
@@ -219,7 +219,7 @@ function commandMemberMaps(
 
 // codexId <-> entityId for the enum choices of one local command member.
 function commandChoiceMaps(
-  editor: Pick<DeviceClassEditorState, "enumChoices">,
+  editor: Pick<DeviceClassDocument, "enumChoices">,
   choiceParentType: "cmdClassArg" | "cmdClassRet",
   memberId: EntityId,
 ): {
@@ -241,7 +241,7 @@ function commandChoiceMaps(
 }
 
 type CommandExclusionsEditor = Pick<
-  DeviceClassEditorState,
+  DeviceClassDocument,
   "enumChoices" | "commandClassArguments" | "commandClassReturnValues"
 >;
 

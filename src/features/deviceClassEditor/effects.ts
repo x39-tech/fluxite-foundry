@@ -3,23 +3,23 @@
 import { DmxDriver, DelverError } from "@cpwg-community/delver";
 import {
   AppPersistentState,
-  DeviceClassEditorState,
+  DeviceClassDocument,
+  documentTypes,
   EntityId,
 } from "app/persistentState";
 import { useAppPersistentStore, updateAppRuntimeState } from "app/store";
+import { documentIdsOfType, documentOfType } from "app/documents";
 import { DmxController } from "app/runtimeState";
 import { exportDeviceClass } from "./export";
 
-// Parts of a document the DMX driver does not read.
-const NON_DRIVER_FIELDS = new Set<keyof DeviceClassEditorState>([
-  // View state, which will soon move out of the document.
-  "windowLayout",
-]);
+// Parts of a document the DMX driver does not read. The window layout used to
+// be one of these; it is session state now and never reaches this module.
+const NON_DRIVER_FIELDS = new Set<keyof DeviceClassDocument>([]);
 
 // The name the exported device class gives its DMX serializer.
 const DMX_SERIALIZER = "dmx";
 
-type DeviceClassEditors = AppPersistentState["deviceClassEditors"];
+type DeviceClassDocuments = Record<EntityId, DeviceClassDocument>;
 
 let stopEffects: (() => void) | undefined;
 
@@ -42,7 +42,7 @@ export function initDeviceClassEditorEffects(): () => void {
   };
   stopEffects = stop;
 
-  syncDmxDrivers(useAppPersistentStore.getState().deviceClassEditors, {});
+  syncDmxDrivers(deviceClasses(useAppPersistentStore.getState()), {});
 
   return stop;
 }
@@ -59,15 +59,28 @@ function onPersistentStateChanged(
   state: AppPersistentState,
   previousState: AppPersistentState,
 ) {
-  syncDmxDrivers(state.deviceClassEditors, previousState.deviceClassEditors);
+  syncDmxDrivers(deviceClasses(state), deviceClasses(previousState));
+}
+
+function deviceClasses(state: AppPersistentState): DeviceClassDocuments {
+  const documents: DeviceClassDocuments = {};
+
+  for (const id of documentIdsOfType(state, documentTypes.DEVICE_CLASS)) {
+    const document = documentOfType(state, id, documentTypes.DEVICE_CLASS);
+    if (document) {
+      documents[id] = document;
+    }
+  }
+
+  return documents;
 }
 
 // Rebuilds the DMX test driver of every document whose content changed, and
 // removes the driver of a document that closed. A document with no DMX
 // serializer has nothing to build a driver from and so has no entry.
 function syncDmxDrivers(
-  editors: DeviceClassEditors,
-  previousEditors: DeviceClassEditors,
+  editors: DeviceClassDocuments,
+  previousEditors: DeviceClassDocuments,
 ) {
   const changed = new Map<EntityId, DmxController | undefined>();
 
@@ -96,8 +109,8 @@ function syncDmxDrivers(
 }
 
 function documentIds(
-  editors: DeviceClassEditors,
-  previousEditors: DeviceClassEditors,
+  editors: DeviceClassDocuments,
+  previousEditors: DeviceClassDocuments,
 ): Set<EntityId> {
   return new Set([
     ...Object.keys(editors),
@@ -108,8 +121,8 @@ function documentIds(
 // Compares the two documents field by field. Immer shares the structure a
 // change did not touch, so an untouched table is referentially equal in both.
 function driverInputsEqual(
-  editor: DeviceClassEditorState | undefined,
-  previousEditor: DeviceClassEditorState | undefined,
+  editor: DeviceClassDocument | undefined,
+  previousEditor: DeviceClassDocument | undefined,
 ): boolean {
   if (editor === previousEditor) {
     return true;
@@ -121,7 +134,7 @@ function driverInputsEqual(
   const fields = new Set([
     ...Object.keys(editor),
     ...Object.keys(previousEditor),
-  ]) as Set<keyof DeviceClassEditorState>;
+  ]) as Set<keyof DeviceClassDocument>;
 
   for (const field of fields) {
     if (NON_DRIVER_FIELDS.has(field)) {
@@ -137,7 +150,7 @@ function driverInputsEqual(
 
 // Builds the test driver for one document.
 function createDmxDriver(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
 ): DmxController | undefined {
   if (!editor.dmxSerializer) {
     return undefined;

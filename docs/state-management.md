@@ -97,10 +97,30 @@ Because state changes are done using Immer, side-effect subscribers can compare 
 
 As mentioned above, we try to keep our state in a somewhat normalized form. This applies particularly to _documents_, which is our name for a piece of state that can be saved and loaded separately from others, and presents as a single "editor" in the app.
 
-Within a document we generally find tables of entities. For example, a simplified form of a `DeviceClassEditor`:
+### The Shape of the Root
+
+The persistent state has three parts:
 
 ```typescript
-export interface DeviceClassEditorState {
+interface AppPersistentState {
+  appSettings; // theme, orgId, locale
+  session; // open document ids, selection, per-document window layouts
+  documents: Record<EntityId, Document>;
+}
+```
+
+`Document` is a union discriminated on `type`, with one arm per kind of document (a device class, and in future a library or a system).
+
+`session` contains state specific to _open_ documents which are currently being edited, but which should not travel with those documents when they are saved.
+
+### Entities
+
+Within a document we generally find tables of entities. For example, a simplified form of a `DeviceClassDocument`:
+
+```typescript
+export interface DeviceClassDocument {
+  type: "deviceClass";
+
   deviceClassId: string;
   deviceClassVersion: string;
 
@@ -128,7 +148,7 @@ We also follow some structural rules when it comes to entities:
 
 1. Entity tables live at the top level of a document and are not nested.
 2. Entity tables should not be optional. `{}` is sufficient to represent an empty table.
-3. Entities should not be defined inside a discriminated union arm.
+3. Within a document, entities should not be defined inside a discriminated union arm. The document union itself is the exception, and the reason for the qualifier: a document type is an arm of `Document` and holds its own entity tables at its top level. The rule is about unions _inside_ a document, where an entity's table would come and go with the arm.
 4. If entities need to be ordered, prefer to store an ordered list of IDs alongside the entity table.
 
 Note that we have some existing violations of these rules in the app, due to history. This is a state we are working toward, not one we have completely achieved yet.
@@ -149,6 +169,14 @@ const parameter = {
 That convention allows us to build powerful tools for managing localized data and deriving back-references from localization strings to the entities that reference them; this code lives in `features/localizations/`.
 
 Each document containing _localizable_ entities (entities containing at least one localizable field) must also define a `LocalizationRegistry` which contains the set of metadata for each localizable field on each entity within the document.
+
+A document also records the `sourceLocale` it was authored in, which says which strings are authoritative and which are translations of them.
+
+### Localization Keys
+
+We treat localizations as entities, the same as all other entities, and they are thus keyed by opaque `EntityId`s (nanoids). The Fluxite Codex import/export format generally wants more meaningful names for localization keys, and its _overlay localization_ functionality makes the localization keys significant.
+
+Therefore, our localization entities have an `exportKey` which is the key the localization is exported under, when it is set. This is set on import and in the future, a user will be able to edit it. If a localization was created in-app, it has no `exportKey` yet, so export will fall back to a synthesized readable key based on any entities that are referencing the string, e.g. `param_intensity_friendlyName` or similar.
 
 ## Asset Storage (IndexedDB)
 

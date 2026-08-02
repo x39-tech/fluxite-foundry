@@ -21,7 +21,6 @@ import {
   EnumChoice,
   LocalizationDbSchema,
   LocalizationKey,
-  LocalizationReferencedItem,
   ParameterClass,
   ResourceClass,
   SerializerClass,
@@ -88,16 +87,6 @@ export interface ImportedLibrary {
 
 export type LibraryStore = Record<string, Record<string, ImportedLibrary>>;
 
-// Records that a localizable string is referenced by an entity. What refers to
-// a string is derived from the document itself now (see
-// features/localizations); this type/pattern is deprecated and will soon be
-// removed.
-export type AddLocalizationReference = (
-  itemId: EntityId,
-  itemType: LocalizationReferencedItem["itemType"],
-  locKey: string | undefined,
-) => void;
-
 // ---------------------------------------------------------------------------
 // Construction
 // ---------------------------------------------------------------------------
@@ -163,20 +152,18 @@ export function importClasses(
   source: FCDeviceLibrary,
   target: Library,
   index: LibraryIndex,
-  addLocalizationReference?: AddLocalizationReference,
 ) {
-  importParameterClasses(source, target, index, addLocalizationReference);
-  importStructureClasses(source, target, index, addLocalizationReference);
-  importSerializerClasses(source, target, index, addLocalizationReference);
-  importResourceClasses(source, target, index, addLocalizationReference);
-  importCommandClasses(source, target, index, addLocalizationReference);
+  importParameterClasses(source, target, index);
+  importStructureClasses(source, target, index);
+  importSerializerClasses(source, target, index);
+  importResourceClasses(source, target, index);
+  importCommandClasses(source, target, index);
 }
 
 function importParameterClasses(
   source: FCDeviceLibrary,
   target: Library,
   index: LibraryIndex,
-  addLocRef?: AddLocalizationReference,
 ) {
   for (const [id, cls] of Object.entries(source.parameterClasses || {})) {
     const codexId = CodexId(id);
@@ -192,16 +179,11 @@ function importParameterClasses(
     };
     index.parameterClasses.set(codexId, classId);
 
-    addLocRef?.(classId, "paramClassName", cls["@name"]);
-    addLocRef?.(classId, "paramClassDesc", cls["@description"]);
-
     importEnumChoices(
       cls.choices,
       { type: "paramClass", id: classId },
-      "enumName",
       target,
       index,
-      addLocRef,
     );
   }
 }
@@ -210,7 +192,6 @@ function importStructureClasses(
   source: FCDeviceLibrary,
   target: Library,
   index: LibraryIndex,
-  addLocRef?: AddLocalizationReference,
 ) {
   for (const [id, cls] of Object.entries(source.structureClasses || {})) {
     const codexId = CodexId(id);
@@ -224,9 +205,6 @@ function importStructureClasses(
       },
     };
     index.structureClasses.set(codexId, classId);
-
-    addLocRef?.(classId, "structClassName", cls["@name"]);
-    addLocRef?.(classId, "structClassDesc", cls["@description"]);
   }
 }
 
@@ -234,7 +212,6 @@ function importSerializerClasses(
   source: FCDeviceLibrary,
   target: Library,
   index: LibraryIndex,
-  addLocRef?: AddLocalizationReference,
 ) {
   for (const [id, cls] of Object.entries(source.serializerClasses || {})) {
     const codexId = CodexId(id);
@@ -247,9 +224,6 @@ function importSerializerClasses(
       },
     };
     index.serializerClasses.set(codexId, classId);
-
-    addLocRef?.(classId, "serClassName", cls["@name"]);
-    addLocRef?.(classId, "serClassDesc", cls["@description"]);
   }
 }
 
@@ -257,7 +231,6 @@ function importResourceClasses(
   source: FCDeviceLibrary,
   target: Library,
   index: LibraryIndex,
-  addLocRef?: AddLocalizationReference,
 ) {
   for (const [id, cls] of Object.entries(source.resourceClasses || {})) {
     const codexId = CodexId(id);
@@ -271,9 +244,6 @@ function importResourceClasses(
       },
     };
     index.resourceClasses.set(codexId, classId);
-
-    addLocRef?.(classId, "resClassName", cls["@name"]);
-    addLocRef?.(classId, "resClassDesc", cls["@description"]);
   }
 }
 
@@ -281,7 +251,6 @@ function importCommandClasses(
   source: FCDeviceLibrary,
   target: Library,
   index: LibraryIndex,
-  addLocRef?: AddLocalizationReference,
 ) {
   for (const [id, cls] of Object.entries(source.commandClasses || {})) {
     const codexId = CodexId(id);
@@ -294,9 +263,6 @@ function importCommandClasses(
       },
     };
     index.commandClasses.set(codexId, classId);
-
-    addLocRef?.(classId, "cmdClassName", cls["@name"]);
-    addLocRef?.(classId, "cmdClassDesc", cls["@description"]);
 
     const argIds = new Map<CodexId, EntityId>();
     index.commandArguments.set(classId, argIds);
@@ -316,16 +282,11 @@ function importCommandClasses(
       };
       argIds.set(argCodexId, argId);
 
-      addLocRef?.(argId, "cmdArgName", arg["@name"]);
-      addLocRef?.(argId, "cmdArgDesc", arg["@description"]);
-
       importEnumChoices(
         arg.choices,
         { type: "cmdClassArg", id: argId },
-        "cmdEnumName",
         target,
         index,
-        addLocRef,
       );
     }
 
@@ -347,16 +308,11 @@ function importCommandClasses(
       };
       retIds.set(retCodexId, retId);
 
-      addLocRef?.(retId, "cmdRetName", ret["@name"]);
-      addLocRef?.(retId, "cmdRetDesc", ret["@description"]);
-
       importEnumChoices(
         ret.choices,
         { type: "cmdClassRet", id: retId },
-        "cmdEnumName",
         target,
         index,
-        addLocRef,
       );
     }
   }
@@ -368,10 +324,8 @@ function importEnumChoices(
     type: "paramClass" | "cmdClassArg" | "cmdClassRet";
     id: EntityId;
   },
-  nameItemType: LocalizationReferencedItem["itemType"],
   target: Library,
   index: LibraryIndex,
-  addLocRef?: AddLocalizationReference,
 ) {
   const choiceIds = new Map<CodexId, EntityId>();
   index.enumChoices.set(parent.id, choiceIds);
@@ -389,8 +343,6 @@ function importEnumChoices(
       },
     };
     choiceIds.set(choiceCodexId, choiceId);
-
-    addLocRef?.(choiceId, nameItemType, choice["@name"]);
     // TODO: description
   }
 }

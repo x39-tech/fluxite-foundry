@@ -3,9 +3,11 @@ import * as V1 from "./persistentState/v1/state";
 import * as V2 from "./persistentState/v2/state";
 import * as V3 from "./persistentState/v3/state";
 import * as V4 from "./persistentState/v4/state";
+import * as V5 from "./persistentState/v5/state";
 import { migrateV1toV2 } from "./persistentState/v2/migrate";
 import { migrateV2toV3 } from "./persistentState/v3/migrate";
 import { migrateV3toV4 } from "./persistentState/v4/migrate";
+import { migrateV4toV5 } from "./persistentState/v5/migrate";
 
 /**
  * What every `persistentState/vN/state.ts` module exports that the chain needs.
@@ -81,6 +83,18 @@ export const MIGRATIONS: readonly Migration[] = [
 - ParameterReference references parameters by EntityId instead of by CodexId.
 - DmxTrigger.command is an EntityId instead of a CodexId.
 - enumExclusions, argEnumExclusions, returnEnumExclusions and trigger condition keys use LocalOrImportedIds (EntityId for local classes, CodexId for imported).
+`,
+  }),
+  defineMigration({
+    from: V4,
+    to: V5,
+    migrate: migrateV4toV5,
+    description: `
+- deviceClassEditors becomes documents, a map of a union discriminated on type.
+- openEditors becomes session, which also takes over windowLayout from each document.
+- The selected editor is a document id instead of an index into the open editors array.
+- Each document gains sourceLocale, seeded from the app locale setting.
+- Localization.items is dropped; what refers to a string is derived from the document.
 `,
   }),
 ];

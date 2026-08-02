@@ -119,7 +119,7 @@ We also have some of our own reusable UI components that wrap the Shadcn ones. T
 
 ### Layout System
 
-The application uses [FlexLayout React](https://github.com/nicerobot/FlexLayout) for a docking/tabbed interface. Layout state is saved per editor as JSON in the persistent state.
+The application uses [FlexLayout React](https://github.com/nicerobot/FlexLayout) for a docking/tabbed interface. Layout state is saved per document as JSON in `session.layouts`, which is persisted but is not part of any document, so it never travels in a save file.
 
 ### Icons
 

@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { applyPatches, Patch } from "immer";
 import { createEmptyDeviceClassEditor, resetAllStores } from "test/utils";
-import { deleteEditor, setSelectedEditor } from "features/topNavBar/state";
+import { closeDocument, setSelectedDocument } from "features/topNavBar/state";
 import { deviceClassAssets } from "features/deviceClassEditor/assets";
 import { updateCurrentEditor } from "features/deviceClassEditor/state";
 import {
@@ -106,7 +106,7 @@ describe("asset lifecycle", () => {
     const asset = await storeAsset("only in the closed document");
     updateResourceAsset(RESOURCE, asset);
 
-    deleteEditor(0);
+    closeDocument(FIRST_EDITOR);
 
     await vi.waitFor(async () => {
       expect(await assetStorage.getAsset(asset)).toBeUndefined();
@@ -120,11 +120,11 @@ describe("asset lifecycle", () => {
 
     // The document about to close keeps an asset of its own, as the signal
     // that its cleanup has run.
-    setSelectedEditor(0);
+    setSelectedDocument(FIRST_EDITOR);
     const ownAsset = await storeAsset("only in the closed document");
     updateResourceAsset(RESOURCE, ownAsset);
 
-    deleteEditor(0);
+    closeDocument(FIRST_EDITOR);
 
     await cleanupOf(ownAsset);
     expect(await contentOf(shared)).toBe("shared");
@@ -132,18 +132,18 @@ describe("asset lifecycle", () => {
 
   test("leaves the assets of the documents still open alone", async () => {
     openSecondEditor();
-    setSelectedEditor(0);
+    setSelectedDocument(FIRST_EDITOR);
     const closing = await storeAsset("in the document that closes");
     updateResourceAsset(RESOURCE, closing);
 
     // An asset the other document has dropped but could still get back by
     // undoing the edit that dropped it.
-    setSelectedEditor(1);
+    setSelectedDocument(SECOND_EDITOR);
     const dropped = await storeAsset("dropped by the document staying open");
     updateResourceAsset(RESOURCE, dropped);
     updateResourceAsset(RESOURCE);
 
-    deleteEditor(0);
+    closeDocument(FIRST_EDITOR);
 
     await cleanupOf(closing);
     expect(await contentOf(dropped)).toBe(
@@ -176,8 +176,7 @@ async function cleanupOf(assetId: string): Promise<void> {
 
 // The asset the resource currently uses as its default value.
 function assetOf(resourceId: EntityId): string | undefined {
-  const editor =
-    useAppPersistentStore.getState().deviceClassEditors[FIRST_EDITOR];
+  const editor = useAppPersistentStore.getState().documents[FIRST_EDITOR];
   const fileName = editor.resources[resourceId]?.default;
   return fileName ? editor.resourceAssets[fileName] : undefined;
 }
@@ -223,18 +222,15 @@ function addResource() {
 
 // Opens a second device class document, as a copy of the first, and selects it.
 function openSecondEditor() {
-  const source =
-    useAppPersistentStore.getState().deviceClassEditors[FIRST_EDITOR];
+  const source = useAppPersistentStore.getState().documents[FIRST_EDITOR];
 
   updateAppPersistentState((state) => {
-    state.deviceClassEditors[SECOND_EDITOR] = {
+    state.documents[SECOND_EDITOR] = {
       ...source,
       deviceClassId: "second-device-class",
     };
-    state.openEditors.editors.push({
-      type: "deviceClass",
-      id: SECOND_EDITOR,
-    });
-    state.openEditors.selectedEditor = state.openEditors.editors.length - 1;
+    state.session.openDocuments.push(SECOND_EDITOR);
+    state.session.layouts[SECOND_EDITOR] = state.session.layouts[FIRST_EDITOR];
+    state.session.selectedDocumentId = SECOND_EDITOR;
   });
 }

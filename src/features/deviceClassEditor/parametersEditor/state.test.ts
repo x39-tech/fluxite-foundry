@@ -2,6 +2,8 @@ import { describe, test, expect, beforeEach } from "vitest";
 import { act, renderHook } from "@testing-library/react";
 import { addEnumChoice, updateCurrentEditor } from "../state";
 import { resetAllStores, createEmptyDeviceClassEditor } from "test/utils";
+import { buildLocalizationIndex } from "features/localizations/registry";
+import { DEVICE_CLASS_LOCALIZATIONS } from "../localizationRegistry";
 import {
   useParameters,
   useParameterClasses,
@@ -19,7 +21,6 @@ import {
   FCDataType,
   LocalizationDbSchema,
   LocalizationKey,
-  LocalizationReferencedItem,
 } from "app/persistentState";
 
 // Helper to get the current hook value
@@ -43,12 +44,6 @@ function createTestParamClass(
     const locKey = LocalizationKey(`paramClass_${id}`);
     editor.localizations[locKey] = {
       strings: LocalizationDbSchema.parse(nameLocalizations),
-      items: [
-        {
-          itemType: "paramClassName",
-          itemId: id,
-        },
-      ],
     };
 
     editor.parameterClasses[id] = {
@@ -418,7 +413,7 @@ describe("parametersEditor/state.ts", () => {
 
   describe("Edge cases and state synchronization", () => {
     describe("Localization synchronization", () => {
-      test("localization items reference is properly maintained on create", () => {
+      test("a new localization is attributed to the parameter that owns it", () => {
         createTestParamClass(TEST_CLASS_ID, TEST_CLASS_CODEX_ID, "number", {
           "en-US": "Test Class",
         });
@@ -441,17 +436,15 @@ describe("parametersEditor/state.ts", () => {
         const localizationKey =
           updatedParams?.[paramId]?.localized.friendlyName;
 
-        // Verify the localization has the correct item reference
         updateCurrentEditor((editor) => {
-          const loc = editor.localizations[localizationKey!];
-          expect(loc).toBeDefined();
-          expect(loc?.items).toBeDefined();
-          expect(loc?.items.length).toBe(1);
-          const item = loc?.items[0];
-          if (item && "itemId" in item) {
-            expect(item.itemId).toBe(paramId);
-            expect(item.itemType).toBe("paramName");
-          }
+          expect(editor.localizations[localizationKey!]).toBeDefined();
+          expect(
+            buildLocalizationIndex(editor, DEVICE_CLASS_LOCALIZATIONS)[
+              localizationKey!
+            ],
+          ).toEqual([
+            { table: "parameters", entityId: paramId, field: "friendlyName" },
+          ]);
         });
       });
 
@@ -519,10 +512,6 @@ describe("parametersEditor/state.ts", () => {
 
                 // Share the localization with param1
                 param2.localized.friendlyName = param1Key;
-                editor.localizations[param1Key].items.push({
-                  itemId: paramIds[1],
-                  itemType: "paramName",
-                });
               }
             }
           });
@@ -536,11 +525,17 @@ describe("parametersEditor/state.ts", () => {
         // Verify localization still exists because param2 references it
         updateCurrentEditor((editor) => {
           expect(editor.localizations[param1Key!]).toBeDefined();
-          expect(editor.localizations[param1Key!].items.length).toBe(1);
-          const item = editor.localizations[param1Key!].items[0];
-          if (item && "itemId" in item) {
-            expect(item.itemId).toBe(paramIds[1]);
-          }
+          expect(
+            buildLocalizationIndex(editor, DEVICE_CLASS_LOCALIZATIONS)[
+              param1Key!
+            ],
+          ).toEqual([
+            {
+              table: "parameters",
+              entityId: paramIds[1],
+              field: "friendlyName",
+            },
+          ]);
         });
       });
     });
@@ -559,12 +554,6 @@ describe("parametersEditor/state.ts", () => {
         updateCurrentEditor((editor) => {
           editor.localizations[LocalizationKey("enumChoice_enumChoice1")] = {
             strings: LocalizationDbSchema.parse({ "en-US": "Choice 1" }),
-            items: [
-              {
-                itemId: TEST_CLASS_ENUM_CHOICE_ID,
-                itemType: "enumName",
-              },
-            ],
           };
 
           editor.enumChoices = {
@@ -614,21 +603,19 @@ describe("parametersEditor/state.ts", () => {
               (choice) => choice.codexId === TEST_ENUM_CHOICE_CODEX_ID,
             ),
           ).toBeUndefined();
-          const items = Object.values(editor.localizations).reduce(
-            (acc, loc) => {
-              acc.concat(loc.items);
-              return acc;
-            },
-            [] as LocalizationReferencedItem[],
-          );
+          // The only enum choice strings left should be the class's own. The
+          // additional choice the parameter carried went with it.
+          const choiceReferences = Object.values(
+            buildLocalizationIndex(editor, DEVICE_CLASS_LOCALIZATIONS),
+          )
+            .flat()
+            .filter((reference) => reference.table === "enumChoices");
+
           expect(
-            items.find(
-              (item) =>
-                (item.itemType === "enumName" ||
-                  item.itemType === "enumDesc") &&
-                item.itemId !== TEST_CLASS_ENUM_CHOICE_ID,
+            choiceReferences.filter(
+              (reference) => reference.entityId !== TEST_CLASS_ENUM_CHOICE_ID,
             ),
-          ).toBeUndefined();
+          ).toEqual([]);
         });
       });
     });

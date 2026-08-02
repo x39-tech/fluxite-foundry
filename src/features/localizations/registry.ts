@@ -2,10 +2,8 @@
 
 import {
   EntityId,
-  Localization,
   LocalizationDbSchema,
   LocalizationKey,
-  LocalizationReferencedItem,
 } from "app/persistentState";
 import { getUniqueItemId } from "utils/utils";
 import {
@@ -177,10 +175,7 @@ export function createLocalizedFields<
       continue;
     }
 
-    localized[field] = addLocalization(document, key, value, locale, {
-      itemType: spec.itemType,
-      entityId,
-    });
+    localized[field] = addLocalization(document, key, value, locale);
   }
 
   return localized as LocalizableRecordOf<LocalizableEntityOf<Doc, K>>;
@@ -235,16 +230,7 @@ export function setLocalizedValue<
     return;
   }
 
-  entity.localized[field] = addLocalization(
-    document,
-    newKey,
-    newValue,
-    locale,
-    {
-      itemType: spec.itemType,
-      entityId: target.entityId,
-    },
-  );
+  entity.localized[field] = addLocalization(document, newKey, newValue, locale);
 }
 
 /**
@@ -263,25 +249,17 @@ export function removeLocalizationsFor<Doc extends LocalizableDocument>(
 
   for (const [keyString, references] of Object.entries(index)) {
     const key = LocalizationKey(keyString);
-    const localization = document.localizations[key];
-    if (!localization) {
+    if (!document.localizations[key]) {
       continue;
     }
 
+    // The string goes only when every place that referred to it is going.
     const going = references.filter((reference) =>
       removed.has(refKey(reference.table, reference.entityId)),
     );
-    if (going.length === 0) {
-      continue;
-    }
 
-    if (going.length === references.length) {
+    if (going.length > 0 && going.length === references.length) {
       delete document.localizations[key];
-      continue;
-    }
-
-    for (const reference of going) {
-      dropItem(localization, itemFor(registry, reference), reference.entityId);
     }
   }
 }
@@ -340,13 +318,6 @@ function entriesByName<Doc extends LocalizableDocument>(
   registry: LocalizationRegistry<Doc>,
 ): [string, EntryByName<Doc>][] {
   return Object.entries(registry) as [string, EntryByName<Doc>][];
-}
-
-function entryByName<Doc extends LocalizableDocument>(
-  registry: LocalizationRegistry<Doc>,
-  table: string,
-): EntryByName<Doc> | undefined {
-  return (registry as Record<string, EntryByName<Doc> | undefined>)[table];
 }
 
 // Reads one of the document's tables or singletons by name.
@@ -441,14 +412,6 @@ function fieldNames<
   return Object.keys(fields) as LocalizableFieldsForKey<Doc, K>[];
 }
 
-function itemFor<Doc extends LocalizableDocument>(
-  registry: LocalizationRegistry<Doc>,
-  reference: LocalizationReference,
-): LocalizationReferencedItem["itemType"] | undefined {
-  return entryByName(registry, reference.table)?.fields[reference.field]
-    ?.itemType;
-}
-
 function lookupEntity<
   Doc extends LocalizableDocument,
   K extends LocalizableEntryKey<Doc>,
@@ -486,10 +449,6 @@ function addLocalization(
   desiredKey: string,
   value: string,
   locale: string,
-  item: {
-    itemType: LocalizationReferencedItem["itemType"];
-    entityId: EntityId | undefined;
-  },
 ): LocalizationKey {
   const key = LocalizationKey(
     getUniqueItemId(Object.keys(document.localizations), desiredKey),
@@ -497,7 +456,6 @@ function addLocalization(
 
   document.localizations[key] = {
     strings: LocalizationDbSchema.parse({ [locale]: value }),
-    items: [referencedItem(item.itemType, item.entityId)],
   };
 
   return key;
@@ -518,31 +476,4 @@ function removeLocalization<Doc extends LocalizableDocument>(
   if (references.length === 0) {
     delete document.localizations[key];
   }
-}
-
-// `Localization.items` is a stored copy of what this module derives. This is
-// currently deprecated and nothing reads it - will go away soon.
-function referencedItem(
-  itemType: LocalizationReferencedItem["itemType"],
-  entityId: EntityId | undefined,
-): LocalizationReferencedItem {
-  return (
-    entityId ? { itemType, itemId: entityId } : { itemType }
-  ) as LocalizationReferencedItem;
-}
-
-function dropItem(
-  localization: Localization,
-  itemType: LocalizationReferencedItem["itemType"] | undefined,
-  entityId: EntityId | undefined,
-): void {
-  if (!itemType) {
-    return;
-  }
-
-  localization.items = localization.items.filter(
-    (item) =>
-      item.itemType !== itemType ||
-      ("itemId" in item ? item.itemId !== entityId : entityId !== undefined),
-  );
 }

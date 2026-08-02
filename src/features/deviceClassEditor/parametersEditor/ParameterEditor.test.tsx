@@ -29,7 +29,6 @@ function createParameterClass(
     const classNameKey = LocalizationKey(`${codexId}_name`);
     editor.localizations[classNameKey] = {
       strings: LocalizationDbSchema.parse({ "en-US": codexId }),
-      items: [],
     };
 
     const classId = EntityId(codexId);
@@ -46,7 +45,6 @@ function createParameterClass(
       const choiceNameKey = LocalizationKey(`${choiceId}_name`);
       editor.localizations[choiceNameKey] = {
         strings: LocalizationDbSchema.parse({ "en-US": choiceName }),
-        items: [],
       };
 
       editor.enumChoices[EntityId(choiceId)] = {

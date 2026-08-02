@@ -73,7 +73,6 @@ describe("InstantiationProperties - Dynamic Mode", () => {
       const classNameKey = LocalizationKey("test_class_name");
       editor.localizations[classNameKey] = {
         strings: LocalizationDbSchema.parse({ "en-US": "Test Class" }),
-        items: [],
       };
 
       const classId = EntityId("TestClass");

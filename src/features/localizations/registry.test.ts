@@ -47,7 +47,6 @@ const REGISTRY: LocalizationRegistry<TestDocument> = {
     fields: {
       title: {
         label: "Title",
-        itemType: "devClassDesc",
         required: true,
         makeKey: () => "banner_title",
       },
@@ -59,13 +58,11 @@ const REGISTRY: LocalizationRegistry<TestDocument> = {
     fields: {
       label: {
         label: "Label",
-        itemType: "paramClassName",
         required: true,
         makeKey: ({ entity }) => `widget_${entity.name}_label`,
       },
       note: {
         label: "Note",
-        itemType: "paramClassDesc",
         // A note can only be keyed by a widget the document knows about.
         makeKey: ({ document, entityId }) =>
           entityId && document.widgets[entityId]
@@ -80,7 +77,7 @@ const WIDGET_ONE = EntityId("widget-1");
 const WIDGET_TWO = EntityId("widget-2");
 
 function localization(strings: Record<string, string>): Localization {
-  return { strings: LocalizationDbSchema.parse(strings), items: [] };
+  return { strings: LocalizationDbSchema.parse(strings) };
 }
 
 function createDocument(): TestDocument {
@@ -128,13 +125,11 @@ const OPTIONAL_TABLE_REGISTRY: LocalizationRegistry<DocumentWithOptionalTable> =
       fields: {
         label: {
           label: "Label",
-          itemType: "paramClassName",
           required: true,
           makeKey: ({ entity }) => `widget_${entity.name}_label`,
         },
         note: {
           label: "Note",
-          itemType: "paramClassDesc",
           makeKey: ({ entity }) => `widget_${entity.name}_note`,
         },
       },

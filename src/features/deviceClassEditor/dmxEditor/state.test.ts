@@ -44,12 +44,6 @@ function createTestParamClass(
     const locKey = LocalizationKey(`paramClass_${id}`);
     editor.localizations[locKey] = {
       strings: LocalizationDbSchema.parse(nameLocalizations),
-      items: [
-        {
-          itemType: "paramClassName",
-          itemId: id,
-        },
-      ],
     };
 
     editor.parameterClasses[id] = {

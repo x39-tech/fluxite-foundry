@@ -7,7 +7,7 @@ import {
 } from "app/store";
 import { DmxController } from "app/runtimeState";
 import { resetAllStores, createEmptyDeviceClassEditor } from "test/utils";
-import { deleteEditor, setSelectedEditor } from "features/topNavBar/state";
+import { closeDocument, setSelectedDocument } from "features/topNavBar/state";
 import { updateCurrentEditor, setWindowLayout } from "./state";
 import { initDeviceClassEditorEffects } from "./effects";
 
@@ -70,7 +70,7 @@ describe("DMX driver effect", () => {
     stopEffects = initDeviceClassEditorEffects();
     const before = controllerFor(FIRST_EDITOR);
 
-    setWindowLayout({ layout: { type: "row", children: [] } });
+    setWindowLayout(FIRST_EDITOR, { layout: { type: "row", children: [] } });
 
     expect(windowLayoutOf(FIRST_EDITOR)).not.toBe("");
     expect(controllerFor(FIRST_EDITOR)).toBe(before);
@@ -82,7 +82,7 @@ describe("DMX driver effect", () => {
     const first = controllerFor(FIRST_EDITOR);
     const second = controllerFor(SECOND_EDITOR);
 
-    setSelectedEditor(0);
+    setSelectedDocument(FIRST_EDITOR);
 
     expect(controllerFor(FIRST_EDITOR)).toBe(first);
     expect(controllerFor(SECOND_EDITOR)).toBe(second);
@@ -114,7 +114,7 @@ describe("DMX driver effect", () => {
     openSecondEditor();
     stopEffects = initDeviceClassEditorEffects();
 
-    deleteEditor(1);
+    closeDocument(SECOND_EDITOR);
 
     expect(controllerFor(SECOND_EDITOR)).toBeUndefined();
     expect(controllerFor(FIRST_EDITOR)).toBeDefined();
@@ -136,13 +136,12 @@ function controllerFor(editorId: EntityId): DmxController | undefined {
 }
 
 function windowLayoutOf(editorId: EntityId): string | undefined {
-  return useAppPersistentStore.getState().deviceClassEditors[editorId]
-    ?.windowLayout;
+  return useAppPersistentStore.getState().session.layouts[editorId];
 }
 
 function addDmxSerializer(editorId: EntityId) {
   updateAppPersistentState((state) => {
-    state.deviceClassEditors[editorId].dmxSerializer = {
+    state.documents[editorId].dmxSerializer = {
       chunks: { [EntityId("chunk1")]: { offsets: [0] } },
       mappingGroups: {},
       conditions: {},
@@ -164,18 +163,15 @@ function addParameter() {
 
 // Opens a second device class document, as a copy of the first, and selects it.
 function openSecondEditor() {
-  const source =
-    useAppPersistentStore.getState().deviceClassEditors[FIRST_EDITOR];
+  const source = useAppPersistentStore.getState().documents[FIRST_EDITOR];
 
   updateAppPersistentState((state) => {
-    state.deviceClassEditors[SECOND_EDITOR] = {
+    state.documents[SECOND_EDITOR] = {
       ...source,
       deviceClassId: "second-device-class",
     };
-    state.openEditors.editors.push({
-      type: "deviceClass",
-      id: SECOND_EDITOR,
-    });
-    state.openEditors.selectedEditor = state.openEditors.editors.length - 1;
+    state.session.openDocuments.push(SECOND_EDITOR);
+    state.session.layouts[SECOND_EDITOR] = state.session.layouts[FIRST_EDITOR];
+    state.session.selectedDocumentId = SECOND_EDITOR;
   });
 }

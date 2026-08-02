@@ -10,13 +10,21 @@ import { Separator } from "components/scn-ui/Separator";
 import { EditorTitleTab } from "./EditorTitleTab";
 import { AppMainMenu } from "./AppMainMenu";
 import { NavbarDivider } from "./NavbarDivider";
-import { createDeviceClassEditor, useEditorNames } from "./state";
-import { setSelectedEditor, useOpenEditors, deleteEditor } from "./state";
+import {
+  closeDocument,
+  createDeviceClassEditor,
+  setSelectedDocument,
+  useDocumentNames,
+  useOpenDocumentIds,
+  useDocumentTypes,
+  useSelectedDocumentId,
+} from "./state";
 
 export const TopNavBar = () => {
-  const editors = useOpenEditors();
-  const editorNames = useEditorNames();
-  const currentEditor = editors.editors[editors.selectedEditor];
+  const openDocumentIds = useOpenDocumentIds();
+  const documentNames = useDocumentNames();
+  const documentTypes = useDocumentTypes();
+  const selectedDocumentId = useSelectedDocumentId();
 
   return (
     <>
@@ -35,20 +43,22 @@ export const TopNavBar = () => {
           </div>
         </div>
         <NavbarDivider />
-        {editors.editors.map((editor, index) => {
-          const name = editorNames[index] ?? "unknown";
+        {openDocumentIds.map((id, index) => {
+          const name = documentNames[index] ?? "unknown";
+          const type = documentTypes[index];
           return (
             <EditorTitleTab
-              key={editor.id}
+              key={id}
               name={name}
-              id={editor.id}
-              active={index === editors.selectedEditor}
-              onSelect={() => setSelectedEditor(index)}
-              onDelete={() => deleteEditor(index)}
+              type={type}
+              id={id}
+              active={id === selectedDocumentId}
+              onSelect={() => setSelectedDocument(id)}
+              onDelete={() => closeDocument(id)}
             />
           );
         })}
-        <Tooltip open={currentEditor === undefined}>
+        <Tooltip open={selectedDocumentId === undefined}>
           <TooltipTrigger asChild>
             <Button
               size="icon"

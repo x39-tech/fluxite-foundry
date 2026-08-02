@@ -272,7 +272,7 @@ test("removes manufacturerEstaId from state when set to empty string", async () 
 
   // Verify the value is set in the state
   let state = useAppPersistentStore.getState();
-  let currentEditor = state.deviceClassEditors[state.openEditors.editors[0].id];
+  let currentEditor = state.documents[state.session.openDocuments[0]];
   expect(currentEditor.basicData.manufacturerEstaId).toBe("12345");
 
   // Now clear the field
@@ -286,6 +286,6 @@ test("removes manufacturerEstaId from state when set to empty string", async () 
 
   // Verify the property is undefined (removed) in the state
   state = useAppPersistentStore.getState();
-  currentEditor = state.deviceClassEditors[state.openEditors.editors[0].id];
+  currentEditor = state.documents[state.session.openDocuments[0]];
   expect(currentEditor.basicData.manufacturerEstaId).toBeUndefined();
 });

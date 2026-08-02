@@ -2,29 +2,63 @@ import { useShallow } from "zustand/shallow";
 import { useAppPersistentStore, updateAppPersistentState } from "app/store";
 import {
   AppPersistentState,
-  DeviceClassEditorState,
-  OpenEditors,
+  DeviceClassDocument,
+  DocumentType,
+  documentTypes,
+  EntityId,
 } from "app/persistentState";
+import {
+  closeDocument,
+  documentIdsOfType,
+  documentOfType,
+  setSelectedDocument,
+} from "app/documents";
 import { newEntityId } from "app/stateUtils";
 import { getNewDeviceClassEditor } from "features/deviceClassEditor/import";
+import { getDefaultWindowLayout } from "utils/utils";
 
 // ---------------------------------------------------------------------------
 // Read
 // ---------------------------------------------------------------------------
 
-export function useOpenEditors(): OpenEditors {
-  return useAppPersistentStore((state) => state.openEditors);
+/** The open documents, in tab order. */
+export function useOpenDocumentIds(): EntityId[] {
+  return useAppPersistentStore((state) => state.session.openDocuments);
 }
 
-export function useDeviceClassEditors(): {
-  [key: string]: DeviceClassEditorState;
-} {
-  return useAppPersistentStore((state) => state.deviceClassEditors);
+export function useSelectedDocumentId(): EntityId | undefined {
+  return useAppPersistentStore((state) => state.session.selectedDocumentId);
 }
 
-export function useEditorNames(): string[] {
+export function useDeviceClassDocuments(): Record<
+  EntityId,
+  DeviceClassDocument
+> {
   return useAppPersistentStore(
-    useShallow((state) => getOpenEditorModelNames(state)),
+    useShallow((state) => {
+      const documents: Record<EntityId, DeviceClassDocument> = {};
+      for (const id of documentIdsOfType(state, documentTypes.DEVICE_CLASS)) {
+        const document = documentOfType(state, id, documentTypes.DEVICE_CLASS);
+        if (document) {
+          documents[id] = document;
+        }
+      }
+      return documents;
+    }),
+  );
+}
+
+/** The name to show on each open document's tab, in tab order. */
+export function useDocumentNames(): string[] {
+  return useAppPersistentStore(
+    useShallow((state) => getOpenDocumentNames(state)),
+  );
+}
+
+/** The type of each open document, in tab order. */
+export function useDocumentTypes(): (DocumentType | undefined)[] {
+  return useAppPersistentStore(
+    useShallow((state) => getOpenDocumentTypes(state)),
   );
 }
 
@@ -34,62 +68,52 @@ export function useEditorNames(): string[] {
 
 export function createDeviceClassEditor() {
   updateAppPersistentState((state) => {
-    const deviceClassEditors = state.deviceClassEditors;
-    const openEditors = state.openEditors;
-
-    const existingIds = openEditors.editors.map(
-      (editor) => deviceClassEditors[editor.id].deviceClassId,
-    );
+    const existingIds = Object.values(state.documents)
+      .filter((document) => document.type === documentTypes.DEVICE_CLASS)
+      .map((document) => document.deviceClassId);
 
     const newId = newEntityId();
-    deviceClassEditors[newId] = getNewDeviceClassEditor(existingIds);
-    openEditors.editors.push({ type: "deviceClass", id: newId });
-    openEditors.selectedEditor = openEditors.editors.length - 1;
+    state.documents[newId] = getNewDeviceClassEditor(
+      existingIds,
+      state.appSettings.locale,
+    );
+    state.session.openDocuments.push(newId);
+    state.session.layouts[newId] = JSON.stringify(getDefaultWindowLayout());
+    state.session.selectedDocumentId = newId;
   });
 }
 
-export function setSelectedEditor(index: number) {
-  updateAppPersistentState((state) => {
-    state.openEditors.selectedEditor = index;
-  });
-}
-
-export function deleteEditor(index: number) {
-  updateAppPersistentState((state) => {
-    const editors = state.openEditors;
-    if (index < 0 || index >= editors.editors.length) {
-      return;
-    }
-
-    const editor = editors.editors[index];
-    if (editor.type === "deviceClass") {
-      delete state.deviceClassEditors[editor.id];
-    }
-
-    const newIndex: number =
-      editors.editors.length === 1
-        ? -1
-        : index === editors.editors.length - 1
-          ? index - 1
-          : index;
-
-    editors.selectedEditor = newIndex;
-    editors.editors.splice(index, 1);
-  });
-}
+export { setSelectedDocument, closeDocument };
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function getOpenEditorModelNames(state: AppPersistentState): string[] {
-  return state.openEditors.editors.map((editor) => {
-    switch (editor.type) {
-      case "deviceClass": {
-        return state.deviceClassEditors[editor.id].basicData.modelName;
-      }
+function getOpenDocumentNames(state: AppPersistentState): string[] {
+  return state.session.openDocuments.map((id) => {
+    const document = state.documents[id];
+    if (!document) {
+      return "";
+    }
+
+    switch (document.type) {
+      case documentTypes.DEVICE_CLASS:
+        return document.basicData.modelName;
       default:
         return "";
     }
+  });
+}
+
+function getOpenDocumentTypes(
+  state: AppPersistentState,
+): (DocumentType | undefined)[] {
+  return state.session.openDocuments.map((id) => {
+    const document = state.documents[id];
+    if (!document) {
+      return undefined;
+    }
+
+    return document.type;
   });
 }

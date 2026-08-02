@@ -42,7 +42,7 @@ describe("persistent state patches", () => {
       {
         op: "replace",
         path: [
-          "deviceClassEditors",
+          "documents",
           EntityId("test-editor-id"),
           "basicData",
           "modelName",
@@ -72,7 +72,7 @@ describe("persistent state patches", () => {
       {
         op: "replace",
         path: [
-          "deviceClassEditors",
+          "documents",
           EntityId("test-editor-id"),
           "basicData",
           "modelName",

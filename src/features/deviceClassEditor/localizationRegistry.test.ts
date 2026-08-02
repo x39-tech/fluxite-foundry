@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import type { DeviceClass } from "@cpwg-community/delver";
 import {
   AppPersistentState,
-  DeviceClassEditorState,
+  DeviceClassDocument,
   EntityId,
   LocalizationKey,
   migrateState,
@@ -17,14 +17,14 @@ import { LocalizationReference } from "features/localizations/types";
 import { DEVICE_CLASS_LOCALIZATIONS } from "./localizationRegistry";
 import { getImportedDeviceClassEditor } from "./import";
 
-function index(editor: DeviceClassEditorState) {
+function index(editor: DeviceClassDocument) {
   return buildLocalizationIndex(editor, DEVICE_CLASS_LOCALIZATIONS);
 }
 
 // Asserts that a field holds a key, that the index attributes that key to
 // exactly the given places, and that it reads as the expected string.
 function expectField(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   key: LocalizationKey | undefined,
   value: string,
   references: LocalizationReference[],
@@ -48,7 +48,7 @@ describe("a device class document", () => {
         entry.version,
       ) as AppPersistentState;
 
-      const editors = Object.values(state.deviceClassEditors);
+      const editors = Object.values(state.documents);
       expect(editors.length).toBeGreaterThan(0);
 
       for (const editor of editors) {
@@ -141,7 +141,7 @@ function entityWithCodexId<T extends { codexId: string }>(
 // A device class with a command class carrying an argument, a return value and
 // enum choices under each, plus a command instance with its own choices. Every
 // localization key it uses has a string.
-function importCommandDeviceClass(): DeviceClassEditorState {
+function importCommandDeviceClass(): DeviceClassDocument {
   const deviceClass: DeviceClass = {
     libraries: {},
     "@description": "device.description",
@@ -218,5 +218,6 @@ function importCommandDeviceClass(): DeviceClassEditorState {
     "test-device-class",
     "1.0.0",
     deviceClass,
+    "en-US",
   );
 }

@@ -2,11 +2,13 @@ import { getByText, screen } from "@testing-library/react";
 import { useAppPersistentStore, useAppRuntimeStore } from "app/store";
 import {
   AppPersistentState,
+  documentTypes,
   EntityId,
   getDefaultState,
   LocalizationDbSchema,
   LocalizationKey,
 } from "app/persistentState";
+import { getDefaultWindowLayout } from "utils/utils";
 import { loadDefaultLibraries } from "codex/libraryStore";
 import { checkIntegrity } from "features/localizations/registry";
 import { DEVICE_CLASS_LOCALIZATIONS } from "features/deviceClassEditor/localizationRegistry";
@@ -27,11 +29,15 @@ export function resetAppPersistentStore() {
  * the mutation.
  */
 export function assertLocalizationIntegrity(state: AppPersistentState) {
-  for (const [id, editor] of Object.entries(state.deviceClassEditors)) {
-    const problems = checkIntegrity(editor, DEVICE_CLASS_LOCALIZATIONS);
+  for (const [id, document] of Object.entries(state.documents)) {
+    if (document.type !== documentTypes.DEVICE_CLASS) {
+      continue;
+    }
+
+    const problems = checkIntegrity(document, DEVICE_CLASS_LOCALIZATIONS);
     if (problems.length > 0) {
       throw new Error(
-        `Device class editor ${id} has inconsistent localizations:\n` +
+        `Device class document ${id} has inconsistent localizations:\n` +
           problems.map((problem) => `  ${problem.message}`).join("\n"),
       );
     }
@@ -84,7 +90,8 @@ export function createEmptyDeviceClassEditor() {
   const editorId = EntityId("test-editor-id");
   const descriptionKey = LocalizationKey("test description");
 
-  state.deviceClassEditors[editorId] = {
+  state.documents[editorId] = {
+    type: documentTypes.DEVICE_CLASS,
     orgId: { type: "org", id: "test-org" },
     deviceClassId: "test-device-class",
     deviceClassVersion: "1.0.0",
@@ -122,17 +129,14 @@ export function createEmptyDeviceClassEditor() {
     localizations: {
       [descriptionKey]: {
         strings: LocalizationDbSchema.parse({ "en-US": "Test description" }),
-        items: [{ itemType: "devClassDesc" }],
       },
     },
-    windowLayout: "",
+    sourceLocale: "en-US",
   };
 
-  state.openEditors.editors.push({
-    type: "deviceClass",
-    id: EntityId(editorId),
-  });
-  state.openEditors.selectedEditor = state.openEditors.editors.length - 1;
+  state.session.openDocuments.push(editorId);
+  state.session.layouts[editorId] = JSON.stringify(getDefaultWindowLayout());
+  state.session.selectedDocumentId = editorId;
 
   useAppPersistentStore.setState(state, true);
 }
