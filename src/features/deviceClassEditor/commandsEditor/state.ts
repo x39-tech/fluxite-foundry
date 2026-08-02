@@ -253,8 +253,6 @@ export function createNewCommand(
       localized: createDeviceClassLocalizations(
         editor,
         "commands",
-        cmdId,
-        command,
         { friendlyName },
         locale,
       ),

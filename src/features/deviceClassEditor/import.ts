@@ -8,7 +8,7 @@ import {
   Trigger,
   UnmappedParam,
 } from "@cpwg-community/delver";
-import { newEntityId, optionalLocalizationKey } from "app/stateUtils";
+import { newEntityId } from "app/stateUtils";
 import { updateAppPersistentState, useAppPersistentStore } from "app/store";
 import {
   buildQualifiedId,
@@ -17,7 +17,10 @@ import {
   getUniqueItemId,
   OrgId,
 } from "utils/utils";
-import { importLocalizations } from "features/localizations/localize";
+import {
+  importDocumentLocalizations,
+  ImportedLocalizationKeys,
+} from "features/localizations/localize";
 import {
   codexIdAsEntityId,
   commandArgKeyToEditor,
@@ -32,6 +35,7 @@ import {
   CodexId,
   DeviceClassDocument,
   documentTypes,
+  Localization,
   DmxChunkRefCondition,
   DmxConditionGroup,
   DmxConditionParent,
@@ -42,7 +46,6 @@ import {
   DmxUnmappedParam,
   Command,
   EntityId,
-  LocalizationDbSchema,
   LocalizationKey,
   Resource,
   ParameterCount,
@@ -114,6 +117,12 @@ export function getImportedDeviceClassEditor(
   codexClass: DeviceClass,
   sourceLocale: string,
 ): DeviceClassDocument {
+  const localizations: Record<LocalizationKey, Localization> = {};
+  const locKeys = importDocumentLocalizations(
+    codexClass.localizations,
+    localizations,
+  );
+
   let dmx: EstaDmx | undefined = undefined;
 
   // TODO: support multiple DMX serializers
@@ -142,7 +151,7 @@ export function getImportedDeviceClassEditor(
       compatibleFirmwareVersions:
         codexClass.info.compatibility?.firmwareVersions,
       localized: {
-        description: LocalizationKey(codexClass["@description"]),
+        description: locKeys.of(codexClass["@description"]),
       },
     },
     libraries: codexClass.libraries,
@@ -161,7 +170,7 @@ export function getImportedDeviceClassEditor(
     commandClassArguments: {},
     commandClassReturnValues: {},
     enumChoices: {},
-    localizations: {},
+    localizations,
     sourceLocale,
   };
 
@@ -170,13 +179,15 @@ export function getImportedDeviceClassEditor(
   // present in ImportedLibrary.
   const deviceLibraryIndex = emptyLibraryIndex();
 
-  importLocalizations(codexClass.localizations, editor.localizations, () => ({
-    strings: LocalizationDbSchema.parse({}),
-  }));
-  importClasses(codexClass.deviceLibrary ?? {}, editor, deviceLibraryIndex);
-  importParameters(codexClass, editor, deviceLibraryIndex);
+  importClasses(
+    codexClass.deviceLibrary ?? {},
+    editor,
+    deviceLibraryIndex,
+    locKeys.of,
+  );
+  importParameters(codexClass, editor, deviceLibraryIndex, locKeys);
   importResources(codexClass, editor, deviceLibraryIndex);
-  importCommands(codexClass, editor, deviceLibraryIndex);
+  importCommands(codexClass, editor, deviceLibraryIndex, locKeys);
 
   if (dmx) {
     editor.dmxSerializer = convertEstaDmxToEditorState(editor, dmx);
@@ -189,6 +200,7 @@ function importParameters(
   imported: DeviceClass,
   editor: DeviceClassDocument,
   classIndex: LibraryIndex,
+  locKeys: ImportedLocalizationKeys,
 ) {
   for (const [id, param] of Object.entries(imported.parameters || {})) {
     const classRef: ClassReference = param.library
@@ -235,7 +247,7 @@ function importParameters(
       default: param.default,
       wrapping: param.looping,
       localized: {
-        friendlyName: optionalLocalizationKey(param["@friendlyName"]),
+        friendlyName: locKeys.of(param["@friendlyName"]),
       },
     };
     editor.parameterEditors.push(paramId);
@@ -249,7 +261,7 @@ function importParameters(
         codexId: CodexId(choice.id),
         index,
         localized: {
-          name: LocalizationKey(choice["@name"]),
+          name: locKeys.of(choice["@name"]),
           // TODO description
         },
       };
@@ -295,6 +307,7 @@ function importCommands(
   imported: DeviceClass,
   editor: DeviceClassDocument,
   classIndex: LibraryIndex,
+  locKeys: ImportedLocalizationKeys,
 ) {
   for (const [id, cmd] of Object.entries(imported.commands || {})) {
     const classCodexId = CodexId(cmd.class);
@@ -316,7 +329,7 @@ function importCommands(
       class: classRef,
       completionNotification: cmd.completionNotification,
       localized: {
-        friendlyName: optionalLocalizationKey(cmd["@friendlyName"]),
+        friendlyName: locKeys.of(cmd["@friendlyName"]),
       },
     };
 
@@ -351,7 +364,7 @@ function importCommands(
           codexId: CodexId(choice.id),
           index,
           localized: {
-            name: LocalizationKey(choice["@name"]),
+            name: locKeys.of(choice["@name"]),
             // TODO description
           },
         };
@@ -400,7 +413,7 @@ function importCommands(
           codexId: CodexId(choice.id),
           index,
           localized: {
-            name: LocalizationKey(choice["@name"]),
+            name: locKeys.of(choice["@name"]),
             // TODO description
           },
         };

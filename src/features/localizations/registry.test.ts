@@ -48,7 +48,6 @@ const REGISTRY: LocalizationRegistry<TestDocument> = {
       title: {
         label: "Title",
         required: true,
-        makeKey: () => "banner_title",
       },
     },
   },
@@ -59,15 +58,9 @@ const REGISTRY: LocalizationRegistry<TestDocument> = {
       label: {
         label: "Label",
         required: true,
-        makeKey: ({ entity }) => `widget_${entity.name}_label`,
       },
       note: {
         label: "Note",
-        // A note can only be keyed by a widget the document knows about.
-        makeKey: ({ document, entityId }) =>
-          entityId && document.widgets[entityId]
-            ? `widget_${document.widgets[entityId].name}_note`
-            : undefined,
       },
     },
   },
@@ -126,11 +119,9 @@ const OPTIONAL_TABLE_REGISTRY: LocalizationRegistry<DocumentWithOptionalTable> =
         label: {
           label: "Label",
           required: true,
-          makeKey: ({ entity }) => `widget_${entity.name}_label`,
         },
         note: {
           label: "Note",
-          makeKey: ({ entity }) => `widget_${entity.name}_note`,
         },
       },
     },
@@ -227,23 +218,39 @@ describe("collectOrphans", () => {
 describe("createLocalizedFields", () => {
   test("creates a string for each field that has a value", () => {
     const document = createDocument();
-    const widgetId = EntityId("widget-3");
 
     const localized = createLocalizedFields(
       document,
       REGISTRY,
       "widgets",
-      widgetId,
-      { name: "three" },
       { label: "Three", note: "A note" },
       "en-US",
     );
 
-    expect(localized.label).toBe(LocalizationKey("widget_three_label"));
     expect(document.localizations[localized.label].strings["en-US"]).toBe(
       "Three",
     );
-    expect(localized.note).toBeUndefined();
+    expect(document.localizations[localized.note!].strings["en-US"]).toBe(
+      "A note",
+    );
+  });
+
+  test("gives each field a key of its own", () => {
+    const document = createDocument();
+
+    const localized = createLocalizedFields(
+      document,
+      REGISTRY,
+      "widgets",
+      { label: "Three", note: "A note" },
+      "en-US",
+    );
+
+    // Keys are opaque, so nothing about the widget can be read back out of
+    // them. What matters is that they are fresh and distinct.
+    expect(localized.label).not.toBe(localized.note);
+    expect(Object.keys(document.localizations)).toContain(localized.label);
+    expect(Object.keys(document.localizations)).toContain(localized.note);
   });
 
   test("skips an optional field with no value", () => {
@@ -253,8 +260,6 @@ describe("createLocalizedFields", () => {
       document,
       REGISTRY,
       "widgets",
-      EntityId("widget-3"),
-      { name: "three" },
       { label: "Three", note: "" },
       "en-US",
     );
@@ -272,8 +277,6 @@ describe("createLocalizedFields", () => {
       document,
       REGISTRY,
       "widgets",
-      EntityId("widget-3"),
-      { name: "three" },
       { label: "", note: undefined },
       "en-US",
     );
@@ -288,8 +291,6 @@ describe("createLocalizedFields", () => {
       document,
       REGISTRY,
       "widgets",
-      EntityId("widget-3"),
-      { name: "one" },
       { label: "Another one", note: undefined },
       "en-US",
     );
@@ -351,7 +352,7 @@ describe("setLocalizedValue", () => {
     );
 
     const key = document.widgets[WIDGET_ONE].localized.note;
-    expect(key).toBe(LocalizationKey("widget_one_note"));
+    expect(key).toBeDefined();
     expect(document.localizations[key!].strings["en-US"]).toBe("A note");
   });
 

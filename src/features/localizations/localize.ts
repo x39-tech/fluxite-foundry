@@ -1,21 +1,80 @@
 import { DefinitionLocalization } from "@cpwg-community/delver";
-import { LocalizationKey } from "app/persistentState";
+import { nanoid } from "nanoid";
+import {
+  Localization,
+  LocalizationDbSchema,
+  LocalizationKey,
+} from "app/persistentState";
 import { LocalizationStrings } from "./types";
 
 // Imports a localization table from the Fluxite Codex format into the app state
-// format.
-export function importLocalizations<T extends LocalizationStrings>(
+// format, keeping the file's own keys.
+//
+// This is for an imported library, whose strings are only ever read. A document
+// is imported with importDocumentLocalizations instead, because a document is
+// edited and exported again and so needs keys that cannot go stale.
+export function importLocalizations(
   source: Record<string, DefinitionLocalization> | undefined,
-  target: Record<LocalizationKey, T>,
-  newEntry: () => T,
+  target: Record<LocalizationKey, LocalizationStrings>,
 ) {
   for (const [langId, localization] of Object.entries(source || {})) {
     for (const [keyStr, str] of Object.entries(localization.strings || {})) {
       const key = LocalizationKey(keyStr);
-      target[key] ||= newEntry();
+      target[key] ||= { strings: LocalizationDbSchema.parse({}) };
       target[key].strings[langId] = str;
     }
   }
+}
+
+/**
+ * How the localization keys a Fluxite Codex file used map onto the newly
+ * synthesized ones we generate.
+ */
+export interface ImportedLocalizationKeys {
+  /** The document's key for a key the file used. */
+  of(fileKey: string): LocalizationKey;
+  of(fileKey: string | undefined): LocalizationKey | undefined;
+}
+
+/**
+ * Imports a document's localization table, giving every string a fresh opaque
+ * key and remembering what the file called it.
+ */
+export function importDocumentLocalizations(
+  source: Record<string, DefinitionLocalization> | undefined,
+  target: Record<LocalizationKey, Localization>,
+): ImportedLocalizationKeys {
+  const keys = new Map<string, LocalizationKey>();
+
+  for (const [langId, localization] of Object.entries(source || {})) {
+    for (const [fileKey, str] of Object.entries(localization.strings || {})) {
+      let key = keys.get(fileKey);
+      if (key === undefined) {
+        key = LocalizationKey(nanoid());
+        keys.set(fileKey, key);
+        target[key] = {
+          strings: LocalizationDbSchema.parse({}),
+          exportKey: fileKey,
+        };
+      }
+      target[key].strings[langId] = str;
+    }
+  }
+
+  // A key an entity mentions but the file has no strings for is a dangling
+  // reference. Keeping the file's own key for it leaves the reference exactly
+  // as dangling as it was, and exports it back unchanged, rather than
+  // replacing a name someone can recognise with an opaque id.
+  function of(fileKey: string): LocalizationKey;
+  function of(fileKey: string | undefined): LocalizationKey | undefined;
+  function of(fileKey: string | undefined): LocalizationKey | undefined {
+    if (fileKey === undefined) {
+      return undefined;
+    }
+    return keys.get(fileKey) ?? LocalizationKey(fileKey);
+  }
+
+  return { of };
 }
 
 /**

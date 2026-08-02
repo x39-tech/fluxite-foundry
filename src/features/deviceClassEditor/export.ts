@@ -30,10 +30,12 @@ import {
   DmxSerializerState,
   DmxTrigger,
   EntityId,
+  LocalizationKey,
   ParameterCountSchema,
   ParameterReference,
 } from "app/persistentState";
 import { select, selectWithIds } from "app/stateUtils";
+import { buildExportKeys, ExportKeys } from "./exportKeys";
 import {
   classReferenceCodexId,
   commandArgKeyToCodex,
@@ -129,8 +131,12 @@ function convertChunkValues(
 }
 
 export function exportDeviceClass(editor: DeviceClassDocument): DeviceClass {
+  // Build a translation from the internal opaque localization keys to the ones
+  // used in the exported format.
+  const keys = buildExportKeys(editor);
+
   const codexClass: DeviceClass = {
-    "@description": editor.basicData.localized.description,
+    "@description": keys.of(editor.basicData.localized.description),
     publishDate: editor.basicData.publishDate,
     author: editor.basicData.author,
     history: editor.basicData.history,
@@ -152,15 +158,15 @@ export function exportDeviceClass(editor: DeviceClassDocument): DeviceClass {
     libraries: editor.libraries,
   };
 
-  exportLocalizations(editor, codexClass);
-  exportParameterClasses(editor, codexClass);
-  exportStructureClasses(editor, codexClass);
-  exportSerializerClasses(editor, codexClass);
-  exportResourceClasses(editor, codexClass);
-  exportCommandClasses(editor, codexClass);
-  exportParameters(editor, codexClass);
+  exportLocalizations(editor, codexClass, keys);
+  exportParameterClasses(editor, codexClass, keys);
+  exportStructureClasses(editor, codexClass, keys);
+  exportSerializerClasses(editor, codexClass, keys);
+  exportResourceClasses(editor, codexClass, keys);
+  exportCommandClasses(editor, codexClass, keys);
+  exportParameters(editor, codexClass, keys);
   exportResources(editor, codexClass);
-  exportCommands(editor, codexClass);
+  exportCommands(editor, codexClass, keys);
   exportDmxSerializer(editor, codexClass);
 
   return codexClass;
@@ -169,6 +175,7 @@ export function exportDeviceClass(editor: DeviceClassDocument): DeviceClass {
 function exportLocalizations(
   editor: DeviceClassDocument,
   codexClass: DeviceClass,
+  keys: ExportKeys,
 ) {
   if (Object.keys(editor.localizations).length === 0) {
     return;
@@ -179,7 +186,7 @@ function exportLocalizations(
       for (const [lang, locStr] of Object.entries(locDb.strings)) {
         acc[lang] ??= {};
         acc[lang].strings ??= {};
-        acc[lang].strings[locKey] = locStr;
+        acc[lang].strings[keys.of(LocalizationKey(locKey))] = locStr;
       }
       return acc;
     },
@@ -190,6 +197,7 @@ function exportLocalizations(
 function exportParameterClasses(
   editor: DeviceClassDocument,
   codexClass: DeviceClass,
+  keys: ExportKeys,
 ) {
   if (
     !editor.parameterClasses ||
@@ -209,8 +217,8 @@ function exportParameterClasses(
       }
 
       const exportedParamClass: ParameterClass = {
-        "@name": paramClass.localized.name,
-        "@description": paramClass.localized.description,
+        "@name": keys.of(paramClass.localized.name),
+        "@description": keys.of(paramClass.localized.description),
         dataType: paramClass.dataType as DataType,
         unit: paramClass.unit
           ? {
@@ -233,7 +241,7 @@ function exportParameterClasses(
           exportedParamClass.choices = choices.map((choice) => {
             return {
               id: choice.codexId,
-              "@name": choice.localized.name,
+              "@name": keys.of(choice.localized.name),
               // TODO: description
             };
           });
@@ -250,6 +258,7 @@ function exportParameterClasses(
 function exportStructureClasses(
   editor: DeviceClassDocument,
   codexClass: DeviceClass,
+  keys: ExportKeys,
 ) {
   if (Object.keys(editor.structureClasses).length === 0) {
     return;
@@ -266,8 +275,8 @@ function exportStructureClasses(
       }
 
       const exportedStructClass: StructureClass = {
-        "@name": structClass.localized.name,
-        "@description": structClass.localized.description,
+        "@name": keys.of(structClass.localized.name),
+        "@description": keys.of(structClass.localized.description),
         multipleAllowed: structClass.multipleAllowed,
       };
 
@@ -281,6 +290,7 @@ function exportStructureClasses(
 function exportSerializerClasses(
   editor: DeviceClassDocument,
   codexClass: DeviceClass,
+  keys: ExportKeys,
 ) {
   if (Object.keys(editor.serializerClasses).length === 0) {
     return;
@@ -297,8 +307,8 @@ function exportSerializerClasses(
       }
 
       const exportedSerClass: SerializerClass = {
-        "@name": serClass.localized.name,
-        "@description": serClass.localized.description,
+        "@name": keys.of(serClass.localized.name),
+        "@description": keys.of(serClass.localized.description),
       };
 
       acc[serClass.codexId] = exportedSerClass;
@@ -311,6 +321,7 @@ function exportSerializerClasses(
 function exportResourceClasses(
   editor: DeviceClassDocument,
   codexClass: DeviceClass,
+  keys: ExportKeys,
 ) {
   if (Object.keys(editor.resourceClasses).length === 0) {
     return;
@@ -327,8 +338,8 @@ function exportResourceClasses(
       }
 
       const exportedResClass: ResourceClass = {
-        "@name": resClass.localized.name,
-        "@description": resClass.localized.description,
+        "@name": keys.of(resClass.localized.name),
+        "@description": keys.of(resClass.localized.description),
         mediaType: resClass.mediaType,
       };
 
@@ -342,6 +353,7 @@ function exportResourceClasses(
 function exportCommandClasses(
   editor: DeviceClassDocument,
   codexClass: DeviceClass,
+  keys: ExportKeys,
 ) {
   if (Object.keys(editor.commandClasses).length === 0) {
     return;
@@ -358,8 +370,8 @@ function exportCommandClasses(
       }
 
       const exportedCmdClass: CommandClass = {
-        "@name": cmdClass.localized.name,
-        "@description": cmdClass.localized.description,
+        "@name": keys.of(cmdClass.localized.name),
+        "@description": keys.of(cmdClass.localized.description),
       };
 
       // Export arguments
@@ -378,8 +390,8 @@ function exportCommandClasses(
           }
 
           exportedCmdClass.arguments[arg.codexId] = {
-            "@name": arg.localized.name,
-            "@description": arg.localized.description,
+            "@name": keys.of(arg.localized.name),
+            "@description": keys.of(arg.localized.description),
             dataType: arg.dataType as DataType,
             unit: arg.unit
               ? {
@@ -404,7 +416,7 @@ function exportCommandClasses(
               exportedCmdClass.arguments[arg.codexId].choices = choices.map(
                 (choice) => ({
                   id: choice.codexId,
-                  "@name": choice.localized.name,
+                  "@name": keys.of(choice.localized.name),
                   // TODO: description
                 }),
               );
@@ -423,8 +435,8 @@ function exportCommandClasses(
         exportedCmdClass.returns = {};
         for (const ret of returns) {
           exportedCmdClass.returns[ret.codexId] = {
-            "@name": ret.localized.name,
-            "@description": ret.localized.description,
+            "@name": keys.of(ret.localized.name),
+            "@description": keys.of(ret.localized.description),
             dataType: ret.dataType as DataType,
             unit: ret.unit
               ? {
@@ -449,7 +461,7 @@ function exportCommandClasses(
               exportedCmdClass.returns[ret.codexId].choices = choices.map(
                 (choice) => ({
                   id: choice.codexId,
-                  "@name": choice.localized.name,
+                  "@name": keys.of(choice.localized.name),
                   // TODO: description
                 }),
               );
@@ -468,6 +480,7 @@ function exportCommandClasses(
 function exportParameters(
   editor: DeviceClassDocument,
   codexClass: DeviceClass,
+  keys: ExportKeys,
 ) {
   if (Object.keys(editor.parameters).length === 0) {
     return;
@@ -486,7 +499,7 @@ function exportParameters(
         param.class.type === "imported" ? param.class.library : undefined,
       access: param.access as ParameterAccess[],
       lifetime: param.lifetime as Lifetime,
-      "@friendlyName": param.localized.friendlyName,
+      "@friendlyName": keys.of(param.localized.friendlyName),
       count: convertParameterCount(param.count),
       atomicIdentifier: param.atomicIdentifier,
       minimum: param.minimum,
@@ -520,7 +533,7 @@ function exportParameters(
         additionalChoices.sort((a, b) => a.index - b.index);
         exportedParam.choices.additional = additionalChoices.map((choice) => ({
           id: choice.codexId,
-          "@name": choice.localized.name,
+          "@name": keys.of(choice.localized.name),
           // TODO: description
         }));
       }
@@ -559,7 +572,11 @@ function exportResources(editor: DeviceClassDocument, codexClass: DeviceClass) {
   }
 }
 
-function exportCommands(editor: DeviceClassDocument, codexClass: DeviceClass) {
+function exportCommands(
+  editor: DeviceClassDocument,
+  codexClass: DeviceClass,
+  keys: ExportKeys,
+) {
   if (Object.keys(editor.commands).length === 0) {
     return;
   }
@@ -575,7 +592,7 @@ function exportCommands(editor: DeviceClassDocument, codexClass: DeviceClass) {
       class: classReferenceCodexId(cmd.class, editor.commandClasses),
       library: cmd.class.type === "imported" ? cmd.class.library : undefined,
       completionNotification: cmd.completionNotification,
-      "@friendlyName": cmd.localized.friendlyName,
+      "@friendlyName": keys.of(cmd.localized.friendlyName),
     };
 
     // Handle argument choices (excluded and additional)
@@ -633,7 +650,7 @@ function exportCommands(editor: DeviceClassDocument, codexClass: DeviceClass) {
         exportedCmd.argumentChoices[argCodexId].additional = choices.map(
           (choice) => ({
             id: choice.codexId,
-            "@name": choice.localized.name,
+            "@name": keys.of(choice.localized.name),
             // TODO: description
           }),
         );
@@ -695,7 +712,7 @@ function exportCommands(editor: DeviceClassDocument, codexClass: DeviceClass) {
         exportedCmd.returnChoices[retCodexId].additional = choices.map(
           (choice) => ({
             id: choice.codexId,
-            "@name": choice.localized.name,
+            "@name": keys.of(choice.localized.name),
             // TODO: description
           }),
         );

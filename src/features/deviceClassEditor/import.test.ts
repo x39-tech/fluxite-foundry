@@ -1,11 +1,6 @@
 import { describe, test, expect } from "vitest";
 import { getImportedDeviceClassEditor } from "./import";
-import {
-  CodexId,
-  DeviceClassDocument,
-  EntityId,
-  LocalizationKey,
-} from "app/persistentState";
+import { CodexId, DeviceClassDocument, EntityId } from "app/persistentState";
 import type {
   DeviceClass,
   ParameterClass,
@@ -424,15 +419,33 @@ describe("getImportedDeviceClassEditor", () => {
         "en-US",
       );
 
-      expect(
-        editor.localizations[LocalizationKey("test.key")].strings["en"],
-      ).toBe("English text");
-      expect(
-        editor.localizations[LocalizationKey("test.key")].strings["fr"],
-      ).toBe("French text");
-      expect(
-        editor.localizations[LocalizationKey("other.key")].strings["en"],
-      ).toBe("Other English");
+      // Reconstruct a map keyed by the import/export key, not the internal
+      // synthesized localization key
+      const byExportKey = Object.fromEntries(
+        Object.values(editor.localizations).map((localization) => [
+          localization.exportKey,
+          localization.strings,
+        ]),
+      );
+
+      expect(byExportKey["test.key"]["en"]).toBe("English text");
+      expect(byExportKey["test.key"]["fr"]).toBe("French text");
+      expect(byExportKey["other.key"]["en"]).toBe("Other English");
+    });
+
+    test("gives each imported string a key of the document's own", () => {
+      const dc = createMinimalDeviceClass();
+      addLocalization(dc, "en", "test.key", "English text");
+
+      const editor = getImportedDeviceClassEditor(
+        TEST_ORG,
+        "test-id",
+        "1.0.0",
+        dc,
+        "en-US",
+      );
+
+      expect(Object.keys(editor.localizations)).not.toContain("test.key");
     });
 
     test("handles empty localizations", () => {
