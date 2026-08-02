@@ -47,9 +47,11 @@ export const DeviceClassEditor = () => {
 
   const onModelChange = useCallback(
     throttle((model) => {
-      setWindowLayout(model.toJson());
+      if (currentEditorId) {
+        setWindowLayout(currentEditorId, model.toJson());
+      }
     }, 1000),
-    [],
+    [currentEditorId],
   );
 
   // We let the model be 'uncontrolled' (only created on initial render)
@@ -57,8 +59,7 @@ export const DeviceClassEditor = () => {
   // The alternative results in every widget being rerendered constantly
   const model = useMemo(() => {
     const state = useAppPersistentStore.getState();
-    const currentEditor = getCurrentEditor(state);
-    if (!currentEditor) {
+    if (!currentEditorId || !getCurrentEditor(state)) {
       return undefined;
     }
 
@@ -76,7 +77,7 @@ export const DeviceClassEditor = () => {
     try {
       return Model.fromJson({
         ...model,
-        layout: JSON.parse(currentEditor.windowLayout),
+        layout: JSON.parse(state.session.layouts[currentEditorId]),
       });
     } catch (_e) {
       return Model.fromJson({

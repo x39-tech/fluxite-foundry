@@ -30,7 +30,8 @@ import {
   LocalOrImportedId,
   ClassReference,
   CodexId,
-  DeviceClassEditorState,
+  DeviceClassDocument,
+  documentTypes,
   DmxChunkRefCondition,
   DmxConditionGroup,
   DmxConditionParent,
@@ -43,7 +44,6 @@ import {
   EntityId,
   LocalizationDbSchema,
   LocalizationKey,
-  LocalizationReferencedItem,
   Resource,
   ParameterCount,
 } from "app/persistentState";
@@ -61,6 +61,7 @@ export async function importDeviceClassEditor(
   id: string,
   version: string,
   deviceClass: DeviceClass,
+  sourceLocale: string,
   archive?: ArchiveToImport,
 ) {
   const newDeviceClass = archive
@@ -69,24 +70,30 @@ export async function importDeviceClassEditor(
         id,
         version,
         deviceClass,
+        sourceLocale,
         archive,
       )
-    : getImportedDeviceClassEditor(orgId, id, version, deviceClass);
+    : getImportedDeviceClassEditor(
+        orgId,
+        id,
+        version,
+        deviceClass,
+        sourceLocale,
+      );
 
   updateAppPersistentState((state) => {
-    const deviceClassEditors = state.deviceClassEditors;
-    const openEditors = state.openEditors;
-
     const newId = newEntityId();
-    deviceClassEditors[newId] = newDeviceClass;
-    openEditors.editors.push({ type: "deviceClass", id: newId });
-    openEditors.selectedEditor = openEditors.editors.length - 1;
+    state.documents[newId] = newDeviceClass;
+    state.session.openDocuments.push(newId);
+    state.session.layouts[newId] = JSON.stringify(getDefaultWindowLayout());
+    state.session.selectedDocumentId = newId;
   });
 }
 
 export function getNewDeviceClassEditor(
   existingEditorIds: string[],
-): DeviceClassEditorState {
+  sourceLocale: string,
+): DeviceClassDocument {
   // TODO: This only needs to be unique among the same OrgId now
   const deviceClassId = getUniqueItemId(existingEditorIds, "super-light");
   const orgId = useAppPersistentStore.getState().appSettings.orgId;
@@ -96,6 +103,7 @@ export function getNewDeviceClassEditor(
     deviceClassId,
     "1.0.0",
     getDefaultDeviceClass(deviceClassId),
+    sourceLocale,
   );
 }
 
@@ -104,7 +112,8 @@ export function getImportedDeviceClassEditor(
   id: string,
   version: string,
   codexClass: DeviceClass,
-): DeviceClassEditorState {
+  sourceLocale: string,
+): DeviceClassDocument {
   let dmx: EstaDmx | undefined = undefined;
 
   // TODO: support multiple DMX serializers
@@ -115,7 +124,8 @@ export function getImportedDeviceClassEditor(
     }
   }
 
-  const editor: DeviceClassEditorState = {
+  const editor: DeviceClassDocument = {
+    type: documentTypes.DEVICE_CLASS,
     orgId,
     deviceClassId: id,
     deviceClassVersion: version,
@@ -152,7 +162,7 @@ export function getImportedDeviceClassEditor(
     commandClassReturnValues: {},
     enumChoices: {},
     localizations: {},
-    windowLayout: JSON.stringify(getDefaultWindowLayout()),
+    sourceLocale,
   };
 
   // This is used only temporarily for the purpose of importing items that
@@ -162,18 +172,8 @@ export function getImportedDeviceClassEditor(
 
   importLocalizations(codexClass.localizations, editor.localizations, () => ({
     strings: LocalizationDbSchema.parse({}),
-    items: [],
   }));
-  editor.localizations[editor.basicData.localized.description]?.items.push({
-    itemType: "devClassDesc",
-  });
-  importClasses(
-    codexClass.deviceLibrary ?? {},
-    editor,
-    deviceLibraryIndex,
-    (itemId, itemType, locKey) =>
-      addLocalizationReference(itemId, itemType, locKey, editor),
-  );
+  importClasses(codexClass.deviceLibrary ?? {}, editor, deviceLibraryIndex);
   importParameters(codexClass, editor, deviceLibraryIndex);
   importResources(codexClass, editor, deviceLibraryIndex);
   importCommands(codexClass, editor, deviceLibraryIndex);
@@ -187,7 +187,7 @@ export function getImportedDeviceClassEditor(
 
 function importParameters(
   imported: DeviceClass,
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   classIndex: LibraryIndex,
 ) {
   for (const [id, param] of Object.entries(imported.parameters || {})) {
@@ -239,14 +239,6 @@ function importParameters(
       },
     };
     editor.parameterEditors.push(paramId);
-
-    addLocalizationReference(
-      paramId,
-      "paramName",
-      param["@friendlyName"],
-      editor,
-    );
-
     for (const [index, choice] of (param.choices?.additional || []).entries()) {
       const choiceId = newEntityId();
       editor.enumChoices[choiceId] = {
@@ -261,7 +253,6 @@ function importParameters(
           // TODO description
         },
       };
-      addLocalizationReference(choiceId, "enumName", choice["@name"], editor);
       // TODO description
     }
   }
@@ -269,7 +260,7 @@ function importParameters(
 
 function importResources(
   imported: DeviceClass,
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   classIndex: LibraryIndex,
 ) {
   for (const [id, resource] of Object.entries(imported.resources || {})) {
@@ -302,7 +293,7 @@ function importResources(
 
 function importCommands(
   imported: DeviceClass,
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   classIndex: LibraryIndex,
 ) {
   for (const [id, cmd] of Object.entries(imported.commands || {})) {
@@ -364,7 +355,6 @@ function importCommands(
             // TODO description
           },
         };
-        addLocalizationReference(choiceId, "enumName", choice["@name"], editor);
         // TODO description
       }
     }
@@ -414,7 +404,6 @@ function importCommands(
             // TODO description
           },
         };
-        addLocalizationReference(choiceId, "enumName", choice["@name"], editor);
         // TODO description
       }
     }
@@ -429,7 +418,6 @@ function importCommands(
 
     editor.commands[cmdId] = newCmd;
     editor.commandEditors.push(cmdId);
-    addLocalizationReference(cmdId, "cmdName", cmd["@friendlyName"], editor);
   }
 }
 
@@ -452,35 +440,21 @@ function localMemberId(
   return id ?? codexIdAsEntityId(codexId);
 }
 
-function addLocalizationReference(
-  itemId: EntityId,
-  itemType: LocalizationReferencedItem["itemType"],
-  locKey: string | undefined,
-  editor: DeviceClassEditorState,
-) {
-  if (!locKey) {
-    return;
-  }
-
-  const locDb = editor.localizations[LocalizationKey(locKey)];
-  if (!locDb) {
-    return;
-  }
-
-  locDb.items.push({
-    itemId,
-    itemType,
-  });
-}
-
 async function getImportedDeviceClassEditorWithAssets(
   orgId: OrgId,
   id: string,
   version: string,
   deviceClass: DeviceClass,
+  sourceLocale: string,
   archive: ArchiveToImport,
 ) {
-  const editor = getImportedDeviceClassEditor(orgId, id, version, deviceClass);
+  const editor = getImportedDeviceClassEditor(
+    orgId,
+    id,
+    version,
+    deviceClass,
+    sourceLocale,
+  );
 
   const qualifiedId = buildQualifiedId(EntityType.Dev, orgId, id);
   editor.resourceAssets = await loadResourceAssets(
@@ -545,7 +519,7 @@ async function loadResourceAssets(
 // ---------------------------------------------------------------------------
 
 function convertEstaDmxToEditorState(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   estaDmx: EstaDmx,
 ): DmxSerializerState {
   const result: DmxSerializerState = {
@@ -648,7 +622,7 @@ function convertConditionsToNormalized(
 }
 
 function convertMapping(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   m: {
     mappedParam: { id: string; index?: number };
     ranges: MappingRange[];
@@ -691,7 +665,7 @@ function convertMappingRange(r: MappingRange): DmxMappingRange {
 }
 
 function convertUnmappedParam(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   up: UnmappedParam,
 ): DmxUnmappedParam {
   return {
@@ -705,10 +679,7 @@ function convertUnmappedParam(
   };
 }
 
-function convertTrigger(
-  editor: DeviceClassEditorState,
-  t: Trigger,
-): DmxTrigger {
+function convertTrigger(editor: DeviceClassDocument, t: Trigger): DmxTrigger {
   const commandId = resolveCommandId(editor, CodexId(t.command));
   const command = editor.commands[commandId];
 

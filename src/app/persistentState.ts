@@ -1,4 +1,4 @@
-import * as StateV4 from "./persistentState/v4/state";
+import * as StateV5 from "./persistentState/v5/state";
 import {
   CHAIN_END_VERSION,
   getMigration,
@@ -21,11 +21,11 @@ import {
 // 5. Update the re-export and VERSION below to point to the new version
 
 // Re-exports from the current (most recent) state version.
-export * from "./persistentState/v4/state";
-export const VERSION = StateV4.VERSION;
+export * from "./persistentState/v5/state";
+export const VERSION = StateV5.VERSION;
 
-export type AppPersistentState = StateV4.AppPersistentState;
-const AppStateSchema = StateV4.AppStateSchema;
+export type AppPersistentState = StateV5.AppPersistentState;
+const AppStateSchema = StateV5.AppStateSchema;
 
 if (CHAIN_END_VERSION !== VERSION) {
   throw new Error(
@@ -43,11 +43,12 @@ export function getDefaultState(): AppPersistentState {
       orgId: { type: "user", id: crypto.randomUUID() },
       locale: "en-US",
     },
-    openEditors: {
-      editors: [],
-      selectedEditor: -1,
+    session: {
+      openDocuments: [],
+      selectedDocumentId: undefined,
+      layouts: {},
     },
-    deviceClassEditors: {},
+    documents: {},
   };
 }
 

@@ -24,7 +24,6 @@ function addLocalization(
   const locKey = LocalizationKey(key);
   editor.localizations[locKey] = {
     strings: LocalizationDbSchema.parse({ [TEST_LOCALE]: value }),
-    items: [],
   };
   return locKey;
 }

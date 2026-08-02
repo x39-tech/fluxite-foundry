@@ -2,7 +2,8 @@ import { describe, test, expect } from "vitest";
 import { exportDeviceClass } from "./export";
 import {
   CodexId,
-  DeviceClassEditorState,
+  DeviceClassDocument,
+  documentTypes,
   EntityId,
   LocalizationKey,
   LocalizationDbSchema,
@@ -25,8 +26,9 @@ import {
 // Test Helpers
 // ============================================================================
 
-function createMinimalEditor(): DeviceClassEditorState {
+function createMinimalEditor(): DeviceClassDocument {
   return {
+    type: documentTypes.DEVICE_CLASS,
     orgId: { type: "org", id: "test-org" },
     deviceClassId: "test-device-class",
     deviceClassVersion: "1.0.0",
@@ -64,7 +66,7 @@ function createMinimalEditor(): DeviceClassEditorState {
     commandClassReturnValues: {},
     enumChoices: {},
     localizations: {},
-    windowLayout: "",
+    sourceLocale: "en-US",
   };
 }
 
@@ -76,7 +78,7 @@ type ParamClassOpts = Partial<Omit<ParameterClass, "codexId" | "localized">> & {
 };
 
 function addParamClass(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   id: string,
   codexId: string,
   opts: ParamClassOpts = {},
@@ -103,7 +105,7 @@ type StructClassOpts = Partial<
 };
 
 function addStructClass(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   id: string,
   codexId: string,
   opts: StructClassOpts = {},
@@ -128,7 +130,7 @@ type SerClassOpts = Partial<Omit<SerializerClass, "codexId" | "localized">> & {
 };
 
 function addSerClass(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   id: string,
   codexId: string,
   opts: SerClassOpts = {},
@@ -151,7 +153,7 @@ type ResClassOpts = Partial<Omit<ResourceClass, "codexId" | "localized">> & {
 };
 
 function addResClass(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   id: string,
   codexId: string,
   opts: ResClassOpts = {},
@@ -176,7 +178,7 @@ type CmdClassOpts = Partial<Omit<CommandClass, "codexId" | "localized">> & {
 };
 
 function addCmdClass(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   id: string,
   codexId: string,
   opts: CmdClassOpts = {},
@@ -198,7 +200,7 @@ type EnumChoiceOpts = Partial<Omit<EnumChoice, "parent" | "codexId">> & {
 };
 
 function addEnumChoice(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   id: string,
   parent: EnumChoiceParent,
   codexId: string,
@@ -226,7 +228,7 @@ type CmdArgOpts = Partial<
 };
 
 function addCmdArg(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   id: string,
   parentId: EntityId,
   codexId: string,
@@ -256,7 +258,7 @@ type CmdRetOpts = Partial<
 };
 
 function addCmdRet(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   id: string,
   parentId: EntityId,
   codexId: string,
@@ -283,7 +285,7 @@ type ParamOpts = Partial<Omit<Parameter, "codexId" | "class">> & {
 };
 
 function addParam(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   id: string,
   codexId: string,
   classRef: Parameter["class"],
@@ -307,7 +309,7 @@ function addParam(
 type ResOpts = Partial<Omit<Resource, "codexId" | "class">>;
 
 function addRes(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   id: string,
   codexId: string,
   classRef: Resource["class"],
@@ -329,7 +331,7 @@ type CmdOpts = Partial<Omit<Command, "codexId" | "class">> & {
 };
 
 function addCmd(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   id: string,
   codexId: string,
   classRef: Command["class"],
@@ -392,9 +394,7 @@ function rangeToChunkValues(range: {
   };
 }
 
-function createDmxState(): NonNullable<
-  DeviceClassEditorState["dmxSerializer"]
-> {
+function createDmxState(): NonNullable<DeviceClassDocument["dmxSerializer"]> {
   return {
     chunks: {},
     mappingGroups: {},
@@ -518,13 +518,11 @@ describe("exportLocalizations", () => {
           en: "English text",
           fr: "French text",
         }),
-        items: [],
       },
       [LocalizationKey("test.key2")]: {
         strings: LocalizationDbSchema.parse({
           en: "Another English text",
         }),
-        items: [],
       },
     };
 

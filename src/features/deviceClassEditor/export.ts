@@ -23,7 +23,7 @@ import {
 } from "@cpwg-community/delver";
 import {
   LocalOrImportedId,
-  DeviceClassEditorState,
+  DeviceClassDocument,
   DmxChunkRefCondition,
   DmxConditionGroup,
   DmxMappingChunkValuesSchema,
@@ -48,7 +48,7 @@ import { z } from "zod";
 type InternalParameterCount = z.infer<typeof ParameterCountSchema>;
 
 function convertParamReference(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   ref: ParameterReference,
 ): FCParamReference {
   return {
@@ -58,7 +58,7 @@ function convertParamReference(
 }
 
 function convertTrigger(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   trigger: DmxTrigger,
 ): Trigger {
   const command = editor.commands[trigger.command];
@@ -128,7 +128,7 @@ function convertChunkValues(
   };
 }
 
-export function exportDeviceClass(editor: DeviceClassEditorState): DeviceClass {
+export function exportDeviceClass(editor: DeviceClassDocument): DeviceClass {
   const codexClass: DeviceClass = {
     "@description": editor.basicData.localized.description,
     publishDate: editor.basicData.publishDate,
@@ -167,7 +167,7 @@ export function exportDeviceClass(editor: DeviceClassEditorState): DeviceClass {
 }
 
 function exportLocalizations(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   codexClass: DeviceClass,
 ) {
   if (Object.keys(editor.localizations).length === 0) {
@@ -188,7 +188,7 @@ function exportLocalizations(
 }
 
 function exportParameterClasses(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   codexClass: DeviceClass,
 ) {
   if (
@@ -248,7 +248,7 @@ function exportParameterClasses(
 }
 
 function exportStructureClasses(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   codexClass: DeviceClass,
 ) {
   if (Object.keys(editor.structureClasses).length === 0) {
@@ -279,7 +279,7 @@ function exportStructureClasses(
 }
 
 function exportSerializerClasses(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   codexClass: DeviceClass,
 ) {
   if (Object.keys(editor.serializerClasses).length === 0) {
@@ -309,7 +309,7 @@ function exportSerializerClasses(
 }
 
 function exportResourceClasses(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   codexClass: DeviceClass,
 ) {
   if (Object.keys(editor.resourceClasses).length === 0) {
@@ -340,7 +340,7 @@ function exportResourceClasses(
 }
 
 function exportCommandClasses(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   codexClass: DeviceClass,
 ) {
   if (Object.keys(editor.commandClasses).length === 0) {
@@ -466,7 +466,7 @@ function exportCommandClasses(
 }
 
 function exportParameters(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   codexClass: DeviceClass,
 ) {
   if (Object.keys(editor.parameters).length === 0) {
@@ -530,10 +530,7 @@ function exportParameters(
   }
 }
 
-function exportResources(
-  editor: DeviceClassEditorState,
-  codexClass: DeviceClass,
-) {
+function exportResources(editor: DeviceClassDocument, codexClass: DeviceClass) {
   if (Object.keys(editor.resources).length === 0) {
     return;
   }
@@ -562,10 +559,7 @@ function exportResources(
   }
 }
 
-function exportCommands(
-  editor: DeviceClassEditorState,
-  codexClass: DeviceClass,
-) {
+function exportCommands(editor: DeviceClassDocument, codexClass: DeviceClass) {
   if (Object.keys(editor.commands).length === 0) {
     return;
   }
@@ -713,7 +707,7 @@ function exportCommands(
 }
 
 function exportDmxSerializer(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   codexClass: DeviceClass,
 ) {
   if (!editor.dmxSerializer) {
@@ -736,7 +730,7 @@ function exportDmxSerializer(
 }
 
 function convertDmxSerializerToEstaDmx(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   dmx: DmxSerializerState,
 ): EstaDmx {
   const result: EstaDmx = {

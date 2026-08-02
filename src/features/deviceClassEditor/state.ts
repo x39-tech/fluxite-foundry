@@ -1,10 +1,10 @@
 import { Draft } from "immer";
 import * as FlexLayout from "flexlayout-react";
-import { useShallow } from "zustand/react/shallow";
 import {
   AppPersistentState,
   CodexId,
-  DeviceClassEditorState,
+  DeviceClassDocument,
+  documentTypes,
   EntityId,
   EnumChoice,
   EnumChoiceParent,
@@ -12,7 +12,13 @@ import {
   LocalizationKey,
 } from "app/persistentState";
 import { Unlocalized } from "features/localizations/types";
-import { useAppPersistentStore, updateAppPersistentState } from "app/store";
+import {
+  getCurrentDocumentOfType,
+  setDocumentLayout,
+  updateCurrentDocumentOfType,
+  useCurrentDocumentPart,
+  useCurrentDocumentPartShallow,
+} from "app/documents";
 import {
   enumChoiceParentsEqual,
   newEntityId,
@@ -31,38 +37,18 @@ import {
 // Read
 // ---------------------------------------------------------------------------
 
-export function useCurrentEditorId(): EntityId | undefined {
-  return useAppPersistentStore(
-    (state) => state.openEditors.editors[state.openEditors.selectedEditor]?.id,
-  );
-}
+export { useCurrentDocumentId as useCurrentEditorId } from "app/documents";
 
 export function useCurrentEditorPart<T>(
-  reducer: (state: DeviceClassEditorState) => T,
+  reducer: (state: DeviceClassDocument) => T,
 ): T | undefined {
-  return useAppPersistentStore((state) => {
-    const currentEditor = getCurrentEditor(state);
-    if (!currentEditor) {
-      return undefined;
-    }
-
-    return reducer(currentEditor);
-  });
+  return useCurrentDocumentPart(documentTypes.DEVICE_CLASS, reducer);
 }
 
 export function useCurrentEditorPartShallow<T>(
-  reducer: (state: DeviceClassEditorState) => T,
+  reducer: (state: DeviceClassDocument) => T,
 ): T | undefined {
-  return useAppPersistentStore(
-    useShallow((state) => {
-      const currentEditor = getCurrentEditor(state);
-      if (!currentEditor) {
-        return undefined;
-      }
-
-      return reducer(currentEditor);
-    }),
-  );
+  return useCurrentDocumentPartShallow(documentTypes.DEVICE_CLASS, reducer);
 }
 
 export function useDeviceLibrary(): Library | undefined {
@@ -92,22 +78,16 @@ export function useLocalizations(): Record<LocalizationKey, Localization> {
 // ---------------------------------------------------------------------------
 
 export function updateCurrentEditor(
-  updater: (editor: Draft<DeviceClassEditorState>) => void,
+  updater: (editor: Draft<DeviceClassDocument>) => void,
 ) {
-  updateAppPersistentState((state) => {
-    const currentEditor = getCurrentEditor(state);
-    if (!currentEditor) {
-      return;
-    }
-
-    updater(currentEditor);
-  });
+  updateCurrentDocumentOfType(documentTypes.DEVICE_CLASS, updater);
 }
 
-export function setWindowLayout(model: FlexLayout.IJsonModel) {
-  updateCurrentEditor(
-    (editor) => (editor.windowLayout = JSON.stringify(model.layout)),
-  );
+export function setWindowLayout(
+  documentId: EntityId,
+  model: FlexLayout.IJsonModel,
+) {
+  setDocumentLayout(documentId, JSON.stringify(model.layout));
 }
 
 export function addEnumChoice(
@@ -205,13 +185,8 @@ export function deleteEnumChoice(id: EntityId) {
   });
 }
 
-export function getCurrentEditor<S extends AppPersistentState>(
-  state: S,
-): DeviceClassEditorState | undefined {
-  const currentEditor =
-    state.openEditors.editors[state.openEditors.selectedEditor];
-  if (!currentEditor || currentEditor.type != "deviceClass") {
-    return undefined;
-  }
-  return state.deviceClassEditors[currentEditor.id];
+export function getCurrentEditor(
+  state: AppPersistentState,
+): DeviceClassDocument | undefined {
+  return getCurrentDocumentOfType(state, documentTypes.DEVICE_CLASS);
 }

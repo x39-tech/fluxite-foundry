@@ -58,13 +58,15 @@ describe("the state snapshot history", () => {
       expect(AppStateSchema.safeParse(migrated).success).toBe(true);
     });
 
-    it("keeps its device class editors through the migration", () => {
+    it("keeps its documents through the migration", () => {
       const state = entry.snapshot.state as {
         deviceClassEditors: Record<string, unknown>;
       };
       const migrated = migrateState(entry.snapshot.state, entry.version);
 
-      expect(Object.keys(migrated.deviceClassEditors)).toEqual(
+      // Before v5, we had only `deviceClassEditors` instead of the current
+      // `documents` discriminated union table.
+      expect(Object.keys(migrated.documents)).toEqual(
         Object.keys(state.deviceClassEditors),
       );
     });

@@ -4,12 +4,15 @@ import {
   EntityId,
   Localization,
   LocalizationKey,
-  LocalizationReferencedItem,
   LocalizationDb,
 } from "app/persistentState";
 
 /**
- * `Localization` without the items[] reference array.
+ * The part of a `Localization` that holds the strings themselves.
+ *
+ * A document's own localizations carry more than this (see `Localization`), but
+ * an imported library's do not, so anything that only reads strings is written
+ * against this.
  */
 export interface LocalizationStrings {
   strings: LocalizationDb;
@@ -42,14 +45,14 @@ export type Unlocalized<T> = Omit<T, "localized">;
 // ----------------------------------------------------------------------------
 
 /**
- * Persisted documents (e.g. DeviceClassEditorState) used in this app follow a
+ * Persisted documents (e.g. DeviceClassDocument) used in this app follow a
  * strong convention for localizable fields. In the document are entities which
  * have fields that are _localizable_, meaning they have values that might have
  * strings in different locales. These entities (objects) always have a property
  * called `localized`:
  *
  * ```ts
- * // DeviceClassEditorState
+ * // DeviceClassDocument
  * {
  *   basicData: {
  *     // other properties...
@@ -278,12 +281,6 @@ export interface LocalizableFieldSpec<Doc, Entity> {
   label: string;
 
   /**
-   * The value this field's references were stored under in `Localization.items`.
-   * Deprecated; to be removed.
-   */
-  itemType: LocalizationReferencedItem["itemType"];
-
-  /**
    * A required field keeps its localization when its value is blanked; an
    * optional one drops it.
    */
@@ -368,7 +365,6 @@ export interface LocalizableSingletonSpec<Doc, Entity> {
  *     fields: {
  *       friendlyName: {
  *         label: "Friendly Name",
- *         itemType: "paramName",
  *         makeKey: ({ entity }) => `param_${entity.codexId}`,
  *       },
  *     },
@@ -379,7 +375,6 @@ export interface LocalizableSingletonSpec<Doc, Entity> {
  *     fields: {
  *       friendlyName: {
  *         label: "Friendly Name",
- *         itemType: "cmdName",
  *         makeKey: ({ entity }) => `command_${entity.codexId}`,
  *       },
  *     },
@@ -390,7 +385,6 @@ export interface LocalizableSingletonSpec<Doc, Entity> {
  *     fields: {
  *       description: {
  *         label: "Description",
- *         itemType: "devClassDesc",
  *         required: true,
  *         makeKey: () => "devClass_description"
  *       }

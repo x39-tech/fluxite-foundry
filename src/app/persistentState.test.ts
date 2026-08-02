@@ -174,7 +174,7 @@ describe("migrateState", () => {
     it("resets to default state when it does not match the starting schema", () => {
       const result = migrateState({ not: "a v1 state" }, 1);
 
-      expect(result.deviceClassEditors).toEqual({});
+      expect(result.documents).toEqual({});
       expect(getMigrationReport()).toMatchObject({ success: false });
       expect(getMigrationReport()?.error).toContain("doesn't match v1 schema");
     });
@@ -184,7 +184,7 @@ describe("migrateState", () => {
       (fromVersion) => {
         const result = migrateState(createV1State(), fromVersion);
 
-        expect(result.deviceClassEditors).toEqual({});
+        expect(result.documents).toEqual({});
         expect(getMigrationReport()).toMatchObject({ success: false });
         expect(getMigrationReport()?.error).toContain(
           `Unsupported state version ${fromVersion}`,

@@ -1,5 +1,4 @@
 import { useEffect, JSX } from "react";
-import { useOpenEditors } from "features/topNavBar/state";
 import { DeviceClassEditor } from "features/deviceClassEditor/DeviceClassEditor";
 import { TopNavBar } from "features/topNavBar/TopNavBar";
 import { Toaster } from "components/scn-ui/Sonner";
@@ -11,18 +10,18 @@ import {
   useLibraryStore,
   setSystemDarkModePreference,
 } from "./store";
-import { EditorType, editorTypes } from "./persistentState";
+import { DocumentType, documentTypes } from "./persistentState";
+import { useCurrentDocumentType } from "./documents";
 import "./App.scss";
 
-const EDITORS: Record<EditorType, () => JSX.Element> = {
-  [editorTypes.DEVICE_CLASS]: () => <DeviceClassEditor />,
+const EDITORS: Record<DocumentType, () => JSX.Element> = {
+  [documentTypes.DEVICE_CLASS]: () => <DeviceClassEditor />,
 };
 
 export const App = () => {
   const libraries = useLibraryStore();
   const darkMode = useDarkMode();
-  const editors = useOpenEditors();
-  const currentEditor = editors.editors[editors.selectedEditor];
+  const currentDocumentType = useCurrentDocumentType();
 
   // Apply dark mode class to body
   useEffect(() => {
@@ -55,7 +54,7 @@ export const App = () => {
     <div className="app">
       <TopNavBar />
       <div className="display-area">
-        {currentEditor ? EDITORS[currentEditor.type]() : <div />}
+        {currentDocumentType ? EDITORS[currentDocumentType]() : <div />}
         <LibraryErrorDialog show={libraryStoreIsEmpty(libraries)} />
       </div>
       <Toaster />

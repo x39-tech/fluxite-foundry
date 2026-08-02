@@ -260,6 +260,7 @@ describe("Import/Export Round Trip", () => {
         deviceId,
         testCase.version,
         original,
+        "en-US",
       );
 
       const exported = exportDeviceClass(editorState);

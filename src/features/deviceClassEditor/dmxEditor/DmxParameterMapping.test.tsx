@@ -22,7 +22,7 @@ import { ParameterReference } from "app/persistentState";
 // by EntityId, so this must match a real parameter for the mapping to be valid.
 function paramRef(codexId: CodexId, index?: number): ParameterReference {
   const state = useAppPersistentStore.getState();
-  const editor = Object.values(state.deviceClassEditors)[0];
+  const editor = Object.values(state.documents)[0];
   const entry = Object.entries(editor.parameters).find(
     ([, p]) => p.codexId === codexId,
   );
@@ -46,7 +46,6 @@ function createTestParamClass(
     const locKey = LocalizationKey(`paramClass_${id}`);
     editor.localizations[locKey] = {
       strings: LocalizationDbSchema.parse({ "en-US": name }),
-      items: [{ itemType: "paramClassName", itemId: id }],
     };
     editor.parameterClasses[id] = {
       codexId,
@@ -247,7 +246,6 @@ describe("DmxParameterMapping - Unmapped Parameter Table Rows", () => {
         const classNameKey = LocalizationKey("enum_class_name");
         editor.localizations[classNameKey] = {
           strings: LocalizationDbSchema.parse({ "en-US": "Enum Class" }),
-          items: [{ itemType: "paramClassName", itemId: ENUM_CLASS_ID }],
         };
 
         editor.parameterClasses[ENUM_CLASS_ID] = {
@@ -263,15 +261,12 @@ describe("DmxParameterMapping - Unmapped Parameter Table Rows", () => {
 
         editor.localizations[choice0Key] = {
           strings: LocalizationDbSchema.parse({ "en-US": "Choice A" }),
-          items: [],
         };
         editor.localizations[choice1Key] = {
           strings: LocalizationDbSchema.parse({ "en-US": "Choice B" }),
-          items: [],
         };
         editor.localizations[choice2Key] = {
           strings: LocalizationDbSchema.parse({ "en-US": "Choice C" }),
-          items: [],
         };
 
         editor.enumChoices[EntityId("choice0")] = {

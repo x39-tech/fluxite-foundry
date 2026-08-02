@@ -117,6 +117,7 @@ const editor = getImportedDeviceClassEditor(
   "test-device",
   "1.0.0",
   deviceClass,
+  "en-US",
 );
 
 function localClassId(

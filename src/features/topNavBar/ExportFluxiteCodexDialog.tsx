@@ -21,13 +21,8 @@ import {
 import { Label } from "components/scn-ui/Label";
 import { FieldSet } from "components/FieldSet";
 import { SelectField } from "components/EditorFields/SelectField";
-import { useDeviceClassEditors, useOpenEditors } from "./state";
-import {
-  DeviceClassEditorState,
-  editorTypes,
-  EntityId,
-  OpenEditor,
-} from "app/persistentState";
+import { useDeviceClassDocuments, useOpenDocumentIds } from "./state";
+import { DeviceClassDocument, EntityId } from "app/persistentState";
 import {
   Tooltip,
   TooltipContent,
@@ -43,7 +38,8 @@ import {
   CODEX_DOC_SCHEMA_URL,
 } from "consts";
 
-interface OpenEditorWithName extends OpenEditor {
+interface OpenEditorWithName {
+  id: EntityId;
   name: string;
 }
 
@@ -53,20 +49,17 @@ interface Props {
 }
 
 export const ExportFluxiteCodexDialog = ({ isOpen, onClose }: Props) => {
-  // TODO: generic over editor type
-  const openEditors = useOpenEditors();
-  const deviceClassEditors = useDeviceClassEditors();
+  // TODO: generic over document type
+  const openDocumentIds = useOpenDocumentIds();
+  const deviceClassEditors = useDeviceClassDocuments();
 
-  const editorsWithNames = openEditors.editors.reduce(
-    (accum: OpenEditorWithName[], value) => {
-      if (value.type == editorTypes.DEVICE_CLASS) {
-        const editorState = deviceClassEditors[value.id];
-        if (editorState) {
-          accum.push({
-            ...value,
-            name: editorState.basicData.modelName,
-          });
-        }
+  // Only device classes can be exported so far, so the list is the open
+  // documents that are device classes, in tab order.
+  const editorsWithNames = openDocumentIds.reduce(
+    (accum: OpenEditorWithName[], id) => {
+      const editorState = deviceClassEditors[id];
+      if (editorState) {
+        accum.push({ id, name: editorState.basicData.modelName });
       }
       return accum;
     },
@@ -187,7 +180,7 @@ export const ExportFluxiteCodexDialog = ({ isOpen, onClose }: Props) => {
   );
 };
 
-function createDocument(editor: DeviceClassEditorState): E173Document {
+function createDocument(editor: DeviceClassDocument): E173Document {
   const id = buildQualifiedId(
     EntityType.Dev,
     editor.orgId,
@@ -208,7 +201,7 @@ function createDocument(editor: DeviceClassEditorState): E173Document {
 
 async function createFluxiteCodexArchive(
   doc: RawE173Document,
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   prettyPrint: boolean,
 ): Promise<Blob | null> {
   const deviceClassId = buildQualifiedId(

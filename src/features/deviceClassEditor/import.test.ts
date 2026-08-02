@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 import { getImportedDeviceClassEditor } from "./import";
 import {
   CodexId,
-  DeviceClassEditorState,
+  DeviceClassDocument,
   EntityId,
   LocalizationKey,
 } from "app/persistentState";
@@ -230,7 +230,7 @@ function addCmd(
 // Returns the EntityId of the enum choice with the given codexId. Used to
 // assert on exclusions, which reference local choices by their EntityId.
 function findEnumChoiceId(
-  editor: DeviceClassEditorState,
+  editor: DeviceClassDocument,
   codexId: string,
 ): EntityId {
   const entry = Object.entries(editor.enumChoices).find(
@@ -355,6 +355,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       expect(editor.deviceClassId).toBe("test-id");
@@ -381,6 +382,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       expect(editor.basicData.history).toEqual({
@@ -397,6 +399,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       expect(editor.libraries).toEqual({
@@ -418,6 +421,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       expect(
@@ -438,6 +442,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       expect(Object.keys(editor.localizations)).toHaveLength(0);
@@ -459,6 +464,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       const paramClasses = Object.values(editor.parameterClasses);
@@ -485,6 +491,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       const enumChoices = Object.values(editor.enumChoices);
@@ -506,6 +513,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       expect(Object.values(editor.parameterClasses)).toHaveLength(3);
@@ -526,6 +534,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       const structClasses = Object.values(editor.structureClasses);
@@ -549,6 +558,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       const serClasses = Object.values(editor.serializerClasses);
@@ -572,6 +582,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       const resClasses = Object.values(editor.resourceClasses);
@@ -595,6 +606,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       const cmdClasses = Object.values(editor.commandClasses);
@@ -627,6 +639,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       const args = Object.values(editor.commandClassArguments);
@@ -656,6 +669,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       const returns = Object.values(editor.commandClassReturnValues);
@@ -686,6 +700,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       const enumChoices = Object.values(editor.enumChoices);
@@ -709,6 +724,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       const params = Object.values(editor.parameters);
@@ -737,6 +753,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       const params = Object.values(editor.parameters);
@@ -759,6 +776,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       const params = Object.values(editor.parameters);
@@ -777,6 +795,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       const params = Object.values(editor.parameters);
@@ -802,6 +821,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       const param = Object.values(editor.parameters)[0];
@@ -833,6 +853,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       const param = Object.values(editor.parameters)[0];
@@ -860,6 +881,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       const additionalChoices = Object.values(editor.enumChoices).filter(
@@ -879,6 +901,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       expect(editor.parameterEditors).toHaveLength(2);
@@ -899,6 +922,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       const resources = Object.values(editor.resources);
@@ -920,6 +944,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       expect(editor.resourceEditors).toHaveLength(2);
@@ -940,6 +965,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       const commands = Object.values(editor.commands);
@@ -976,6 +1002,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       const cmd = Object.values(editor.commands)[0];
@@ -1004,6 +1031,7 @@ describe("getImportedDeviceClassEditor", () => {
         "test-id",
         "1.0.0",
         dc,
+        "en-US",
       );
 
       expect(editor.commandEditors).toHaveLength(2);
@@ -1029,6 +1057,7 @@ describe("DMX serializer import", () => {
       "test-id",
       "1.0.0",
       dc,
+      "en-US",
     );
 
     expect(editor.dmxSerializer).toBeDefined();
@@ -1048,6 +1077,7 @@ describe("DMX serializer import", () => {
       "test-id",
       "1.0.0",
       dc,
+      "en-US",
     );
 
     const chunks = Object.values(editor.dmxSerializer!.chunks);
@@ -1077,6 +1107,7 @@ describe("DMX serializer import", () => {
       "test-id",
       "1.0.0",
       dc,
+      "en-US",
     );
 
     const mapping = Object.values(editor.dmxSerializer!.mappingGroups)[0]
@@ -1109,6 +1140,7 @@ describe("DMX serializer import", () => {
       "test-id",
       "1.0.0",
       dc,
+      "en-US",
     );
 
     const range = Object.values(editor.dmxSerializer!.mappingGroups)[0]
@@ -1149,6 +1181,7 @@ describe("DMX serializer import", () => {
       "test-id",
       "1.0.0",
       dc,
+      "en-US",
     );
 
     const range = Object.values(editor.dmxSerializer!.mappingGroups)[0]
@@ -1196,6 +1229,7 @@ describe("DMX serializer import", () => {
       "test-id",
       "1.0.0",
       dc,
+      "en-US",
     );
 
     const unmapped = Object.values(editor.dmxSerializer!.mappingGroups)[0]
@@ -1238,6 +1272,7 @@ describe("DMX serializer import", () => {
       "test-id",
       "1.0.0",
       dc,
+      "en-US",
     );
 
     const triggers = Object.values(editor.dmxSerializer!.mappingGroups)[0]
@@ -1283,6 +1318,7 @@ describe("DMX serializer import", () => {
       "test-id",
       "1.0.0",
       dc,
+      "en-US",
     );
 
     const conditions = Object.values(editor.dmxSerializer!.conditions);
@@ -1334,6 +1370,7 @@ describe("DMX serializer import", () => {
       "test-id",
       "1.0.0",
       dc,
+      "en-US",
     );
 
     const conditions = Object.values(editor.dmxSerializer!.conditions);
@@ -1375,6 +1412,7 @@ describe("DMX serializer import", () => {
       "test-id",
       "1.0.0",
       dc,
+      "en-US",
     );
 
     const mappingGroups = Object.values(editor.dmxSerializer!.mappingGroups);
@@ -1391,6 +1429,7 @@ describe("DMX serializer import", () => {
       "test-id",
       "1.0.0",
       dc,
+      "en-US",
     );
 
     expect(editor.dmxSerializer).toBeUndefined();
@@ -1423,6 +1462,7 @@ describe("DMX serializer import", () => {
       "test-id",
       "1.0.0",
       dc,
+      "en-US",
     );
 
     expect(Object.keys(editor.dmxSerializer!.chunks)).toHaveLength(2);

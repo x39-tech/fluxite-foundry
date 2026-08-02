@@ -2,11 +2,15 @@ import { writeFileSync } from "node:fs";
 import { parseFluxiteCodexDocument, DeviceClass } from "@cpwg-community/delver";
 import { getImportedDeviceClassEditor } from "../src/features/deviceClassEditor/import";
 import { newEntityId } from "../src/app/stateUtils";
-import { EntityType, OrgId, parseQualifiedId } from "../src/utils/utils";
+import {
+  EntityType,
+  getDefaultWindowLayout,
+  OrgId,
+  parseQualifiedId,
+} from "../src/utils/utils";
 import {
   AppPersistentState,
   AppStateSchema,
-  EntityId,
   getDefaultState,
   VERSION,
 } from "../src/app/persistentState";
@@ -60,20 +64,21 @@ function buildStateToCapture(): AppPersistentState {
     for (const { orgId, id, version, deviceClass } of deviceClassesInDocument(
       documentText,
     )) {
-      const editorId = newEntityId();
-      state.deviceClassEditors[editorId] = getImportedDeviceClassEditor(
+      const documentId = newEntityId();
+      state.documents[documentId] = getImportedDeviceClassEditor(
         orgId,
         id,
         version,
         deviceClass,
+        state.appSettings.locale,
       );
-      state.openEditors.editors.push({
-        type: "deviceClass",
-        id: EntityId(editorId),
-      });
+      state.session.openDocuments.push(documentId);
+      state.session.layouts[documentId] = JSON.stringify(
+        getDefaultWindowLayout(),
+      );
     }
   }
-  state.openEditors.selectedEditor = 0;
+  state.session.selectedDocumentId = state.session.openDocuments[0];
 
   return state;
 }

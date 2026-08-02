@@ -3,10 +3,9 @@
 
 import {
   CodexId,
-  DeviceClassEditorState,
+  DeviceClassDocument,
   EntityId,
   EnumChoiceParent,
-  LocalizationReferencedItem,
 } from "app/persistentState";
 import {
   LocalizationRegistry,
@@ -25,9 +24,7 @@ import {
   setLocalizedValue,
 } from "features/localizations/registry";
 
-type DeviceClassDocument = DeviceClassEditorState;
 type DeviceClassEntryKey = LocalizableEntryKey<DeviceClassDocument>;
-type ItemType = LocalizationReferencedItem["itemType"];
 
 /**
  * Builds the key prefix that identifies an enum choice's parent, which is what
@@ -99,7 +96,6 @@ export const DEVICE_CLASS_LOCALIZATIONS: LocalizationRegistry<DeviceClassDocumen
       fields: {
         description: {
           label: "Description",
-          itemType: "devClassDesc",
           required: true,
           makeKey: () => "devClass_description",
         },
@@ -109,43 +105,43 @@ export const DEVICE_CLASS_LOCALIZATIONS: LocalizationRegistry<DeviceClassDocumen
     parameterClasses: {
       kind: "table",
       label: "Parameter class",
-      fields: classFields("paramClass", "paramClassName", "paramClassDesc"),
+      fields: classFields("paramClass"),
     },
 
     structureClasses: {
       kind: "table",
       label: "Structure class",
-      fields: classFields("structClass", "structClassName", "structClassDesc"),
+      fields: classFields("structClass"),
     },
 
     serializerClasses: {
       kind: "table",
       label: "Serializer class",
-      fields: classFields("serClass", "serClassName", "serClassDesc"),
+      fields: classFields("serClass"),
     },
 
     resourceClasses: {
       kind: "table",
       label: "Resource class",
-      fields: classFields("resClass", "resClassName", "resClassDesc"),
+      fields: classFields("resClass"),
     },
 
     commandClasses: {
       kind: "table",
       label: "Command class",
-      fields: classFields("commandClass", "cmdClassName", "cmdClassDesc"),
+      fields: classFields("commandClass"),
     },
 
     commandClassArguments: {
       kind: "table",
       label: "Command argument",
-      fields: classMemberFields("arg", "cmdArgName", "cmdArgDesc"),
+      fields: classMemberFields("arg"),
     },
 
     commandClassReturnValues: {
       kind: "table",
       label: "Command return value",
-      fields: classMemberFields("return", "cmdRetName", "cmdRetDesc"),
+      fields: classMemberFields("return"),
     },
 
     parameters: {
@@ -154,7 +150,6 @@ export const DEVICE_CLASS_LOCALIZATIONS: LocalizationRegistry<DeviceClassDocumen
       fields: {
         friendlyName: {
           label: "Friendly name",
-          itemType: "paramName",
           makeKey: ({ entity }) => `param_${entity.codexId}`,
         },
       },
@@ -166,7 +161,6 @@ export const DEVICE_CLASS_LOCALIZATIONS: LocalizationRegistry<DeviceClassDocumen
       fields: {
         friendlyName: {
           label: "Friendly name",
-          itemType: "cmdName",
           makeKey: ({ entity }) => `command_${entity.codexId}`,
         },
       },
@@ -178,14 +172,12 @@ export const DEVICE_CLASS_LOCALIZATIONS: LocalizationRegistry<DeviceClassDocumen
       fields: {
         name: {
           label: "Name",
-          itemType: "enumName",
           required: true,
           makeKey: ({ document, entity }) =>
             enumChoiceKey(document, entity, "name"),
         },
         description: {
           label: "Description",
-          itemType: "enumDesc",
           makeKey: ({ document, entity }) =>
             enumChoiceKey(document, entity, "description"),
         },
@@ -205,21 +197,15 @@ type NameAndDescriptionFields<Entity> = {
   };
 };
 
-function classFields(
-  prefix: string,
-  nameItemType: ItemType,
-  descriptionItemType: ItemType,
-): NameAndDescriptionFields<ClassEntity> {
+function classFields(prefix: string): NameAndDescriptionFields<ClassEntity> {
   return {
     name: {
       label: "Name",
-      itemType: nameItemType,
       required: true,
       makeKey: ({ entity }) => `${prefix}_${entity.codexId}_name`,
     },
     description: {
       label: "Description",
-      itemType: descriptionItemType,
       makeKey: ({ entity }) => `${prefix}_${entity.codexId}_description`,
     },
   };
@@ -233,8 +219,6 @@ interface ClassMemberEntity {
 
 function classMemberFields(
   kind: "arg" | "return",
-  nameItemType: ItemType,
-  descriptionItemType: ItemType,
 ): NameAndDescriptionFields<ClassMemberEntity> {
   const key = (
     document: DeviceClassDocument,
@@ -250,13 +234,11 @@ function classMemberFields(
   return {
     name: {
       label: "Name",
-      itemType: nameItemType,
       required: true,
       makeKey: ({ document, entity }) => key(document, entity, "name"),
     },
     description: {
       label: "Description",
-      itemType: descriptionItemType,
       makeKey: ({ document, entity }) => key(document, entity, "description"),
     },
   };
