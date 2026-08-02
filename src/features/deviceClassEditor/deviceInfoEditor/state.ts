@@ -1,5 +1,9 @@
 import { Draft } from "immer";
-import { updateCurrentEditor, useCurrentEditorPartShallow } from "../state";
+import {
+  updateCurrentEditor,
+  useCurrentEditorPartShallow,
+  useSourceLocale,
+} from "../state";
 import { setDeviceClassLocalizedValue } from "../localizationRegistry";
 import { DeviceClassBasicData } from "app/persistentState";
 import { Unlocalized } from "features/localizations/types";
@@ -16,6 +20,7 @@ export interface LocalizedBasicData extends Unlocalized<DeviceClassBasicData> {
 
 export function useBasicData(): LocalizedBasicData | undefined {
   const locale = useCurrentLocale();
+  const sourceLocale = useSourceLocale();
   const editorPart = useCurrentEditorPartShallow((editor) => {
     return [editor.basicData, editor.localizations] as const;
   });
@@ -30,6 +35,7 @@ export function useBasicData(): LocalizedBasicData | undefined {
     localizations,
     basicData.localized.description,
     locale,
+    sourceLocale,
   );
 
   return {

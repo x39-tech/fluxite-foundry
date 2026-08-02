@@ -10,6 +10,7 @@ import {
   useCurrentEditorPartShallow,
   useDeviceLibrary,
   useLibraries,
+  useSourceLocale,
 } from "../state";
 import {
   lookupResourceClass,
@@ -57,6 +58,7 @@ export function useResourceInfo(
   const resource = useCurrentEditorPart((editor) => editor.resources[id]);
   const libraryStore = useLibraryStore();
   const locale = useCurrentLocale();
+  const sourceLocale = useSourceLocale();
 
   if (!deviceLibrary || !importedLibs || !resource) return undefined;
 
@@ -68,7 +70,7 @@ export function useResourceInfo(
     "resourceClasses",
   );
   const resourceClass = resolved
-    ? lookupResourceClass(resolved, locale)
+    ? lookupResourceClass(resolved, locale, sourceLocale)
     : undefined;
 
   return {

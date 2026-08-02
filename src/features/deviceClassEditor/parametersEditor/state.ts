@@ -17,6 +17,7 @@ import {
   useCurrentEditorPartShallow,
   useDeviceLibrary,
   useLibraries,
+  useSourceLocale,
 } from "../state";
 import {
   removeDeviceClassLocalizations,
@@ -85,6 +86,7 @@ export function useParameterInfo(id: EntityId):
   const importedLibs = useLibraries();
   const param = useCurrentEditorPart((editor) => editor.parameters[id]);
   const locale = useCurrentLocale();
+  const sourceLocale = useSourceLocale();
   const libraryStore = useLibraryStore();
 
   if (!deviceLibrary || !importedLibs || !param) return undefined;
@@ -99,11 +101,16 @@ export function useParameterInfo(id: EntityId):
     "parameterClasses",
   );
   const paramClass = resolved
-    ? lookupParameterClass(resolved, locale)
+    ? lookupParameterClass(resolved, locale, sourceLocale)
     : undefined;
 
   const friendlyName = param.localized.friendlyName
-    ? localize(localizations, param.localized.friendlyName, locale)
+    ? localize(
+        localizations,
+        param.localized.friendlyName,
+        locale,
+        sourceLocale,
+      )
     : undefined;
 
   const localizedParam = {
@@ -122,9 +129,19 @@ export function useParameterInfo(id: EntityId):
     param: localizedParam,
     paramClass,
     instanceEnumChoices: paramEnumChoices.map((choice) => {
-      const name = localize(localizations, choice.localized.name, locale);
+      const name = localize(
+        localizations,
+        choice.localized.name,
+        locale,
+        sourceLocale,
+      );
       const description = choice.localized.description
-        ? localize(localizations, choice.localized.description, locale)
+        ? localize(
+            localizations,
+            choice.localized.description,
+            locale,
+            sourceLocale,
+          )
         : undefined;
 
       return {

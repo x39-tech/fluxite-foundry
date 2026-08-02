@@ -71,6 +71,7 @@ export interface ResolvedCommandClass extends Unlocalized<CommandClass> {
 export function lookupParameterClass(
   resolved: ResolvedClassRef,
   locale: string,
+  sourceLocale?: string,
 ): ResolvedParameterClass | undefined {
   const { library, classId } = resolved;
   const cls = library.parameterClasses[classId];
@@ -80,17 +81,34 @@ export function lookupParameterClass(
 
   return {
     codexId: cls.codexId,
-    name: localize(library.localizations, cls.localized.name, locale),
-    description: optionalLocalize(resolved, cls.localized.description, locale),
+    name: localize(
+      library.localizations,
+      cls.localized.name,
+      locale,
+      sourceLocale,
+    ),
+    description: optionalLocalize(
+      resolved,
+      cls.localized.description,
+      locale,
+      sourceLocale,
+    ),
     unit: cls.unit,
     dataType: cls.dataType,
-    choices: localizeClassEnumChoices(resolved, "paramClass", classId, locale),
+    choices: localizeClassEnumChoices(
+      resolved,
+      "paramClass",
+      classId,
+      locale,
+      sourceLocale,
+    ),
   };
 }
 
 export function lookupResourceClass(
   resolved: ResolvedClassRef,
   locale: string,
+  sourceLocale?: string,
 ): ResolvedResourceClass | undefined {
   const { library, classId } = resolved;
   const cls = library.resourceClasses[classId];
@@ -100,8 +118,18 @@ export function lookupResourceClass(
 
   return {
     codexId: cls.codexId,
-    name: localize(library.localizations, cls.localized.name, locale),
-    description: optionalLocalize(resolved, cls.localized.description, locale),
+    name: localize(
+      library.localizations,
+      cls.localized.name,
+      locale,
+      sourceLocale,
+    ),
+    description: optionalLocalize(
+      resolved,
+      cls.localized.description,
+      locale,
+      sourceLocale,
+    ),
     mediaType: cls.mediaType,
   };
 }
@@ -109,6 +137,7 @@ export function lookupResourceClass(
 export function lookupCommandClass(
   resolved: ResolvedClassRef,
   locale: string,
+  sourceLocale?: string,
 ): ResolvedCommandClass | undefined {
   const { library, classId } = resolved;
   const cls = library.commandClasses[classId];
@@ -126,11 +155,17 @@ export function lookupCommandClass(
         {
           id: localOrImportedId(resolved, arg.id, arg.codexId),
           codexId: arg.codexId,
-          name: localize(library.localizations, arg.localized.name, locale),
+          name: localize(
+            library.localizations,
+            arg.localized.name,
+            locale,
+            sourceLocale,
+          ),
           descripton: optionalLocalize(
             resolved,
             arg.localized.description,
             locale,
+            sourceLocale,
           ),
           dataType: arg.dataType as DataType,
           unit: arg.unit as Unit,
@@ -140,6 +175,7 @@ export function lookupCommandClass(
             "cmdClassArg",
             arg.id,
             locale,
+            sourceLocale,
           ),
         },
       ]),
@@ -155,11 +191,17 @@ export function lookupCommandClass(
         {
           id: localOrImportedId(resolved, ret.id, ret.codexId),
           codexId: ret.codexId,
-          name: localize(library.localizations, ret.localized.name, locale),
+          name: localize(
+            library.localizations,
+            ret.localized.name,
+            locale,
+            sourceLocale,
+          ),
           descripton: optionalLocalize(
             resolved,
             ret.localized.description,
             locale,
+            sourceLocale,
           ),
           dataType: ret.dataType as DataType,
           unit: ret.unit as Unit,
@@ -169,6 +211,7 @@ export function lookupCommandClass(
             "cmdClassRet",
             ret.id,
             locale,
+            sourceLocale,
           ),
         },
       ]),
@@ -176,8 +219,18 @@ export function lookupCommandClass(
 
   return {
     codexId: cls.codexId,
-    name: localize(library.localizations, cls.localized.name, locale),
-    description: optionalLocalize(resolved, cls.localized.description, locale),
+    name: localize(
+      library.localizations,
+      cls.localized.name,
+      locale,
+      sourceLocale,
+    ),
+    description: optionalLocalize(
+      resolved,
+      cls.localized.description,
+      locale,
+      sourceLocale,
+    ),
     arguments: cmdArguments,
     returnValues,
   };
@@ -200,9 +253,10 @@ function optionalLocalize(
   resolved: ResolvedClassRef,
   key: LocalizationKey | undefined,
   locale: string,
+  sourceLocale?: string,
 ): LocalizedString | undefined {
   return key
-    ? localize(resolved.library.localizations, key, locale)
+    ? localize(resolved.library.localizations, key, locale, sourceLocale)
     : undefined;
 }
 
@@ -211,6 +265,7 @@ function localizeClassEnumChoices(
   parentType: "paramClass" | "cmdClassArg" | "cmdClassRet",
   parentId: EntityId,
   locale: string,
+  sourceLocale?: string,
 ): LocalizedClassEnumChoice[] {
   const choices = selectWithIds(
     resolved.library.enumChoices,
@@ -226,11 +281,13 @@ function localizeClassEnumChoices(
       resolved.library.localizations,
       choice.localized.name,
       locale,
+      sourceLocale,
     ),
     description: optionalLocalize(
       resolved,
       choice.localized.description,
       locale,
+      sourceLocale,
     ),
   }));
 }

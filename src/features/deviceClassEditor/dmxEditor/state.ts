@@ -18,6 +18,7 @@ import {
   useCurrentEditorPart,
   useDeviceLibrary,
   useLibraries,
+  useSourceLocale,
 } from "../state";
 import { newEntityId, selectWithIds } from "app/stateUtils";
 import {
@@ -99,6 +100,7 @@ const NO_CONTROLLER: DmxController = { state: "not-created" };
  */
 export function useMappableParameters(): Record<EntityId, MappableParameter> {
   const locale = useCurrentLocale();
+  const sourceLocale = useSourceLocale();
   const libraryStore = useLibraryStore();
   const importedLibs = useLibraries();
   const deviceLibrary = useDeviceLibrary();
@@ -118,7 +120,7 @@ export function useMappableParameters(): Record<EntityId, MappableParameter> {
         "parameterClasses",
       );
       const paramClass: ResolvedParameterClass | undefined = resolved
-        ? lookupParameterClass(resolved, locale)
+        ? lookupParameterClass(resolved, locale, sourceLocale)
         : undefined;
 
       if (!paramClass || !isMappableParamClass(paramClass)) {
@@ -139,9 +141,19 @@ export function useMappableParameters(): Record<EntityId, MappableParameter> {
           id: choice.id,
           codexId: choice.codexId,
           index: choice.index,
-          name: localize(localizations, choice.localized.name, locale),
+          name: localize(
+            localizations,
+            choice.localized.name,
+            locale,
+            sourceLocale,
+          ),
           description: choice.localized.description
-            ? localize(localizations, choice.localized.description, locale)
+            ? localize(
+                localizations,
+                choice.localized.description,
+                locale,
+                sourceLocale,
+              )
             : undefined,
         }));
 

@@ -25,7 +25,7 @@ describe("localize", () => {
       });
     });
 
-    it("should fall back to en-US when desired locale is not available", () => {
+    it("should fall back to a locale the string does have", () => {
       const db: Record<LocalizationKey, Localization> = {
         [LocalizationKey("loc_key_1")]: {
           strings: LocalizationDbSchema.parse({
@@ -62,6 +62,78 @@ describe("localize", () => {
         value: "missing_key",
         desiredLocale: "en-US",
       });
+    });
+  });
+
+  describe("the fallback chain", () => {
+    const entry = (strings: Record<string, string>) => ({
+      [LocalizationKey("k")]: {
+        strings: LocalizationDbSchema.parse(strings),
+      },
+    });
+
+    it("prefers another locale of the same language over the source locale", () => {
+      const result = localize(
+        entry({ "de-AT": "Servus", "en-US": "Hello" }),
+        LocalizationKey("k"),
+        "de-DE",
+        "en-US",
+      );
+
+      expect(result.value).toBe("Servus");
+      expect(result.locale).toBe("de-AT");
+    });
+
+    it("prefers the bare language tag over a regional one", () => {
+      const result = localize(
+        entry({ de: "Hallo", "de-AT": "Servus" }),
+        LocalizationKey("k"),
+        "de-DE",
+      );
+
+      expect(result.locale).toBe("de");
+    });
+
+    it("falls back to the source locale when the language does not match", () => {
+      const result = localize(
+        entry({ "en-US": "Hello", "ja-JP": "Konnichiwa" }),
+        LocalizationKey("k"),
+        "de-DE",
+        "ja-JP",
+      );
+
+      expect(result.value).toBe("Konnichiwa");
+      expect(result.locale).toBe("ja-JP");
+    });
+
+    it("falls back to the source locale's language", () => {
+      const result = localize(
+        entry({ "en-US": "Hello", ja: "Konnichiwa" }),
+        LocalizationKey("k"),
+        "de-DE",
+        "ja-JP",
+      );
+
+      expect(result.locale).toBe("ja");
+    });
+
+    it("reports the locale it settled on, so a caller can tell it is not the desired one", () => {
+      const result = localize(
+        entry({ "en-US": "Hello" }),
+        LocalizationKey("k"),
+        "de-DE",
+        "en-US",
+      );
+
+      expect(result.locale).not.toBe(result.desiredLocale);
+    });
+
+    it("picks the same locale every time when only unrelated ones are available", () => {
+      const strings = entry({ "fr-FR": "Bonjour", "ja-JP": "Konnichiwa" });
+
+      expect(localize(strings, LocalizationKey("k"), "de-DE").locale).toBe(
+        localize(strings, LocalizationKey("k"), "de-DE").locale,
+      );
     });
   });
 

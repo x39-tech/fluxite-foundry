@@ -170,7 +170,7 @@ That convention allows us to build powerful tools for managing localized data an
 
 Each document containing _localizable_ entities (entities containing at least one localizable field) must also define a `LocalizationRegistry` which contains the set of metadata for each localizable field on each entity within the document.
 
-A document also records the `sourceLocale` it was authored in, which says which strings are authoritative and which are translations of them.
+A document also records the `sourceLocale` it was authored in, which says which strings are authoritative and which are translations of them. `localize` uses it as a fallback: the desired locale, then another locale of the same language, then the source locale and its language, then any locale the string has, then the key.
 
 ### Localization Keys
 

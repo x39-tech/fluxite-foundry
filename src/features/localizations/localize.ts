@@ -18,43 +18,97 @@ export function importLocalizations<T extends LocalizationStrings>(
   }
 }
 
-// If locale is missing that means the value is a localization key which can
-// be displayed as a fallback
+/**
+ * A string resolved for display.
+ *
+ * `locale` is the locale the value actually came from, which is absent when
+ * nothing was found and the value is the key itself. Compare it against
+ * `desiredLocale` to tell whether the user is looking at a translation or at a
+ * stand-in for one that does not exist yet.
+ */
 export interface LocalizedString {
   value: string;
   locale?: string;
   desiredLocale: string;
 }
 
+/**
+ * Resolves a localization key to a string to show the user.
+ *
+ * Locales are tried in this order:
+ *
+ * 1. The desired locale exactly.
+ * 2. Another locale of the same language ("de" or "de-AT" for a desired
+ *    "de-DE"), preferring the bare language tag.
+ * 3. The document's source locale, and then that locale's language, which is
+ *    the locale the strings were authored in and so the one most likely to be
+ *    filled in.
+ * 4. Any locale the string does have, in a stable order.
+ * 5. The key itself.
+ *
+ * @param sourceLocale the locale the owning document was authored in. Absent
+ * for strings that come from an imported library rather than from a document.
+ */
 export function localize(
   db: Record<LocalizationKey, LocalizationStrings>,
   key: LocalizationKey,
   desiredLocale: string,
+  sourceLocale?: string,
 ): LocalizedString {
   const strings = db?.[key]?.strings;
 
   if (strings) {
-    const desired = strings[desiredLocale];
-    if (desired !== undefined) {
-      return {
-        value: desired,
-        locale: desiredLocale,
-        desiredLocale,
-      };
-    }
-
-    const fallback = strings["en-US"];
-    if (fallback !== undefined) {
-      return {
-        value: fallback,
-        locale: "en-US",
-        desiredLocale,
-      };
+    const locale = resolveLocale(strings, desiredLocale, sourceLocale);
+    if (locale !== undefined) {
+      return { value: strings[locale], locale, desiredLocale };
     }
   }
 
-  return {
-    desiredLocale,
-    value: key,
+  return { desiredLocale, value: key };
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+// The primary language subtag of a BCP 47 tag: "de" for "de-AT".
+function languageOf(locale: string): string {
+  return locale.split("-")[0];
+}
+
+// Which of the locales the string has should be used, or undefined if it has
+// none at all.
+function resolveLocale(
+  strings: Record<string, string>,
+  desiredLocale: string,
+  sourceLocale: string | undefined,
+): string | undefined {
+  const available = Object.keys(strings).sort();
+  if (available.length === 0) {
+    return undefined;
+  }
+
+  const has = (locale: string | undefined) =>
+    locale !== undefined && strings[locale] !== undefined ? locale : undefined;
+
+  // Another locale of the same language, preferring the bare language tag over
+  // a regional one so that "de" wins over "de-AT" for a desired "de-DE".
+  const sameLanguageAs = (locale: string | undefined) => {
+    if (locale === undefined) {
+      return undefined;
+    }
+    const language = languageOf(locale);
+    return (
+      has(language) ??
+      available.find((candidate) => languageOf(candidate) === language)
+    );
   };
+
+  return (
+    has(desiredLocale) ??
+    sameLanguageAs(desiredLocale) ??
+    has(sourceLocale) ??
+    sameLanguageAs(sourceLocale) ??
+    available[0]
+  );
 }

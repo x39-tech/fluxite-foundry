@@ -69,6 +69,11 @@ export function useLibraries(): Record<string, string> | undefined {
   return useCurrentEditorPart((state) => state.libraries);
 }
 
+/** The locale the current document was authored in. */
+export function useSourceLocale(): string | undefined {
+  return useCurrentEditorPart((editor) => editor.sourceLocale);
+}
+
 export function useLocalizations(): Record<LocalizationKey, Localization> {
   return useCurrentEditorPart((state) => state.localizations) || {};
 }
