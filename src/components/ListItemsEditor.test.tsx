@@ -178,22 +178,37 @@ test("does not steal the selection when many items appear at once", () => {
   expect(screen.queryByText("fourth-item editor")).not.toBeInTheDocument();
 });
 
-test("expands and collapses the selected item in the accordion variant", async () => {
+test("shows only the selected item's editor", async () => {
   const user = userEvent.setup();
 
-  renderListItemsEditor({ variant: "accordion" });
+  renderListItemsEditor();
 
-  // Each item gets an accordion header, and none of them start expanded.
-  const header = screen.getByRole("button", {
-    name: "second-item",
-    expanded: false,
-  });
-  expect(screen.queryByText("second-item editor")).not.toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "second-item" }));
 
-  await user.click(header);
+  expect(screen.getByText("second-item editor")).toBeInTheDocument();
+  expect(screen.queryByText("first-item editor")).not.toBeInTheDocument();
+});
+
+test("prompts to select an item while none is selected", () => {
+  renderListItemsEditor();
 
   expect(
-    screen.getByRole("button", { name: "second-item", expanded: true }),
+    screen.getByText("Select a Item to start editing"),
   ).toBeInTheDocument();
-  expect(screen.getByText("second-item editor")).toBeInTheDocument();
+});
+
+test("prompts to add an item when there are none to select", () => {
+  renderListItemsEditor({ editors: [] });
+
+  expect(screen.getByText("Add a Item to start editing")).toBeInTheDocument();
+});
+
+test("prompts to add an item when the search matches nothing", async () => {
+  const user = userEvent.setup();
+
+  renderListItemsEditor({ searchPlaceholder: "Search Items..." });
+
+  await user.type(screen.getByRole("searchbox"), "no such item");
+
+  expect(screen.getByText("Add a Item to start editing")).toBeInTheDocument();
 });

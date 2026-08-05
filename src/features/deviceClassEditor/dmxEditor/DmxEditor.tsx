@@ -9,7 +9,7 @@ export const DmxEditor = () => {
     <ListItemsEditor
       editors={editors}
       itemType="DMX Slot Group"
-      variant="accordion"
+      showItemIcon={false}
       searchPlaceholder="Search DMX Slot Groups..."
       onAddItem={addDmxChunk}
       onDeleteItem={(editor) => removeDmxChunk(editor.id)}
