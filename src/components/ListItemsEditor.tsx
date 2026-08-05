@@ -37,7 +37,8 @@ interface ListItemsEditorProps {
   searchPlaceholder?: string;
   getEditorTitle?: (editor: ItemEditor) => string;
   onAddItem?: () => void;
-  onDeleteItem?: (editor: ItemEditor) => void;
+  // Returning false refuses the deletion, and the item stays as it was.
+  onDeleteItem?: (editor: ItemEditor) => boolean | void;
   renderActiveEditor: <P extends { key?: React.Key; onDelete?: () => void }>(
     editor: ItemEditor,
   ) => React.ReactElement<P>;
@@ -124,7 +125,9 @@ export const ListItemsEditor = ({
   };
 
   const deleteEditor = (editor: ItemEditor) => {
-    onDeleteItem?.(editor);
+    if (onDeleteItem?.(editor) === false) {
+      return;
+    }
     selectNeighbourOf(editor);
   };
 

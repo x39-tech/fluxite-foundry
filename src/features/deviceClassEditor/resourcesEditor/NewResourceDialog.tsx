@@ -19,6 +19,7 @@ import {
 import { ValidatedInput } from "components/ValidatedInput";
 import { FieldSet } from "components/FieldSet";
 import { ResourceClassDisplay } from "./ResourceClassDisplay";
+import { useDeviceLocalLibrary } from "../state";
 import { createNewResource, useResourceCodexIds } from "./state";
 import { lookupResourceClass } from "../stateTransformations";
 import { CodexId } from "app/persistentState";
@@ -30,6 +31,7 @@ interface Props {
 
 export const NewResourceDialog = ({ isOpen, onClose }: Props) => {
   const libraryStore = useLibraryStore();
+  const localLibrary = useDeviceLocalLibrary();
   const resourceIds = useResourceCodexIds();
   const locale = useCurrentLocale();
 
@@ -70,6 +72,7 @@ export const NewResourceDialog = ({ isOpen, onClose }: Props) => {
               onSelectedClassChanged={setNewItemClass}
               tooltipRenderer={renderItemClassTooltip}
               libraryStore={libraryStore}
+              localLibrary={localLibrary}
             />
           </FieldSet>
           <FieldSet>

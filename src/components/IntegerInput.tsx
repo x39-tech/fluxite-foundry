@@ -10,8 +10,14 @@ export interface IntegerInputProps {
   onValueConfirm?: (value: number | null) => void;
   placeholder?: string;
   disabled?: boolean;
+  // Classes for the wrapper element
   className?: string;
+  // Classes for the input element
+  inputClassName?: string;
   clearable?: boolean;
+  // Hide the clear and increment/decrement buttons, leaving a plain numeric
+  // box. The arrow keys still step the value.
+  hideControls?: boolean;
   min?: number;
   max?: number;
   step?: number;
@@ -34,7 +40,9 @@ export const IntegerInput = forwardRef<
       placeholder,
       disabled,
       className,
+      inputClassName,
       clearable = false,
+      hideControls = false,
       min,
       max,
       step = 1,
@@ -208,75 +216,78 @@ export const IntegerInput = forwardRef<
           disabled={disabled}
           className={cn(
             // Add right padding for buttons
-            clearable ? "pr-20" : "pr-12",
+            hideControls ? undefined : clearable ? "pr-20" : "pr-12",
+            inputClassName,
           )}
           {...props}
         />
 
         {/* Control buttons container */}
-        <div className="absolute right-1 flex items-center gap-0.5">
-          {clearable && (
-            <button
-              type="button"
-              onClick={clear}
-              disabled={disabled || currentValue === null}
-              className={cn(
-                "inline-flex size-7 items-center justify-center rounded-sm text-muted-foreground transition-colors",
-                "hover:text-foreground hover:bg-accent",
-                "focus:outline-none focus:ring-1 focus:ring-ring/50",
-                "disabled:pointer-events-none disabled:opacity-50",
-              )}
-              tabIndex={-1}
-            >
-              <XIcon className="size-3.5" />
-              <span className="sr-only">Clear value</span>
-            </button>
-          )}
+        {!hideControls && (
+          <div className="absolute right-1 flex items-center gap-0.5">
+            {clearable && (
+              <button
+                type="button"
+                onClick={clear}
+                disabled={disabled || currentValue === null}
+                className={cn(
+                  "inline-flex size-7 items-center justify-center rounded-sm text-muted-foreground transition-colors",
+                  "hover:text-foreground hover:bg-accent",
+                  "focus:outline-none focus:ring-1 focus:ring-ring/50",
+                  "disabled:pointer-events-none disabled:opacity-50",
+                )}
+                tabIndex={-1}
+              >
+                <XIcon className="size-3.5" />
+                <span className="sr-only">Clear value</span>
+              </button>
+            )}
 
-          {/* Increment/Decrement buttons */}
-          <div className="flex flex-col">
-            <button
-              type="button"
-              onClick={increment}
-              disabled={
-                disabled ||
-                (max !== undefined &&
-                  currentValue !== null &&
-                  currentValue >= max)
-              }
-              className={cn(
-                "inline-flex size-3.5 items-center justify-center rounded-xs text-muted-foreground transition-colors",
-                "hover:text-foreground hover:bg-accent",
-                "focus:outline-none focus:ring-1 focus:ring-ring/50",
-                "disabled:pointer-events-none disabled:opacity-50",
-              )}
-              tabIndex={-1}
-            >
-              <ChevronUpIcon className="size-2.5" />
-              <span className="sr-only">Increment</span>
-            </button>
-            <button
-              type="button"
-              onClick={decrement}
-              disabled={
-                disabled ||
-                (min !== undefined &&
-                  currentValue !== null &&
-                  currentValue <= min)
-              }
-              className={cn(
-                "inline-flex size-3.5 items-center justify-center rounded-xs text-muted-foreground transition-colors",
-                "hover:text-foreground hover:bg-accent",
-                "focus:outline-none focus:ring-1 focus:ring-ring/50",
-                "disabled:pointer-events-none disabled:opacity-50",
-              )}
-              tabIndex={-1}
-            >
-              <ChevronDownIcon className="size-2.5" />
-              <span className="sr-only">Decrement</span>
-            </button>
+            {/* Increment/Decrement buttons */}
+            <div className="flex flex-col">
+              <button
+                type="button"
+                onClick={increment}
+                disabled={
+                  disabled ||
+                  (max !== undefined &&
+                    currentValue !== null &&
+                    currentValue >= max)
+                }
+                className={cn(
+                  "inline-flex size-3.5 items-center justify-center rounded-xs text-muted-foreground transition-colors",
+                  "hover:text-foreground hover:bg-accent",
+                  "focus:outline-none focus:ring-1 focus:ring-ring/50",
+                  "disabled:pointer-events-none disabled:opacity-50",
+                )}
+                tabIndex={-1}
+              >
+                <ChevronUpIcon className="size-2.5" />
+                <span className="sr-only">Increment</span>
+              </button>
+              <button
+                type="button"
+                onClick={decrement}
+                disabled={
+                  disabled ||
+                  (min !== undefined &&
+                    currentValue !== null &&
+                    currentValue <= min)
+                }
+                className={cn(
+                  "inline-flex size-3.5 items-center justify-center rounded-xs text-muted-foreground transition-colors",
+                  "hover:text-foreground hover:bg-accent",
+                  "focus:outline-none focus:ring-1 focus:ring-ring/50",
+                  "disabled:pointer-events-none disabled:opacity-50",
+                )}
+                tabIndex={-1}
+              >
+                <ChevronDownIcon className="size-2.5" />
+                <span className="sr-only">Decrement</span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     );
   },

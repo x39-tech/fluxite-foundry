@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Draft } from "immer";
 import * as FlexLayout from "flexlayout-react";
 import {
@@ -19,16 +20,15 @@ import {
   useCurrentDocumentPart,
   useCurrentDocumentPartShallow,
 } from "app/documents";
-import {
-  enumChoiceParentsEqual,
-  newEntityId,
-  select,
-  selectWithIds,
-} from "app/stateUtils";
 import { Library } from "codex/library";
+import { LocalLibrary } from "components/ItemClassSelector";
 import {
-  createDeviceClassLocalizations,
-  removeDeviceClassLocalizations,
+  addEnumChoiceTo,
+  deleteEnumChoiceFrom,
+  modifyEnumChoiceIn,
+} from "features/classEditors/enumChoiceOperations";
+import {
+  deviceClassLocalizer,
   setDeviceClassLocalizedValue,
 } from "./localizationRegistry";
 
@@ -66,6 +66,15 @@ export function useDeviceLibrary(): Library | undefined {
 
 export function useLibraries(): Record<string, string> | undefined {
   return useCurrentEditorPart((state) => state.libraries);
+}
+
+/** The device class's own classes, as the item class selector wants them. */
+export function useDeviceLocalLibrary(): LocalLibrary | undefined {
+  const library = useDeviceLibrary();
+  return useMemo(
+    () => (library ? { name: "This Device Class", library } : undefined),
+    [library],
+  );
 }
 
 /** The locale the current document was authored in. */
@@ -111,42 +120,24 @@ export function addEnumChoice(
   locale: string,
 ) {
   updateCurrentEditor("Add Enum Choice", (editor) => {
-    const allChoices = select(editor.enumChoices, (choice) =>
-      enumChoiceParentsEqual(parent, choice.parent),
+    addEnumChoiceTo(
+      editor,
+      deviceClassLocalizer(editor),
+      parent,
+      codexId,
+      name,
+      description,
+      locale,
     );
-
-    if (allChoices.some((choice) => choice.codexId === codexId)) {
-      return;
-    }
-
-    const newChoiceId = newEntityId();
-    const choice = { parent, codexId, index: allChoices.length };
-
-    editor.enumChoices[newChoiceId] = {
-      ...choice,
-      localized: createDeviceClassLocalizations(
-        editor,
-        "enumChoices",
-        { name, description },
-        locale,
-      ),
-    };
   });
 }
 
 export function modifyEnumChoice(
   id: EntityId,
-  recipe: (
-    state: Draft<Omit<Unlocalized<EnumChoice>, "parentType" | "parentId">>,
-  ) => void,
+  recipe: (state: Draft<Omit<Unlocalized<EnumChoice>, "parent">>) => void,
 ) {
   updateCurrentEditor("Edit Enum Choice", (editor) => {
-    const choice = editor.enumChoices[id];
-    if (!choice) {
-      return;
-    }
-
-    recipe(choice);
+    modifyEnumChoiceIn(editor, id, recipe);
   });
 }
 
@@ -168,27 +159,7 @@ export function modifyEnumChoiceLocalizedValue(
 
 export function deleteEnumChoice(id: EntityId) {
   updateCurrentEditor("Delete Enum Choice", (editor) => {
-    const choiceToRemove = editor.enumChoices[id];
-    if (!choiceToRemove) {
-      return;
-    }
-
-    // Renumber indexes of remaining choices
-    const allChoices = selectWithIds(editor.enumChoices, (choice) =>
-      enumChoiceParentsEqual(choice.parent, choiceToRemove.parent),
-    );
-    allChoices.sort((e1, e2) => e1.index - e2.index);
-    allChoices
-      .filter((choice) => choice.id !== id)
-      .forEach((choice, index) => {
-        editor.enumChoices[choice.id].index = index;
-      });
-
-    removeDeviceClassLocalizations(editor, [
-      { table: "enumChoices", entityId: id },
-    ]);
-
-    delete editor.enumChoices[id];
+    deleteEnumChoiceFrom(editor, deviceClassLocalizer(editor), id);
   });
 }
 

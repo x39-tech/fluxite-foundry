@@ -1,6 +1,11 @@
 import { useState, useMemo, JSX } from "react";
 import { CheckIcon, ChevronDownIcon, ListIcon } from "lucide-react";
-import { ClassKind, ImportedLibrary, LibraryStore } from "codex/library";
+import {
+  ClassKind,
+  ImportedLibrary,
+  Library,
+  LibraryStore,
+} from "codex/library";
 import {
   getLibraryFriendlyName,
   getNewestVersionOfEachLibrary,
@@ -31,9 +36,16 @@ import { CodexId, EntityId } from "app/persistentState";
 import { ResolvedClassRef } from "features/deviceClassEditor/classResolution";
 
 export interface SelectedItemClass {
-  libraryId: string;
+  libraryId?: string;
   codexId: CodexId;
   resolved: ResolvedClassRef;
+}
+
+/** The classes the document being edited defines inline. */
+export interface LocalLibrary {
+  /** What to call it in the list, e.g. "This Device Class". */
+  name: string;
+  library: Library;
 }
 
 interface ItemClassSelectorProps extends ButtonProps {
@@ -43,6 +55,7 @@ interface ItemClassSelectorProps extends ButtonProps {
   onSelectedClassChanged: (newClass?: SelectedItemClass) => void;
   tooltipRenderer: (item: SelectedItemClass) => JSX.Element;
   libraryStore: LibraryStore;
+  localLibrary?: LocalLibrary;
 }
 
 interface ItemClassOption {
@@ -51,13 +64,20 @@ interface ItemClassOption {
   selection: SelectedItemClass;
 }
 
-// TODO: offer the classes defined in the device class's own library too
+// A group of item classes under a heading indicating where they are defined.
+interface ItemClassGroup {
+  key: string;
+  heading: string;
+  options: ItemClassOption[];
+}
+
 export function ItemClassSelector({
   selectedClass,
   kind,
   onSelectedClassChanged,
   tooltipRenderer,
   libraryStore,
+  localLibrary,
   ...props
 }: ItemClassSelectorProps) {
   const [open, setOpen] = useState(false);
@@ -73,22 +93,34 @@ export function ItemClassSelector({
     [libraryStore, locale],
   );
 
-  const optionsByLibrary = useMemo(
-    () =>
-      libraries.map((library) => ({
-        library,
-        options: itemClassOptions(library, kind, locale),
+  // The local library classes come first.
+  const groups: ItemClassGroup[] = useMemo(
+    () => [
+      ...(localLibrary
+        ? [
+            {
+              key: "\0local",
+              heading: localLibrary.name,
+              options: localClassOptions(localLibrary.library, kind, locale),
+            },
+          ]
+        : []),
+      ...libraries.map((library) => ({
+        key: library.id,
+        heading: getLibraryFriendlyName(library, locale).value,
+        options: importedClassOptions(library, kind, locale),
       })),
-    [libraries, kind, locale],
+    ],
+    [localLibrary, libraries, kind, locale],
   );
 
   const placeholderText = "Select an item class...";
   const allPossibleTexts = useMemo(
     () => [
-      ...optionsByLibrary.flatMap(({ options }) => options.map((o) => o.name)),
+      ...groups.flatMap(({ options }) => options.map((o) => o.name)),
       placeholderText,
     ],
-    [optionsByLibrary],
+    [groups],
   );
 
   const { width: buttonWidth, MeasuringElement } = useTextWidth({
@@ -98,13 +130,10 @@ export function ItemClassSelector({
 
   const commandGroups = useMemo(
     () =>
-      optionsByLibrary
+      groups
         .filter(({ options }) => options.length > 0)
-        .map(({ library, options }) => (
-          <CommandGroup
-            key={library.id}
-            heading={getLibraryFriendlyName(library, locale).value}
-          >
+        .map(({ key, heading, options }) => (
+          <CommandGroup key={key} heading={heading}>
             {options.map((option) => {
               const isSelected =
                 option.selection.libraryId === selectedClass?.libraryId &&
@@ -139,13 +168,7 @@ export function ItemClassSelector({
             })}
           </CommandGroup>
         )),
-    [
-      optionsByLibrary,
-      locale,
-      selectedClass,
-      onSelectedClassChanged,
-      tooltipRenderer,
-    ],
+    [groups, selectedClass, onSelectedClassChanged, tooltipRenderer],
   );
 
   return (
@@ -188,7 +211,7 @@ export function ItemClassSelector({
   );
 }
 
-function itemClassOptions(
+function importedClassOptions(
   library: ImportedLibrary,
   kind: ClassKind,
   locale: string,
@@ -210,6 +233,21 @@ function itemClassOptions(
       },
     };
   });
+}
+
+function localClassOptions(
+  library: Library,
+  kind: ClassKind,
+  locale: string,
+): ItemClassOption[] {
+  return Object.entries(library[kind]).map(([id, cls]) => ({
+    key: `\0local/${cls.codexId}`,
+    name: localize(library.localizations, cls.localized.name, locale).value,
+    selection: {
+      codexId: cls.codexId,
+      resolved: { library, classId: EntityId(id) },
+    },
+  }));
 }
 
 function selectedClassName(
