@@ -1,9 +1,14 @@
 import { Draft } from "immer";
 import { useCurrentLocale, useLibraryStore } from "app/store";
-import { CodexId, EntityId, Resource } from "app/persistentState";
+import {
+  ClassReference,
+  CodexId,
+  EntityId,
+  Resource,
+} from "app/persistentState";
 import { Unlocalized } from "features/localizations/types";
 import { ItemEditor } from "utils/utils";
-import { newEntityId } from "app/stateUtils";
+import { getWithId, newEntityId } from "app/stateUtils";
 import {
   updateCurrentEditor,
   useCurrentEditorPart,
@@ -93,7 +98,7 @@ export function useResourceAssetId(resource?: Resource): string | undefined {
 // ---------------------------------------------------------------------------
 
 export function createNewResource(
-  library: string,
+  library: string | undefined,
   resourceClass: CodexId,
   codexId: CodexId,
   _friendlyName: string,
@@ -105,16 +110,25 @@ export function createNewResource(
       return;
     }
 
+    let classRef: ClassReference;
+    if (library === undefined) {
+      const rc = getWithId(
+        editor.resourceClasses,
+        (cls) => cls.codexId === resourceClass,
+      );
+      if (!rc) {
+        return;
+      }
+      classRef = { type: "local", id: rc.id };
+    } else {
+      classRef = { type: "imported", codexId: resourceClass, library };
+    }
+
     const resId = newEntityId();
 
     editor.resources[resId] = {
       codexId,
-      // TODO handle device resource classes
-      class: {
-        type: "imported",
-        codexId: resourceClass,
-        library,
-      },
+      class: classRef,
       access: ["read", "write"],
       lifetime: "runtime",
     };

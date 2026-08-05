@@ -19,6 +19,7 @@ import { ParameterClassDisplay } from "./ParameterClassDisplay";
 import { validateNewItemId } from "utils/inputValidation";
 import { useCurrentLocale, useLibraryStore } from "app/store";
 import { getUniqueItemId } from "utils/utils";
+import { useDeviceLocalLibrary } from "../state";
 import { createNewParameter, useParameterCodexIds } from "./state";
 import { lookupParameterClass } from "../stateTransformations";
 import { CodexId } from "app/persistentState";
@@ -30,6 +31,7 @@ interface Props {
 
 export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
   const libraryStore = useLibraryStore();
+  const localLibrary = useDeviceLocalLibrary();
   const parameterIds = useParameterCodexIds();
   const locale = useCurrentLocale();
 
@@ -71,6 +73,7 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
                   onSelectedClassChanged={setNewItemClass}
                   tooltipRenderer={renderItemClassTooltip}
                   libraryStore={libraryStore}
+                  localLibrary={localLibrary}
                 />
               </td>
             </tr>

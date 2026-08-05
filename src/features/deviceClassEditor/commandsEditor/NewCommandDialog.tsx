@@ -19,6 +19,7 @@ import { Label } from "components/scn-ui/Label";
 import { ValidatedInput } from "components/ValidatedInput";
 import { Button } from "components/scn-ui/Button";
 import { CodexId } from "app/persistentState";
+import { useDeviceLocalLibrary } from "../state";
 import { createNewCommand, useCommandCodexIds } from "./state";
 import { CommandClassDisplay } from "./CommandClassDisplay";
 import { lookupCommandClass } from "../stateTransformations";
@@ -30,6 +31,7 @@ interface Props {
 
 export const NewCommandDialog = ({ isOpen, onClose }: Props) => {
   const libraryStore = useLibraryStore();
+  const localLibrary = useDeviceLocalLibrary();
   const commandCodexIds = useCommandCodexIds();
   const locale = useCurrentLocale();
 
@@ -72,6 +74,7 @@ export const NewCommandDialog = ({ isOpen, onClose }: Props) => {
               onSelectedClassChanged={setNewItemClass}
               tooltipRenderer={renderItemClassTooltip}
               libraryStore={libraryStore}
+              localLibrary={localLibrary}
             />
           </FieldSet>
           <FieldSet>

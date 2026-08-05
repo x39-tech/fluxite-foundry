@@ -2,6 +2,7 @@
 // features/localizations/types.ts for what a registry is for and how to use it.
 
 import { DeviceClassDocument } from "app/persistentState";
+import { ClassLocalizer } from "features/classEditors/context";
 import {
   LocalizationRegistry,
   LocalizableEntityOf,
@@ -170,4 +171,30 @@ export function removeDeviceClassLocalizations(
   refs: LocalizableEntityRef<DeviceClassDocument>[],
 ): void {
   removeLocalizationsFor(editor, DEVICE_CLASS_LOCALIZATIONS, refs);
+}
+
+/**
+ * Implementation of localizer from the generic class editing API defined in
+ * features/classEditors/context.tsx.
+ */
+export function deviceClassLocalizer(
+  editor: DeviceClassDocument,
+): ClassLocalizer {
+  return {
+    create: (table, values, locale) =>
+      createDeviceClassLocalizations(
+        editor,
+        table,
+        { name: values.name, description: values.description },
+        locale,
+      ),
+    set: (table, entityId, field, value, locale) =>
+      setDeviceClassLocalizedValue(
+        editor,
+        { table, entityId, field },
+        value,
+        locale,
+      ),
+    remove: (refs) => removeDeviceClassLocalizations(editor, refs),
+  };
 }

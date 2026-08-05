@@ -5,6 +5,8 @@ import { DmxEditor } from "./dmxEditor/DmxEditor";
 import { DmxController } from "./controller/DmxController";
 import { ResourcesEditor } from "./resourcesEditor/ResourcesEditor";
 import { CommandsEditor } from "./commandsEditor/CommandsEditor";
+import { ClassesEditor } from "features/classEditors/ClassesEditor";
+import { DeviceClassClassEditing } from "./classEditing";
 
 interface EditorWidget {
   name: string;
@@ -42,6 +44,15 @@ export const WIDGETS: Record<string, EditorWidget> = {
     name: "Commands",
     description: "Create and edit commands for the device class",
     factory: () => <CommandsEditor />,
+  },
+  classesEditor: {
+    name: "Classes",
+    description: "Create and edit the item classes the device class defines",
+    factory: () => (
+      <DeviceClassClassEditing>
+        <ClassesEditor />
+      </DeviceClassClassEditing>
+    ),
   },
 };
 

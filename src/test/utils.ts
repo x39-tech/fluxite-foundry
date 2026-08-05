@@ -9,7 +9,10 @@ import {
   LocalizationKey,
 } from "app/persistentState";
 import { getDefaultWindowLayout } from "utils/utils";
-import { loadDefaultLibraries } from "codex/libraryStore";
+import {
+  getNewestVersionOfEachLibrary,
+  loadDefaultLibraries,
+} from "codex/libraryStore";
 import { checkIntegrity } from "features/localizations/registry";
 import { DEVICE_CLASS_LOCALIZATIONS } from "features/deviceClassEditor/localizationRegistry";
 
@@ -112,7 +115,7 @@ export function createEmptyDeviceClassEditor() {
         description: descriptionKey,
       },
     },
-    libraries: {},
+    libraries: defaultLibraryVersions(),
     parameterClasses: {},
     structureClasses: {},
     serializerClasses: {},
@@ -141,6 +144,15 @@ export function createEmptyDeviceClassEditor() {
   state.session.selectedDocumentId = editorId;
 
   useAppPersistentStore.setState(state, true);
+}
+
+function defaultLibraryVersions(): Record<string, string> {
+  return Object.fromEntries(
+    getNewestVersionOfEachLibrary(loadDefaultLibraries()).map((library) => [
+      library.id,
+      library.version,
+    ]),
+  );
 }
 
 export function getEditorTableRow(
