@@ -92,27 +92,95 @@ describe("SerializerClassEditor", () => {
 });
 
 describe("ResourceClassEditor", () => {
-  beforeEach(() => {
-    resetAllStores();
-    createEmptyDeviceClassEditor();
+  function addResourceClass(mediaType: string[]) {
     updateCurrentEditor("Add test resource class", (draft) => {
       draft.resourceClasses[CLASS_ID] = {
         codexId: CodexId("gobo"),
-        mediaType: [],
+        mediaType,
         localized: withName(draft),
       };
     });
+  }
+
+  beforeEach(() => {
+    resetAllStores();
+    createEmptyDeviceClassEditor();
   });
 
-  test("collects media types as tags", async () => {
+  async function openMediaTypePicker() {
     const user = userEvent.setup();
     renderInEditor(<ResourceClassEditor id={CLASS_ID} />);
+    await user.click(screen.getByRole("button", { name: "Add media type" }));
+    return user;
+  }
 
-    const input = screen.getByPlaceholderText("e.g. image/png");
-    await user.type(input, "image/png{Enter}");
-    await user.type(input, "image/svg+xml{Enter}");
+  test("collects media types picked from the IANA registry", async () => {
+    addResourceClass([]);
+    const user = await openMediaTypePicker();
 
+    const search = screen.getByPlaceholderText("Search media types...");
+    await user.type(search, "image/png");
+    await user.click(screen.getByRole("option", { name: /image\/png/ }));
+
+    await user.clear(search);
+    await user.type(search, "image/svg");
+    await user.click(screen.getByRole("option", { name: /image\/svg\+xml/ }));
+
+    // Only a chosen media type gets a chip, and only a chip has a remove
+    // button, so this distinguishes the chips from the still-open picker.
+    expect(
+      screen.getByRole("button", { name: "Remove image/png" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Remove image/svg+xml" }),
+    ).toBeInTheDocument();
+  });
+
+  test("offers nothing for a media type the registry does not list", async () => {
+    addResourceClass([]);
+    const user = await openMediaTypePicker();
+
+    await user.type(
+      screen.getByPlaceholderText("Search media types..."),
+      "image/jpg{Enter}",
+    );
+
+    expect(screen.queryAllByRole("option")).toHaveLength(0);
+    expect(
+      screen.getByText("No registered media type matches."),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("image/jpg")).toBeNull();
+  });
+
+  test("keeps an unregistered media type from an imported document, flagged", () => {
+    addResourceClass(["image/png", "image/jpg"]);
+    renderInEditor(<ResourceClassEditor id={CLASS_ID} />);
+
+    expect(screen.getByText("image/jpg")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /^image\/jpg: Not registered/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/1 media type is not in the IANA registry/),
+    ).toBeInTheDocument();
+  });
+
+  test("says nothing about the registry when every media type is registered", () => {
+    addResourceClass(["image/png"]);
+    renderInEditor(<ResourceClassEditor id={CLASS_ID} />);
+
+    expect(screen.queryByText(/not in the IANA registry/)).toBeNull();
+  });
+
+  test("lets an unregistered media type be removed", async () => {
+    const user = userEvent.setup();
+    addResourceClass(["image/png", "image/jpg"]);
+    renderInEditor(<ResourceClassEditor id={CLASS_ID} />);
+
+    await user.click(screen.getByRole("button", { name: "Remove image/jpg" }));
+
+    expect(screen.queryByText("image/jpg")).toBeNull();
     expect(screen.getByText("image/png")).toBeInTheDocument();
-    expect(screen.getByText("image/svg+xml")).toBeInTheDocument();
+    expect(screen.queryByText(/not in the IANA registry/)).toBeNull();
   });
 });

@@ -3,7 +3,7 @@ import { EntityId } from "app/persistentState";
 import { RenderError } from "components/RenderError";
 import { FieldSet } from "components/FieldSet";
 import { Label } from "components/scn-ui/Label";
-import { TagInputField } from "components/EditorFields/TagInputField";
+import { MediaTypeSelector } from "components/MediaTypeSelector";
 import { classKinds } from "./context";
 import { ClassIdentityFields } from "./ClassIdentityFields";
 import { useClassOperations, useResourceClassInfo } from "./state";
@@ -33,12 +33,11 @@ export const ResourceClassEditor = ({ id }: Props) => {
       />
       <FieldSet>
         <Label id={`${idPrefix}-mediaTypes`}>Media Types</Label>
-        <TagInputField
+        <MediaTypeSelector
           aria-labelledby={`${idPrefix}-mediaTypes`}
           className="w-xs"
-          placeholder="e.g. image/png"
           values={resourceClass.mediaType}
-          onValuesChanged={(mediaTypes) =>
+          onValuesChange={(mediaTypes) =>
             operations.modifyResourceClass(id, (draft) => {
               draft.mediaType = mediaTypes;
             })
