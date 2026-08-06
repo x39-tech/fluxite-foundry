@@ -25,15 +25,15 @@ export const ParameterClassEditor = ({ id }: Props) => {
 
   return (
     <div className="flex flex-col gap-4">
+      <ClassIdentityFields
+        idPrefix={idPrefix}
+        kind={classKinds.PARAMETER}
+        id={id}
+        codexId={parameterClass.codexId}
+        name={parameterClass.name.value}
+        description={parameterClass.description?.value}
+      />
       <div className="flex flex-wrap gap-4">
-        <ClassIdentityFields
-          idPrefix={idPrefix}
-          kind={classKinds.PARAMETER}
-          id={id}
-          codexId={parameterClass.codexId}
-          name={parameterClass.name.value}
-          description={parameterClass.description?.value}
-        />
         <FieldSet>
           <Label htmlFor={`${idPrefix}-dataType`}>Data Type</Label>
           <SelectField
