@@ -6,6 +6,7 @@ import { validateNewItemId } from "utils/inputValidation";
 import { FieldSet } from "components/FieldSet";
 import { Label } from "components/scn-ui/Label";
 import { ValidatedInput } from "components/ValidatedInput";
+import { ValidatedTextarea } from "components/ValidatedTextarea";
 import { ClassKind } from "./context";
 import { useClassCodexIds, useClassOperations } from "./state";
 
@@ -31,42 +32,45 @@ export const ClassIdentityFields = ({
   const locale = useCurrentLocale();
 
   return (
-    <>
-      <FieldSet>
-        <Label htmlFor={`${idPrefix}-id`}>ID</Label>
-        <ValidatedInput
-          id={`${idPrefix}-id`}
-          value={codexId}
-          onConfirm={(newValue) =>
-            operations.setClassCodexId(kind, id, CodexId(newValue))
-          }
-          validator={(input) =>
-            validateNewItemId(
-              input,
-              takenIds.filter((taken) => taken !== codexId),
-            )
-          }
-        />
-      </FieldSet>
-      <FieldSet>
-        <Label htmlFor={`${idPrefix}-name`}>Name</Label>
-        <ValidatedInput
-          id={`${idPrefix}-name`}
-          value={name}
-          onConfirm={(newValue) =>
-            operations.setClassLocalizedValue(
-              kind,
-              id,
-              "name",
-              newValue,
-              locale,
-            )
-          }
-        />
-      </FieldSet>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap gap-4">
+        <FieldSet>
+          <Label htmlFor={`${idPrefix}-id`}>ID</Label>
+          <ValidatedInput
+            id={`${idPrefix}-id`}
+            value={codexId}
+            onConfirm={(newValue) =>
+              operations.setClassCodexId(kind, id, CodexId(newValue))
+            }
+            validator={(input) =>
+              validateNewItemId(
+                input,
+                takenIds.filter((taken) => taken !== codexId),
+              )
+            }
+          />
+        </FieldSet>
+        <FieldSet>
+          <Label htmlFor={`${idPrefix}-name`}>Name</Label>
+          <ValidatedInput
+            id={`${idPrefix}-name`}
+            value={name}
+            onConfirm={(newValue) =>
+              operations.setClassLocalizedValue(
+                kind,
+                id,
+                "name",
+                newValue,
+                locale,
+              )
+            }
+          />
+        </FieldSet>
+      </div>
       <FieldSet>
         <Label htmlFor={`${idPrefix}-description`}>Description</Label>
-        <ValidatedInput
+        <ValidatedTextarea
+          className="max-w-2xl"
           id={`${idPrefix}-description`}
           value={description ?? ""}
           onConfirm={(newValue) =>
@@ -80,6 +84,6 @@ export const ClassIdentityFields = ({
           }
         />
       </FieldSet>
-    </>
+    </div>
   );
 };

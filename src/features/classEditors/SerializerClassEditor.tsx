@@ -18,15 +18,13 @@ export const SerializerClassEditor = ({ id }: Props) => {
   }
 
   return (
-    <div className="flex flex-wrap gap-4">
-      <ClassIdentityFields
-        idPrefix={idPrefix}
-        kind={classKinds.SERIALIZER}
-        id={id}
-        codexId={serializerClass.codexId}
-        name={serializerClass.name.value}
-        description={serializerClass.description?.value}
-      />
-    </div>
+    <ClassIdentityFields
+      idPrefix={idPrefix}
+      kind={classKinds.SERIALIZER}
+      id={id}
+      codexId={serializerClass.codexId}
+      name={serializerClass.name.value}
+      description={serializerClass.description?.value}
+    />
   );
 };

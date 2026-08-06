@@ -83,7 +83,41 @@ describe("SerializerClassEditor", () => {
     const description = screen.getByRole("textbox", { name: "Description" });
     expect(description).toHaveValue("");
 
-    await user.type(description, "The ESTA DMX serializer{Enter}");
+    await user.type(description, "The ESTA DMX serializer");
+    await user.tab();
+
+    expect(screen.getByRole("textbox", { name: "Description" })).toHaveValue(
+      "The ESTA DMX serializer",
+    );
+  });
+
+  test("accepts a description spanning several lines", async () => {
+    const user = userEvent.setup();
+    renderInEditor(<SerializerClassEditor id={CLASS_ID} />);
+
+    await user.type(
+      screen.getByRole("textbox", { name: "Description" }),
+      "The ESTA DMX serializer.{Enter}Defined by E1.11.",
+    );
+    await user.tab();
+
+    expect(screen.getByRole("textbox", { name: "Description" })).toHaveValue(
+      "The ESTA DMX serializer.\nDefined by E1.11.",
+    );
+  });
+
+  test("abandons an in-progress description edit on Escape", async () => {
+    const user = userEvent.setup();
+    renderInEditor(<SerializerClassEditor id={CLASS_ID} />);
+
+    const description = screen.getByRole("textbox", { name: "Description" });
+    await user.type(description, "The ESTA DMX serializer");
+    await user.tab();
+
+    await user.type(
+      screen.getByRole("textbox", { name: "Description" }),
+      " (revised){Escape}",
+    );
 
     expect(screen.getByRole("textbox", { name: "Description" })).toHaveValue(
       "The ESTA DMX serializer",

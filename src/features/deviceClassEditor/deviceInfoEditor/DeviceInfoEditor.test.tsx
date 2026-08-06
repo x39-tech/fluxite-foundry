@@ -185,7 +185,27 @@ test("can change description field", async () => {
   const input = screen.getByLabelText("Description");
   expect(input).toBeInTheDocument();
 
-  await changeConfirmableInputField(user, input, "New Device Description");
+  await user.clear(input);
+  await user.type(input, "New Device Description");
+  await user.tab();
+
+  await waitFor(() => {
+    expect(input).toHaveValue("New Device Description");
+  });
+});
+
+test("keeps the line breaks in a multi-line description", async () => {
+  const user = userEvent.setup();
+  render(<DeviceInfoEditor />);
+
+  const input = screen.getByLabelText("Description");
+  await user.clear(input);
+  await user.type(input, "A moving head fixture.{Enter}Ships with a CLD lamp.");
+  await user.tab();
+
+  await waitFor(() => {
+    expect(input).toHaveValue("A moving head fixture.\nShips with a CLD lamp.");
+  });
 });
 
 test("can change author field", async () => {

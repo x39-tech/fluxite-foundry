@@ -4,6 +4,7 @@ import { RenderError } from "components/RenderError";
 import { FieldSet } from "components/FieldSet";
 import { Label } from "components/scn-ui/Label";
 import { ValidatedInput } from "components/ValidatedInput";
+import { ValidatedTextarea } from "components/ValidatedTextarea";
 import { SelectField } from "components/EditorFields/SelectField";
 import { TagInput } from "components/TagInput";
 import { assignOrDelete } from "utils/utils";
@@ -140,17 +141,18 @@ export const DeviceInfoEditor = () => {
         </FieldSet>
       </div>
       <h1 className="text-lg">Device Class Information</h1>
+      <FieldSet>
+        <Label htmlFor={`${idPrefix}-description`}>Description</Label>
+        <ValidatedTextarea
+          className="max-w-2xl"
+          id={`${idPrefix}-description`}
+          value={basicData.description.value || ""}
+          onConfirm={(newValue) =>
+            modifyBasicDataLocalizedValue("description", newValue, locale)
+          }
+        />
+      </FieldSet>
       <div className="flex flex-wrap gap-4">
-        <FieldSet>
-          <Label htmlFor={`${idPrefix}-description`}>Description</Label>
-          <ValidatedInput
-            id={`${idPrefix}-description`}
-            value={basicData.description.value || ""}
-            onConfirm={(newValue) =>
-              modifyBasicDataLocalizedValue("description", newValue, locale)
-            }
-          />
-        </FieldSet>
         <FieldSet>
           <Label htmlFor={`${idPrefix}-author`}>Author</Label>
           <ValidatedInput

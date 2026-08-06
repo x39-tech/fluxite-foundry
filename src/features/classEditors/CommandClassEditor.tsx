@@ -22,16 +22,14 @@ export const CommandClassEditor = ({ id }: Props) => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap gap-4">
-        <ClassIdentityFields
-          idPrefix={idPrefix}
-          kind={classKinds.COMMAND}
-          id={id}
-          codexId={commandClass.codexId}
-          name={commandClass.name.value}
-          description={commandClass.description?.value}
-        />
-      </div>
+      <ClassIdentityFields
+        idPrefix={idPrefix}
+        kind={classKinds.COMMAND}
+        id={id}
+        codexId={commandClass.codexId}
+        name={commandClass.name.value}
+        description={commandClass.description?.value}
+      />
       <FieldSet>
         <Label htmlFor={`${idPrefix}-arguments`}>Arguments</Label>
         <CommandClassMembersEditor

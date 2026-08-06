@@ -20,7 +20,7 @@ export const StructureClassEditor = ({ id }: Props) => {
   }
 
   return (
-    <div className="flex flex-wrap gap-4 items-end">
+    <div className="flex flex-col gap-4">
       <ClassIdentityFields
         idPrefix={idPrefix}
         kind={classKinds.STRUCTURE}
@@ -30,7 +30,6 @@ export const StructureClassEditor = ({ id }: Props) => {
         description={structureClass.description?.value}
       />
       <LabeledCheckbox
-        className="h-9"
         checked={structureClass.multipleAllowed ?? false}
         onChange={(checked) =>
           operations.modifyStructureClass(id, (draft) => {
