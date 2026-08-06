@@ -55,11 +55,19 @@ const testLibrary: FCLibrary = {
         dimmer_desc: "The dimmer",
         mode_name: "Mode",
         auto_name: "Auto",
+        // Deliberately shares a key with the category below.
+        intensity: "An intensity of some kind",
+      },
+      categories: {
+        intensity: "Intensity",
       },
     },
     "fr-FR": {
       strings: {
         dimmer_name: "Gradateur",
+      },
+      categories: {
+        intensity: "Intensité",
       },
     },
   },
@@ -86,6 +94,21 @@ describe("normalizeLibrary", () => {
       "en-US": "Dimmer",
       "fr-FR": "Gradateur",
     });
+  });
+
+  it("imports category names into a table of their own", () => {
+    expect(library.categoryLocalizations?.["intensity"].strings).toEqual({
+      "en-US": "Intensity",
+      "fr-FR": "Intensité",
+    });
+  });
+
+  it("keeps category names out of the string table they can collide with", () => {
+    expect(library.localizations[LocalizationKey("intensity")].strings).toEqual(
+      {
+        "en-US": "An intensity of some kind",
+      },
+    );
   });
 
   it("flattens parameter classes into a table keyed by EntityId", () => {

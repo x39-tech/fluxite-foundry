@@ -25,9 +25,13 @@ import {
   SerializerClass,
   StructureClass,
 } from "app/persistentState";
-import { importLocalizations } from "features/localizations/localize";
+import {
+  importCategoryLocalizations,
+  importLocalizations,
+} from "features/localizations/localize";
 import { LocalizationStrings } from "features/localizations/types";
 import { newEntityId } from "app/stateUtils";
+import { CategoryLocalizations } from "./categories";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -46,6 +50,9 @@ export interface Library {
   commandClassReturnValues: Record<EntityId, CommandReturnValue>;
   enumChoices: Record<EntityId, EnumChoice>;
   localizations: Record<LocalizationKey, LocalizationStrings>;
+  // Currently this is only contained by an imported library, not a device class
+  // document.
+  categoryLocalizations?: CategoryLocalizations;
 }
 
 // The kinds of class a reference can name.
@@ -127,6 +134,9 @@ export function normalizeLibrary(
   const index = emptyLibraryIndex();
 
   importLocalizations(fcLibrary.localizations, library.localizations);
+  library.categoryLocalizations = importCategoryLocalizations(
+    fcLibrary.localizations,
+  );
   importClasses(fcLibrary, library, index);
 
   return {

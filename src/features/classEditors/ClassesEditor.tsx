@@ -3,6 +3,13 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { EntityId } from "app/persistentState";
+import { useCurrentLocale } from "app/store";
+import {
+  formatCategoryPath,
+  localizeCategoryPath,
+  splitParameterClassId,
+} from "codex/categories";
+import { useCategoryCatalog } from "hooks/useCategoryCatalog";
 import { ItemEditor } from "utils/utils";
 import { ListItemsEditor } from "components/ListItemsEditor";
 import {
@@ -82,6 +89,32 @@ const ClassKindPanel = ({ kind }: ClassKindPanelProps) => {
   const editors = useClassEditors(kind);
   const operations = useClassOperations();
   const { getClassUsage } = useClassEditing();
+  const catalog = useCategoryCatalog();
+  const locale = useCurrentLocale();
+
+  // Parameter Classes get special handling due to categories:
+  // - They have the raw ID as a title and the localized category as a subtitle
+  // - They reconstruct the full CodexId to be searched on using getEditorSearchText.
+  const categorized = kind === classKinds.PARAMETER;
+
+  const classIdentifier = (editor: ItemEditor): string =>
+    categorized
+      ? splitParameterClassId(editor.codexId).identifier
+      : editor.codexId;
+
+  const categoryPath = (editor: ItemEditor): string | undefined => {
+    const { category } = splitParameterClassId(editor.codexId);
+    if (!category) return undefined;
+
+    return formatCategoryPath(
+      localizeCategoryPath(catalog.localizations, category, locale),
+    );
+  };
+
+  const classSearchText = (editor: ItemEditor): string =>
+    [editor.codexId, categoryPath(editor)]
+      .filter((text) => text !== undefined)
+      .join(" ");
 
   // Prevents delete for classes that still have items referencing them.
   const deleteClass = (editor: ItemEditor): boolean => {
@@ -105,7 +138,9 @@ const ClassKindPanel = ({ kind }: ClassKindPanelProps) => {
         <ListItemsEditor
           editors={editors}
           itemType={CLASS_KIND_NAMES[kind]}
-          getEditorTitle={(editor) => editor.codexId}
+          getEditorTitle={classIdentifier}
+          getEditorSubtitle={categorized ? categoryPath : undefined}
+          getEditorSearchText={categorized ? classSearchText : undefined}
           searchPlaceholder={`Search ${CLASS_KIND_NAMES[kind]}es...`}
           onAddItem={() => setNewClassDialogIsOpen(true)}
           onDeleteItem={deleteClass}

@@ -1,3 +1,5 @@
+import { firstInvalidIdentifierCharacter } from "codex/categories";
+
 export interface InputValidationResult {
   isValid: boolean;
   feedback?: string;
@@ -58,6 +60,14 @@ export function validateNewItemId(
     return { isValid: false, feedback: "ID must not be empty" };
   }
 
+  const invalidCharacter = firstInvalidIdentifierCharacter(input);
+  if (invalidCharacter !== undefined) {
+    return {
+      isValid: false,
+      feedback: `ID must not contain ${describeCharacter(invalidCharacter)}`,
+    };
+  }
+
   if (existingItemIds.includes(input)) {
     return {
       isValid: false,
@@ -66,4 +76,16 @@ export function validateNewItemId(
   }
 
   return { isValid: true };
+}
+
+// Names a non-printing character in a way that reads in a message.
+export function describeCharacter(character: string): string {
+  switch (character) {
+    case " ":
+      return "a space";
+    case "\t":
+      return "a tab";
+    default:
+      return `"${character}"`;
+  }
 }

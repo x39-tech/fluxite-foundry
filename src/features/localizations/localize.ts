@@ -27,6 +27,29 @@ export function importLocalizations(
 }
 
 /**
+ * Imports the category names from a localization table.
+ *
+ * Categories are localized in a namespace of their own, keyed by full category
+ * identifier.
+ */
+export function importCategoryLocalizations(
+  source: Record<string, DefinitionLocalization> | undefined,
+): Record<string, LocalizationStrings> {
+  const target: Record<string, LocalizationStrings> = {};
+
+  for (const [langId, localization] of Object.entries(source || {})) {
+    for (const [category, str] of Object.entries(
+      localization.categories || {},
+    )) {
+      target[category] ||= { strings: LocalizationDbSchema.parse({}) };
+      target[category].strings[langId] = str;
+    }
+  }
+
+  return target;
+}
+
+/**
  * How the localization keys a Fluxite Codex file used map onto the newly
  * synthesized ones we generate.
  */
