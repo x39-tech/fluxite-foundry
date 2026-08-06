@@ -91,6 +91,83 @@ test("lists items by the title from getEditorTitle", () => {
   ).toBeInTheDocument();
 });
 
+test("lists items with a subtitle under the title", () => {
+  renderListItemsEditor({
+    getEditorSubtitle: (editor) =>
+      editor.codexId === "first-item" ? "Color › Additive" : undefined,
+  });
+
+  expect(screen.getByText("Color › Additive")).toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "first-item Color › Additive" }),
+  ).toBeInTheDocument();
+  // An item with no subtitle is still named by its title alone.
+  expect(
+    screen.getByRole("button", { name: "second-item" }),
+  ).toBeInTheDocument();
+});
+
+test("shows the items matching the search text in their subtitle", async () => {
+  const user = userEvent.setup();
+
+  renderListItemsEditor({
+    searchPlaceholder: "Search Items...",
+    getEditorSubtitle: (editor) =>
+      editor.codexId === "first-item" ? "Color › Additive" : undefined,
+  });
+
+  await user.type(screen.getByRole("searchbox"), "additive");
+
+  expect(
+    screen.getByRole("button", { name: "first-item Color › Additive" }),
+  ).toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: "second-item" }),
+  ).not.toBeInTheDocument();
+});
+
+test("searches text the rows do not show when one is given", async () => {
+  const user = userEvent.setup();
+
+  renderListItemsEditor({
+    searchPlaceholder: "Search Items...",
+    getEditorTitle: () => "item",
+    getEditorSearchText: (editor) => editor.codexId,
+  });
+
+  await user.type(screen.getByRole("searchbox"), "second-item");
+
+  expect(screen.getAllByRole("button", { name: "item" })).toHaveLength(1);
+});
+
+test("offers a delete button only on the selected item", async () => {
+  const user = userEvent.setup();
+
+  renderListItemsEditor();
+
+  expect(screen.queryAllByRole("button", { name: "Delete Item" })).toHaveLength(
+    0,
+  );
+
+  await user.click(screen.getByRole("button", { name: "second-item" }));
+
+  expect(screen.getAllByRole("button", { name: "Delete Item" })).toHaveLength(
+    1,
+  );
+});
+
+test("deletes the selected item from its own row", async () => {
+  const user = userEvent.setup();
+  const onDeleteItem = vi.fn();
+
+  renderListItemsEditor({ onDeleteItem });
+
+  await user.click(screen.getByRole("button", { name: "second-item" }));
+  await user.click(screen.getByRole("button", { name: "Delete Item" }));
+
+  expect(onDeleteItem).toHaveBeenCalledWith(editors[1]);
+});
+
 test("shows only the items matching the search text", async () => {
   const user = userEvent.setup();
 

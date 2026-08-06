@@ -19,6 +19,7 @@ import {
 } from "app/persistentState";
 import { newEntityId, select, selectWithIds } from "app/stateUtils";
 import { Library } from "codex/library";
+import { comparePathIdentifiers } from "codex/categories";
 import { localize, LocalizedString } from "features/localizations/localize";
 import { Unlocalized } from "features/localizations/types";
 import { useCurrentLocale } from "app/store";
@@ -122,7 +123,7 @@ export function useClassEditors(kind: ClassKind): ItemEditor[] {
 
     return Object.entries(library[kind])
       .map(([id, cls]) => ({ id: EntityId(id), codexId: cls.codexId }))
-      .sort((a, b) => a.codexId.localeCompare(b.codexId));
+      .sort((a, b) => comparePathIdentifiers(a.codexId, b.codexId));
   }, [library, kind]);
 }
 

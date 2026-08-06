@@ -1,11 +1,15 @@
 import { describe, it, expect } from "vitest";
 import { Library as FCLibrary } from "@cpwg-community/delver";
+import { CodexId, EntityId, LocalizationKey } from "app/persistentState";
 import {
+  getCategoryCatalog,
   getEmptyLibraryStore,
   getNewestVersionOfEachLibrary,
   libraryStoreIsEmpty,
+  loadDefaultLibraries,
 } from "./libraryStore";
 import { LibraryStore, normalizeLibrary } from "./library";
+import { localizeCategory } from "./categories";
 
 function createMockLibrary(description = "Test library"): FCLibrary {
   return {
@@ -119,5 +123,57 @@ describe("getNewestVersionOfEachLibrary", () => {
     );
 
     expect(result[0].version).toBe("10.0.0");
+  });
+});
+
+describe("getCategoryCatalog", () => {
+  it("should be empty for a store with no libraries", () => {
+    expect(getCategoryCatalog(getEmptyLibraryStore()).categories).toEqual([]);
+  });
+
+  it("should gather the categories of the published ESTA libraries", () => {
+    const { categories } = getCategoryCatalog(loadDefaultLibraries());
+    const ids = categories.map((category) => category.id);
+
+    expect(ids).toContain("color");
+    expect(ids).toContain("color/additive");
+    expect(ids).toContain("color/cie-1931/xy");
+    expect(ids).toContain("intensity/strobe");
+  });
+
+  it("should give the ESTA categories their published names", () => {
+    const { localizations } = getCategoryCatalog(loadDefaultLibraries());
+
+    expect(localizeCategory(localizations, "color", "en-US").value).toBe(
+      "Color",
+    );
+    expect(localizeCategory(localizations, "color", "en-GB").value).toBe(
+      "Colour",
+    );
+    expect(
+      localizeCategory(localizations, "color/cie-1931/xy", "en-US").value,
+    ).toBe("CIE XY");
+  });
+
+  it("should only take the newest version of a library", () => {
+    const store: LibraryStore = createStore("org.esta.lib.test", [
+      "1.0.0",
+      "2.0.0",
+    ]);
+    store["org.esta.lib.test"]["1.0.0"].library.parameterClasses = {
+      [EntityId("old")]: {
+        codexId: CodexId("withdrawn/param"),
+        dataType: "number",
+        localized: { name: LocalizationKey("name") },
+      },
+    };
+    store["org.esta.lib.test"]["1.0.0"].index.parameterClasses.set(
+      CodexId("withdrawn/param"),
+      EntityId("old"),
+    );
+
+    expect(
+      getCategoryCatalog(store).categories.map((category) => category.id),
+    ).not.toContain("withdrawn");
   });
 });

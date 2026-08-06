@@ -3,6 +3,7 @@ import semver from "semver";
 import { localize, LocalizedString } from "features/localizations/localize";
 import { errorMessage } from "utils/utils";
 import { ImportedLibrary, LibraryStore, normalizeLibrary } from "./library";
+import { buildCategoryCatalog, CategoryCatalog } from "./categories";
 
 import core from "e173/libraries/core/draft-2026-1/library.fcd";
 import intensityColor from "e173/libraries/intensity-color/draft-2026-1/library.fcd";
@@ -45,6 +46,19 @@ export function getLibraryFriendlyName(
     library.library.localizations,
     library.descriptionKey,
     locale,
+  );
+}
+
+/** The categories of every loaded library gathered into one list. */
+export function getCategoryCatalog(
+  store: Readonly<LibraryStore>,
+): CategoryCatalog {
+  return buildCategoryCatalog(
+    getNewestVersionOfEachLibrary(store).map((imported) => ({
+      libraryId: imported.id,
+      parameterClassIds: imported.index.parameterClasses.keys(),
+      localizations: imported.library.categoryLocalizations,
+    })),
   );
 }
 
