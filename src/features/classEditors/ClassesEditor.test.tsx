@@ -76,6 +76,22 @@ describe("ClassesEditor", () => {
     ).not.toBeInTheDocument();
   });
 
+  test("each kind keeps its selected class while the user moves between kinds", async () => {
+    const user = userEvent.setup();
+    renderClassesEditor();
+
+    await addClass(user, "intensity");
+    await addClass(user, "pan");
+    await user.click(screen.getByRole("button", { name: "intensity" }));
+
+    await user.click(screen.getByRole("tab", { name: "Command" }));
+    await user.click(screen.getByRole("tab", { name: "Parameter" }));
+
+    expect(screen.getByRole("textbox", { name: "ID" })).toHaveValue(
+      "intensity",
+    );
+  });
+
   test("renames a class", async () => {
     const user = userEvent.setup();
     renderClassesEditor();

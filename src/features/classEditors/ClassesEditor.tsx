@@ -57,7 +57,13 @@ export const ClassesEditor = () => {
         ))}
       </TabsList>
       {Object.values(classKinds).map((candidate) => (
-        <TabsContent key={candidate} value={candidate} className="min-h-0">
+        <TabsContent
+          key={candidate}
+          value={candidate}
+          className="min-h-0"
+          forceMount
+          hidden={candidate !== kind}
+        >
           <ClassKindPanel kind={candidate} />
         </TabsContent>
       ))}
