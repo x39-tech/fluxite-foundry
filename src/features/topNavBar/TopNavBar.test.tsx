@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen } from "test/render";
 import userEvent from "@testing-library/user-event";
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { createEmptyDeviceClassEditor, resetAllStores } from "test/utils";

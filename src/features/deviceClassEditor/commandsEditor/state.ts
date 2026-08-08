@@ -1,5 +1,6 @@
 import { Draft } from "immer";
-import { useCurrentLocale, useLibraryStore } from "app/store";
+import { msg } from "@lingui/core/macro";
+import { useAuthoringLocale, useLibraryStore } from "app/store";
 import {
   ClassReference,
   CodexId,
@@ -32,6 +33,21 @@ import { resolveClassRef, resolveMemberId } from "../classResolution";
 import type { ResolvedClassRef } from "../classResolution";
 import { ItemEditor } from "utils/utils";
 import { getWithId, newEntityId, selectWithIds } from "app/stateUtils";
+
+const UNDO = {
+  addCommand: msg({
+    id: "deviceClassEditor.commands.undo.addCommand",
+    message: "Add Command",
+  }),
+  editCommand: msg({
+    id: "deviceClassEditor.commands.undo.editCommand",
+    message: "Edit Command",
+  }),
+  deleteCommand: msg({
+    id: "deviceClassEditor.commands.undo.deleteCommand",
+    message: "Delete Command",
+  }),
+};
 
 export interface LocalizedCommand extends Unlocalized<Command> {
   friendlyName?: LocalizedString;
@@ -80,7 +96,7 @@ export function useCommandInfo(id: EntityId):
   const deviceLibrary = useDeviceLibrary();
   const importedLibs = useLibraries();
   const command = useCurrentEditorPart((editor) => editor.commands[id]);
-  const locale = useCurrentLocale();
+  const locale = useAuthoringLocale();
   const sourceLocale = useSourceLocale();
   const libraryStore = useLibraryStore();
 
@@ -222,7 +238,7 @@ export function createNewCommand(
   friendlyName: string,
   locale: string,
 ) {
-  updateCurrentEditor("Add Command", (editor) => {
+  updateCurrentEditor(UNDO.addCommand, (editor) => {
     if (Object.values(editor.commands).some((cmd) => cmd.codexId === codexId)) {
       return;
     }
@@ -266,7 +282,7 @@ export function modifyCommand(
   id: EntityId,
   recipe: (state: Draft<Command>) => void,
 ) {
-  updateCurrentEditor("Edit Command", (editor) => {
+  updateCurrentEditor(UNDO.editCommand, (editor) => {
     const command = editor.commands[id];
     if (!command) {
       return;
@@ -282,7 +298,7 @@ export function modifyCommandLocalizedValue(
   newValue: string,
   locale: string,
 ) {
-  updateCurrentEditor("Edit Command", (editor) => {
+  updateCurrentEditor(UNDO.editCommand, (editor) => {
     setDeviceClassLocalizedValue(
       editor,
       { table: "commands", entityId: id, field: key },
@@ -293,7 +309,7 @@ export function modifyCommandLocalizedValue(
 }
 
 export function deleteCommand(id: EntityId) {
-  updateCurrentEditor("Delete Command", (editor) => {
+  updateCurrentEditor(UNDO.deleteCommand, (editor) => {
     const command = editor.commands[id];
     if (!command) {
       return;

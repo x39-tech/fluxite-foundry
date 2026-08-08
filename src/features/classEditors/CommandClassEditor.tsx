@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { useId } from "react";
 import { EntityId } from "app/persistentState";
 import { RenderError } from "components/RenderError";
@@ -31,7 +32,9 @@ export const CommandClassEditor = ({ id }: Props) => {
         description={commandClass.description?.value}
       />
       <FieldSet>
-        <Label htmlFor={`${idPrefix}-arguments`}>Arguments</Label>
+        <Label htmlFor={`${idPrefix}-arguments`}>
+          <Trans id="commandClassEditor.arguments">Arguments</Trans>
+        </Label>
         <CommandClassMembersEditor
           id={`${idPrefix}-arguments`}
           memberKind={commandMemberKinds.ARGUMENT}
@@ -39,7 +42,9 @@ export const CommandClassEditor = ({ id }: Props) => {
         />
       </FieldSet>
       <FieldSet>
-        <Label htmlFor={`${idPrefix}-returnValues`}>Return Values</Label>
+        <Label htmlFor={`${idPrefix}-returnValues`}>
+          <Trans id="commandClassEditor.returnValues">Return Values</Trans>
+        </Label>
         <CommandClassMembersEditor
           id={`${idPrefix}-returnValues`}
           memberKind={commandMemberKinds.RETURN_VALUE}

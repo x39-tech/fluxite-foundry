@@ -5,6 +5,9 @@
 
 import { useMemo, useState } from "react";
 import { CheckIcon, ChevronDownIcon, TriangleAlertIcon } from "lucide-react";
+import { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
 import {
   CategoryCatalog,
   FullCategoryId,
@@ -15,7 +18,6 @@ import {
   localizeCategory,
   localizeCategoryPath,
 } from "codex/categories";
-import { describeCharacter } from "utils/inputValidation";
 import { cn } from "utils/utils";
 import { Button } from "./scn-ui/Button";
 import { Popover, PopoverContent, PopoverTrigger } from "./scn-ui/Popover";
@@ -29,11 +31,31 @@ import {
 } from "./scn-ui/Command";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./scn-ui/Tooltip";
 
-const UNRECOGNIZED_CATEGORY_LABEL = "Unrecognized category";
+const UNRECOGNIZED_CATEGORY_LABEL = msg({
+  id: "paramClassCategory.unrecognizedLabel",
+  message: "Unrecognized category",
+});
 
-const UNRECOGNIZED_CATEGORY_WARNING =
-  "No loaded library defines this category. The standard reserves categories " +
-  "to published ESTA libraries, so other applications may not recognize it.";
+const UNRECOGNIZED_CATEGORY_WARNING = msg({
+  id: "paramClassCategory.unrecognizedWarning",
+  message:
+    "This category is not defined in any loaded library. The standard reserves categories to published ESTA libraries, so other applications may not recognize it.",
+});
+
+const SELECT_CATEGORY = msg({
+  id: "paramClassCategory.selectPlaceholder",
+  message: "Select a category...",
+});
+
+const SEARCH_PLACEHOLDER = msg({
+  id: "paramClassCategory.searchPlaceholder",
+  message: "Search categories...",
+});
+
+const USE_CUSTOM_CATEGORY = msg({
+  id: "paramClassCategory.useCustom",
+  message: 'Use "{category}" as a custom category',
+});
 
 interface CategoryFieldProps {
   id?: string;
@@ -66,6 +88,7 @@ export const CategoryField = ({
 }: CategoryFieldProps) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const { _ } = useLingui();
 
   const options = useMemo(
     () => buildOptions(catalog, locale),
@@ -133,7 +156,7 @@ export const CategoryField = ({
                 ? formatCategoryPath(
                     localizeCategoryPath(catalog.localizations, value, locale),
                   )
-                : "Select a category..."}
+                : _(SELECT_CATEGORY)}
             </span>
             <ChevronDownIcon className="ml-auto size-4 shrink-0 opacity-50" />
           </Button>
@@ -148,12 +171,12 @@ export const CategoryField = ({
             <CommandInput
               value={query}
               onValueChange={setQuery}
-              aria-label="Search categories"
-              placeholder="Search categories..."
+              aria-label={_(SEARCH_CATEGORIES)}
+              placeholder={_(SEARCH_PLACEHOLDER)}
             />
             <CommandList>
               {matches.length === 0 && !custom.offer && (
-                <CommandEmpty>{custom.reason ?? "No matches."}</CommandEmpty>
+                <CommandEmpty>{_(custom.reason ?? NO_MATCHES)}</CommandEmpty>
               )}
               {sections.map((section) => (
                 <CommandGroup key={section.group} heading={section.group}>
@@ -187,11 +210,14 @@ export const CategoryField = ({
                   >
                     <TriangleAlertIcon className="size-4 shrink-0 text-destructive" />
                     <span className="truncate">
-                      Use &quot;{custom.offer}&quot; as a custom category
+                      {_({
+                        ...USE_CUSTOM_CATEGORY,
+                        values: { category: custom.offer },
+                      })}
                     </span>
                   </CommandItem>
                   <div className="px-3 py-2 text-xs text-muted-foreground">
-                    {UNRECOGNIZED_CATEGORY_WARNING}
+                    {_(UNRECOGNIZED_CATEGORY_WARNING)}
                   </div>
                 </CommandGroup>
               )}
@@ -201,11 +227,11 @@ export const CategoryField = ({
       </Popover>
       {unrecognized && (
         <Tooltip>
-          <TooltipTrigger aria-label={UNRECOGNIZED_CATEGORY_LABEL}>
+          <TooltipTrigger aria-label={_(UNRECOGNIZED_CATEGORY_LABEL)}>
             <TriangleAlertIcon className="size-4 text-destructive" />
           </TooltipTrigger>
           <TooltipContent className="max-w-3xs">
-            {UNRECOGNIZED_CATEGORY_WARNING}
+            {_(UNRECOGNIZED_CATEGORY_WARNING)}
           </TooltipContent>
         </Tooltip>
       )}
@@ -244,12 +270,55 @@ function buildOptions(
   });
 }
 
+// Messages for invalid category entries.
+
+const NO_MATCHES = msg({
+  id: "paramClassCategory.noMatches",
+  message: "No matches.",
+  comment:
+    "Indicates that a parameter class category entered by a user did not match any existing categories.",
+});
+
+const SEARCH_CATEGORIES = msg({
+  id: "paramClassCategory.search",
+  message: "Search categories",
+});
+
+const INVALID_CHARACTER = {
+  space: msg({
+    id: "paramClassCategory.hasSpace",
+    message: "A category must not contain a space.",
+  }),
+  tab: msg({
+    id: "paramClassCategory.hasTab",
+    message: "A category must not contain a tab.",
+  }),
+  other: msg({
+    id: "paramClassCategory.hasCharacter",
+    message: "A category must not contain the character {character}.",
+  }),
+};
+
+function invalidCharacterReason(character: string): MessageDescriptor {
+  switch (character) {
+    case " ":
+      return INVALID_CHARACTER.space;
+    case "\t":
+      return INVALID_CHARACTER.tab;
+    default:
+      return {
+        ...INVALID_CHARACTER.other,
+        values: { character: `"${character}"` },
+      };
+  }
+}
+
 // Determine whether a query should be offered as a custom category; if not,
 // gives a reason (the string is invalid)
 function customCategoryFor(
   query: string,
   known: Set<FullCategoryId>,
-): { offer?: FullCategoryId; reason?: string } {
+): { offer?: FullCategoryId; reason?: MessageDescriptor } {
   if (!query || known.has(query)) {
     return {};
   }
@@ -264,7 +333,7 @@ function customCategoryFor(
 
   return {
     reason: invalidCharacter
-      ? `A category must not contain ${describeCharacter(invalidCharacter)}.`
-      : "No matches.",
+      ? invalidCharacterReason(invalidCharacter)
+      : NO_MATCHES,
   };
 }

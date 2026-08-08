@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { useId } from "react";
 import builderInfo from "e173/extras/draft-2026-1/_builder.json";
 import { RenderError } from "components/RenderError";
@@ -8,7 +9,7 @@ import { ValidatedTextarea } from "components/ValidatedTextarea";
 import { SelectField } from "components/EditorFields/SelectField";
 import { TagInput } from "components/TagInput";
 import { assignOrDelete } from "utils/utils";
-import { useCurrentLocale } from "app/store";
+import { useAuthoringLocale } from "app/store";
 import {
   modifyBasicData,
   modifyBasicDataLocalizedValue,
@@ -23,7 +24,7 @@ import {
 export const DeviceInfoEditor = () => {
   const basicData = useBasicData();
   const idPrefix = useId();
-  const locale = useCurrentLocale();
+  const locale = useAuthoringLocale();
 
   if (!basicData) {
     return <RenderError />;
@@ -31,11 +32,17 @@ export const DeviceInfoEditor = () => {
 
   return (
     <div className="flex flex-col gap-4 p-4">
-      <h1 className="text-lg">Manufacturer Information</h1>
+      <h1 className="text-lg">
+        <Trans id="deviceClassEditor.deviceInfo.manufacturerHeading">
+          Manufacturer Information
+        </Trans>
+      </h1>
       <div className="flex flex-wrap gap-4">
         <FieldSet>
           <Label htmlFor={`${idPrefix}-manufacturerName`}>
-            Manufacturer Name
+            <Trans id="deviceClassEditor.deviceInfo.manufacturerName">
+              Manufacturer Name
+            </Trans>
           </Label>
           <ValidatedInput
             id={`${idPrefix}-manufacturerName`}
@@ -47,7 +54,9 @@ export const DeviceInfoEditor = () => {
         </FieldSet>
         <FieldSet>
           <Label htmlFor={`${idPrefix}-manufacturerUrl`}>
-            Manufacturer URL
+            <Trans id="deviceClassEditor.deviceInfo.manufacturerUrl">
+              Manufacturer URL
+            </Trans>
           </Label>
           <ValidatedInput
             id={`${idPrefix}-manufacturerUrl`}
@@ -61,7 +70,9 @@ export const DeviceInfoEditor = () => {
         </FieldSet>
         <FieldSet>
           <Label htmlFor={`${idPrefix}-manufacturerEstaId`}>
-            Manufacturer ESTA ID
+            <Trans id="deviceClassEditor.deviceInfo.manufacturerEstaId">
+              Manufacturer ESTA ID
+            </Trans>
           </Label>
           <ValidatedInput
             id={`${idPrefix}-manufacturerEstaId`}
@@ -78,10 +89,18 @@ export const DeviceInfoEditor = () => {
           />
         </FieldSet>
       </div>
-      <h1 className="text-lg">Model Information</h1>
+      <h1 className="text-lg">
+        <Trans id="deviceClassEditor.deviceInfo.modelHeading">
+          Model Information
+        </Trans>
+      </h1>
       <div className="flex flex-wrap gap-4">
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-modelName`}>Model Name</Label>
+          <Label htmlFor={`${idPrefix}-modelName`}>
+            <Trans id="deviceClassEditor.deviceInfo.modelName">
+              Model Name
+            </Trans>
+          </Label>
           <ValidatedInput
             id={`${idPrefix}-modelName`}
             value={basicData.modelName}
@@ -91,7 +110,9 @@ export const DeviceInfoEditor = () => {
           />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-category`}>Category</Label>
+          <Label htmlFor={`${idPrefix}-category`}>
+            <Trans id="deviceClassEditor.deviceInfo.category">Category</Trans>
+          </Label>
           <SelectField
             id={`${idPrefix}-category`}
             values={Object.values(modelCategories)}
@@ -108,7 +129,11 @@ export const DeviceInfoEditor = () => {
           />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-subcategory`}>Subcategory</Label>
+          <Label htmlFor={`${idPrefix}-subcategory`}>
+            <Trans id="deviceClassEditor.deviceInfo.subcategory">
+              Subcategory
+            </Trans>
+          </Label>
           <SelectField
             id={`${idPrefix}-subcategory`}
             values={
@@ -125,10 +150,18 @@ export const DeviceInfoEditor = () => {
           />
         </FieldSet>
       </div>
-      <h1 className="text-lg">Compatibility</h1>
+      <h1 className="text-lg">
+        <Trans id="deviceClassEditor.deviceInfo.compatibilityHeading">
+          Compatibility
+        </Trans>
+      </h1>
       <div className="flex flex-wrap gap-4">
         <FieldSet>
-          <Label id={`${idPrefix}-firmwareVersions`}>Firmware Versions</Label>
+          <Label id={`${idPrefix}-firmwareVersions`}>
+            <Trans id="deviceClassEditor.deviceInfo.firmwareVersions">
+              Firmware Versions
+            </Trans>
+          </Label>
           <TagInput
             aria-labelledby={`${idPrefix}-firmwareVersions`}
             values={basicData.compatibleFirmwareVersions || []}
@@ -140,9 +173,17 @@ export const DeviceInfoEditor = () => {
           />
         </FieldSet>
       </div>
-      <h1 className="text-lg">Device Class Information</h1>
+      <h1 className="text-lg">
+        <Trans id="deviceClassEditor.deviceInfo.deviceClassHeading">
+          Device Class Information
+        </Trans>
+      </h1>
       <FieldSet>
-        <Label htmlFor={`${idPrefix}-description`}>Description</Label>
+        <Label htmlFor={`${idPrefix}-description`}>
+          <Trans id="deviceClassEditor.deviceInfo.description">
+            Description
+          </Trans>
+        </Label>
         <ValidatedTextarea
           className="max-w-2xl"
           id={`${idPrefix}-description`}
@@ -154,7 +195,9 @@ export const DeviceInfoEditor = () => {
       </FieldSet>
       <div className="flex flex-wrap gap-4">
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-author`}>Author</Label>
+          <Label htmlFor={`${idPrefix}-author`}>
+            <Trans id="deviceClassEditor.deviceInfo.author">Author</Trans>
+          </Label>
           <ValidatedInput
             id={`${idPrefix}-author`}
             value={basicData.author}
@@ -164,7 +207,11 @@ export const DeviceInfoEditor = () => {
           />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-publishDate`}>Publish Date</Label>
+          <Label htmlFor={`${idPrefix}-publishDate`}>
+            <Trans id="deviceClassEditor.deviceInfo.publishDate">
+              Publish Date
+            </Trans>
+          </Label>
           <ValidatedInput
             id={`${idPrefix}-publishDate`}
             value={basicData.publishDate}

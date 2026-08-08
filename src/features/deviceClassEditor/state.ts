@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { Draft } from "immer";
 import * as FlexLayout from "flexlayout-react";
+import { MessageDescriptor, i18n } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import {
   AppPersistentState,
   CodexId,
@@ -31,6 +33,26 @@ import {
   deviceClassLocalizer,
   setDeviceClassLocalizedValue,
 } from "./localizationRegistry";
+
+const THIS_DEVICE_CLASS = msg({
+  id: "deviceClassEditor.ownLibrary",
+  message: "This Device Class",
+});
+
+const UNDO = {
+  addEnumChoice: msg({
+    id: "deviceClassEditor.undo.addEnumChoice",
+    message: "Add Enum Choice",
+  }),
+  editEnumChoice: msg({
+    id: "deviceClassEditor.undo.editEnumChoice",
+    message: "Edit Enum Choice",
+  }),
+  deleteEnumChoice: msg({
+    id: "deviceClassEditor.undo.deleteEnumChoice",
+    message: "Delete Enum Choice",
+  }),
+};
 
 // ---------------------------------------------------------------------------
 // Read
@@ -72,7 +94,7 @@ export function useLibraries(): Record<string, string> | undefined {
 export function useDeviceLocalLibrary(): LocalLibrary | undefined {
   const library = useDeviceLibrary();
   return useMemo(
-    () => (library ? { name: "This Device Class", library } : undefined),
+    () => (library ? { name: i18n._(THIS_DEVICE_CLASS), library } : undefined),
     [library],
   );
 }
@@ -99,7 +121,7 @@ export type DeviceClassDraft = Draft<DeviceClassDocument>;
  * The label names the change in the undo menu; see updateCurrentDocumentOfType.
  */
 export function updateCurrentEditor(
-  label: string,
+  label: MessageDescriptor,
   updater: (editor: DeviceClassDraft) => void,
 ) {
   updateCurrentDocumentOfType(documentTypes.DEVICE_CLASS, label, updater);
@@ -119,7 +141,7 @@ export function addEnumChoice(
   description: string | undefined,
   locale: string,
 ) {
-  updateCurrentEditor("Add Enum Choice", (editor) => {
+  updateCurrentEditor(UNDO.addEnumChoice, (editor) => {
     addEnumChoiceTo(
       editor,
       deviceClassLocalizer(editor),
@@ -136,7 +158,7 @@ export function modifyEnumChoice(
   id: EntityId,
   recipe: (state: Draft<Omit<Unlocalized<EnumChoice>, "parent">>) => void,
 ) {
-  updateCurrentEditor("Edit Enum Choice", (editor) => {
+  updateCurrentEditor(UNDO.editEnumChoice, (editor) => {
     modifyEnumChoiceIn(editor, id, recipe);
   });
 }
@@ -147,7 +169,7 @@ export function modifyEnumChoiceLocalizedValue(
   newValue: string,
   locale: string,
 ) {
-  updateCurrentEditor("Edit Enum Choice", (editor) => {
+  updateCurrentEditor(UNDO.editEnumChoice, (editor) => {
     setDeviceClassLocalizedValue(
       editor,
       { table: "enumChoices", entityId: id, field: key },
@@ -158,7 +180,7 @@ export function modifyEnumChoiceLocalizedValue(
 }
 
 export function deleteEnumChoice(id: EntityId) {
-  updateCurrentEditor("Delete Enum Choice", (editor) => {
+  updateCurrentEditor(UNDO.deleteEnumChoice, (editor) => {
     deleteEnumChoiceFrom(editor, deviceClassLocalizer(editor), id);
   });
 }

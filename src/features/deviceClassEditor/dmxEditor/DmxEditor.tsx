@@ -1,6 +1,33 @@
-import { ListItemsEditor } from "components/ListItemsEditor";
+import { msg } from "@lingui/core/macro";
+import {
+  ListItemsEditor,
+  ListItemsEditorLabels,
+} from "components/ListItemsEditor";
 import { addDmxChunk, removeDmxChunk, useDmxChunkEditors } from "./state";
 import { DmxChunkEditor } from "./DmxChunkEditor";
+
+const LABELS: ListItemsEditorLabels = {
+  add: msg({
+    id: "deviceClassEditor.dmxEditor.list.add",
+    message: "Add DMX Slot Group",
+  }),
+  delete: msg({
+    id: "deviceClassEditor.dmxEditor.list.delete",
+    message: "Delete DMX Slot Group",
+  }),
+  search: msg({
+    id: "deviceClassEditor.dmxEditor.list.search",
+    message: "Search DMX Slot Groups",
+  }),
+  emptyState: msg({
+    id: "deviceClassEditor.dmxEditor.list.emptyState",
+    message: "Add a DMX slot group to start editing",
+  }),
+  selectPrompt: msg({
+    id: "deviceClassEditor.dmxEditor.list.selectPrompt",
+    message: "Select a DMX slot group to start editing",
+  }),
+};
 
 export const DmxEditor = () => {
   const editors = useDmxChunkEditors();
@@ -8,9 +35,8 @@ export const DmxEditor = () => {
   return (
     <ListItemsEditor
       editors={editors}
-      itemType="DMX Slot Group"
+      labels={LABELS}
       showItemIcon={false}
-      searchPlaceholder="Search DMX Slot Groups..."
       onAddItem={addDmxChunk}
       onDeleteItem={(editor) => removeDmxChunk(editor.id)}
       renderActiveEditor={(editor) => <DmxChunkEditor chunkId={editor.id} />}

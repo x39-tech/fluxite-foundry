@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { useId } from "react";
 import { FieldSet } from "components/FieldSet";
 import { Label } from "components/scn-ui/Label";
@@ -20,7 +21,11 @@ export const MinMaxDefaultProperties = ({ paramId, param }: Props) => {
   return (
     <>
       <FieldSet>
-        <Label htmlFor={`${idPrefix}-minimum`}>Minimum Value</Label>
+        <Label htmlFor={`${idPrefix}-minimum`}>
+          <Trans id="deviceClassEditor.paramMinMaxDefault.minimumValue">
+            Minimum Value
+          </Trans>
+        </Label>
         <ValidatedInput
           id={`${idPrefix}-minimum`}
           value={param.minimum !== undefined ? `${param.minimum}` : ""}
@@ -33,7 +38,11 @@ export const MinMaxDefaultProperties = ({ paramId, param }: Props) => {
         />
       </FieldSet>
       <FieldSet>
-        <Label htmlFor={`${idPrefix}-maximum`}>Maximum Value</Label>
+        <Label htmlFor={`${idPrefix}-maximum`}>
+          <Trans id="deviceClassEditor.paramMinMaxDefault.maximumValue">
+            Maximum Value
+          </Trans>
+        </Label>
         <ValidatedInput
           id={`${idPrefix}-maximum`}
           value={param.maximum !== undefined ? `${param.maximum}` : ""}
@@ -46,7 +55,11 @@ export const MinMaxDefaultProperties = ({ paramId, param }: Props) => {
         />
       </FieldSet>
       <FieldSet>
-        <Label htmlFor={`${idPrefix}-default`}>Default Value</Label>
+        <Label htmlFor={`${idPrefix}-default`}>
+          <Trans id="deviceClassEditor.paramMinMaxDefault.defaultValue">
+            Default Value
+          </Trans>
+        </Label>
         <ValidatedInput
           id={`${idPrefix}-default`}
           value={param.default !== undefined ? `${param.default}` : ""}

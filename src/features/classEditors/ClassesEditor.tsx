@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
 import { EntityId } from "app/persistentState";
-import { useCurrentLocale } from "app/store";
+import { useAuthoringLocale } from "app/store";
 import {
   formatCategoryPath,
   localizeCategoryPath,
@@ -22,10 +24,10 @@ import {
   ClassKind,
   classKinds,
   isReferenceableKind,
-  type ReferenceableClassKind,
   useClassEditing,
 } from "./context";
-import { CLASS_KIND_NAMES, useClassEditors, useClassOperations } from "./state";
+import { useClassEditors, useClassOperations } from "./state";
+import { CLASS_IN_USE_MESSAGES, CLASS_KIND_MESSAGES } from "./messages";
 import { NewClassDialog } from "./NewClassDialog";
 import { ParameterClassEditor } from "./ParameterClassEditor";
 import { StructureClassEditor } from "./StructureClassEditor";
@@ -33,22 +35,11 @@ import { SerializerClassEditor } from "./SerializerClassEditor";
 import { ResourceClassEditor } from "./ResourceClassEditor";
 import { CommandClassEditor } from "./CommandClassEditor";
 
-const KIND_LABELS: Record<ClassKind, string> = {
-  parameterClasses: "Parameter",
-  structureClasses: "Structure",
-  serializerClasses: "Serializer",
-  resourceClasses: "Resource",
-  commandClasses: "Command",
-};
-
-const REFERRER_NAMES: Record<ReferenceableClassKind, string> = {
-  parameterClasses: "parameter",
-  resourceClasses: "resource",
-  commandClasses: "command",
-};
+const TABS_LABEL = msg({ id: "classes.tabs.label", message: "Class kind" });
 
 export const ClassesEditor = () => {
   const [kind, setKind] = useState<ClassKind>(classKinds.PARAMETER);
+  const { _ } = useLingui();
 
   return (
     <Tabs
@@ -56,10 +47,10 @@ export const ClassesEditor = () => {
       onValueChange={(value) => setKind(value as ClassKind)}
       className="h-full overflow-hidden"
     >
-      <TabsList className="m-2 self-start" aria-label="Class kind">
+      <TabsList className="m-2 self-start" aria-label={_(TABS_LABEL)}>
         {Object.values(classKinds).map((candidate) => (
           <TabsTrigger key={candidate} value={candidate} className="p-2">
-            {KIND_LABELS[candidate]}
+            {_(CLASS_KIND_MESSAGES[candidate].tabTitle)}
           </TabsTrigger>
         ))}
       </TabsList>
@@ -90,7 +81,8 @@ const ClassKindPanel = ({ kind }: ClassKindPanelProps) => {
   const operations = useClassOperations();
   const { getClassUsage } = useClassEditing();
   const catalog = useCategoryCatalog();
-  const locale = useCurrentLocale();
+  const locale = useAuthoringLocale();
+  const { _ } = useLingui();
 
   // Parameter Classes get special handling due to categories:
   // - They have the raw ID as a title and the localized category as a subtitle
@@ -122,7 +114,13 @@ const ClassKindPanel = ({ kind }: ClassKindPanelProps) => {
       const referrers = getClassUsage(kind, editor.id);
       if (referrers.length > 0) {
         toast(
-          `${CLASS_KIND_NAMES[kind]} ${editor.codexId} is in use. Remove it from ${listReferrers(referrers, REFERRER_NAMES[kind])} first.`,
+          _({
+            ...CLASS_IN_USE_MESSAGES[kind],
+            values: {
+              codexId: editor.codexId,
+              referrers: referrers.join(", "),
+            },
+          }),
         );
         return false;
       }
@@ -137,11 +135,10 @@ const ClassKindPanel = ({ kind }: ClassKindPanelProps) => {
       <div className="flex-1 min-h-0">
         <ListItemsEditor
           editors={editors}
-          itemType={CLASS_KIND_NAMES[kind]}
+          labels={CLASS_KIND_MESSAGES[kind].list}
           getEditorTitle={classIdentifier}
           getEditorSubtitle={categorized ? categoryPath : undefined}
           getEditorSearchText={categorized ? classSearchText : undefined}
-          searchPlaceholder={`Search ${CLASS_KIND_NAMES[kind]}es...`}
           onAddItem={() => setNewClassDialogIsOpen(true)}
           onDeleteItem={deleteClass}
           renderActiveEditor={(editor) => (
@@ -157,11 +154,6 @@ const ClassKindPanel = ({ kind }: ClassKindPanelProps) => {
     </div>
   );
 };
-
-function listReferrers(referrers: string[], referrerName: string): string {
-  const plural = referrers.length === 1 ? referrerName : `${referrerName}s`;
-  return `the ${plural} ${referrers.join(", ")}`;
-}
 
 interface ClassEditorProps {
   kind: ClassKind;

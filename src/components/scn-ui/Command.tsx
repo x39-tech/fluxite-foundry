@@ -1,6 +1,9 @@
+// Modified from the original to add i18n.
+
 import * as React from "react";
 import { Command as CommandPrimitive } from "cmdk";
 import { SearchIcon } from "lucide-react";
+import { msg } from "@lingui/core/macro";
 
 import { cn } from "utils/utils";
 import {
@@ -10,6 +13,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "components/scn-ui/Dialog";
+import { useLingui } from "@lingui/react";
+
+const MESSAGES = {
+  defaultTitle: msg({
+    id: "cmdPalette.defaultTitle",
+    message: "Command Palette",
+  }),
+  defaultDescription: msg({
+    id: "cmdPalette.defaultDescription",
+    message: "Search for a command to run...",
+  }),
+};
 
 function Command({
   className,
@@ -28,8 +43,8 @@ function Command({
 }
 
 function CommandDialog({
-  title = "Command Palette",
-  description = "Search for a command to run...",
+  title,
+  description,
   children,
   className,
   showCloseButton = true,
@@ -40,11 +55,16 @@ function CommandDialog({
   className?: string;
   showCloseButton?: boolean;
 }) {
+  const { _ } = useLingui();
+
+  const dispTitle = title ?? _(MESSAGES.defaultTitle);
+  const dispDesc = description ?? _(MESSAGES.defaultDescription);
+
   return (
     <Dialog {...props}>
       <DialogHeader className="sr-only">
-        <DialogTitle>{title}</DialogTitle>
-        <DialogDescription>{description}</DialogDescription>
+        <DialogTitle>{dispTitle}</DialogTitle>
+        <DialogDescription>{dispDesc}</DialogDescription>
       </DialogHeader>
       <DialogContent
         className={cn("overflow-hidden p-0", className)}

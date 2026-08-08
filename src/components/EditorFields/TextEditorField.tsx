@@ -2,6 +2,8 @@
 
 import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { CircleAlertIcon } from "lucide-react";
+import { Trans } from "@lingui/react/macro";
+import { useLingui } from "@lingui/react";
 import { InputValidationResult } from "utils/inputValidation";
 import { Popover, PopoverAnchor, PopoverContent } from "../scn-ui/Popover";
 import { Alert, AlertDescription } from "../scn-ui/Alert";
@@ -30,6 +32,7 @@ export const TextEditorField = ({
   const [currentValue, setCurrentValue] = useState(value);
   const [validationResult, setValidationResult] =
     useState<InputValidationResult>({ isValid: true });
+  const { _ } = useLingui();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const reset = () => {
@@ -114,7 +117,13 @@ export const TextEditorField = ({
         <Alert variant="destructive">
           <CircleAlertIcon />
           <AlertDescription>
-            {validationResult.feedback || "An unknown error occurred."}
+            {validationResult.feedback ? (
+              _(validationResult.feedback)
+            ) : (
+              <Trans id="editorFields.validation.unknown">
+                An unknown error occurred.
+              </Trans>
+            )}
           </AlertDescription>
         </Alert>
       </PopoverContent>

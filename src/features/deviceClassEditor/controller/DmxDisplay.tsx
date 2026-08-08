@@ -1,3 +1,6 @@
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
+import { Trans } from "@lingui/react/macro";
 import { useState } from "react";
 import {
   Select,
@@ -7,12 +10,21 @@ import {
   SelectValue,
 } from "components/scn-ui/Select";
 
+const MESSAGES = {
+  activeSlot: msg({
+    id: "deviceClassEditor.dmxDisplay.activeSlot",
+    message: "{value} (sequence)",
+  }),
+};
+
 interface DmxDisplayProps {
   dmxValues: Uint8Array;
   activeSlots?: Set<number>;
 }
 
 export const DmxDisplay = ({ dmxValues, activeSlots }: DmxDisplayProps) => {
+  const { _ } = useLingui();
+
   const [dmxDisplayFormat, setDmxDisplayFormat] = useState<"hex" | "decimal">(
     "hex",
   );
@@ -24,7 +36,9 @@ export const DmxDisplay = ({ dmxValues, activeSlots }: DmxDisplayProps) => {
     return (
       <div className="flex flex-row items-center justify-center mt-2 mb-4 sticky">
         <div className="flex flex-col items-center">
-          <span className="mx-4 font-bold">DMX Output</span>
+          <span className="mx-4 font-bold">
+            <Trans id="deviceClassEditor.dmxDisplay.title">DMX Output</Trans>
+          </span>
           <Select
             value={dmxDisplayFormat}
             onValueChange={(value) =>
@@ -35,13 +49,21 @@ export const DmxDisplay = ({ dmxValues, activeSlots }: DmxDisplayProps) => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="hex">hex</SelectItem>
-              <SelectItem value="decimal">decimal</SelectItem>
+              <SelectItem value="hex">
+                <Trans id="deviceClassEditor.dmxDisplay.hex">hex</Trans>
+              </SelectItem>
+              <SelectItem value="decimal">
+                <Trans id="deviceClassEditor.dmxDisplay.decimal">decimal</Trans>
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="flex flex-col items-stretch ml-4">
-          <div className="text-gray-500 italic">No DMX slots to display</div>
+          <div className="text-gray-500 italic">
+            <Trans id="deviceClassEditor.dmxDisplay.noSlots">
+              No DMX slots to display
+            </Trans>
+          </div>
         </div>
       </div>
     );
@@ -50,7 +72,9 @@ export const DmxDisplay = ({ dmxValues, activeSlots }: DmxDisplayProps) => {
   return (
     <div className="flex flex-row items-center justify-center mt-2 mb-4 sticky">
       <div className="flex flex-col items-center">
-        <span className="mx-4 font-bold">DMX Output</span>
+        <span className="mx-4 font-bold">
+          <Trans id="deviceClassEditor.dmxDisplay.title">DMX Output</Trans>
+        </span>
         <Select
           value={dmxDisplayFormat}
           onValueChange={(value) =>
@@ -61,8 +85,12 @@ export const DmxDisplay = ({ dmxValues, activeSlots }: DmxDisplayProps) => {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="hex">hex</SelectItem>
-            <SelectItem value="decimal">decimal</SelectItem>
+            <SelectItem value="hex">
+              <Trans id="deviceClassEditor.dmxDisplay.hex">hex</Trans>
+            </SelectItem>
+            <SelectItem value="decimal">
+              <Trans id="deviceClassEditor.dmxDisplay.decimal">decimal</Trans>
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -98,7 +126,12 @@ export const DmxDisplay = ({ dmxValues, activeSlots }: DmxDisplayProps) => {
                   <div
                     key={index}
                     aria-label={
-                      isActive ? `${formattedValue} (sequence)` : undefined
+                      isActive
+                        ? _({
+                            ...MESSAGES.activeSlot,
+                            values: { value: formattedValue },
+                          })
+                        : undefined
                     }
                     className={`flex items-center justify-center border border-gray-500 w-12 h-8 ${
                       isActive ? "text-orange-500 font-bold" : ""

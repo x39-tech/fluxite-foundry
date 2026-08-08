@@ -76,7 +76,7 @@ export function createDeviceClassEditor() {
     const newId = newEntityId();
     state.documents[newId] = getNewDeviceClassEditor(
       existingIds,
-      state.appSettings.locale,
+      state.appSettings.authoringLocale,
     );
     state.session.openDocuments.push(newId);
     state.session.layouts[newId] = JSON.stringify(getDefaultWindowLayout());

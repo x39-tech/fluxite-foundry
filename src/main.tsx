@@ -13,6 +13,11 @@ import {
 } from "./app/assetLifecycle";
 import { initUndo } from "./app/undo";
 import { initDocumentFiles } from "./app/documentFile";
+import {
+  UiLocaleProvider,
+  activateUiLocale,
+  initialUiLocale,
+} from "./app/i18n";
 import "./index.css";
 import "./flexlayout.scss";
 
@@ -27,8 +32,13 @@ initDocumentFiles();
 initDeviceClassEditorEffects();
 void applyNativeWindowControlsInset();
 
+// Awaited so that the first render already has a catalog to read from.
+await activateUiLocale(initialUiLocale());
+
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <App />
+    <UiLocaleProvider>
+      <App />
+    </UiLocaleProvider>
   </React.StrictMode>,
 );

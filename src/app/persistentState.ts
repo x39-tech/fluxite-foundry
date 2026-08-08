@@ -1,4 +1,4 @@
-import * as StateV5 from "./persistentState/v5/state";
+import * as StateV6 from "./persistentState/v6/state";
 import {
   CHAIN_END_VERSION,
   getMigration,
@@ -20,11 +20,11 @@ import {
 //    snapshot and save file envelope into persistentState/vN/.
 
 // Re-exports from the current (most recent) state version.
-export * from "./persistentState/v5/state";
-export const VERSION = StateV5.VERSION;
+export * from "./persistentState/v6/state";
+export const VERSION = StateV6.VERSION;
 
-export type AppPersistentState = StateV5.AppPersistentState;
-const AppStateSchema = StateV5.AppStateSchema;
+export type AppPersistentState = StateV6.AppPersistentState;
+const AppStateSchema = StateV6.AppStateSchema;
 
 if (CHAIN_END_VERSION !== VERSION) {
   throw new Error(
@@ -40,7 +40,8 @@ export function getDefaultState(): AppPersistentState {
     appSettings: {
       theme: "system",
       orgId: { type: "user", id: crypto.randomUUID() },
-      locale: "en-US",
+      authoringLocale: "en-US",
+      uiLocale: "system",
     },
     session: {
       openDocuments: [],

@@ -1,5 +1,7 @@
 /** Types used in localization of data edited by this app. */
 
+import { MessageDescriptor } from "@lingui/core";
+
 import {
   EntityId,
   Localization,
@@ -270,7 +272,7 @@ export type LocalizableFieldsForKey<
  */
 export interface LocalizableFieldSpec {
   /** What to call the field in the localizations editor. */
-  label: string;
+  label: MessageDescriptor;
 
   /**
    * A required field keeps its localization when its value is blanked; an
@@ -306,14 +308,14 @@ export type LocalizableFieldSpecs<Entity> = {
 export interface LocalizableTableSpec<Entity> {
   kind: "table";
   /** What to call one entity of this kind in the localizations editor. */
-  label: string;
+  label: MessageDescriptor;
   fields: LocalizableFieldSpecs<Entity>;
 }
 
 /** A spec for a localizable singleton object in a document. */
 export interface LocalizableSingletonSpec<Entity> {
   kind: "singleton";
-  label: string;
+  label: MessageDescriptor;
   fields: LocalizableFieldSpecs<Entity>;
 }
 

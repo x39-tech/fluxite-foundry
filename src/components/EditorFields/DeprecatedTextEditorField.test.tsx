@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen } from "test/render";
 import userEvent from "@testing-library/user-event";
 import { TextEditorField } from "./DeprecatedTextEditorField";
 
@@ -51,7 +51,13 @@ describe("TextEditorField", () => {
     const user = userEvent.setup();
     const validator = vi.fn((value: string) => {
       if (value.length < 3) {
-        return { isValid: false, feedback: "Must be at least 3 characters" };
+        return {
+          isValid: false,
+          feedback: {
+            id: "test.validation.tooShort",
+            message: "Must be at least 3 characters",
+          },
+        };
       }
       return { isValid: true };
     });
@@ -78,7 +84,13 @@ describe("TextEditorField", () => {
     const handleValueChanged = vi.fn();
     const validator = vi.fn((value: string) => {
       if (value.length < 3) {
-        return { isValid: false, feedback: "Must be at least 3 characters" };
+        return {
+          isValid: false,
+          feedback: {
+            id: "test.validation.tooShort",
+            message: "Must be at least 3 characters",
+          },
+        };
       }
       return { isValid: true };
     });

@@ -9,7 +9,11 @@ import {
 } from "app/persistentState";
 import { useAppPersistentStore } from "app/store";
 import { initUndo, undo } from "app/undo";
-import { resetAllStores, createEmptyDeviceClassEditor } from "test/utils";
+import {
+  createEmptyDeviceClassEditor,
+  resetAllStores,
+  testUndoLabel,
+} from "test/utils";
 import { getWithId } from "app/stateUtils";
 import { updateCurrentEditor } from "features/deviceClassEditor/state";
 import { DeviceClassClassEditing } from "features/deviceClassEditor/classEditing";
@@ -258,7 +262,7 @@ describe("classEditors/state.ts", () => {
       );
       const classId = classIdOf("parameterClasses", "tilt");
 
-      updateCurrentEditor("Add test parameter", (draft) => {
+      updateCurrentEditor(testUndoLabel("Add test parameter"), (draft) => {
         const paramId = EntityId("test-parameter");
         draft.parameters[paramId] = {
           codexId: CodexId("tilt-1"),

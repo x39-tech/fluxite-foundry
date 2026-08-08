@@ -8,6 +8,9 @@ import {
   useState,
 } from "react";
 import { PlusIcon, SearchIcon, Settings2Icon, Trash2Icon } from "lucide-react";
+import { MessageDescriptor } from "@lingui/core";
+import { Trans } from "@lingui/react/macro";
+import { useLingui } from "@lingui/react";
 import { EntityId } from "app/persistentState";
 import { ItemEditor } from "utils/utils";
 import { Toggle } from "./scn-ui/Toggle";
@@ -15,13 +18,28 @@ import { Button } from "./scn-ui/Button";
 import { Separator } from "./scn-ui/Separator";
 import { Input } from "./scn-ui/Input";
 
+/** Localizable strings to display for working with items in the list. */
+export interface ListItemsEditorLabels {
+  /** Label for the button that adds an item, e.g. "Add Parameter". */
+  add: MessageDescriptor;
+  /** Label for the button that deletes an item, e.g. "Delete Parameter". */
+  delete: MessageDescriptor;
+  /**
+   * The placeholder for the search box, e.g. "Search Parameters". Leaving this
+   * out removes the search box from the component.
+   */
+  search?: MessageDescriptor;
+  /** Shown in place of an editor when there are no items at all. */
+  emptyState: MessageDescriptor;
+  /** Shown in place of an editor while there are items but none is selected. */
+  selectPrompt: MessageDescriptor;
+}
+
 interface ListItemsEditorProps {
   editors: ItemEditor[];
-  itemType: string;
+  labels: ListItemsEditorLabels;
   // Whether the selected item is titled with a colored icon beside its name.
   showItemIcon?: boolean;
-  // When set, a search box filtering the items by title is shown.
-  searchPlaceholder?: string;
   getEditorTitle?: (editor: ItemEditor) => string;
   getEditorSubtitle?: (editor: ItemEditor) => string | undefined;
   // What the search matches against. Defaults to the values of getEditorTitle
@@ -37,9 +55,8 @@ interface ListItemsEditorProps {
 
 export const ListItemsEditor = ({
   editors,
-  itemType,
+  labels,
   showItemIcon = true,
-  searchPlaceholder,
   getEditorTitle,
   getEditorSubtitle,
   getEditorSearchText,
@@ -47,6 +64,7 @@ export const ListItemsEditor = ({
   onDeleteItem,
   renderActiveEditor,
 }: ListItemsEditorProps) => {
+  const { _ } = useLingui();
   const [selectedEditorId, setSelectedEditorId] = useState<EntityId | null>(
     null,
   );
@@ -157,14 +175,14 @@ export const ListItemsEditor = ({
     <div className="flex items-start h-full overflow-hidden">
       <div className="flex items-start h-full p-2">
         <div className="flex flex-col max-h-full min-w-2xs max-w-xs border rounded-lg py-5 px-4 gap-2">
-          {searchPlaceholder && (
+          {labels.search && (
             <div className="relative">
               <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none" />
               <Input
                 type="search"
                 className="pl-9"
-                aria-label={`Search ${itemType}s`}
-                placeholder={searchPlaceholder}
+                aria-label={_(labels.search)}
+                placeholder={_(labels.search)}
                 value={searchText}
                 onChange={(event) => setSearchText(event.target.value)}
               />
@@ -181,7 +199,7 @@ export const ListItemsEditor = ({
                   }
                   title={editorTitle(editor)}
                   subtitle={editorSubtitle(editor)}
-                  itemType={itemType}
+                  deleteLabel={labels.delete}
                   selected={editor.id === selectedEditorId}
                   onSelect={() => selectEditor(editor)}
                   onDelete={() => deleteEditor(editor)}
@@ -192,7 +210,7 @@ export const ListItemsEditor = ({
           </div>
           <Button onClick={onAddItem}>
             <PlusIcon className="size-4" />
-            Add {itemType}
+            {_(labels.add)}
           </Button>
         </div>
       </div>
@@ -222,15 +240,17 @@ export const ListItemsEditor = ({
                 onClick={() => deleteEditor(selectedEditor)}
               >
                 <Trash2Icon />
-                Delete
+                <Trans id="listItemsEditor.deleteSelected">Delete</Trans>
               </Button>
             </div>
           </div>
         ) : (
           <div className="flex h-full items-center justify-center p-4 text-center text-muted-foreground">
-            {visibleEditors.length === 0
-              ? `Add a ${itemType} to start editing`
-              : `Select a ${itemType} to start editing`}
+            {_(
+              visibleEditors.length === 0
+                ? labels.emptyState
+                : labels.selectPrompt,
+            )}
           </div>
         )}
       </div>
@@ -242,7 +262,7 @@ interface ItemEditorRowProps {
   ref?: React.Ref<HTMLDivElement>;
   title: string;
   subtitle?: string;
-  itemType: string;
+  deleteLabel: MessageDescriptor;
   selected: boolean;
   onSelect: () => void;
   onDelete: () => void;
@@ -253,11 +273,13 @@ const ItemEditorRow = ({
   ref,
   title,
   subtitle,
-  itemType,
+  deleteLabel,
   selected,
   onSelect,
   onDelete,
 }: ItemEditorRowProps) => {
+  const { _ } = useLingui();
+
   return (
     <div ref={ref} className="flex items-center gap-1">
       <Toggle
@@ -279,7 +301,7 @@ const ItemEditorRow = ({
       </Toggle>
       <Button
         size="icon"
-        aria-label={`Delete ${itemType}`}
+        aria-label={_(deleteLabel)}
         variant="ghost"
         className={selected ? undefined : "invisible"}
         tabIndex={selected ? undefined : -1}

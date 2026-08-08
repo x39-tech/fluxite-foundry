@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { CirclePlusIcon, Trash2Icon, TriangleAlertIcon } from "lucide-react";
 import { DmxSequenceStep } from "app/persistentState";
 import { IntegerInput } from "components/IntegerInput";
@@ -58,6 +59,7 @@ export const SequenceStepEditor = ({
   };
 
   const totalDuration = calculateTotalDuration(steps);
+  const totalDurationText = formatDuration(totalDuration);
 
   const hasWarningForStep = (index: number) => {
     return validation.warnings.some((w) => w.stepIndex === index);
@@ -72,7 +74,9 @@ export const SequenceStepEditor = ({
     <div className="flex flex-col gap-2">
       {steps.length === 0 ? (
         <div className="text-sm text-destructive">
-          Sequence must have at least one step
+          <Trans id="deviceClassEditor.sequenceStep.atLeastOneStep">
+            Sequence must have at least one step
+          </Trans>
         </div>
       ) : (
         <div className="flex max-h-64 flex-col gap-2 overflow-y-auto">
@@ -98,11 +102,15 @@ export const SequenceStepEditor = ({
               <CirclePlusIcon className="size-5" />
             </SmallIconButton>
           </TooltipTrigger>
-          <TooltipContent>Add Step</TooltipContent>
+          <TooltipContent>
+            <Trans id="deviceClassEditor.sequenceStep.addStep">Add Step</Trans>
+          </TooltipContent>
         </Tooltip>
 
         <div className="text-sm text-muted-foreground">
-          Total: {formatDuration(totalDuration)}
+          <Trans id="deviceClassEditor.sequenceStep.total">
+            Total: {totalDurationText}
+          </Trans>
         </div>
       </div>
     </div>
@@ -164,7 +172,9 @@ const StepCard = ({
       <div className="flex flex-1 flex-col gap-2 p-2">
         {/* DMX Range Row */}
         <div className="flex items-center gap-2">
-          <span className="w-10 text-sm text-muted-foreground">DMX:</span>
+          <span className="w-10 text-sm text-muted-foreground">
+            <Trans id="deviceClassEditor.sequenceStep.dmx">DMX:</Trans>
+          </span>
           <IntegerInput
             className="w-28"
             value={step.chunkStart}
@@ -184,7 +194,9 @@ const StepCard = ({
 
         {/* Hold Row */}
         <div className="flex items-center gap-2">
-          <span className="w-10 text-sm text-muted-foreground">Hold:</span>
+          <span className="w-10 text-sm text-muted-foreground">
+            <Trans id="deviceClassEditor.sequenceStep.hold">Hold:</Trans>
+          </span>
           <Select
             value={isIndefinite ? "indefinite" : "ms"}
             onValueChange={handleHoldTypeChange}
@@ -193,9 +205,15 @@ const StepCard = ({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ms">Duration</SelectItem>
+              <SelectItem value="ms">
+                <Trans id="deviceClassEditor.sequenceStep.duration">
+                  Duration
+                </Trans>
+              </SelectItem>
               <SelectItem value="indefinite" disabled={!isLast}>
-                Indefinite
+                <Trans id="deviceClassEditor.sequenceStep.indefinite">
+                  Indefinite
+                </Trans>
               </SelectItem>
             </SelectContent>
           </Select>
@@ -207,7 +225,14 @@ const StepCard = ({
                 onValueChange={handleHoldMsChange}
                 min={0}
               />
-              <span className="text-sm text-muted-foreground">ms</span>
+              <span className="text-sm text-muted-foreground">
+                <Trans
+                  id="deviceClassEditor.sequenceStep.ms"
+                  comment="milliseconds"
+                >
+                  ms
+                </Trans>
+              </span>
             </>
           )}
           <div className="flex-1" />

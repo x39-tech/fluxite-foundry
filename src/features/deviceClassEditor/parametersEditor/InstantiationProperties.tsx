@@ -1,3 +1,7 @@
+import { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
+import { Trans } from "@lingui/react/macro";
 import { useId } from "react";
 import { Draft } from "immer";
 import { FieldSet } from "components/FieldSet";
@@ -9,13 +13,34 @@ import { EntityId, Parameter } from "app/persistentState";
 import { Unlocalized } from "features/localizations/types";
 
 const instantiationTypes = {
-  SINGLE: "Single",
-  MULTIPLE: "Multiple",
-  DYNAMIC: "Dynamic",
+  SINGLE: "single",
+  MULTIPLE: "multiple",
+  DYNAMIC: "dynamic",
 } as const;
 
 type InstantiationType =
   (typeof instantiationTypes)[keyof typeof instantiationTypes];
+
+const INSTANTIATION_TYPE_LABELS: Record<InstantiationType, MessageDescriptor> =
+  {
+    [instantiationTypes.SINGLE]: msg({
+      id: "deviceClassEditor.paramInstantiation.single",
+      message: "Single",
+    }),
+    [instantiationTypes.MULTIPLE]: msg({
+      id: "deviceClassEditor.paramInstantiation.multiple",
+      message: "Multiple",
+    }),
+    [instantiationTypes.DYNAMIC]: msg({
+      id: "deviceClassEditor.paramInstantiation.dynamic",
+      message: "Dynamic",
+    }),
+  };
+
+const NO_MAXIMUM = msg({
+  id: "deviceClassEditor.paramInstantiation.noMaximum",
+  message: "(no maximum)",
+});
 
 interface Props {
   paramId: EntityId;
@@ -23,6 +48,8 @@ interface Props {
 }
 
 export const InstantiationProperties = ({ paramId, param }: Props) => {
+  const { _ } = useLingui();
+
   const idPrefix = useId();
 
   const instantiationType =
@@ -35,10 +62,17 @@ export const InstantiationProperties = ({ paramId, param }: Props) => {
   return (
     <>
       <FieldSet>
-        <Label htmlFor={`${idPrefix}-instances`}>Instances</Label>
+        <Label htmlFor={`${idPrefix}-instances`}>
+          <Trans id="deviceClassEditor.paramInstantiation.instances">
+            Instances
+          </Trans>
+        </Label>
         <SelectField
           id={`${idPrefix}-instances`}
           values={Object.values(instantiationTypes)}
+          displayValues={Object.values(instantiationTypes).map((type) =>
+            _(INSTANTIATION_TYPE_LABELS[type]),
+          )}
           selectedValue={instantiationType}
           onSelectionChanged={(newValue) =>
             modifyParameter(paramId, (draft) =>
@@ -49,7 +83,11 @@ export const InstantiationProperties = ({ paramId, param }: Props) => {
       </FieldSet>
       {param.count?.type === "fixed" && (
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-instanceCount`}>Instance Count</Label>
+          <Label htmlFor={`${idPrefix}-instanceCount`}>
+            <Trans id="deviceClassEditor.paramInstantiation.instanceCount">
+              Instance Count
+            </Trans>
+          </Label>
           <IntegerInput
             id={`${idPrefix}-instanceCount`}
             className="w-xs"
@@ -77,12 +115,18 @@ interface DynamicCountInputsProps {
 }
 
 const DynamicCountInputs = ({ paramId, count }: DynamicCountInputsProps) => {
+  const { _ } = useLingui();
+
   const idPrefix = useId();
 
   return (
     <>
       <FieldSet>
-        <Label htmlFor={`${idPrefix}-minCount`}>Minimum Instance Count</Label>
+        <Label htmlFor={`${idPrefix}-minCount`}>
+          <Trans id="deviceClassEditor.paramInstantiation.minimumInstanceCount">
+            Minimum Instance Count
+          </Trans>
+        </Label>
         <IntegerInput
           id={`${idPrefix}-minCount`}
           className="w-xs"
@@ -113,13 +157,17 @@ const DynamicCountInputs = ({ paramId, count }: DynamicCountInputsProps) => {
         />
       </FieldSet>
       <FieldSet>
-        <Label htmlFor={`${idPrefix}-maxCount`}>Maximum Instance Count</Label>
+        <Label htmlFor={`${idPrefix}-maxCount`}>
+          <Trans id="deviceClassEditor.paramInstantiation.maximumInstanceCount">
+            Maximum Instance Count
+          </Trans>
+        </Label>
         <IntegerInput
           clearable
           id={`${idPrefix}-maxCount`}
           className="w-xs"
           value={count.max ?? null}
-          placeholder="(no maximum)"
+          placeholder={_(NO_MAXIMUM)}
           min={1}
           onValueChange={(newValue) => {
             modifyParameter(paramId, (draft) => {

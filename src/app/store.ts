@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, devtools } from "zustand/middleware";
 import { Patch, produce, produceWithPatches } from "immer";
+import { MessageDescriptor } from "@lingui/core";
 import { AppRuntimeState } from "./runtimeState";
 import { loadDefaultLibraries } from "codex/libraryStore";
 import { LibraryStore } from "codex/library";
@@ -62,8 +63,15 @@ export function useDarkMode(): boolean {
   return theme === "dark";
 }
 
-export function useCurrentLocale(): string {
-  return useAppPersistentStore((state) => state.appSettings.locale);
+/**
+ * The locale documents are authored in.
+ *
+ * This decides which localized strings from a Fluxite Codex document are
+ * rendered in the editor, and what locale they are written under when the user
+ * makes edits to them.
+ */
+export function useAuthoringLocale(): string {
+  return useAppPersistentStore((state) => state.appSettings.authoringLocale);
 }
 
 // ---------------------------------------------------------------------------
@@ -84,7 +92,7 @@ export interface StateChange {
    * What to call the change where a user can see it, in the undo menu for
    * instance. A change with no label is not one a user asked for by name.
    */
-  label?: string;
+  label?: MessageDescriptor;
   /**
    * Whether the change is an undo or a redo of an earlier one, rather than
    * something new. A replay must not be recorded as new history.
@@ -94,7 +102,7 @@ export interface StateChange {
 
 export interface UpdateOptions {
   /** {@link StateChange.label} */
-  label?: string;
+  label?: MessageDescriptor;
   /** {@link StateChange.isReplay} */
   isReplay?: boolean;
 }
@@ -157,7 +165,7 @@ export function updateAppPersistentState(
  * The state is still updated one call at a time; this logic only affects patch
  * listeners registered using {@link subscribeToStatePatches}, e.g. undo/redo.
  */
-export function asOneChange(label: string, body: () => void) {
+export function asOneChange(label: MessageDescriptor, body: () => void) {
   if (activeChangeGroup) {
     body();
     return;
@@ -226,7 +234,7 @@ export function setSystemDarkModePreference(isDark: boolean) {
 
 // A group of updates that will be reported as one change. See asOneChange.
 interface ActiveChangeGroup {
-  label: string;
+  label: MessageDescriptor;
   patches: Patch[];
   inversePatches: Patch[];
   previousState: AppPersistentState;

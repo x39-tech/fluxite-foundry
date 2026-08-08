@@ -1,3 +1,6 @@
+import { Trans } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
 import { useEffect, useState } from "react";
 import { CheckIcon } from "lucide-react";
 import { Button } from "components/scn-ui/Button";
@@ -17,12 +20,21 @@ import {
 } from "components/scn-ui/Dialog";
 import { ParameterClassDisplay } from "./ParameterClassDisplay";
 import { validateNewItemId } from "utils/inputValidation";
-import { useCurrentLocale, useLibraryStore } from "app/store";
+import { useAuthoringLocale, useLibraryStore } from "app/store";
 import { getUniqueItemId } from "utils/utils";
 import { useDeviceLocalLibrary } from "../state";
 import { createNewParameter, useParameterCodexIds } from "./state";
 import { lookupParameterClass } from "../stateTransformations";
 import { CodexId } from "app/persistentState";
+
+const MESSAGES = {
+  id: msg({ id: "deviceClassEditor.newParameter.id", message: "ID" }),
+  add: msg({ id: "deviceClassEditor.newParameter.add", message: "Add" }),
+  cancel: msg({
+    id: "deviceClassEditor.newParameter.cancel",
+    message: "Cancel",
+  }),
+};
 
 interface Props {
   isOpen: boolean;
@@ -30,10 +42,12 @@ interface Props {
 }
 
 export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
+  const { _ } = useLingui();
+
   const libraryStore = useLibraryStore();
   const localLibrary = useDeviceLocalLibrary();
   const parameterIds = useParameterCodexIds();
-  const locale = useCurrentLocale();
+  const locale = useAuthoringLocale();
 
   const [newItemClass, setNewItemClass] = useState<
     SelectedItemClass | undefined
@@ -56,15 +70,23 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New Parameter</DialogTitle>
+          <DialogTitle>
+            <Trans id="deviceClassEditor.newParameter.dialogTitle">
+              New Parameter
+            </Trans>
+          </DialogTitle>
           <DialogDescription>
-            Create a new parameter by selecting a class and providing an ID
+            <Trans id="deviceClassEditor.newParameter.dialogDescription">
+              Create a new parameter by selecting a class and providing an ID
+            </Trans>
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col">
           <SimplePropsTable>
             <tr>
-              <td id="class-label">Class</td>
+              <td id="class-label">
+                <Trans id="deviceClassEditor.newParameter.class">Class</Trans>
+              </td>
               <td>
                 <ItemClassSelector
                   selectedClass={newItemClass}
@@ -78,7 +100,7 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
               </td>
             </tr>
             <TextEditorTableRow
-              label="ID"
+              label={_(MESSAGES.id)}
               value={newItemId}
               onValueChanged={setNewItemId}
               validator={(input) => validateNewItemId(input, parameterIds)}
@@ -88,7 +110,7 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
         </div>
         <DialogFooter>
           <Button
-            aria-label="Add"
+            aria-label={_(MESSAGES.add)}
             disabled={!newItemClass}
             onClick={() => {
               if (newItemClass) {
@@ -103,10 +125,14 @@ export const NewParameterDialog = ({ isOpen, onClose }: Props) => {
             }}
           >
             <CheckIcon />
-            Add
+            <Trans id="deviceClassEditor.newParameter.add">Add</Trans>
           </Button>
-          <Button variant="secondary" aria-label="Cancel" onClick={onClose}>
-            Cancel
+          <Button
+            variant="secondary"
+            aria-label={_(MESSAGES.cancel)}
+            onClick={onClose}
+          >
+            <Trans id="deviceClassEditor.newParameter.cancel">Cancel</Trans>
           </Button>
         </DialogFooter>
       </DialogContent>

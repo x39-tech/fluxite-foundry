@@ -4,10 +4,12 @@ import * as V2 from "./persistentState/v2/state";
 import * as V3 from "./persistentState/v3/state";
 import * as V4 from "./persistentState/v4/state";
 import * as V5 from "./persistentState/v5/state";
+import * as V6 from "./persistentState/v6/state";
 import { migrateV1toV2 } from "./persistentState/v2/migrate";
 import { migrateV2toV3 } from "./persistentState/v3/migrate";
 import { migrateV3toV4 } from "./persistentState/v4/migrate";
 import { migrateV4toV5 } from "./persistentState/v5/migrate";
+import { migrateV5toV6 } from "./persistentState/v6/migrate";
 
 /**
  * What every `persistentState/vN/state.ts` module exports that the chain needs.
@@ -95,6 +97,15 @@ export const MIGRATIONS: readonly Migration[] = [
 - The selected editor is a document id instead of an index into the open editors array.
 - Each document gains sourceLocale, seeded from the app locale setting.
 - Localization.items is dropped; what refers to a string is derived from the document.
+`,
+  }),
+  defineMigration({
+    from: V5,
+    to: V6,
+    migrate: migrateV5toV6,
+    description: `
+- appSettings.locale becomes appSettings.authoringLocale, keeping its meaning of the locale new documents are authored in.
+- appSettings.uiLocale is added, holding the language to display the app in, and starts out following the browser.
 `,
   }),
 ];

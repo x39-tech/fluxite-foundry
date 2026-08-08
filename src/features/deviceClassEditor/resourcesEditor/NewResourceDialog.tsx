@@ -1,6 +1,9 @@
+import { Trans } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
 import { useEffect, useId, useState } from "react";
 import { CheckIcon } from "lucide-react";
-import { useCurrentLocale, useLibraryStore } from "app/store";
+import { useAuthoringLocale, useLibraryStore } from "app/store";
 import { getUniqueItemId } from "utils/utils";
 import { validateNewItemId } from "utils/inputValidation";
 import {
@@ -24,16 +27,26 @@ import { createNewResource, useResourceCodexIds } from "./state";
 import { lookupResourceClass } from "../stateTransformations";
 import { CodexId } from "app/persistentState";
 
+const MESSAGES = {
+  add: msg({ id: "deviceClassEditor.newResource.add", message: "Add" }),
+  cancel: msg({
+    id: "deviceClassEditor.newResource.cancel",
+    message: "Cancel",
+  }),
+};
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
 }
 
 export const NewResourceDialog = ({ isOpen, onClose }: Props) => {
+  const { _ } = useLingui();
+
   const libraryStore = useLibraryStore();
   const localLibrary = useDeviceLocalLibrary();
   const resourceIds = useResourceCodexIds();
-  const locale = useCurrentLocale();
+  const locale = useAuthoringLocale();
 
   const idPrefix = useId();
 
@@ -41,12 +54,15 @@ export const NewResourceDialog = ({ isOpen, onClose }: Props) => {
     SelectedItemClass | undefined
   >(undefined);
   const [newItemId, setNewItemId] = useState(getUniqueItemId(resourceIds));
+  // TODO: reasonable default in the authoring locale?
+  // eslint-disable-next-line lingui/no-unlocalized-strings
   const [newItemFriendlyName, setNewItemFriendlyName] = useState("My New Item");
 
   // Flush relevant parts of the state when the dialog was just opened
   useEffect(() => {
     if (isOpen) {
       setNewItemId(getUniqueItemId(resourceIds));
+      // eslint-disable-next-line lingui/no-unlocalized-strings
       setNewItemFriendlyName("My New Item");
     }
   }, [isOpen]);
@@ -60,11 +76,17 @@ export const NewResourceDialog = ({ isOpen, onClose }: Props) => {
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New Resource</DialogTitle>
+          <DialogTitle>
+            <Trans id="deviceClassEditor.newResource.dialogTitle">
+              New Resource
+            </Trans>
+          </DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-4">
           <FieldSet>
-            <Label htmlFor={`${idPrefix}-class`}>Class</Label>
+            <Label htmlFor={`${idPrefix}-class`}>
+              <Trans id="deviceClassEditor.newResource.class">Class</Trans>
+            </Label>
             <ItemClassSelector
               id={`${idPrefix}-class`}
               selectedClass={newItemClass}
@@ -76,7 +98,9 @@ export const NewResourceDialog = ({ isOpen, onClose }: Props) => {
             />
           </FieldSet>
           <FieldSet>
-            <Label htmlFor={`${idPrefix}-id`}>ID</Label>
+            <Label htmlFor={`${idPrefix}-id`}>
+              <Trans id="deviceClassEditor.newResource.id">ID</Trans>
+            </Label>
             <ValidatedInput
               id={`${idPrefix}-id`}
               value={newItemId}
@@ -85,7 +109,11 @@ export const NewResourceDialog = ({ isOpen, onClose }: Props) => {
             />
           </FieldSet>
           <FieldSet>
-            <Label htmlFor={`${idPrefix}-friendlyName`}>Display Name</Label>
+            <Label htmlFor={`${idPrefix}-friendlyName`}>
+              <Trans id="deviceClassEditor.newResource.displayName">
+                Display Name
+              </Trans>
+            </Label>
             <ValidatedInput
               id={`${idPrefix}-friendlyName`}
               value={newItemFriendlyName}
@@ -95,7 +123,7 @@ export const NewResourceDialog = ({ isOpen, onClose }: Props) => {
         </div>
         <DialogFooter>
           <Button
-            aria-label="Add"
+            aria-label={_(MESSAGES.add)}
             disabled={!newItemClass}
             onClick={() => {
               if (newItemClass) {
@@ -111,10 +139,14 @@ export const NewResourceDialog = ({ isOpen, onClose }: Props) => {
             }}
           >
             <CheckIcon />
-            Add
+            <Trans id="deviceClassEditor.newResource.add">Add</Trans>
           </Button>
-          <Button variant="secondary" aria-label="Cancel" onClick={onClose}>
-            Cancel
+          <Button
+            variant="secondary"
+            aria-label={_(MESSAGES.cancel)}
+            onClick={onClose}
+          >
+            <Trans id="deviceClassEditor.newResource.cancel">Cancel</Trans>
           </Button>
         </DialogFooter>
       </DialogContent>

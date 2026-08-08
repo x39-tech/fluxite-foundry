@@ -1,7 +1,7 @@
 /**
  * @jest-environment happy-dom
  */
-import { render, screen } from "@testing-library/react";
+import { render, screen } from "test/render";
 import { expect, test, vi, beforeEach } from "vitest";
 import { DmxController } from "./DmxController";
 

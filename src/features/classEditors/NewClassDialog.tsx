@@ -1,7 +1,10 @@
+import { Trans } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
 import { useEffect, useId, useState } from "react";
 import { CheckIcon } from "lucide-react";
+import { useLingui } from "@lingui/react";
 import { CodexId } from "app/persistentState";
-import { useCurrentLocale } from "app/store";
+import { useAuthoringLocale } from "app/store";
 import {
   FullCategoryId,
   joinParameterClassId,
@@ -24,11 +27,18 @@ import {
   DialogTitle,
 } from "components/scn-ui/Dialog";
 import { ClassKind, classKinds } from "./context";
-import {
-  CLASS_KIND_NAMES,
-  useClassCodexIds,
-  useClassOperations,
-} from "./state";
+import { useClassCodexIds, useClassOperations } from "./state";
+import { CLASS_KIND_MESSAGES } from "./messages";
+
+const ADD_LABEL = msg({ id: "itemClasses.new.addLabel", message: "Add" });
+const DEFAULTS_TO_ID = msg({
+  id: "itemClasses.new.namePlaceholder",
+  message: "Defaults to the ID",
+});
+const CANCEL_LABEL = msg({
+  id: "itemClasses.new.cancelLabel",
+  message: "Cancel",
+});
 
 interface Props {
   kind: ClassKind;
@@ -39,10 +49,11 @@ interface Props {
 export const NewClassDialog = ({ kind, isOpen, onClose }: Props) => {
   const takenIds = useClassCodexIds(kind);
   const operations = useClassOperations();
-  const locale = useCurrentLocale();
+  const locale = useAuthoringLocale();
   const catalog = useCategoryCatalog();
+  const { _ } = useLingui();
 
-  const kindName = CLASS_KIND_NAMES[kind];
+  const messages = CLASS_KIND_MESSAGES[kind];
   const idPrefix = useId();
 
   // Only a parameter class is identified by a category and an identifier
@@ -80,17 +91,17 @@ export const NewClassDialog = ({ kind, isOpen, onClose }: Props) => {
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New {kindName}</DialogTitle>
+          <DialogTitle>{_(messages.newDialogTitle)}</DialogTitle>
           <DialogDescription>
-            {categorized
-              ? `Create a new ${kindName.toLowerCase()} by providing a category, an ID and a name`
-              : `Create a new ${kindName.toLowerCase()} by providing an ID and a name`}
+            {_(messages.newDialogDescription)}
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4">
           {categorized && (
             <FieldSet>
-              <Label htmlFor={`${idPrefix}-category`}>Category</Label>
+              <Label htmlFor={`${idPrefix}-category`}>
+                <Trans id="itemClasses.new.category">Category</Trans>
+              </Label>
               <CategoryField
                 id={`${idPrefix}-category`}
                 value={newCategory}
@@ -101,7 +112,9 @@ export const NewClassDialog = ({ kind, isOpen, onClose }: Props) => {
             </FieldSet>
           )}
           <FieldSet>
-            <Label htmlFor={`${idPrefix}-id`}>ID</Label>
+            <Label htmlFor={`${idPrefix}-id`}>
+              <Trans id="itemClasses.new.id">ID</Trans>
+            </Label>
             <ValidatedInput
               id={`${idPrefix}-id`}
               value={newId}
@@ -112,18 +125,20 @@ export const NewClassDialog = ({ kind, isOpen, onClose }: Props) => {
             />
           </FieldSet>
           <FieldSet>
-            <Label htmlFor={`${idPrefix}-name`}>Name</Label>
+            <Label htmlFor={`${idPrefix}-name`}>
+              <Trans id="itemClasses.new.name">Name</Trans>
+            </Label>
             <ValidatedInput
               id={`${idPrefix}-name`}
               value={newName}
-              placeholder="Defaults to the ID"
+              placeholder={_(DEFAULTS_TO_ID)}
               onConfirm={setNewName}
             />
           </FieldSet>
         </div>
         <DialogFooter>
           <Button
-            aria-label="Add"
+            aria-label={_(ADD_LABEL)}
             disabled={!idIsValid}
             onClick={() => {
               operations.createClass(
@@ -136,10 +151,14 @@ export const NewClassDialog = ({ kind, isOpen, onClose }: Props) => {
             }}
           >
             <CheckIcon />
-            Add
+            <Trans id="itemClasses.new.add">Add</Trans>
           </Button>
-          <Button variant="secondary" aria-label="Cancel" onClick={onClose}>
-            Cancel
+          <Button
+            variant="secondary"
+            aria-label={_(CANCEL_LABEL)}
+            onClick={onClose}
+          >
+            <Trans id="itemClasses.new.cancel">Cancel</Trans>
           </Button>
         </DialogFooter>
       </DialogContent>

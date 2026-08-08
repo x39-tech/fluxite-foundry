@@ -7,6 +7,8 @@ import {
   ValidationError,
 } from "@cpwg-community/delver";
 import JSZip from "jszip";
+import { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import {
   buildQualifiedId,
   EntityType,
@@ -14,6 +16,39 @@ import {
   OrgId,
   parseQualifiedId,
 } from "utils/utils";
+
+// The detail shown under an import failure.
+const FEEDBACK = {
+  unsupportedFileType: msg({
+    id: "importFluxiteCodex.feedback.unsupportedFileType",
+    message: "Only Fluxite Codex Document or Archive files are supported",
+  }),
+  archiveManifestMissing: msg({
+    id: "importFluxiteCodex.feedback.archiveManifestMissing",
+    message: "e173archive.json not found in archive root",
+  }),
+  documentValidationFailed: msg({
+    id: "importFluxiteCodex.feedback.documentValidationFailed",
+    message: "Document validation failed: {reason}",
+  }),
+  archiveValidationFailed: msg({
+    id: "importFluxiteCodex.feedback.archiveValidationFailed",
+    message: "Archive validation failed: {reason}",
+  }),
+  zipUnreadable: msg({
+    id: "importFluxiteCodex.feedback.zipUnreadable",
+    message: "Failed to read ZIP archive: {reason}",
+  }),
+  errorsInFile: msg({
+    id: "importFluxiteCodex.feedback.errorsInFile",
+    message: "{fileName}:n{errors}",
+  }),
+  errorList: msg({
+    id: "importFluxiteCodex.feedback.errorList",
+    comment: "Shows the Fluxite Codex parser's errors verbatim. Leave as-is.",
+    message: "{errors}",
+  }),
+};
 
 export enum FeedbackKind {
   UnableToReadFile,
@@ -31,7 +66,7 @@ export interface DeviceClassToImport {
 export interface CodexImportResult {
   valid: boolean;
   feedbackKind?: FeedbackKind;
-  feedback?: string;
+  feedback?: MessageDescriptor;
   archive?: E173Archive;
   deviceClasses?: DeviceClassToImport[];
 }
@@ -65,7 +100,10 @@ export async function validateInputFile(
         return {
           valid: false,
           feedbackKind: FeedbackKind.ValidationFailed,
-          feedback: formatValidationErrors(result.errors),
+          feedback: {
+            ...FEEDBACK.errorList,
+            values: { errors: formatValidationErrors(result.errors) },
+          },
         };
       }
       const deviceClasses = extractDeviceClasses(result.document, file.name);
@@ -77,14 +115,17 @@ export async function validateInputFile(
       return {
         valid: false,
         feedbackKind: FeedbackKind.ValidationFailed,
-        feedback: `Document validation failed: ${errorMessage(e)}`,
+        feedback: {
+          ...FEEDBACK.documentValidationFailed,
+          values: { reason: errorMessage(e) },
+        },
       };
     }
   } else {
     return {
       valid: false,
       feedbackKind: FeedbackKind.ValidationFailed,
-      feedback: "Only Fluxite Codex Document or Archive files are supported",
+      feedback: FEEDBACK.unsupportedFileType,
     };
   }
 }
@@ -99,7 +140,7 @@ async function processCodexArchive(file: File): Promise<CodexImportResult> {
       return {
         valid: false,
         feedbackKind: FeedbackKind.ArchiveParsingFailed,
-        feedback: "e173archive.json not found in archive root",
+        feedback: FEEDBACK.archiveManifestMissing,
       };
     }
 
@@ -111,7 +152,10 @@ async function processCodexArchive(file: File): Promise<CodexImportResult> {
       return {
         valid: false,
         feedbackKind: FeedbackKind.ValidationFailed,
-        feedback: `Archive validation failed: ${errorMessage(e)}`,
+        feedback: {
+          ...FEEDBACK.archiveValidationFailed,
+          values: { reason: errorMessage(e) },
+        },
       };
     }
 
@@ -136,7 +180,13 @@ async function processCodexArchive(file: File): Promise<CodexImportResult> {
             return {
               valid: false,
               feedbackKind: FeedbackKind.ValidationFailed,
-              feedback: `${filename}:\n${formatValidationErrors(result.errors)}`,
+              feedback: {
+                ...FEEDBACK.errorsInFile,
+                values: {
+                  fileName: filename,
+                  errors: formatValidationErrors(result.errors),
+                },
+              },
             };
           }
           const deviceClasses = extractDeviceClasses(result.document, filename);
@@ -161,13 +211,16 @@ async function processCodexArchive(file: File): Promise<CodexImportResult> {
     return {
       valid: false,
       feedbackKind: FeedbackKind.ArchiveParsingFailed,
-      feedback: `Failed to read ZIP archive: ${errorMessage(e)}`,
+      feedback: {
+        ...FEEDBACK.zipUnreadable,
+        values: { reason: errorMessage(e) },
+      },
     };
   }
 }
 
 function formatValidationErrors(errors: ValidationError[]): string {
-  return errors.map((error) => `${error.pointer}: ${error.message}`).join("\n");
+  return errors.map((error) => `${error.pointer}: ${error.message}`).join("n");
 }
 
 function extractDeviceClasses(

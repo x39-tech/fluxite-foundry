@@ -1,3 +1,6 @@
+import { Trans } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
 import { CircleQuestionMarkIcon, PlusIcon } from "lucide-react";
 import { EntityId } from "app/persistentState";
 import { Button } from "components/scn-ui/Button";
@@ -18,11 +21,20 @@ import {
 } from "./state";
 import { DmxParameterGroup } from "./DmxParameterGroup";
 
+const MESSAGES = {
+  offsetsUsed: msg({
+    id: "deviceClassEditor.dmxChunk.offsetsUsed",
+    message: "Offsets Used",
+  }),
+};
+
 interface Props {
   chunkId: EntityId;
 }
 
 export const DmxChunkEditor = ({ chunkId }: Props) => {
+  const { _ } = useLingui();
+
   const dmx = useDmxSerializer();
   const chunk = dmx?.chunks[chunkId];
 
@@ -37,20 +49,26 @@ export const DmxChunkEditor = ({ chunkId }: Props) => {
       <div className="flex items-end justify-between gap-4">
         <FieldSet>
           <div className="flex items-center gap-2">
-            <Label>Offsets Used</Label>
+            <Label>
+              <Trans id="deviceClassEditor.dmxChunk.offsetsUsed">
+                Offsets Used
+              </Trans>
+            </Label>
             <Tooltip>
               <TooltipTrigger>
                 <CircleQuestionMarkIcon className="size-4 text-muted-foreground" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                The DMX slot offsets this group occupies, relative to the start
-                of the footprint.
+                <Trans id="deviceClassEditor.dmxChunk.offsetsUsedHelp">
+                  The DMX slot offsets this group occupies, relative to the
+                  start of the footprint.
+                </Trans>
               </TooltipContent>
             </Tooltip>
           </div>
           <TagInputField
             className="w-xs"
-            aria-label="Offsets Used"
+            aria-label={_(MESSAGES.offsetsUsed)}
             values={chunk.offsets.map((offset) => offset.toString())}
             onValuesChanged={(newValues) =>
               changeDmxChunkOffsets(chunkId, newValues)
@@ -63,7 +81,9 @@ export const DmxChunkEditor = ({ chunkId }: Props) => {
           onClick={() => addParameterMappingGroup(chunkId)}
         >
           <PlusIcon className="size-5" />
-          Mapping Group
+          <Trans id="deviceClassEditor.dmxChunk.mappingGroup">
+            Mapping Group
+          </Trans>
         </Button>
       </div>
       {mappingGroups.map((mappingGroup) => (

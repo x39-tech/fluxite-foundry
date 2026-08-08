@@ -1,3 +1,4 @@
+import { i18n, MessageDescriptor } from "@lingui/core";
 import { describe, it, expect } from "vitest";
 import { E173Document, DeviceClass } from "@cpwg-community/delver";
 import {
@@ -7,6 +8,10 @@ import {
   FeedbackKind,
 } from "./importUtils";
 import { CODEX_ARCHIVE_SCHEMA_URL, CODEX_DOC_SCHEMA_URL } from "consts";
+
+function feedbackText(result: { feedback?: MessageDescriptor }): string {
+  return result.feedback ? i18n._(result.feedback) : "";
+}
 
 // Helper function to create a valid device class for testing
 function createValidDeviceClass(
@@ -65,7 +70,7 @@ describe("importUtils", () => {
 
       expect(result.valid).toBe(false);
       expect(result.feedbackKind).toBe(FeedbackKind.ValidationFailed);
-      expect(result.feedback).toBe(
+      expect(feedbackText(result)).toBe(
         "Only Fluxite Codex Document or Archive files are supported",
       );
     });
@@ -148,7 +153,7 @@ describe("importUtils", () => {
 
       expect(result.valid).toBe(false);
       expect(result.feedbackKind).toBe(FeedbackKind.ValidationFailed);
-      expect(result.feedback).toContain("Qualified Identifier");
+      expect(feedbackText(result)).toContain("Qualified Identifier");
     });
 
     it("should reject non-device entity types in deviceClasses", async () => {
@@ -165,7 +170,7 @@ describe("importUtils", () => {
 
       expect(result.valid).toBe(false);
       expect(result.feedbackKind).toBe(FeedbackKind.ValidationFailed);
-      expect(result.feedback).toContain("must have the component 'dev'");
+      expect(feedbackText(result)).toContain("must have the component 'dev'");
     });
 
     it("should return validation error for malformed JSON", async () => {
@@ -475,7 +480,7 @@ describe("importUtils", () => {
 
       expect(result.valid).toBe(false);
       expect(result.feedbackKind).toBe(FeedbackKind.ArchiveParsingFailed);
-      expect(result.feedback).toContain("e173archive.json not found");
+      expect(feedbackText(result)).toContain("e173archive.json not found");
     });
   });
 

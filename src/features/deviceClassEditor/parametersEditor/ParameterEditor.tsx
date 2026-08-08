@@ -1,3 +1,6 @@
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
+import { Trans } from "@lingui/react/macro";
 import { useId } from "react";
 import { capitalCase } from "change-case";
 import { TriangleAlertIcon } from "lucide-react";
@@ -13,7 +16,7 @@ import { LabeledCheckbox } from "components/LabeledCheckbox";
 import { SelectField } from "components/EditorFields/SelectField";
 import { Alert, AlertDescription, AlertTitle } from "components/scn-ui/Alert";
 import { validateNewItemId } from "utils/inputValidation";
-import { useCurrentLocale } from "app/store";
+import { useAuthoringLocale } from "app/store";
 import {
   CodexId,
   EntityId,
@@ -32,14 +35,21 @@ import {
 import { InstantiationProperties } from "./InstantiationProperties";
 import { MinMaxDefaultProperties } from "./MinMaxDefaultProperties";
 
+const DEVICE_LIBRARY = msg({
+  id: "deviceClassEditor.paramEditor.deviceLibrary",
+  message: "Device Library",
+});
+
 interface Props {
   id: EntityId;
 }
 
 export const ParameterEditor = ({ id }: Props) => {
+  const { _ } = useLingui();
+
   const parameterCodexIds = useParameterCodexIds();
   const paramInfo = useParameterInfo(id);
-  const locale = useCurrentLocale();
+  const locale = useAuthoringLocale();
 
   const idPrefix = useId();
 
@@ -50,22 +60,29 @@ export const ParameterEditor = ({ id }: Props) => {
   const { param, paramClass, instanceEnumChoices } = paramInfo;
 
   if (!paramClass) {
+    const codexId =
+      param.class.type === "imported" ? param.class.codexId : undefined;
+
     return (
       <Alert>
         <TriangleAlertIcon />
         <AlertTitle>
           <span>
-            {param.class.type === "imported" ? (
-              <>
-                Class <code>{param.class.codexId}</code> not found.
-              </>
+            {codexId !== undefined ? (
+              <Trans id="deviceClassEditor.paramEditor.importedClassNotFound">
+                Class <code>{codexId}</code> not found.
+              </Trans>
             ) : (
-              <>Referenced class not found. It may have been deleted.</>
+              <Trans id="deviceClassEditor.paramEditor.referencedClassNotFound">
+                Referenced class not found. It may have been deleted.
+              </Trans>
             )}
           </span>
         </AlertTitle>
         <AlertDescription>
-          This may be an indication of invalid Fluxite Codex.
+          <Trans id="deviceClassEditor.paramEditor.referencedClassNotFoundDesc">
+            This may be an indication of invalid Fluxite Codex.
+          </Trans>
         </AlertDescription>
       </Alert>
     );
@@ -75,19 +92,23 @@ export const ParameterEditor = ({ id }: Props) => {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap gap-4">
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-library`}>Library</Label>
+          <Label htmlFor={`${idPrefix}-library`}>
+            <Trans id="deviceClassEditor.paramEditor.library">Library</Trans>
+          </Label>
           <AppInput
             id={`${idPrefix}-library`}
             disabled
             value={
               param.class.type === "imported"
                 ? param.class.library
-                : "Device Library"
+                : _(DEVICE_LIBRARY)
             }
           />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-class`}>Class</Label>
+          <Label htmlFor={`${idPrefix}-class`}>
+            <Trans id="deviceClassEditor.paramEditor.class">Class</Trans>
+          </Label>
           <ItemClassDisplay
             id={`${idPrefix}-class`}
             value={paramClass.codexId}
@@ -97,7 +118,9 @@ export const ParameterEditor = ({ id }: Props) => {
           />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-id`}>ID</Label>
+          <Label htmlFor={`${idPrefix}-id`}>
+            <Trans id="deviceClassEditor.paramEditor.id">ID</Trans>
+          </Label>
           <ValidatedInput
             id={`${idPrefix}-id`}
             value={param.codexId}
@@ -116,7 +139,11 @@ export const ParameterEditor = ({ id }: Props) => {
           />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-friendlyName`}>Display Name</Label>
+          <Label htmlFor={`${idPrefix}-friendlyName`}>
+            <Trans id="deviceClassEditor.paramEditor.displayName">
+              Display Name
+            </Trans>
+          </Label>
           <ValidatedInput
             id={`${idPrefix}-friendlyName`}
             value={param.friendlyName?.value || ""}
@@ -131,7 +158,9 @@ export const ParameterEditor = ({ id }: Props) => {
           />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-access`}>Access</Label>
+          <Label htmlFor={`${idPrefix}-access`}>
+            <Trans id="deviceClassEditor.paramEditor.access">Access</Trans>
+          </Label>
           <AccessCheckboxes
             id={`${idPrefix}-access`}
             access={param.access}
@@ -144,7 +173,9 @@ export const ParameterEditor = ({ id }: Props) => {
           />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-lifetime`}>Lifetime</Label>
+          <Label htmlFor={`${idPrefix}-lifetime`}>
+            <Trans id="deviceClassEditor.paramEditor.lifetime">Lifetime</Trans>
+          </Label>
           <SelectField
             id={`${idPrefix}-lifetime`}
             values={Object.values(lifetimes)}
@@ -171,7 +202,11 @@ export const ParameterEditor = ({ id }: Props) => {
       </div>
       {paramClass.dataType === fcDataTypes.ENUM && (
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-enumChoices`}>Enum Choices</Label>
+          <Label htmlFor={`${idPrefix}-enumChoices`}>
+            <Trans id="deviceClassEditor.paramEditor.enumChoices">
+              Enum Choices
+            </Trans>
+          </Label>
           <EnumChoicesEditor
             id={`${idPrefix}-enumChoices`}
             forName={param.friendlyName?.value || param.codexId}
@@ -233,7 +268,7 @@ const AccessCheckboxes = ({
           updateAccess(checked, parameterAccesses.READ_ACTUAL)
         }
       >
-        Read Actual
+        <Trans id="deviceClassEditor.paramEditor.readActual">Read Actual</Trans>
       </LabeledCheckbox>
       <LabeledCheckbox
         disabled={lifetime === lifetimes.STATIC}
@@ -242,14 +277,14 @@ const AccessCheckboxes = ({
           updateAccess(checked, parameterAccesses.READ_TARGET)
         }
       >
-        Read Target
+        <Trans id="deviceClassEditor.paramEditor.readTarget">Read Target</Trans>
       </LabeledCheckbox>
       <LabeledCheckbox
         disabled={lifetime === lifetimes.STATIC}
         checked={access.includes(parameterAccesses.WRITE)}
         onChange={(checked) => updateAccess(checked, parameterAccesses.WRITE)}
       >
-        Write
+        <Trans id="deviceClassEditor.paramEditor.write">Write</Trans>
       </LabeledCheckbox>
     </div>
   );

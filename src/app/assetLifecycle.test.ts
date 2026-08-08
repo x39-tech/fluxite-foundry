@@ -1,5 +1,9 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
-import { createEmptyDeviceClassEditor, resetAllStores } from "test/utils";
+import {
+  createEmptyDeviceClassEditor,
+  resetAllStores,
+  testUndoLabel,
+} from "test/utils";
 import { closeDocument, setSelectedDocument } from "features/topNavBar/state";
 import { deviceClassAssets } from "features/deviceClassEditor/assets";
 import { updateCurrentEditor } from "features/deviceClassEditor/state";
@@ -133,7 +137,7 @@ describe("asset lifecycle", () => {
     updateResourceAsset(RESOURCE);
 
     for (let i = 0; i < MAX_HISTORY_ENTRIES; i++) {
-      updateCurrentEditor("Rename Device", (editor) => {
+      updateCurrentEditor(testUndoLabel("Rename Device"), (editor) => {
         editor.basicData.modelName = `Renamed ${i}`;
       });
     }
@@ -230,7 +234,7 @@ function assetOf(resourceId: EntityId): string | undefined {
 }
 
 function addResource() {
-  updateCurrentEditor("Test Change", (editor) => {
+  updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
     editor.resources[RESOURCE] = {
       codexId: CodexId("resource"),
       class: {

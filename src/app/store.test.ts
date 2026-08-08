@@ -1,6 +1,10 @@
 import { describe, test, expect, beforeEach, vi } from "vitest";
 import { EntityId } from "app/persistentState";
-import { resetAllStores, createEmptyDeviceClassEditor } from "test/utils";
+import {
+  createEmptyDeviceClassEditor,
+  resetAllStores,
+  testUndoLabel,
+} from "test/utils";
 import { updateCurrentEditor } from "features/deviceClassEditor/state";
 import {
   asOneChange,
@@ -36,7 +40,7 @@ describe("persistent state patches", () => {
     const listener = vi.fn();
     const unsubscribe = subscribeToStatePatches(listener);
 
-    updateCurrentEditor("Test Change", (editor) => {
+    updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
       editor.basicData.modelName = "Renamed";
     });
 
@@ -62,7 +66,7 @@ describe("persistent state patches", () => {
     const listener = vi.fn();
     const unsubscribe = subscribeToStatePatches(listener);
 
-    updateCurrentEditor("Test Change", (editor) => {
+    updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
       editor.basicData.modelName = "Renamed";
     });
     unsubscribe();
@@ -87,12 +91,12 @@ describe("persistent state patches", () => {
     const listener = vi.fn();
     const unsubscribe = subscribeToStatePatches(listener);
 
-    updateCurrentEditor("Rename Device", (editor) => {
+    updateCurrentEditor(testUndoLabel("Rename Device"), (editor) => {
       editor.basicData.modelName = "Renamed";
     });
     unsubscribe();
 
-    expect(change(listener).label).toBe("Rename Device");
+    expect(change(listener).label?.message).toBe("Rename Device");
   });
 
   test("hands over the state on both sides of a change", () => {
@@ -149,18 +153,18 @@ describe("grouped changes", () => {
     const listener = vi.fn();
     const unsubscribe = subscribeToStatePatches(listener);
 
-    asOneChange("Rename Everything", () => {
-      updateCurrentEditor("Rename Device", (editor) => {
+    asOneChange(testUndoLabel("Rename Everything"), () => {
+      updateCurrentEditor(testUndoLabel("Rename Device"), (editor) => {
         editor.basicData.modelName = "Renamed";
       });
-      updateCurrentEditor("Rename Manufacturer", (editor) => {
+      updateCurrentEditor(testUndoLabel("Rename Manufacturer"), (editor) => {
         editor.basicData.manufacturerName = "Also renamed";
       });
     });
     unsubscribe();
 
     expect(listener).toHaveBeenCalledTimes(1);
-    expect(change(listener).label).toBe("Rename Everything");
+    expect(change(listener).label?.message).toBe("Rename Everything");
     expect(change(listener).patches).toHaveLength(2);
   });
 
@@ -168,11 +172,11 @@ describe("grouped changes", () => {
     const listener = vi.fn();
     const unsubscribe = subscribeToStatePatches(listener);
 
-    asOneChange("Rename Twice", () => {
-      updateCurrentEditor("Rename Device", (editor) => {
+    asOneChange(testUndoLabel("Rename Twice"), () => {
+      updateCurrentEditor(testUndoLabel("Rename Device"), (editor) => {
         editor.basicData.modelName = "Once";
       });
-      updateCurrentEditor("Rename Device", (editor) => {
+      updateCurrentEditor(testUndoLabel("Rename Device"), (editor) => {
         editor.basicData.modelName = "Twice";
       });
     });
@@ -188,8 +192,8 @@ describe("grouped changes", () => {
     const listener = vi.fn();
     const unsubscribe = subscribeToStatePatches(listener);
 
-    asOneChange("Do Nothing", () => {
-      updateCurrentEditor("Do Nothing", () => {});
+    asOneChange(testUndoLabel("Do Nothing"), () => {
+      updateCurrentEditor(testUndoLabel("Do Nothing"), () => {});
     });
     unsubscribe();
 
@@ -200,20 +204,20 @@ describe("grouped changes", () => {
     const listener = vi.fn();
     const unsubscribe = subscribeToStatePatches(listener);
 
-    asOneChange("Outer", () => {
-      asOneChange("Inner", () => {
-        updateCurrentEditor("Rename Device", (editor) => {
+    asOneChange(testUndoLabel("Outer"), () => {
+      asOneChange(testUndoLabel("Inner"), () => {
+        updateCurrentEditor(testUndoLabel("Rename Device"), (editor) => {
           editor.basicData.modelName = "Renamed";
         });
       });
-      updateCurrentEditor("Rename Manufacturer", (editor) => {
+      updateCurrentEditor(testUndoLabel("Rename Manufacturer"), (editor) => {
         editor.basicData.manufacturerName = "Also renamed";
       });
     });
     unsubscribe();
 
     expect(listener).toHaveBeenCalledTimes(1);
-    expect(change(listener).label).toBe("Outer");
+    expect(change(listener).label?.message).toBe("Outer");
   });
 });
 

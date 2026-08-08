@@ -1,7 +1,11 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen } from "test/render";
 import userEvent from "@testing-library/user-event";
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
-import { createEmptyDeviceClassEditor, resetAllStores } from "test/utils";
+import {
+  createEmptyDeviceClassEditor,
+  resetAllStores,
+  testUndoLabel,
+} from "test/utils";
 import { updateCurrentEditor } from "features/deviceClassEditor/state";
 import { EntityId } from "app/persistentState";
 import { useAppPersistentStore } from "app/store";
@@ -96,7 +100,7 @@ async function openMenu() {
 }
 
 function rename(name: string) {
-  updateCurrentEditor("Rename Device", (editor) => {
+  updateCurrentEditor(testUndoLabel("Rename Device"), (editor) => {
     editor.basicData.modelName = name;
   });
 }

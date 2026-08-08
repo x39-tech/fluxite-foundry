@@ -22,6 +22,7 @@ Fluxite Foundry is a React and TypeScript application. I don't like TypeScript v
 | State Management | [Zustand](https://zustand.docs.pmnd.rs/) + [Immer](https://immerjs.github.io/immer/) + [Zod](https://zod.dev/)         |
 | UI Components    | [Shadcn UI](https://ui.shadcn.com/) + [Tailwind CSS](https://tailwindcss.com/)                                         |
 | Asset Storage    | [Dexie](https://dexie.org/) (IndexedDB)                                                                                |
+| UI Translation   | [Lingui](https://lingui.dev/)                                                                                          |
 | Testing          | [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) |
 
 ## Multi-Platform Deployment
@@ -120,6 +121,10 @@ The application uses [FlexLayout React](https://github.com/nicerobot/FlexLayout)
 We use a simple hexagon icon to represent the app, defined in `src/components/icons/AppLogoMark.svg`.
 
 `scripts/generate-icons.mjs` (invoked from `npm run icons`) convert this to various static forms that are needed in places like the browser favicon and desktop app icons.
+
+## Localization
+
+All user-visible text in the application must be localized using Lingui. See [UI Localization](./ui-localization.md) for details on how we handle translating the app's UI.
 
 ## Testing
 

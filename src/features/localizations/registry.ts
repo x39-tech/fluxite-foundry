@@ -1,5 +1,6 @@
 // Utilities for maintaining a registry of a document's localized strings.
 
+import { MessageDescriptor } from "@lingui/core";
 import {
   EntityId,
   LocalizationDbSchema,
@@ -282,7 +283,7 @@ type EntityFor<Doc, K extends LocalizableEntryKey<Doc>> = LocalizableEntityOf<
 /** A registry entry reached by name rather than by key. */
 interface EntryByName {
   kind: "table" | "singleton";
-  label: string;
+  label: MessageDescriptor;
   fields: Record<string, LocalizableFieldSpec>;
 }
 

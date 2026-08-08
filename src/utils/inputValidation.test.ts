@@ -22,50 +22,66 @@ describe("validateStringIsNumber", () => {
   it("should reject strings with non-numeric characters at the end", () => {
     expect(validateStringIsNumber("1sdf")).toEqual({
       isValid: false,
-      feedback: "Input must be a valid number",
+      feedback: expect.objectContaining({
+        message: "Input must be a valid number",
+      }),
     });
     expect(validateStringIsNumber("123abc")).toEqual({
       isValid: false,
-      feedback: "Input must be a valid number",
+      feedback: expect.objectContaining({
+        message: "Input must be a valid number",
+      }),
     });
   });
 
   it("should reject empty strings", () => {
     expect(validateStringIsNumber("")).toEqual({
       isValid: false,
-      feedback: "Input must be a valid number",
+      feedback: expect.objectContaining({
+        message: "Input must be a valid number",
+      }),
     });
   });
 
   it("should reject whitespace-only strings", () => {
     expect(validateStringIsNumber("   ")).toEqual({
       isValid: false,
-      feedback: "Input must be a valid number",
+      feedback: expect.objectContaining({
+        message: "Input must be a valid number",
+      }),
     });
   });
 
   it("should reject completely invalid strings", () => {
     expect(validateStringIsNumber("abc")).toEqual({
       isValid: false,
-      feedback: "Input must be a valid number",
+      feedback: expect.objectContaining({
+        message: "Input must be a valid number",
+      }),
     });
     expect(validateStringIsNumber("hello")).toEqual({
       isValid: false,
-      feedback: "Input must be a valid number",
+      feedback: expect.objectContaining({
+        message: "Input must be a valid number",
+      }),
     });
   });
 
   it("should reject strings with non-numeric characters at the beginning", () => {
     expect(validateStringIsNumber("abc123")).toEqual({
       isValid: false,
-      feedback: "Input must be a valid number",
+      feedback: expect.objectContaining({
+        message: "Input must be a valid number",
+      }),
     });
   });
 
   it("should reject strings with non-numeric characters in the middle", () => {
     expect(validateStringIsNumber("12abc34")).toEqual({
       isValid: false,
-      feedback: "Input must be a valid number",
+      feedback: expect.objectContaining({
+        message: "Input must be a valid number",
+      }),
     });
   });
 });
@@ -83,18 +99,24 @@ describe("validateStringIsNumberOrEmpty", () => {
   it("should reject strings with non-numeric characters", () => {
     expect(validateStringIsNumberOrEmpty("123abc")).toEqual({
       isValid: false,
-      feedback: "Input must be a valid number or empty",
+      feedback: expect.objectContaining({
+        message: "Input must be a valid number or empty",
+      }),
     });
     expect(validateStringIsNumberOrEmpty("1sdf")).toEqual({
       isValid: false,
-      feedback: "Input must be a valid number or empty",
+      feedback: expect.objectContaining({
+        message: "Input must be a valid number or empty",
+      }),
     });
   });
 
   it("should reject whitespace-only strings", () => {
     expect(validateStringIsNumberOrEmpty("   ")).toEqual({
       isValid: false,
-      feedback: "Input must be a valid number or empty",
+      feedback: expect.objectContaining({
+        message: "Input must be a valid number or empty",
+      }),
     });
   });
 });
@@ -123,13 +145,17 @@ describe("validateStringIsNumberAndBetweenMinAndMaxOrEmpty", () => {
       validateStringIsNumberAndBetweenMinAndMaxOrEmpty("-1", 0, 100),
     ).toEqual({
       isValid: false,
-      feedback: "Input must be between minimum and maximum value",
+      feedback: expect.objectContaining({
+        message: "Input must be between minimum and maximum value",
+      }),
     });
     expect(
       validateStringIsNumberAndBetweenMinAndMaxOrEmpty("101", 0, 100),
     ).toEqual({
       isValid: false,
-      feedback: "Input must be between minimum and maximum value",
+      feedback: expect.objectContaining({
+        message: "Input must be between minimum and maximum value",
+      }),
     });
   });
 
@@ -138,13 +164,17 @@ describe("validateStringIsNumberAndBetweenMinAndMaxOrEmpty", () => {
       validateStringIsNumberAndBetweenMinAndMaxOrEmpty("50abc", 0, 100),
     ).toEqual({
       isValid: false,
-      feedback: "Input must be a valid number",
+      feedback: expect.objectContaining({
+        message: "Input must be a valid number",
+      }),
     });
     expect(
       validateStringIsNumberAndBetweenMinAndMaxOrEmpty("1sdf", 0, 100),
     ).toEqual({
       isValid: false,
-      feedback: "Input must be a valid number",
+      feedback: expect.objectContaining({
+        message: "Input must be a valid number",
+      }),
     });
   });
 
@@ -154,7 +184,9 @@ describe("validateStringIsNumberAndBetweenMinAndMaxOrEmpty", () => {
     });
     expect(validateStringIsNumberAndBetweenMinAndMaxOrEmpty("5", 10)).toEqual({
       isValid: false,
-      feedback: "Input must be between minimum and maximum value",
+      feedback: expect.objectContaining({
+        message: "Input must be between minimum and maximum value",
+      }),
     });
   });
 
@@ -166,7 +198,9 @@ describe("validateStringIsNumberAndBetweenMinAndMaxOrEmpty", () => {
       validateStringIsNumberAndBetweenMinAndMaxOrEmpty("150", undefined, 100),
     ).toEqual({
       isValid: false,
-      feedback: "Input must be between minimum and maximum value",
+      feedback: expect.objectContaining({
+        message: "Input must be between minimum and maximum value",
+      }),
     });
   });
 });

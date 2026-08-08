@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { useId } from "react";
 import { EntityId, fcDataTypes, FCDataType } from "app/persistentState";
 import { RenderError } from "components/RenderError";
@@ -35,7 +36,9 @@ export const ParameterClassEditor = ({ id }: Props) => {
       />
       <div className="flex flex-wrap gap-4">
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-dataType`}>Data Type</Label>
+          <Label htmlFor={`${idPrefix}-dataType`}>
+            <Trans id="paramClassEditor.dataType">Data Type</Trans>
+          </Label>
           <SelectField
             id={`${idPrefix}-dataType`}
             values={Object.values(fcDataTypes)}
@@ -48,7 +51,9 @@ export const ParameterClassEditor = ({ id }: Props) => {
           />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-unit`}>Unit</Label>
+          <Label htmlFor={`${idPrefix}-unit`}>
+            <Trans id="paramClassEditor.unit">Unit</Trans>
+          </Label>
           <UnitField
             id={`${idPrefix}-unit`}
             value={parameterClass.unit}
@@ -66,7 +71,9 @@ export const ParameterClassEditor = ({ id }: Props) => {
       </div>
       {parameterClass.dataType === fcDataTypes.ENUM && (
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-enumChoices`}>Enum Choices</Label>
+          <Label htmlFor={`${idPrefix}-enumChoices`}>
+            <Trans id="paramClassEditor.enumChoices">Enum Choices</Trans>
+          </Label>
           <ClassEnumChoicesEditor
             id={`${idPrefix}-enumChoices`}
             parentType="paramClass"

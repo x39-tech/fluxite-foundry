@@ -1,9 +1,28 @@
 import { ComponentProps } from "react";
-import { render, screen } from "@testing-library/react";
+import { msg } from "@lingui/core/macro";
+import { render, screen } from "test/render";
 import userEvent from "@testing-library/user-event";
 import { afterEach, expect, test, vi } from "vitest";
-import { ListItemsEditor } from "./ListItemsEditor";
+import { ListItemsEditor, ListItemsEditorLabels } from "./ListItemsEditor";
 import { CodexId, EntityId } from "app/persistentState";
+
+const labels: ListItemsEditorLabels = {
+  add: msg({ id: "test.list.add", message: "Add Item" }),
+  delete: msg({ id: "test.list.delete", message: "Delete Item" }),
+  emptyState: msg({
+    id: "test.list.emptyState",
+    message: "Add a Item to start editing",
+  }),
+  selectPrompt: msg({
+    id: "test.list.selectPrompt",
+    message: "Select a Item to start editing",
+  }),
+};
+
+const searchableLabels: ListItemsEditorLabels = {
+  ...labels,
+  search: msg({ id: "test.list.search", message: "Search Items" }),
+};
 
 const editors = [
   { id: EntityId("id-1"), codexId: CodexId("first-item") },
@@ -23,7 +42,7 @@ function renderListItemsEditor(
   return render(
     <ListItemsEditor
       editors={editors}
-      itemType="Item"
+      labels={labels}
       renderActiveEditor={(editor) => <StubEditor codexId={editor.codexId} />}
       {...props}
     />,
@@ -111,7 +130,7 @@ test("shows the items matching the search text in their subtitle", async () => {
   const user = userEvent.setup();
 
   renderListItemsEditor({
-    searchPlaceholder: "Search Items...",
+    labels: searchableLabels,
     getEditorSubtitle: (editor) =>
       editor.codexId === "first-item" ? "Color › Additive" : undefined,
   });
@@ -130,7 +149,7 @@ test("searches text the rows do not show when one is given", async () => {
   const user = userEvent.setup();
 
   renderListItemsEditor({
-    searchPlaceholder: "Search Items...",
+    labels: searchableLabels,
     getEditorTitle: () => "item",
     getEditorSearchText: (editor) => editor.codexId,
   });
@@ -171,7 +190,7 @@ test("deletes the selected item from its own row", async () => {
 test("shows only the items matching the search text", async () => {
   const user = userEvent.setup();
 
-  renderListItemsEditor({ searchPlaceholder: "Search Items..." });
+  renderListItemsEditor({ labels: searchableLabels });
 
   await user.type(screen.getByRole("searchbox"), "second");
 
@@ -186,7 +205,7 @@ test("shows only the items matching the search text", async () => {
 test("keeps the selected item's editor open while it still matches the search", async () => {
   const user = userEvent.setup();
 
-  renderListItemsEditor({ searchPlaceholder: "Search Items..." });
+  renderListItemsEditor({ labels: searchableLabels });
 
   await user.click(screen.getByRole("button", { name: "second-item" }));
   await user.type(screen.getByRole("searchbox"), "second");
@@ -204,7 +223,7 @@ test("selects and scrolls to an item that is newly added", () => {
   rerender(
     <ListItemsEditor
       editors={[...editors, added]}
-      itemType="Item"
+      labels={labels}
       renderActiveEditor={(editor) => <StubEditor codexId={editor.codexId} />}
     />,
   );
@@ -217,7 +236,7 @@ test("clears the search so a newly added item is visible", async () => {
   const user = userEvent.setup();
 
   const { rerender } = renderListItemsEditor({
-    searchPlaceholder: "Search Items...",
+    labels: searchableLabels,
   });
   await user.type(screen.getByRole("searchbox"), "second");
 
@@ -225,8 +244,7 @@ test("clears the search so a newly added item is visible", async () => {
   rerender(
     <ListItemsEditor
       editors={[...editors, added]}
-      itemType="Item"
-      searchPlaceholder="Search Items..."
+      labels={searchableLabels}
       renderActiveEditor={(editor) => <StubEditor codexId={editor.codexId} />}
     />,
   );
@@ -246,7 +264,7 @@ test("does not steal the selection when many items appear at once", () => {
         { id: EntityId("id-3"), codexId: CodexId("third-item") },
         { id: EntityId("id-4"), codexId: CodexId("fourth-item") },
       ]}
-      itemType="Item"
+      labels={labels}
       renderActiveEditor={(editor) => <StubEditor codexId={editor.codexId} />}
     />,
   );
@@ -283,7 +301,7 @@ test("prompts to add an item when there are none to select", () => {
 test("prompts to add an item when the search matches nothing", async () => {
   const user = userEvent.setup();
 
-  renderListItemsEditor({ searchPlaceholder: "Search Items..." });
+  renderListItemsEditor({ labels: searchableLabels });
 
   await user.type(screen.getByRole("searchbox"), "no such item");
 

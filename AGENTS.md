@@ -4,7 +4,7 @@ MANDATORY FOR ALL TASKS: Read the following files if they are not already in the
 
 - README.md
 - docs/architecture.md
-- docs/state-management.md
+- Any docs referenced from docs/architecture.md which are relevant to the current task.
 
 ## Project Overview
 

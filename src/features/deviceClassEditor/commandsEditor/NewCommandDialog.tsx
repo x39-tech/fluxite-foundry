@@ -1,6 +1,9 @@
+import { Trans } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
 import { useEffect, useId, useState } from "react";
 import { CheckIcon } from "lucide-react";
-import { useCurrentLocale, useLibraryStore } from "app/store";
+import { useAuthoringLocale, useLibraryStore } from "app/store";
 import { getUniqueItemId } from "utils/utils";
 import { validateNewItemId } from "utils/inputValidation";
 import {
@@ -24,16 +27,26 @@ import { createNewCommand, useCommandCodexIds } from "./state";
 import { CommandClassDisplay } from "./CommandClassDisplay";
 import { lookupCommandClass } from "../stateTransformations";
 
+const MESSAGES = {
+  add: msg({ id: "deviceClassEditor.newCommand.add", message: "Add" }),
+  cancel: msg({
+    id: "deviceClassEditor.newCommand.cancel",
+    message: "Cancel",
+  }),
+};
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
 }
 
 export const NewCommandDialog = ({ isOpen, onClose }: Props) => {
+  const { _ } = useLingui();
+
   const libraryStore = useLibraryStore();
   const localLibrary = useDeviceLocalLibrary();
   const commandCodexIds = useCommandCodexIds();
-  const locale = useCurrentLocale();
+  const locale = useAuthoringLocale();
 
   const classSelectorId = useId();
   const idId = useId();
@@ -43,12 +56,15 @@ export const NewCommandDialog = ({ isOpen, onClose }: Props) => {
     SelectedItemClass | undefined
   >(undefined);
   const [newItemId, setNewItemId] = useState(getUniqueItemId(commandCodexIds));
+  // TODO: suitable default in the authoring locale?
+  // eslint-disable-next-line lingui/no-unlocalized-strings
   const [newItemFriendlyName, setNewItemFriendlyName] = useState("My New Item");
 
   // Flush relevant parts of the state when the dialog was just opened
   useEffect(() => {
     if (isOpen) {
       setNewItemId(getUniqueItemId(commandCodexIds));
+      // eslint-disable-next-line lingui/no-unlocalized-strings
       setNewItemFriendlyName("My New Item");
     }
   }, [isOpen]);
@@ -62,11 +78,17 @@ export const NewCommandDialog = ({ isOpen, onClose }: Props) => {
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New Command</DialogTitle>
+          <DialogTitle>
+            <Trans id="deviceClassEditor.newCommand.newCommand">
+              New Command
+            </Trans>
+          </DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-4">
           <FieldSet>
-            <Label htmlFor={classSelectorId}>Class</Label>
+            <Label htmlFor={classSelectorId}>
+              <Trans id="deviceClassEditor.newCommand.class">Class</Trans>
+            </Label>
             <ItemClassSelector
               id={classSelectorId}
               selectedClass={newItemClass}
@@ -78,7 +100,9 @@ export const NewCommandDialog = ({ isOpen, onClose }: Props) => {
             />
           </FieldSet>
           <FieldSet>
-            <Label htmlFor={idId}>ID</Label>
+            <Label htmlFor={idId}>
+              <Trans id="deviceClassEditor.newCommand.id">ID</Trans>
+            </Label>
             <ValidatedInput
               id={idId}
               value={newItemId}
@@ -87,7 +111,11 @@ export const NewCommandDialog = ({ isOpen, onClose }: Props) => {
             />
           </FieldSet>
           <FieldSet>
-            <Label htmlFor={friendlyNameId}>Display Name</Label>
+            <Label htmlFor={friendlyNameId}>
+              <Trans id="deviceClassEditor.newCommand.displayName">
+                Display Name
+              </Trans>
+            </Label>
             <ValidatedInput
               id={friendlyNameId}
               value={newItemFriendlyName}
@@ -97,7 +125,7 @@ export const NewCommandDialog = ({ isOpen, onClose }: Props) => {
         </div>
         <DialogFooter>
           <Button
-            aria-label="Add"
+            aria-label={_(MESSAGES.add)}
             disabled={!newItemClass}
             onClick={() => {
               if (newItemClass) {
@@ -114,10 +142,14 @@ export const NewCommandDialog = ({ isOpen, onClose }: Props) => {
             }}
           >
             <CheckIcon />
-            Add
+            <Trans id="deviceClassEditor.newCommand.add">Add</Trans>
           </Button>
-          <Button variant="secondary" aria-label="Cancel" onClick={onClose}>
-            Cancel
+          <Button
+            variant="secondary"
+            aria-label={_(MESSAGES.cancel)}
+            onClick={onClose}
+          >
+            <Trans id="deviceClassEditor.newCommand.cancel">Cancel</Trans>
           </Button>
         </DialogFooter>
       </DialogContent>

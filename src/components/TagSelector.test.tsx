@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen } from "test/render";
 import userEvent from "@testing-library/user-event";
 import { TagOptions, TagSelector } from "./TagSelector";
 
@@ -124,7 +124,7 @@ describe("TagSelector", () => {
           { value: "apple", group: "pome" },
           { value: "apricot", group: "stone" },
         ],
-        note: "Showing 2 of 200 fruits.",
+        note: { id: "test.tag.note", message: "Showing 2 of 200 fruits." },
       }),
     });
 

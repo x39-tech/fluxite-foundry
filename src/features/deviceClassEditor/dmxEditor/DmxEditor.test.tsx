@@ -1,4 +1,4 @@
-import { render, renderHook, screen } from "@testing-library/react";
+import { render, renderHook, screen } from "test/render";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, test } from "vitest";
 import { EntityId } from "app/persistentState";

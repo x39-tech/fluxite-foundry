@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen } from "test/render";
 import { expect, test } from "vitest";
 import { DmxDisplay } from "./DmxDisplay";
 import userEvent from "@testing-library/user-event";

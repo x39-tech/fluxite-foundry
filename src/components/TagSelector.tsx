@@ -1,3 +1,6 @@
+import { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
 import { useMemo, useState } from "react";
 import { CheckIcon, PlusIcon, TriangleAlertIcon, XIcon } from "lucide-react";
 import { cn } from "utils/utils";
@@ -27,7 +30,7 @@ export interface TagOption {
 export interface TagOptions {
   options: TagOption[];
   /** Shown at the foot of the list when the options overflow. */
-  note?: string;
+  note?: MessageDescriptor;
 }
 
 export interface TagSelectorProps {
@@ -41,12 +44,23 @@ export interface TagSelectorProps {
    * invalid.
    */
   validate?: (value: string) => string | undefined;
-  addLabel?: string;
-  searchPlaceholder?: string;
-  emptyMessage?: string;
+  addLabel?: MessageDescriptor;
+  searchPlaceholder?: MessageDescriptor;
+  emptyMessage?: MessageDescriptor;
   disabled?: boolean;
   className?: string;
 }
+
+const MESSAGES = {
+  add: msg({ id: "tagSelector.add", message: "Add" }),
+  search: msg({ id: "tagSelector.search", message: "Search..." }),
+  noMatches: msg({ id: "tagSelector.noMatches", message: "No matches." }),
+  invalidValue: msg({
+    id: "tagSelector.invalidValue",
+    message: "{value}: {reason}",
+  }),
+  remove: msg({ id: "tagSelector.remove", message: "Remove {value}" }),
+};
 
 // Prefix each item value with the current search query, so that cmdk reads it
 // as a new set of values each time the search changes. This is necessary due to
@@ -62,15 +76,16 @@ export const TagSelector = ({
   search,
   onValuesChange,
   validate,
-  addLabel = "Add",
-  searchPlaceholder = "Search...",
-  emptyMessage = "No matches.",
+  addLabel = MESSAGES.add,
+  searchPlaceholder = MESSAGES.search,
+  emptyMessage = MESSAGES.noMatches,
   disabled,
   className,
   ...props
 }: TagSelectorProps & Omit<React.ComponentProps<"div">, "onChange">) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const { _ } = useLingui();
 
   const { options, note } = useMemo(() => search(query), [search, query]);
 
@@ -146,7 +161,7 @@ export const TagSelector = ({
           )}
         >
           <PlusIcon className="size-3.5" />
-          {addLabel}
+          {_(addLabel)}
         </PopoverTrigger>
         <PopoverContent
           className="p-0 w-(--radix-popover-trigger-width) min-w-xs"
@@ -160,11 +175,11 @@ export const TagSelector = ({
             <CommandInput
               value={query}
               onValueChange={setQuery}
-              placeholder={searchPlaceholder}
+              placeholder={_(searchPlaceholder)}
             />
             <CommandList>
               {options.length === 0 && (
-                <CommandEmpty>{emptyMessage}</CommandEmpty>
+                <CommandEmpty>{_(emptyMessage)}</CommandEmpty>
               )}
               {sections.map((section, index) => (
                 <CommandGroup
@@ -190,7 +205,7 @@ export const TagSelector = ({
               ))}
               {note && (
                 <div className="px-3 py-2 text-xs text-muted-foreground">
-                  {note}
+                  {_(note)}
                 </div>
               )}
             </CommandList>
@@ -214,6 +229,8 @@ const Chip = ({
   disabled,
   onRemove,
 }: ChipProps) => {
+  const { _ } = useLingui();
+
   return (
     <div
       className={cn(
@@ -225,7 +242,12 @@ const Chip = ({
     >
       {validationFailReason && (
         <Tooltip>
-          <TooltipTrigger aria-label={`${value}: ${validationFailReason}`}>
+          <TooltipTrigger
+            aria-label={_({
+              ...MESSAGES.invalidValue,
+              values: { value, reason: validationFailReason },
+            })}
+          >
             <TriangleAlertIcon className="size-3.5" />
           </TooltipTrigger>
           <TooltipContent className="max-w-3xs">
@@ -238,7 +260,7 @@ const Chip = ({
         <button
           type="button"
           onClick={onRemove}
-          aria-label={`Remove ${value}`}
+          aria-label={_({ ...MESSAGES.remove, values: { value } })}
           className={cn(
             "inline-flex size-3.5 items-center justify-center rounded-xs opacity-70 hover:opacity-100 transition-opacity",
             "focus:outline-none focus:ring-1 focus:ring-ring/50",

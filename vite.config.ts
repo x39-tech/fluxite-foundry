@@ -1,6 +1,8 @@
 /// <reference types="vitest" />
 import { defineConfig, Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import { lingui } from "@lingui/vite-plugin";
+import { linguiMacroSwcPlugin } from "@lingui/swc-plugin/options";
 import process from "node:process";
 import { readFileSync } from "node:fs";
 import tailwindcss from "@tailwindcss/vite";
@@ -82,7 +84,8 @@ export default defineConfig({
   },
   plugins: [
     fcdPlugin(),
-    react(),
+    react({ plugins: [linguiMacroSwcPlugin()] }),
+    lingui(),
     svgr(),
     tailwindcss(),
     wasm(),

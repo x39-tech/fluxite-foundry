@@ -1,4 +1,8 @@
-import { useId, useState } from "react";
+import { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
+import { useLingui } from "@lingui/react";
+import { ReactNode, useId, useState } from "react";
 import { PlusIcon, TriangleAlertIcon, XIcon } from "lucide-react";
 import {
   DmxMapping,
@@ -42,6 +46,7 @@ import { MappingRangeEditorDialog } from "./MappingRangeEditorDialog";
 import { MappingRangeText } from "./MappingRangeText";
 import {
   EffectiveEnumChoice,
+  formatEnumBoundValue,
   getEffectiveEnd,
   normalizeEndValue,
 } from "./mappingUtils";
@@ -50,6 +55,29 @@ import {
   MappableParameter,
   useMappableParameters,
 } from "./state";
+
+const MESSAGES = {
+  addRange: msg({
+    id: "deviceClassEditor.dmxMapping.addRange",
+    message: "Add Range",
+  }),
+  addUnmapped: msg({
+    id: "deviceClassEditor.dmxMapping.addUnmapped",
+    message: "Add Unmapped Parameter",
+  }),
+  deleteRange: msg({
+    id: "deviceClassEditor.dmxMapping.deleteRange",
+    message: "Delete range",
+  }),
+  rangeStart: msg({
+    id: "deviceClassEditor.dmxMapping.rangeStart",
+    message: "Start",
+  }),
+  rangeEnd: msg({
+    id: "deviceClassEditor.dmxMapping.rangeEnd",
+    message: "End",
+  }),
+};
 
 interface DmxParameterMappingProps {
   mapping: DmxMapping;
@@ -133,30 +161,34 @@ const SectionHeading = ({
   disabled,
   onAdd,
 }: {
-  children: string;
-  addLabel: string;
+  children: ReactNode;
+  addLabel: MessageDescriptor;
   disabled?: boolean;
   onAdd: () => void;
-}) => (
-  <div className="flex items-center gap-1">
-    <span className="text-sm font-semibold">{children}</span>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-primary"
-          aria-label={addLabel}
-          disabled={disabled}
-          onClick={onAdd}
-        >
-          <PlusIcon className="size-5" />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>{addLabel}</TooltipContent>
-    </Tooltip>
-  </div>
-);
+}) => {
+  const { _ } = useLingui();
+
+  return (
+    <div className="flex items-center gap-1">
+      <span className="text-sm font-semibold">{children}</span>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-primary"
+            aria-label={_(addLabel)}
+            disabled={disabled}
+            onClick={onAdd}
+          >
+            <PlusIcon className="size-5" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>{_(addLabel)}</TooltipContent>
+      </Tooltip>
+    </div>
+  );
+};
 
 export const DmxParameterMapping = ({
   mapping,
@@ -201,7 +233,9 @@ export const DmxParameterMapping = ({
   const header = (
     <div className="flex items-end gap-2">
       <FieldSet>
-        <Label htmlFor={`${idPrefix}-parameter`}>Parameter</Label>
+        <Label htmlFor={`${idPrefix}-parameter`}>
+          <Trans id="deviceClassEditor.dmxMapping.parameter">Parameter</Trans>
+        </Label>
         <StringSelector
           className="!min-w-48 overflow-y-auto"
           items={mappedParameterCandidateStrs}
@@ -217,7 +251,7 @@ export const DmxParameterMapping = ({
         />
       </FieldSet>
       <Button variant="ghost" className="text-primary" onClick={onRemove}>
-        Remove
+        <Trans id="deviceClassEditor.dmxMapping.remove">Remove</Trans>
       </Button>
     </div>
   );
@@ -242,20 +276,31 @@ export const DmxParameterMapping = ({
     return (
       <div className="flex flex-col gap-2 border-l border-primary/40 pl-4">
         {header}
-        <SectionHeading addLabel="Add Range" disabled onAdd={() => {}}>
-          Mapping Ranges
+        <SectionHeading addLabel={MESSAGES.addRange} disabled onAdd={() => {}}>
+          <Trans id="deviceClassEditor.dmxMapping.mappingRanges">
+            Mapping Ranges
+          </Trans>
         </SectionHeading>
         <div className="text-sm">
-          {mappedParamMappable === undefined
-            ? "This mapping references a deleted parameter. Choose a parameter above to fix it."
-            : "Parameter mapping has bad data"}
+          {mappedParamMappable === undefined ? (
+            <Trans id="deviceClassEditor.dmxMapping.deletedParameterHelp">
+              This mapping references a deleted parameter. Choose a parameter
+              above to fix it.
+            </Trans>
+          ) : (
+            <Trans id="deviceClassEditor.dmxMapping.badData">
+              Parameter mapping has bad data
+            </Trans>
+          )}
         </div>
         <SectionHeading
-          addLabel="Add Unmapped Parameter"
+          addLabel={MESSAGES.addUnmapped}
           disabled
           onAdd={() => {}}
         >
-          Unmapped Parameters
+          <Trans id="deviceClassEditor.dmxMapping.unmappedParameters">
+            Unmapped Parameters
+          </Trans>
         </SectionHeading>
       </div>
     );
@@ -271,8 +316,13 @@ export const DmxParameterMapping = ({
   return (
     <div className="flex flex-col gap-2 border-l border-primary/40 pl-4">
       {header}
-      <SectionHeading addLabel="Add Range" onAdd={() => setIsAddingRange(true)}>
-        Mapping Ranges
+      <SectionHeading
+        addLabel={MESSAGES.addRange}
+        onAdd={() => setIsAddingRange(true)}
+      >
+        <Trans id="deviceClassEditor.dmxMapping.mappingRanges">
+          Mapping Ranges
+        </Trans>
       </SectionHeading>
       <div className="flex flex-col gap-2">
         {mapping.ranges.map((range, index) => (
@@ -294,20 +344,36 @@ export const DmxParameterMapping = ({
         ))}
       </div>
       <SectionHeading
-        addLabel="Add Unmapped Parameter"
+        addLabel={MESSAGES.addUnmapped}
         disabled={unmappedParameterCandidates.length === 0}
         onAdd={addUnmappedParam}
       >
-        Unmapped Parameters
+        <Trans id="deviceClassEditor.dmxMapping.unmappedParameters">
+          Unmapped Parameters
+        </Trans>
       </SectionHeading>
       {mapping.unmappedParams && mapping.unmappedParams.length > 0 && (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Parameter</TableHead>
-              <TableHead>Start</TableHead>
-              <TableHead>End</TableHead>
-              <TableHead className="text-right">Action</TableHead>
+              <TableHead>
+                <Trans id="deviceClassEditor.dmxMapping.columnParameter">
+                  Parameter
+                </Trans>
+              </TableHead>
+              <TableHead>
+                <Trans id="deviceClassEditor.dmxMapping.columnStart">
+                  Start
+                </Trans>
+              </TableHead>
+              <TableHead>
+                <Trans id="deviceClassEditor.dmxMapping.columnEnd">End</Trans>
+              </TableHead>
+              <TableHead className="text-right">
+                <Trans id="deviceClassEditor.dmxMapping.columnAction">
+                  Action
+                </Trans>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -378,6 +444,8 @@ const RangeCard = ({
   onDelete,
   enumChoices,
 }: RangeCardProps) => {
+  const { _ } = useLingui();
+
   return (
     <div className="flex items-center justify-between gap-2 rounded-sm bg-background px-4 py-3 shadow-sm">
       <MappingRangeText range={range} enumChoices={enumChoices} />
@@ -388,7 +456,7 @@ const RangeCard = ({
           className="text-primary"
           onClick={onEdit}
         >
-          Edit
+          <Trans id="deviceClassEditor.dmxMapping.editRange">Edit</Trans>
         </Button>
         <span aria-hidden className="text-input">
           |
@@ -396,7 +464,7 @@ const RangeCard = ({
         <Button
           variant="ghost"
           size="icon"
-          aria-label="Delete range"
+          aria-label={_(MESSAGES.deleteRange)}
           onClick={onDelete}
         >
           <XIcon className="size-4" />
@@ -456,14 +524,16 @@ type ParameterCandidate = {
 const InvalidUnmappedParamTableRow = () => (
   <TableRow>
     <TableCell colSpan={4}>
-      Unmapped parameter references a deleted parameter
+      <Trans id="deviceClassEditor.dmxMapping.deletedParameter">
+        Unmapped parameter references a deleted parameter
+      </Trans>
     </TableCell>
   </TableRow>
 );
 
 const RemoveUnmappedParamButton = ({ onClick }: { onClick: () => void }) => (
   <Button variant="ghost" size="sm" className="text-primary" onClick={onClick}>
-    Remove
+    <Trans id="deviceClassEditor.dmxMapping.removeUnmapped">Remove</Trans>
   </Button>
 );
 
@@ -566,6 +636,8 @@ const UnmappedParameterTableRowNumeric = ({
   mapping,
   onUpdate,
 }: UnmappedParameterTableRowProps) => {
+  const { _ } = useLingui();
+
   const paramStr =
     referenceDisplayString(param.parameter, mappableParams) ?? "";
   const allEligibleStrs = [...eligibleCandidates.map((c) => c.str), paramStr];
@@ -594,7 +666,7 @@ const UnmappedParameterTableRowNumeric = ({
       <TableCell>
         <TextEditorField
           className="w-24"
-          aria-label="Start"
+          aria-label={_(MESSAGES.rangeStart)}
           value={param.start?.toString() ?? ""}
           onConfirm={(newValue) => {
             onUpdate(
@@ -606,7 +678,7 @@ const UnmappedParameterTableRowNumeric = ({
       <TableCell>
         <TextEditorField
           className="w-24"
-          aria-label="End"
+          aria-label={_(MESSAGES.rangeEnd)}
           value={effectiveEnd?.toString() ?? ""}
           onConfirm={handleEndChange}
         />
@@ -658,9 +730,8 @@ const UnmappedParameterTableRowEnum = ({
   const endValue = boundToSelectValue(effectiveEnd);
 
   // Format choice label: "Name (index)"
-  const formatChoice = (choice: EffectiveEnumChoice): string => {
-    return `${choice.name.value} (${choice.index})`;
-  };
+  const formatChoice = (choice: EffectiveEnumChoice): string =>
+    formatEnumBoundValue(choice.index, enumChoices);
 
   const parseEnumValue = (val: string): number | undefined => {
     if (val === "null") return undefined;
@@ -697,9 +768,11 @@ const UnmappedParameterTableRowEnum = ({
                 <TriangleAlertIcon className="size-5 text-orange-500 shrink-0" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                No enum choices are defined for this parameter. The parameter
-                class or instance must define choices for enum values to be
-                selectable.
+                <Trans id="deviceClassEditor.dmxMapping.noEnumChoicesHelp">
+                  No enum choices are defined for this parameter. The parameter
+                  class or instance must define choices for enum values to be
+                  selectable.
+                </Trans>
               </TooltipContent>
             </Tooltip>
           )}
@@ -719,7 +792,9 @@ const UnmappedParameterTableRowEnum = ({
           >
             <SelectValue
               placeholder={
-                !startIsValid ? `Invalid: ${param.start}` : undefined
+                !startIsValid
+                  ? formatEnumBoundValue(param.start, enumChoices)
+                  : undefined
               }
             />
           </SelectTrigger>
@@ -742,7 +817,11 @@ const UnmappedParameterTableRowEnum = ({
             className={`w-40 ${!endIsValid ? invalidBorderClass : ""}`}
           >
             <SelectValue
-              placeholder={!endIsValid ? `Invalid: ${effectiveEnd}` : undefined}
+              placeholder={
+                !endIsValid
+                  ? formatEnumBoundValue(effectiveEnd, enumChoices)
+                  : undefined
+              }
             />
           </SelectTrigger>
           <SelectContent>

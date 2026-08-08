@@ -5,7 +5,11 @@ import {
   LocalizationDbSchema,
   LocalizationKey,
 } from "app/persistentState";
-import { resetAllStores, createEmptyDeviceClassEditor } from "test/utils";
+import {
+  createEmptyDeviceClassEditor,
+  resetAllStores,
+  testUndoLabel,
+} from "test/utils";
 import { getCurrentEditor, updateCurrentEditor } from "./state";
 import { useAppPersistentStore } from "app/store";
 import { buildExportKeys } from "./exportKeys";
@@ -25,7 +29,7 @@ function nameOf(key: LocalizationKey | undefined): string | undefined {
 // Adds a string with no exportKey, as a string created in the app has.
 function addString(value: string): LocalizationKey {
   const key = LocalizationKey(`internal-${value}`);
-  updateCurrentEditor("Test Change", (editor) => {
+  updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
     editor.localizations[key] = {
       strings: LocalizationDbSchema.parse({ "en-US": value }),
     };
@@ -49,7 +53,7 @@ describe("export keys", () => {
     test("for a parameter class", () => {
       const key = addString("Intensity");
       const classId = EntityId("class-1");
-      updateCurrentEditor("Test Change", (editor) => {
+      updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
         editor.parameterClasses[classId] = {
           codexId: CodexId("intensity"),
           dataType: "number",
@@ -62,7 +66,7 @@ describe("export keys", () => {
 
     test("for a parameter", () => {
       const key = addString("Dimmer");
-      updateCurrentEditor("Test Change", (editor) => {
+      updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
         editor.parameters[EntityId("param-1")] = {
           codexId: CodexId("dimmer"),
           class: { type: "local", id: EntityId("class-1") },
@@ -78,7 +82,7 @@ describe("export keys", () => {
     test("for an enum choice, through its parent", () => {
       const key = addString("Open");
       const classId = EntityId("class-1");
-      updateCurrentEditor("Test Change", (editor) => {
+      updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
         editor.parameterClasses[classId] = {
           codexId: CodexId("shutter"),
           dataType: "enum",
@@ -102,7 +106,7 @@ describe("export keys", () => {
   test("follows a renamed codex id, because the name is built at export time", () => {
     const key = addString("Dimmer");
     const paramId = EntityId("param-1");
-    updateCurrentEditor("Test Change", (editor) => {
+    updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
       editor.parameters[paramId] = {
         codexId: CodexId("dimmer"),
         class: { type: "local", id: EntityId("class-1") },
@@ -114,7 +118,7 @@ describe("export keys", () => {
 
     expect(nameOf(key)).toBe("param_dimmer");
 
-    updateCurrentEditor("Test Change", (editor) => {
+    updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
       editor.parameters[paramId].codexId = CodexId("brightness");
     });
 
@@ -123,7 +127,7 @@ describe("export keys", () => {
 
   test("prefers the string's own exportKey over a derived name", () => {
     const key = addString("Dimmer");
-    updateCurrentEditor("Test Change", (editor) => {
+    updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
       editor.parameters[EntityId("param-1")] = {
         codexId: CodexId("dimmer"),
         class: { type: "local", id: EntityId("class-1") },
@@ -140,7 +144,7 @@ describe("export keys", () => {
   test("gives two strings that derive the same name distinct ones", () => {
     const first = addString("One");
     const second = addString("Two");
-    updateCurrentEditor("Test Change", (editor) => {
+    updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
       editor.parameters[EntityId("param-1")] = {
         codexId: CodexId("dimmer"),
         class: { type: "local", id: EntityId("class-1") },
@@ -163,7 +167,7 @@ describe("export keys", () => {
 
   test("falls back to the internal key when the parent cannot be resolved", () => {
     const key = addString("Open");
-    updateCurrentEditor("Test Change", (editor) => {
+    updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
       editor.enumChoices[EntityId("choice-1")] = {
         parent: { type: "paramClass", id: EntityId("gone") },
         codexId: CodexId("open"),
@@ -183,7 +187,7 @@ describe("export keys", () => {
 
   test("is stable across exports of the same document", () => {
     const key = addString("Dimmer");
-    updateCurrentEditor("Test Change", (editor) => {
+    updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
       editor.parameters[EntityId("param-1")] = {
         codexId: CodexId("dimmer"),
         class: { type: "local", id: EntityId("class-1") },

@@ -1,3 +1,6 @@
+import { msg } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
+import { useLingui } from "@lingui/react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   Layout,
@@ -30,20 +33,37 @@ import {
 import { useAppPersistentStore } from "app/store";
 import { getDefaultWindowLayout } from "utils/utils";
 
+const MESSAGES = {
+  windowTitle: msg({
+    id: "deviceClassEditor.windowTitle",
+    message: "Editing: {editorName} -- {appName}",
+  }),
+  unknownWidget: msg({
+    id: "deviceClassEditor.unknownWidget",
+    message: "Unknown Editor",
+  }),
+};
+
+const UNKNOWN_WIDGET = MESSAGES.unknownWidget;
+
 export const DeviceClassEditor = () => {
   const currentEditorId = useCurrentEditorId();
   const editorName = useCurrentEditorPart((state) => state.basicData.modelName);
   const layoutRef = useRef<Layout>(null);
+  const { _ } = useLingui();
 
   useTabStripWheelScroll(layoutRef);
   useTabStripScrollIndicators(layoutRef);
 
   useEffect(() => {
-    document.title = `Editing: ${editorName} -- ${APP_NAME}`;
+    document.title = _({
+      ...MESSAGES.windowTitle,
+      values: { editorName, appName: APP_NAME },
+    });
     return () => {
       document.title = APP_NAME;
     };
-  }, [editorName]);
+  }, [editorName, _]);
 
   const onModelChange = useCallback(
     throttle((model) => {
@@ -113,7 +133,7 @@ export const DeviceClassEditor = () => {
             <DropdownMenuTrigger asChild>
               <Button size="sm" variant="outline">
                 <PlusIcon className="size-4" />
-                Add Tab
+                <Trans id="deviceClassEditor.addTab">Add Tab</Trans>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="p-0.5">
@@ -122,10 +142,15 @@ export const DeviceClassEditor = () => {
                   <DropdownMenuItem
                     key={widgetId}
                     onClick={() =>
-                      addNewWidget(model, tabSetId, widgetId, widgetDesc.name)
+                      addNewWidget(
+                        model,
+                        tabSetId,
+                        widgetId,
+                        _(widgetDesc.name),
+                      )
                     }
                   >
-                    {widgetDesc.name}
+                    {_(widgetDesc.name)}
                   </DropdownMenuItem>
                 );
               })}
@@ -135,8 +160,8 @@ export const DeviceClassEditor = () => {
         renderValues.overflowPosition = 1;
       }}
       onRenderTab={(node, renderValues) => {
-        renderValues.content =
-          WIDGETS[node.getComponent() || ""]?.name || "Unknown Editor";
+        const widget = WIDGETS[node.getComponent() || ""];
+        renderValues.content = widget ? _(widget.name) : _(UNKNOWN_WIDGET);
       }}
       realtimeResize
       icons={{

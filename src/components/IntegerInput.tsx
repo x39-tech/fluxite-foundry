@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { useState, useRef, forwardRef, useCallback } from "react";
 import { ChevronDownIcon, ChevronUpIcon, XIcon } from "lucide-react";
 import { cn } from "utils/utils";
@@ -239,7 +240,9 @@ export const IntegerInput = forwardRef<
                 tabIndex={-1}
               >
                 <XIcon className="size-3.5" />
-                <span className="sr-only">Clear value</span>
+                <span className="sr-only">
+                  <Trans id="integerInput.clearValue">Clear value</Trans>
+                </span>
               </button>
             )}
 
@@ -263,7 +266,9 @@ export const IntegerInput = forwardRef<
                 tabIndex={-1}
               >
                 <ChevronUpIcon className="size-2.5" />
-                <span className="sr-only">Increment</span>
+                <span className="sr-only">
+                  <Trans id="integerInput.increment">Increment</Trans>
+                </span>
               </button>
               <button
                 type="button"
@@ -283,7 +288,9 @@ export const IntegerInput = forwardRef<
                 tabIndex={-1}
               >
                 <ChevronDownIcon className="size-2.5" />
-                <span className="sr-only">Decrement</span>
+                <span className="sr-only">
+                  <Trans id="integerInput.decrement">Decrement</Trans>
+                </span>
               </button>
             </div>
           </div>

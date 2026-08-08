@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { useId } from "react";
 import { EntityId } from "app/persistentState";
 import { RenderError } from "components/RenderError";
@@ -32,7 +33,9 @@ export const ResourceClassEditor = ({ id }: Props) => {
         description={resourceClass.description?.value}
       />
       <FieldSet>
-        <Label id={`${idPrefix}-mediaTypes`}>Media Types</Label>
+        <Label id={`${idPrefix}-mediaTypes`}>
+          <Trans id="resourceClassEditor.mediaTypes">Media Types</Trans>
+        </Label>
         <MediaTypeSelector
           aria-labelledby={`${idPrefix}-mediaTypes`}
           className="w-xs"

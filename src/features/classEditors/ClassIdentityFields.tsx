@@ -1,8 +1,10 @@
 // The ID, name and description every kind of class carries.
 
+import { Trans } from "@lingui/react/macro";
 import { toast } from "sonner";
+import { useLingui } from "@lingui/react";
 import { CodexId, EntityId } from "app/persistentState";
-import { useCurrentLocale } from "app/store";
+import { useAuthoringLocale } from "app/store";
 import {
   FullCategoryId,
   joinParameterClassId,
@@ -16,11 +18,8 @@ import { Label } from "components/scn-ui/Label";
 import { ValidatedInput } from "components/ValidatedInput";
 import { ValidatedTextarea } from "components/ValidatedTextarea";
 import { ClassKind, classKinds } from "./context";
-import {
-  CLASS_KIND_NAMES,
-  useClassCodexIds,
-  useClassOperations,
-} from "./state";
+import { useClassCodexIds, useClassOperations } from "./state";
+import { CLASS_KIND_MESSAGES } from "./messages";
 
 interface Props {
   idPrefix: string;
@@ -41,8 +40,9 @@ export const ClassIdentityFields = ({
 }: Props) => {
   const takenIds = useClassCodexIds(kind);
   const operations = useClassOperations();
-  const locale = useCurrentLocale();
+  const locale = useAuthoringLocale();
   const catalog = useCategoryCatalog();
+  const { _ } = useLingui();
 
   // A parameter class ID is unique in that it has a category and an identifier
   // joined by a path separator.
@@ -60,7 +60,12 @@ export const ClassIdentityFields = ({
     const newCodexId = joinParameterClassId(newCategory, newIdentifier);
 
     if (otherIds.includes(CodexId(newCodexId))) {
-      toast(`${CLASS_KIND_NAMES[kind]} ${newCodexId} already exists.`);
+      toast(
+        _({
+          ...CLASS_KIND_MESSAGES[kind].duplicateId,
+          values: { codexId: newCodexId },
+        }),
+      );
       return false;
     }
 
@@ -84,7 +89,9 @@ export const ClassIdentityFields = ({
       <div className="flex flex-wrap gap-4">
         {categorized && (
           <FieldSet>
-            <Label htmlFor={`${idPrefix}-category`}>Category</Label>
+            <Label htmlFor={`${idPrefix}-category`}>
+              <Trans id="itemClasses.identity.category">Category</Trans>
+            </Label>
             <CategoryField
               id={`${idPrefix}-category`}
               value={category}
@@ -97,7 +104,9 @@ export const ClassIdentityFields = ({
           </FieldSet>
         )}
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-id`}>ID</Label>
+          <Label htmlFor={`${idPrefix}-id`}>
+            <Trans id="itemClasses.identity.id">ID</Trans>
+          </Label>
           <ValidatedInput
             id={`${idPrefix}-id`}
             value={identifier}
@@ -106,7 +115,9 @@ export const ClassIdentityFields = ({
           />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-name`}>Name</Label>
+          <Label htmlFor={`${idPrefix}-name`}>
+            <Trans id="itemClasses.identity.name">Name</Trans>
+          </Label>
           <ValidatedInput
             id={`${idPrefix}-name`}
             value={name}
@@ -124,11 +135,15 @@ export const ClassIdentityFields = ({
       </div>
       {categorized && (
         <div className="text-xs text-muted-foreground">
-          Full ID: <span className="font-mono">{codexId}</span>
+          <Trans id="itemClasses.identity.fullId">
+            Full ID: <span className="font-mono">{codexId}</span>
+          </Trans>
         </div>
       )}
       <FieldSet>
-        <Label htmlFor={`${idPrefix}-description`}>Description</Label>
+        <Label htmlFor={`${idPrefix}-description`}>
+          <Trans id="itemClasses.identity.description">Description</Trans>
+        </Label>
         <ValidatedTextarea
           className="max-w-2xl"
           id={`${idPrefix}-description`}

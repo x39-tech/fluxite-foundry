@@ -22,7 +22,7 @@ import { Library } from "codex/library";
 import { comparePathIdentifiers } from "codex/categories";
 import { localize, LocalizedString } from "features/localizations/localize";
 import { Unlocalized } from "features/localizations/types";
-import { useCurrentLocale } from "app/store";
+import { useAuthoringLocale } from "app/store";
 import { ItemEditor } from "utils/utils";
 import {
   ClassDocument,
@@ -40,6 +40,11 @@ import {
   enumChoicesOf,
   modifyEnumChoiceIn,
 } from "./enumChoiceOperations";
+import {
+  CLASS_KIND_MESSAGES,
+  COMMAND_MEMBER_UNDO,
+  ENUM_CHOICE_UNDO,
+} from "./messages";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -93,15 +98,6 @@ export type OwnEnumChoiceParentType =
   | "cmdClassArg"
   | "cmdClassRet";
 
-/** What one kind of class is called in labels and headings. */
-export const CLASS_KIND_NAMES: Record<ClassKind, string> = {
-  parameterClasses: "Parameter Class",
-  structureClasses: "Structure Class",
-  serializerClasses: "Serializer Class",
-  resourceClasses: "Resource Class",
-  commandClasses: "Command Class",
-};
-
 // The enum choice parent type each command member table uses.
 const MEMBER_CHOICE_PARENT = {
   commandClassArguments: "cmdClassArg",
@@ -140,7 +136,7 @@ function useLocalizing() {
   return {
     library: api.useLibrary(),
     sourceLocale: api.useSourceLocale(),
-    locale: useCurrentLocale(),
+    locale: useAuthoringLocale(),
   };
 }
 
@@ -295,7 +291,7 @@ function classOperations(api: ClassEditingApi) {
       name: string,
       locale: string,
     ) {
-      api.update(`Add ${CLASS_KIND_NAMES[kind]}`, (draft, localizer) => {
+      api.update(CLASS_KIND_MESSAGES[kind].undoAdd, (draft, localizer) => {
         if (Object.values(draft[kind]).some((cls) => cls.codexId === codexId)) {
           return;
         }
@@ -329,7 +325,7 @@ function classOperations(api: ClassEditingApi) {
 
     /** Every kind of class has an ID, and only an ID, in common. */
     setClassCodexId(kind: ClassKind, id: EntityId, codexId: CodexId) {
-      api.update(`Edit ${CLASS_KIND_NAMES[kind]}`, (draft) => {
+      api.update(CLASS_KIND_MESSAGES[kind].undoEdit, (draft) => {
         const cls = draft[kind][id];
         if (!cls) return;
 
@@ -341,7 +337,7 @@ function classOperations(api: ClassEditingApi) {
       id: EntityId,
       recipe: (draft: Draft<Unlocalized<ParameterClass>>) => void,
     ) {
-      api.update(`Edit ${CLASS_KIND_NAMES.parameterClasses}`, (draft) => {
+      api.update(CLASS_KIND_MESSAGES.parameterClasses.undoEdit, (draft) => {
         const cls = draft.parameterClasses[id];
         if (!cls) return;
 
@@ -353,7 +349,7 @@ function classOperations(api: ClassEditingApi) {
       id: EntityId,
       recipe: (draft: Draft<Unlocalized<StructureClass>>) => void,
     ) {
-      api.update(`Edit ${CLASS_KIND_NAMES.structureClasses}`, (draft) => {
+      api.update(CLASS_KIND_MESSAGES.structureClasses.undoEdit, (draft) => {
         const cls = draft.structureClasses[id];
         if (!cls) return;
 
@@ -365,7 +361,7 @@ function classOperations(api: ClassEditingApi) {
       id: EntityId,
       recipe: (draft: Draft<Unlocalized<ResourceClass>>) => void,
     ) {
-      api.update(`Edit ${CLASS_KIND_NAMES.resourceClasses}`, (draft) => {
+      api.update(CLASS_KIND_MESSAGES.resourceClasses.undoEdit, (draft) => {
         const cls = draft.resourceClasses[id];
         if (!cls) return;
 
@@ -380,14 +376,14 @@ function classOperations(api: ClassEditingApi) {
       value: string,
       locale: string,
     ) {
-      api.update(`Edit ${CLASS_KIND_NAMES[kind]}`, (_draft, localizer) => {
+      api.update(CLASS_KIND_MESSAGES[kind].undoEdit, (_draft, localizer) => {
         localizer.set(kind, id, field, value, locale);
       });
     },
 
     /** Removes a class along with everything that hangs off it. */
     deleteClass(kind: ClassKind, id: EntityId) {
-      api.update(`Delete ${CLASS_KIND_NAMES[kind]}`, (draft, localizer) => {
+      api.update(CLASS_KIND_MESSAGES[kind].undoDelete, (draft, localizer) => {
         if (!draft[kind][id]) return;
 
         if (kind === classKinds.PARAMETER) {
@@ -410,26 +406,23 @@ function classOperations(api: ClassEditingApi) {
       name: string,
       locale: string,
     ) {
-      api.update(
-        `Add Command Class ${memberLabel(memberKind)}`,
-        (draft, localizer) => {
-          const siblings = select(
-            draft[memberKind],
-            (member) => member.parentId === classId,
-          );
-          if (siblings.some((member) => member.codexId === codexId)) {
-            return;
-          }
+      api.update(COMMAND_MEMBER_UNDO[memberKind].add, (draft, localizer) => {
+        const siblings = select(
+          draft[memberKind],
+          (member) => member.parentId === classId,
+        );
+        if (siblings.some((member) => member.codexId === codexId)) {
+          return;
+        }
 
-          draft[memberKind][newEntityId()] = {
-            parentId: classId,
-            codexId,
-            dataType: "number",
-            required: false,
-            localized: localizer.create(memberKind, { name }, locale),
-          };
-        },
-      );
+        draft[memberKind][newEntityId()] = {
+          parentId: classId,
+          codexId,
+          dataType: "number",
+          required: false,
+          localized: localizer.create(memberKind, { name }, locale),
+        };
+      });
     },
 
     modifyCommandClassMember(
@@ -437,7 +430,7 @@ function classOperations(api: ClassEditingApi) {
       id: EntityId,
       recipe: (draft: Draft<Unlocalized<CommandMember>>) => void,
     ) {
-      api.update(`Edit Command Class ${memberLabel(memberKind)}`, (draft) => {
+      api.update(COMMAND_MEMBER_UNDO[memberKind].edit, (draft) => {
         const member = draft[memberKind][id];
         if (!member) return;
 
@@ -452,27 +445,21 @@ function classOperations(api: ClassEditingApi) {
       value: string,
       locale: string,
     ) {
-      api.update(
-        `Edit Command Class ${memberLabel(memberKind)}`,
-        (_draft, localizer) => {
-          localizer.set(memberKind, id, field, value, locale);
-        },
-      );
+      api.update(COMMAND_MEMBER_UNDO[memberKind].edit, (_draft, localizer) => {
+        localizer.set(memberKind, id, field, value, locale);
+      });
     },
 
     deleteCommandClassMember(memberKind: CommandMemberKind, id: EntityId) {
-      api.update(
-        `Delete Command Class ${memberLabel(memberKind)}`,
-        (draft, localizer) => {
-          if (!draft[memberKind][id]) return;
+      api.update(COMMAND_MEMBER_UNDO[memberKind].delete, (draft, localizer) => {
+        if (!draft[memberKind][id]) return;
 
-          deleteEnumChoicesOf(draft, localizer, [
-            { type: MEMBER_CHOICE_PARENT[memberKind], id },
-          ]);
-          localizer.remove([{ table: memberKind, entityId: id }]);
-          delete draft[memberKind][id];
-        },
-      );
+        deleteEnumChoicesOf(draft, localizer, [
+          { type: MEMBER_CHOICE_PARENT[memberKind], id },
+        ]);
+        localizer.remove([{ table: memberKind, entityId: id }]);
+        delete draft[memberKind][id];
+      });
     },
 
     addEnumChoice(
@@ -481,7 +468,7 @@ function classOperations(api: ClassEditingApi) {
       name: string,
       locale: string,
     ) {
-      api.update("Add Enum Choice", (draft, localizer) => {
+      api.update(ENUM_CHOICE_UNDO.add, (draft, localizer) => {
         addEnumChoiceTo(
           draft,
           localizer,
@@ -495,7 +482,7 @@ function classOperations(api: ClassEditingApi) {
     },
 
     setEnumChoiceCodexId(id: EntityId, codexId: CodexId) {
-      api.update("Edit Enum Choice", (draft) => {
+      api.update(ENUM_CHOICE_UNDO.edit, (draft) => {
         modifyEnumChoiceIn(draft, id, (choice) => {
           choice.codexId = codexId;
         });
@@ -508,13 +495,13 @@ function classOperations(api: ClassEditingApi) {
       value: string,
       locale: string,
     ) {
-      api.update("Edit Enum Choice", (_draft, localizer) => {
+      api.update(ENUM_CHOICE_UNDO.edit, (_draft, localizer) => {
         localizer.set("enumChoices", id, field, value, locale);
       });
     },
 
     deleteEnumChoice(id: EntityId) {
-      api.update("Delete Enum Choice", (draft, localizer) => {
+      api.update(ENUM_CHOICE_UNDO.delete, (draft, localizer) => {
         deleteEnumChoiceFrom(draft, localizer, id);
       });
     },
@@ -568,12 +555,6 @@ function localizeEntity<T extends ClassEntity>(
         )
       : undefined,
   };
-}
-
-function memberLabel(memberKind: CommandMemberKind): string {
-  return memberKind === commandMemberKinds.ARGUMENT
-    ? "Argument"
-    : "Return Value";
 }
 
 function deleteCommandMembers(

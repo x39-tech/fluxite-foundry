@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { useId } from "react";
 import {
   DropdownMenu,
@@ -33,7 +34,7 @@ import {
   LocalizedClassEnumChoice,
   LocalizedInstanceEnumChoice,
 } from "features/deviceClassEditor/stateTransformations";
-import { useCurrentLocale } from "app/store";
+import { useAuthoringLocale } from "app/store";
 import {
   addEnumChoice,
   deleteEnumChoice,
@@ -70,7 +71,7 @@ export const EnumChoicesEditor = ({
   onExclusionChanged,
 }: Props) => {
   const idPrefix = useId();
-  const locale = useCurrentLocale();
+  const locale = useAuthoringLocale();
 
   const excludedSet = new Set<string>(exclusions ?? []);
   const classDisplayChoices: ClassDisplayChoice[] = classChoices.map(
@@ -87,12 +88,12 @@ export const EnumChoicesEditor = ({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm">
-            View
+            <Trans id="enumChoices.view">View</Trans>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem className="text-muted-foreground text-xs font-medium pointer-events-none">
-            From Class
+            <Trans id="enumChoices.fromClass">From Class</Trans>
           </DropdownMenuItem>
           {classDisplayChoices.map((choice, index) => (
             <DropdownMenuItem
@@ -103,7 +104,7 @@ export const EnumChoicesEditor = ({
             </DropdownMenuItem>
           ))}
           <DropdownMenuItem className="text-muted-foreground text-xs font-medium pointer-events-none">
-            From Instance
+            <Trans id="enumChoices.fromInstance">From Instance</Trans>
           </DropdownMenuItem>
           {instanceChoices?.map((choice, index) => (
             <DropdownMenuItem key={index} className="pointer-events-none">
@@ -114,22 +115,37 @@ export const EnumChoicesEditor = ({
       </DropdownMenu>
       <Dialog>
         <DialogTrigger asChild>
-          <Button size="sm">Modify</Button>
+          <Button size="sm">
+            <Trans id="enumChoices.modify">Modify</Trans>
+          </Button>
         </DialogTrigger>
         <DialogContent className="max-h-[90vh] grid-rows-[auto_1fr]">
           <DialogHeader>
-            <DialogTitle>Enum Choices for {forName}</DialogTitle>
+            <DialogTitle>
+              <Trans
+                id="enumChoices.dialogTitle"
+                comment="forName is a string ID"
+              >
+                Enum Choices for {forName}
+              </Trans>
+            </DialogTitle>
             <DialogDescription>
-              Manage class-level enum choices and add custom instance-specific
-              enum choices
+              <Trans id="enumChoices.dialogDescription">
+                Manage class-level enum choices and add custom instance-specific
+                enum choices
+              </Trans>
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-2 overflow-y-auto min-h-0">
             <Table id={`${idPrefix}-class-choices`}>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="pl-5">ID</TableHead>
-                  <TableHead className="pl-5">Name</TableHead>
+                  <TableHead className="pl-5">
+                    <Trans id="enumChoices.column.id">ID</Trans>
+                  </TableHead>
+                  <TableHead className="pl-5">
+                    <Trans id="enumChoices.column.name">Name</Trans>
+                  </TableHead>
                   <TableHead />
                 </TableRow>
               </TableHeader>
@@ -216,6 +232,9 @@ export const EnumChoicesEditor = ({
                         addEnumChoice(
                           parent,
                           CodexId(newId),
+                          // TODO: read current authoring locale and provide
+                          // a translated equivalent?
+                          // eslint-disable-next-line lingui/no-unlocalized-strings
                           "New Choice",
                           undefined,
                           locale,

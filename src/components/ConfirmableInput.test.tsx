@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent } from "test/render";
 import userEvent from "@testing-library/user-event";
 import { ConfirmableInput } from "./ConfirmableInput";
 

@@ -54,6 +54,8 @@ jobs:
       - run: npm run lint
       - run: npm run formatcheck
       - run: npm run typecheck
+      - run: npm run i18n:check
+      - run: npm run i18n:check-ids
 
   check_state_immutability:
     if: github.event_name == 'pull_request'

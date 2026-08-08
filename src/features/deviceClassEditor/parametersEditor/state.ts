@@ -1,4 +1,5 @@
 import { Draft } from "immer";
+import { msg } from "@lingui/core/macro";
 import {
   ClassReference,
   CodexId,
@@ -10,7 +11,7 @@ import { getWithId, selectWithIds } from "app/stateUtils";
 import { ItemEditor } from "utils/utils";
 import { Unlocalized } from "features/localizations/types";
 import { localize, LocalizedString } from "features/localizations/localize";
-import { useCurrentLocale, useLibraryStore } from "app/store";
+import { useAuthoringLocale, useLibraryStore } from "app/store";
 import {
   updateCurrentEditor,
   useCurrentEditorPart,
@@ -30,6 +31,21 @@ import {
 } from "../stateTransformations";
 import { resolveClassRef } from "../classResolution";
 import { newEntityId } from "app/stateUtils";
+
+const UNDO = {
+  addParameter: msg({
+    id: "deviceClassEditor.parameters.undo.addParameter",
+    message: "Add Parameter",
+  }),
+  editParameter: msg({
+    id: "deviceClassEditor.parameters.undo.editParameter",
+    message: "Edit Parameter",
+  }),
+  deleteParameter: msg({
+    id: "deviceClassEditor.parameters.undo.deleteParameter",
+    message: "Delete Parameter",
+  }),
+};
 
 export interface LocalizedParameter extends Unlocalized<Parameter> {
   friendlyName?: LocalizedString;
@@ -85,7 +101,7 @@ export function useParameterInfo(id: EntityId):
   const deviceLibrary = useDeviceLibrary();
   const importedLibs = useLibraries();
   const param = useCurrentEditorPart((editor) => editor.parameters[id]);
-  const locale = useCurrentLocale();
+  const locale = useAuthoringLocale();
   const sourceLocale = useSourceLocale();
   const libraryStore = useLibraryStore();
 
@@ -162,7 +178,7 @@ export function createNewParameter(
   paramClass: CodexId,
   codexId: CodexId,
 ) {
-  updateCurrentEditor("Add Parameter", (editor) => {
+  updateCurrentEditor(UNDO.addParameter, (editor) => {
     if (
       Object.values(editor.parameters).some(
         (param) => param.codexId === codexId,
@@ -203,7 +219,7 @@ export function modifyParameter(
   id: EntityId,
   recipe: (state: Draft<Unlocalized<Parameter>>) => void,
 ) {
-  updateCurrentEditor("Edit Parameter", (editor) => {
+  updateCurrentEditor(UNDO.editParameter, (editor) => {
     const param = editor.parameters[id];
     if (!param) {
       return;
@@ -219,7 +235,7 @@ export function modifyParameterLocalizedValue(
   newValue: string,
   locale: string,
 ) {
-  updateCurrentEditor("Edit Parameter", (editor) => {
+  updateCurrentEditor(UNDO.editParameter, (editor) => {
     setDeviceClassLocalizedValue(
       editor,
       { table: "parameters", entityId: id, field: key },
@@ -230,7 +246,7 @@ export function modifyParameterLocalizedValue(
 }
 
 export function deleteParameter(id: EntityId) {
-  updateCurrentEditor("Delete Parameter", (editor) => {
+  updateCurrentEditor(UNDO.deleteParameter, (editor) => {
     const param = editor.parameters[id];
     if (!param) {
       return;

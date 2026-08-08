@@ -8,6 +8,10 @@ import {
 import { CircleQuestionMarkIcon } from "lucide-react";
 import { toast } from "sonner";
 import JSZip from "jszip";
+import { i18n } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
+import { useLingui } from "@lingui/react";
 import { LabeledCheckbox } from "components/LabeledCheckbox";
 import { Button } from "components/scn-ui/Button";
 import {
@@ -37,6 +41,34 @@ import {
   CODEX_ARCHIVE_SCHEMA_URL,
   CODEX_DOC_SCHEMA_URL,
 } from "consts";
+
+const MESSAGES = {
+  invalidDeviceClass: msg({
+    id: "navbar.exportCodex.invalidDeviceClass",
+    message:
+      "Error constructing Fluxite Codex Document. Please make sure the selected device class is valid.",
+  }),
+  archiveFileType: msg({
+    id: "navbar.exportCodex.archiveFileType",
+    message: "Fluxite Codex Archive",
+  }),
+  documentFileType: msg({
+    id: "navbar.exportCodex.documentFileType",
+    message: "Fluxite Codex Document",
+  }),
+  saveFailed: msg({
+    id: "navbar.exportCodex.saveFailed",
+    message: "Error saving {fileName}: {reason}",
+  }),
+  zipDirectoryFailed: msg({
+    id: "navbar.exportCodex.zipDirectoryFailed",
+    message: "Error creating ZIP file: couldn't add directory.",
+  }),
+  assetMissing: msg({
+    id: "navbar.exportCodex.assetMissing",
+    message: "Error creating archive: couldn't load resource asset for {id}",
+  }),
+};
 
 interface OpenEditorWithName {
   id: EntityId;
@@ -73,6 +105,7 @@ export const ExportFluxiteCodexDialog = ({ isOpen, onClose }: Props) => {
   const [createArchive, setCreateArchive] = useState(true);
 
   const devClassSelId = useId();
+  const { _ } = useLingui();
 
   const editor = selectedEditorId
     ? deviceClassEditors[selectedEditorId]
@@ -82,9 +115,7 @@ export const ExportFluxiteCodexDialog = ({ isOpen, onClose }: Props) => {
   const createAndExport = async () => {
     const editor = deviceClassEditors[selectedEditorId!];
     if (!editor) {
-      toast(
-        "Error constructing Fluxite Codex Document. Please make sure the selected device class is valid.",
-      );
+      toast(_(MESSAGES.invalidDeviceClass));
       return;
     }
 
@@ -110,10 +141,15 @@ export const ExportFluxiteCodexDialog = ({ isOpen, onClose }: Props) => {
       await saveFile(
         blob,
         exportFileName,
-        createArchive ? "Fluxite Codex Archive" : "Fluxite Codex Document",
+        _(createArchive ? MESSAGES.archiveFileType : MESSAGES.documentFileType),
       );
     } catch (error) {
-      toast.error(`Error saving ${exportFileName}: ${errorMessage(error)}`);
+      toast.error(
+        _({
+          ...MESSAGES.saveFailed,
+          values: { fileName: exportFileName, reason: errorMessage(error) },
+        }),
+      );
       return;
     }
 
@@ -124,14 +160,22 @@ export const ExportFluxiteCodexDialog = ({ isOpen, onClose }: Props) => {
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Export Fluxite Codex</DialogTitle>
+          <DialogTitle>
+            <Trans id="navbar.exportCodex.title">Export Fluxite Codex</Trans>
+          </DialogTitle>
           <DialogDescription>
-            Export a device class to a Fluxite Codex archive or document file
+            <Trans id="navbar.exportCodex.description">
+              Export a device class to a Fluxite Codex archive or document file
+            </Trans>
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3">
           <FieldSet>
-            <Label htmlFor={devClassSelId}>Device Class to export</Label>
+            <Label htmlFor={devClassSelId}>
+              <Trans id="navbar.exportCodex.deviceClassLabel">
+                Device Class to export
+              </Trans>
+            </Label>
             <SelectField
               id={devClassSelId}
               values={editorsWithNames.map(({ id }) => id)}
@@ -143,23 +187,28 @@ export const ExportFluxiteCodexDialog = ({ isOpen, onClose }: Props) => {
             />
           </FieldSet>
           <LabeledCheckbox checked={prettyPrint} onChange={setPrettyPrint}>
-            Formatted
+            <Trans id="navbar.exportCodex.formatted">Formatted</Trans>
           </LabeledCheckbox>
           <div className="flex gap-2">
             <LabeledCheckbox
               checked={createArchive}
               onChange={setCreateArchive}
             >
-              Include Assets
+              <Trans id="navbar.exportCodex.includeAssets">
+                Include Assets
+              </Trans>
             </LabeledCheckbox>
             <Tooltip>
               <TooltipTrigger asChild>
                 <CircleQuestionMarkIcon className="size-5" />
               </TooltipTrigger>
               <TooltipContent className="max-w-sm">
-                If selected, a Fluxite Codex Archive will be created including
-                any resource assets added to this device class. Otherwise, a
-                Fluxite Codex Document will be created without including assets.
+                <Trans id="navbar.exportCodex.includeAssetsHelp">
+                  If selected, a Fluxite Codex Archive will be created including
+                  any resource assets added to this device class. Otherwise, a
+                  Fluxite Codex Document will be created without including
+                  assets.
+                </Trans>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -169,10 +218,10 @@ export const ExportFluxiteCodexDialog = ({ isOpen, onClose }: Props) => {
             disabled={editorsWithNames.length === 0}
             onClick={createAndExport}
           >
-            Export
+            <Trans id="navbar.exportCodex.export">Export</Trans>
           </Button>
           <Button variant="secondary" onClick={onClose}>
-            Cancel
+            <Trans id="navbar.exportCodex.cancel">Cancel</Trans>
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -221,6 +270,7 @@ async function createFluxiteCodexArchive(
         },
       },
     },
+    // eslint-disable-next-line lingui/no-unlocalized-strings
     info: `A Fluxite Codex Archive generated by ${APP_NAME}`,
     $schema: CODEX_ARCHIVE_SCHEMA_URL,
   };
@@ -237,7 +287,7 @@ async function createFluxiteCodexArchive(
 
   const assetsDir = zip.folder(assetsDirName);
   if (!assetsDir) {
-    toast("Error creating ZIP file: couldn't add directory.");
+    toast(i18n._(MESSAGES.zipDirectoryFailed));
     return null;
   }
 
@@ -247,7 +297,7 @@ async function createFluxiteCodexArchive(
         editor.resourceAssets[resource.default],
       );
       if (!asset) {
-        toast(`Error creating archive: couldn't load resource asset for ${id}`);
+        toast(i18n._({ ...MESSAGES.assetMissing, values: { id } }));
         return null;
       }
       assetsDir.file(resource.default, asset.data);
