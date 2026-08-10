@@ -11,8 +11,11 @@
 import JSZip from "jszip";
 import * as z from "zod";
 import { toast } from "sonner";
+import { i18n } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import { APP_NAME, APP_VERSION, BUILD_STRING } from "consts";
 import { errorMessage, getDefaultWindowLayout } from "utils/utils";
+import { LocalizedError } from "utils/localizedError";
 import { assetStorage } from "./assetStorage";
 import { assetIdsOfDocument, remapDocumentAssetIds } from "./assetLifecycle";
 import { documentName, patchesByDocument } from "./documents";
@@ -49,6 +52,82 @@ export const DOCUMENT_FILE_TYPE_NAME = `${APP_NAME} Document`;
 
 const MANIFEST_FILE_NAME = "document.json";
 const ASSET_DIRECTORY = "assets";
+
+// Localized error messages.
+const ERRORS = {
+  documentClosed: msg({
+    id: "documentFile.error.documentClosed",
+    message: "The document is no longer open.",
+  }),
+  notADocument: msg({
+    id: "documentFile.error.notADocument",
+    message: "The selected file is not a {appName} document.",
+  }),
+  noManifest: msg({
+    id: "documentFile.error.noManifest",
+    message:
+      "The selected file is not a {appName} document: it has no {manifestName}.",
+    comment:
+      "{manifestName} is a file name that must be present in the save file archive.",
+  }),
+  manifestNotJson: msg({
+    id: "documentFile.error.manifestNotJson",
+    message:
+      "The selected file is not a {appName} document: its {manifestName} is not valid JSON.",
+  }),
+  manifestInvalid: msg({
+    id: "documentFile.error.manifestInvalid",
+    message: "The selected file is not a {appName} document: {reason}",
+  }),
+  formatTooNew: msg({
+    id: "documentFile.error.formatTooNew",
+    message:
+      "This document was written in save file format v{fileVersion}, which is newer than this build understands (v{buildVersion}). Update {appName} to open it.",
+  }),
+  unknownDocumentType: msg({
+    id: "documentFile.error.unknownDocumentType",
+    message:
+      'This build does not know how to open a document of type "{documentType}". Update {appName} to open it.',
+  }),
+  stateTooNew: msg({
+    id: "documentFile.error.stateTooNew",
+    message:
+      "This document was written at state version {fileVersion}, which is newer than this build understands ({buildVersion}). Update {appName} to open it.",
+  }),
+  stateUnreadable: msg({
+    id: "documentFile.error.stateUnreadable",
+    message:
+      "This build cannot read a document written at state version {fileVersion}.",
+  }),
+  stateMalformed: msg({
+    id: "documentFile.error.stateMalformed",
+    message:
+      "This document written at state version {fileVersion} contains malformed state data.",
+  }),
+  noMigration: msg({
+    id: "documentFile.error.noMigration",
+    message:
+      "This document cannot be migrated from state version {fromVersion}.",
+  }),
+  migrationFailed: msg({
+    id: "documentFile.error.migrationFailed",
+    message:
+      "This document could not migrated from state version {fromVersion} to {toVersion}: {reason}",
+  }),
+  migrationResultInvalid: msg({
+    id: "documentFile.error.migrationResultInvalid",
+    message: "This document could not be migrated: {reason}",
+  }),
+  documentLost: msg({
+    id: "documentFile.error.documentLost",
+    message: "This document was lost while being migrated.",
+  }),
+  savedWithoutAssets: msg({
+    id: "documentFile.warning.savedWithoutAssets",
+    message:
+      "Saved a document without {count} asset(s) whose data could not be found",
+  }),
+};
 
 // ---------------------------------------------------------------------------
 // The file format
@@ -112,7 +191,7 @@ export async function writeDocumentFile(
 ): Promise<WrittenDocument> {
   const document = state.documents[documentId];
   if (!document) {
-    throw new Error("The document is no longer open.");
+    throw new LocalizedError(ERRORS.documentClosed);
   }
 
   const zip = new JSZip();
@@ -167,31 +246,38 @@ export async function readDocumentFile(data: Blob): Promise<LoadedDocument> {
   try {
     zip = await JSZip.loadAsync(data);
   } catch {
-    throw new Error(`The selected file is not a ${APP_NAME} document.`);
+    throw new LocalizedError({
+      ...ERRORS.notADocument,
+      values: { appName: APP_NAME },
+    });
   }
 
   const manifestFile = zip.file(MANIFEST_FILE_NAME);
   if (!manifestFile) {
-    throw new Error(
-      `The selected file is not a ${APP_NAME} document: it has no ${MANIFEST_FILE_NAME}.`,
-    );
+    throw new LocalizedError({
+      ...ERRORS.noManifest,
+      values: { appName: APP_NAME, manifestName: MANIFEST_FILE_NAME },
+    });
   }
 
   const manifest = parseManifest(await manifestFile.async("string"));
 
   if (manifest.formatVersion > DOCUMENT_FILE_FORMAT_VERSION) {
-    throw new Error(
-      `This document was written in save file format v${manifest.formatVersion}, ` +
-        `which is newer than this build understands (v${DOCUMENT_FILE_FORMAT_VERSION}). ` +
-        `Update ${APP_NAME} to open it.`,
-    );
+    throw new LocalizedError({
+      ...ERRORS.formatTooNew,
+      values: {
+        fileVersion: manifest.formatVersion,
+        buildVersion: DOCUMENT_FILE_FORMAT_VERSION,
+        appName: APP_NAME,
+      },
+    });
   }
 
   if (!isKnownDocumentType(manifest.documentType)) {
-    throw new Error(
-      `This build does not know how to open a document of type "${manifest.documentType}". ` +
-        `Update ${APP_NAME} to open it.`,
-    );
+    throw new LocalizedError({
+      ...ERRORS.unknownDocumentType,
+      values: { documentType: manifest.documentType, appName: APP_NAME },
+    });
   }
 
   const document = migrateDocument(manifest.document, manifest.stateVersion);
@@ -383,16 +469,18 @@ function parseManifest(text: string): z.infer<typeof DocumentFileSchema> {
   try {
     json = JSON.parse(text);
   } catch {
-    throw new Error(
-      `The selected file is not a ${APP_NAME} document: its ${MANIFEST_FILE_NAME} is not valid JSON.`,
-    );
+    throw new LocalizedError({
+      ...ERRORS.manifestNotJson,
+      values: { appName: APP_NAME, manifestName: MANIFEST_FILE_NAME },
+    });
   }
 
   const result = DocumentFileSchema.safeParse(json);
   if (!result.success) {
-    throw new Error(
-      `The selected file is not a ${APP_NAME} document: ${result.error.message}`,
-    );
+    throw new LocalizedError({
+      ...ERRORS.manifestInvalid,
+      values: { appName: APP_NAME, reason: result.error.message },
+    });
   }
 
   return result.data;
@@ -409,61 +497,73 @@ function isKnownDocumentType(type: string): boolean {
  */
 function migrateDocument(document: unknown, fromVersion: number): Document {
   if (fromVersion > STATE_VERSION) {
-    throw new Error(
-      `This document was written at state version ${fromVersion}, which is newer ` +
-        `than this build understands (${STATE_VERSION}). Update ${APP_NAME} to open it.`,
-    );
+    throw new LocalizedError({
+      ...ERRORS.stateTooNew,
+      values: {
+        fileVersion: fromVersion,
+        buildVersion: STATE_VERSION,
+        appName: APP_NAME,
+      },
+    });
   }
 
   // The envelopes are the authority on which versions can be read: reading one
   // means being able to build a valid state of its version to migrate it in.
   const envelope = envelopeForVersion(fromVersion);
   if (!envelope) {
-    throw new Error(
-      `This build cannot read a document written at state version ${fromVersion}.`,
-    );
+    throw new LocalizedError({
+      ...ERRORS.stateUnreadable,
+      values: { fileVersion: fromVersion },
+    });
   }
 
   let state: unknown = envelope(document);
 
   const fromSchema = getSchemaForVersion(fromVersion);
   if (fromSchema && !fromSchema.safeParse(state).success) {
-    throw new Error(
-      `This document does not match state version ${fromVersion}, which it says it was written at.`,
-    );
+    throw new LocalizedError({
+      ...ERRORS.stateMalformed,
+      values: { fileVersion: fromVersion },
+    });
   }
 
   for (let version = fromVersion; version < STATE_VERSION; version++) {
     const migration = getMigration(version);
     if (!migration) {
-      throw new Error(
-        `This document cannot be brought up to date: no migration from state version ${version}.`,
-      );
+      throw new LocalizedError({
+        ...ERRORS.noMigration,
+        values: { fromVersion: version },
+      });
     }
 
     try {
       state = migration.migrate(state);
     } catch (error) {
-      throw new Error(
-        `This document could not be brought up to date, from state version ` +
-          `${version} to ${version + 1}: ${errorMessage(error)}`,
-      );
+      throw new LocalizedError({
+        ...ERRORS.migrationFailed,
+        values: {
+          fromVersion: version,
+          toVersion: version + 1,
+          reason: errorMessage(error),
+        },
+      });
     }
   }
 
   const currentSchema = getSchemaForVersion(STATE_VERSION);
   const result = currentSchema?.safeParse(state);
   if (!result?.success) {
-    throw new Error(
-      `This document could not be brought up to date: ${result?.error.message ?? "unknown error"}`,
-    );
+    throw new LocalizedError({
+      ...ERRORS.migrationResultInvalid,
+      values: { reason: result?.error.message ?? "unknown error" },
+    });
   }
 
   const migrated = (result.data as AppPersistentState).documents[
     ENVELOPED_DOCUMENT_ID
   ];
   if (!migrated) {
-    throw new Error("This document was lost while being brought up to date.");
+    throw new LocalizedError(ERRORS.documentLost);
   }
 
   return migrated;
@@ -479,7 +579,7 @@ async function writeDocument(
   const state = useAppPersistentStore.getState();
   const document = state.documents[documentId];
   if (!document) {
-    throw new Error("The document is no longer open.");
+    throw new LocalizedError(ERRORS.documentClosed);
   }
 
   const { blob, missingAssetIds } = await writeDocumentFile(state, documentId);
@@ -511,9 +611,16 @@ async function writeDocument(
 
 function reportMissingAssets(missingAssetIds: string[]) {
   if (missingAssetIds.length > 0) {
-    const message = `Saved a document without ${missingAssetIds.length} asset(s) whose data could not be found`;
-    toast.warning(message);
-    console.warn(`${message}:`, missingAssetIds);
+    toast.warning(
+      i18n._({
+        ...ERRORS.savedWithoutAssets,
+        values: { count: missingAssetIds.length },
+      }),
+    );
+    console.warn(
+      `Saved a document without ${missingAssetIds.length} asset(s) whose data could not be found:`,
+      missingAssetIds,
+    );
   }
 }
 

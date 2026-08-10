@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, within } from "test/render";
 import userEvent from "@testing-library/user-event";
 import {
   CodexId,
@@ -7,7 +7,11 @@ import {
   LocalizationDbSchema,
   LocalizationKey,
 } from "app/persistentState";
-import { resetAllStores, createEmptyDeviceClassEditor } from "test/utils";
+import {
+  createEmptyDeviceClassEditor,
+  resetAllStores,
+  testUndoLabel,
+} from "test/utils";
 import { updateCurrentEditor } from "features/deviceClassEditor/state";
 import { DeviceClassClassEditing } from "features/deviceClassEditor/classEditing";
 import { CommandClassEditor } from "./CommandClassEditor";
@@ -16,7 +20,7 @@ const CLASS_ID = EntityId("test-command-class");
 const NAME_KEY = LocalizationKey("test-command-class-name");
 
 function createTestCommandClass() {
-  updateCurrentEditor("Add test command class", (draft) => {
+  updateCurrentEditor(testUndoLabel("Add test command class"), (draft) => {
     draft.localizations[NAME_KEY] = {
       strings: LocalizationDbSchema.parse({ "en-US": "Reset" }),
     };

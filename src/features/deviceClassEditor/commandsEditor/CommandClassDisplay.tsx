@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { useId } from "react";
 import { Label } from "components/scn-ui/Label";
 import { ResolvedCommandClass } from "../stateTransformations";
@@ -15,13 +16,19 @@ export const CommandClassDisplay = ({ commandClass }: Props) => {
   return (
     <div className="flex flex-col items-stretch gap-2">
       <div>
-        <Label htmlFor={descId}>Description</Label>
+        <Label htmlFor={descId}>
+          <Trans id="deviceClassEditor.commandClassDisplay.description">
+            Description
+          </Trans>
+        </Label>
         <div className={textClass} id={descId}>
           {commandClass.description?.value}
         </div>
       </div>
       <div>
-        <Label htmlFor={idId}>ID</Label>
+        <Label htmlFor={idId}>
+          <Trans id="deviceClassEditor.commandClassDisplay.id">ID</Trans>
+        </Label>
         <div className={textClass} id={idId}>
           {commandClass.codexId}
         </div>

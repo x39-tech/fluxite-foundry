@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, within } from "test/render";
 import userEvent from "@testing-library/user-event";
 import {
   CodexId,
@@ -9,7 +9,11 @@ import {
   LocalizationKey,
 } from "app/persistentState";
 import { useAppPersistentStore } from "app/store";
-import { resetAllStores, createEmptyDeviceClassEditor } from "test/utils";
+import {
+  createEmptyDeviceClassEditor,
+  resetAllStores,
+  testUndoLabel,
+} from "test/utils";
 import { updateCurrentEditor } from "../state";
 import { ParametersEditor } from "./ParametersEditor";
 
@@ -17,7 +21,7 @@ const CLASS_ID = EntityId("local-parameter-class");
 const NAME_KEY = LocalizationKey("local-parameter-class-name");
 
 function createLocalParameterClass() {
-  updateCurrentEditor("Add test parameter class", (draft) => {
+  updateCurrentEditor(testUndoLabel("Add test parameter class"), (draft) => {
     draft.localizations[NAME_KEY] = {
       strings: LocalizationDbSchema.parse({ "en-US": "Local Intensity" }),
     };

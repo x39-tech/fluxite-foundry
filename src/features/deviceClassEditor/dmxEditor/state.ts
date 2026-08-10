@@ -1,4 +1,6 @@
 import { useMemo } from "react";
+import { i18n } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import { DmxController } from "app/runtimeState";
 import {
   CodexId,
@@ -25,7 +27,7 @@ import { newEntityId, selectWithIds } from "app/stateUtils";
 import {
   useAppRuntimeStore,
   useLibraryStore,
-  useCurrentLocale,
+  useAuthoringLocale,
 } from "app/store";
 import {
   lookupParameterClass,
@@ -36,6 +38,53 @@ import { resolveClassRef } from "../classResolution";
 import { EffectiveEnumChoice, getEffectiveEnumChoices } from "./mappingUtils";
 import { localize } from "features/localizations/localize";
 import { ItemEditor } from "utils/utils";
+
+const UNDO = {
+  addChunk: msg({
+    id: "deviceClassEditor.dmx.undo.addChunk",
+    message: "Add DMX Chunk",
+  }),
+  deleteChunk: msg({
+    id: "deviceClassEditor.dmx.undo.deleteChunk",
+    message: "Delete DMX Chunk",
+  }),
+  changeOffsets: msg({
+    id: "deviceClassEditor.dmx.undo.changeOffsets",
+    message: "Change DMX Offsets",
+  }),
+  addMappingGroup: msg({
+    id: "deviceClassEditor.dmx.undo.addMappingGroup",
+    message: "Add DMX Mapping Group",
+  }),
+  deleteMappingGroup: msg({
+    id: "deviceClassEditor.dmx.undo.deleteMappingGroup",
+    message: "Delete DMX Mapping Group",
+  }),
+  addParameterMapping: msg({
+    id: "deviceClassEditor.dmx.undo.addParameterMapping",
+    message: "Add DMX Parameter Mapping",
+  }),
+  editParameterMapping: msg({
+    id: "deviceClassEditor.dmx.undo.editParameterMapping",
+    message: "Edit DMX Parameter Mapping",
+  }),
+  deleteParameterMapping: msg({
+    id: "deviceClassEditor.dmx.undo.deleteParameterMapping",
+    message: "Delete DMX Parameter Mapping",
+  }),
+  addMappingCondition: msg({
+    id: "deviceClassEditor.dmx.undo.addMappingCondition",
+    message: "Add DMX Mapping Condition",
+  }),
+  editMappingCondition: msg({
+    id: "deviceClassEditor.dmx.undo.editMappingCondition",
+    message: "Edit DMX Mapping Condition",
+  }),
+  deleteMappingCondition: msg({
+    id: "deviceClassEditor.dmx.undo.deleteMappingCondition",
+    message: "Delete DMX Mapping Condition",
+  }),
+};
 
 /** Data types that can be mapped to DMX values */
 export type MappableDataType =
@@ -64,8 +113,13 @@ export function useDmxSerializer(): DmxSerializerState | undefined {
   return useCurrentEditorPart((state) => state.dmxSerializer);
 }
 
+const CHUNK_LABEL = msg({
+  id: "deviceClassEditor.dmxChunk.slotLabel",
+  message: "Slot {offsets}",
+});
+
 export function dmxChunkLabel(offsets: number[]): string {
-  return `Slot ${offsets.join(", ")}`;
+  return i18n._({ ...CHUNK_LABEL, values: { offsets: offsets.join(", ") } });
 }
 
 export function useDmxChunkEditors(): ItemEditor[] {
@@ -100,7 +154,7 @@ const NO_CONTROLLER: DmxController = { state: "not-created" };
  * Filters to only number/boolean/enum data types and computes effective enum choices.
  */
 export function useMappableParameters(): Record<EntityId, MappableParameter> {
-  const locale = useCurrentLocale();
+  const locale = useAuthoringLocale();
   const sourceLocale = useSourceLocale();
   const libraryStore = useLibraryStore();
   const importedLibs = useLibraries();
@@ -237,7 +291,7 @@ function isMappableParamClass(
 // ---------------------------------------------------------------------------
 
 export function addDmxChunk() {
-  updateCurrentEditor("Add DMX Chunk", (editor) => {
+  updateCurrentEditor(UNDO.addChunk, (editor) => {
     const dmx = getOrCreateDmxSerializer(editor);
 
     const offsetsInUse = Object.values(dmx.chunks).reduce((acc, chunk) => {
@@ -272,7 +326,7 @@ export function addDmxChunk() {
 }
 
 export function removeDmxChunk(chunkId: EntityId) {
-  updateCurrentEditor("Delete DMX Chunk", (editor) => {
+  updateCurrentEditor(UNDO.deleteChunk, (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx) return;
 
@@ -336,7 +390,7 @@ function removeConditionAndChildren(
 }
 
 export function changeDmxChunkOffsets(chunkId: EntityId, newOffsets: string[]) {
-  updateCurrentEditor("Change DMX Offsets", (editor) => {
+  updateCurrentEditor(UNDO.changeOffsets, (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx) return;
 
@@ -371,7 +425,7 @@ export function changeDmxChunkOffsets(chunkId: EntityId, newOffsets: string[]) {
 // ---------------------------------------------------------------------------
 
 export function addParameterMappingGroup(chunkId: EntityId) {
-  updateCurrentEditor("Add DMX Mapping Group", (editor) => {
+  updateCurrentEditor(UNDO.addMappingGroup, (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx || !dmx.chunks[chunkId]) return;
 
@@ -395,7 +449,7 @@ export function removeParameterMappingGroup(
   chunkId: EntityId,
   mappingGroupId: EntityId,
 ) {
-  updateCurrentEditor("Delete DMX Mapping Group", (editor) => {
+  updateCurrentEditor(UNDO.deleteMappingGroup, (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx) return;
 
@@ -414,7 +468,7 @@ export function removeParameterMappingGroup(
 // ---------------------------------------------------------------------------
 
 export function addParameterMapping(mappingGroupId: EntityId) {
-  updateCurrentEditor("Add DMX Parameter Mapping", (editor) => {
+  updateCurrentEditor(UNDO.addParameterMapping, (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx) return;
 
@@ -444,7 +498,7 @@ export function updateParameterMapping(
   mappingIndex: number,
   newValue: DmxMapping,
 ) {
-  updateCurrentEditor("Edit DMX Parameter Mapping", (editor) => {
+  updateCurrentEditor(UNDO.editParameterMapping, (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx) return;
 
@@ -459,7 +513,7 @@ export function removeParameterMapping(
   mappingGroupId: EntityId,
   mappingIndex: number,
 ) {
-  updateCurrentEditor("Delete DMX Parameter Mapping", (editor) => {
+  updateCurrentEditor(UNDO.deleteParameterMapping, (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx) return;
 
@@ -478,7 +532,7 @@ export function addCondition(
   mappingGroupId: EntityId,
   parentChunkId: EntityId,
 ) {
-  updateCurrentEditor("Add DMX Mapping Condition", (editor) => {
+  updateCurrentEditor(UNDO.addMappingCondition, (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx) return;
 
@@ -544,7 +598,7 @@ export function updateCondition(
   conditionId: EntityId,
   newCondition: DmxCondition,
 ) {
-  updateCurrentEditor("Edit DMX Mapping Condition", (editor) => {
+  updateCurrentEditor(UNDO.editMappingCondition, (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx) return;
 
@@ -558,7 +612,7 @@ export function updateConditionMatch(
   conditionId: EntityId,
   match: "any" | "all",
 ) {
-  updateCurrentEditor("Edit DMX Mapping Condition", (editor) => {
+  updateCurrentEditor(UNDO.editMappingCondition, (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx) return;
 
@@ -570,7 +624,7 @@ export function updateConditionMatch(
 }
 
 export function removeCondition(conditionId: EntityId) {
-  updateCurrentEditor("Delete DMX Mapping Condition", (editor) => {
+  updateCurrentEditor(UNDO.deleteMappingCondition, (editor) => {
     const dmx = editor.dmxSerializer;
     if (!dmx) return;
 

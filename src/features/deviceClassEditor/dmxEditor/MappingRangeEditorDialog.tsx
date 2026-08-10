@@ -1,3 +1,6 @@
+import { Trans } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
 import { useEffect, useState } from "react";
 import { CheckIcon } from "lucide-react";
 import {
@@ -27,6 +30,7 @@ import {
 import { SequenceStepEditor } from "./SequenceStepEditor";
 import {
   EffectiveEnumChoice,
+  formatEnumBoundValue,
   getEffectiveEnd,
   normalizeEndValue,
   validateSequenceSteps,
@@ -34,6 +38,18 @@ import {
 import { MappableDataType } from "./state";
 
 type OutputMode = "range" | "sequence";
+
+const MESSAGES = {
+  discardStepsConfirm: msg({
+    id: "deviceClassEditor.dmxMappingRange.discardStepsConfirm",
+    message: "Switching to Range mode will discard sequence steps. Continue?",
+  }),
+  save: msg({ id: "deviceClassEditor.dmxMappingRange.save", message: "Save" }),
+  cancel: msg({
+    id: "deviceClassEditor.dmxMappingRange.cancel",
+    message: "Cancel",
+  }),
+};
 
 interface MappingRangeEditorDialogProps {
   isOpen: boolean;
@@ -52,6 +68,8 @@ export const MappingRangeEditorDialog = ({
   dataType,
   enumChoices,
 }: MappingRangeEditorDialogProps) => {
+  const { _ } = useLingui();
+
   // Parameter value bounds
   const [start, setStart] = useState<DmxMappingBound | undefined>(range.start);
   const [end, setEnd] = useState<DmxMappingBound | undefined>(range.end);
@@ -87,11 +105,7 @@ export const MappingRangeEditorDialog = ({
 
   const handleModeChange = (newMode: OutputMode) => {
     if (mode === "sequence" && newMode === "range" && steps.length > 0) {
-      if (
-        !window.confirm(
-          "Switching to Range mode will discard sequence steps. Continue?",
-        )
-      ) {
+      if (!window.confirm(_(MESSAGES.discardStepsConfirm))) {
         return;
       }
     }
@@ -115,16 +129,26 @@ export const MappingRangeEditorDialog = ({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Edit Mapping Range</DialogTitle>
+          <DialogTitle>
+            <Trans id="deviceClassEditor.dmxMappingRange.editMappingRange">
+              Edit Mapping Range
+            </Trans>
+          </DialogTitle>
           <DialogDescription>
-            Configure how parameter values map to DMX output values
+            <Trans id="deviceClassEditor.dmxMappingRange.configureHowParameterValuesMapToDmxOutputValues">
+              Configure how parameter values map to DMX output values
+            </Trans>
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
           {/* Parameter Value Bounds */}
           <div className="flex flex-col gap-2">
-            <Label className="font-semibold">Parameter Value Range</Label>
+            <Label className="font-semibold">
+              <Trans id="deviceClassEditor.dmxMappingRange.parameterValueRange">
+                Parameter Value Range
+              </Trans>
+            </Label>
             <div className="flex items-center gap-4">
               {dataType === "boolean" && (
                 <BooleanBoundInputs
@@ -156,14 +180,26 @@ export const MappingRangeEditorDialog = ({
 
           {/* Output Mode Selector */}
           <div className="flex flex-col gap-2">
-            <Label className="font-semibold">Output Mode</Label>
+            <Label className="font-semibold">
+              <Trans id="deviceClassEditor.dmxMappingRange.outputMode">
+                Output Mode
+              </Trans>
+            </Label>
             <Select value={mode} onValueChange={handleModeChange}>
               <SelectTrigger className="w-40">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="range">Range</SelectItem>
-                <SelectItem value="sequence">Sequence</SelectItem>
+                <SelectItem value="range">
+                  <Trans id="deviceClassEditor.dmxMappingRange.range">
+                    Range
+                  </Trans>
+                </SelectItem>
+                <SelectItem value="sequence">
+                  <Trans id="deviceClassEditor.dmxMappingRange.sequence">
+                    Sequence
+                  </Trans>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -171,10 +207,18 @@ export const MappingRangeEditorDialog = ({
           {/* Mode-specific content */}
           {mode === "range" ? (
             <div className="flex flex-col gap-2">
-              <Label className="font-semibold">DMX Output Range</Label>
+              <Label className="font-semibold">
+                <Trans id="deviceClassEditor.dmxMappingRange.dmxOutputRange">
+                  DMX Output Range
+                </Trans>
+              </Label>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <Label>Start:</Label>
+                  <Label>
+                    <Trans id="deviceClassEditor.dmxMappingRange.start">
+                      Start:
+                    </Trans>
+                  </Label>
                   <IntegerInput
                     className="w-24"
                     value={chunkStart}
@@ -184,7 +228,11 @@ export const MappingRangeEditorDialog = ({
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Label>End:</Label>
+                  <Label>
+                    <Trans id="deviceClassEditor.dmxMappingRange.end">
+                      End:
+                    </Trans>
+                  </Label>
                   <IntegerInput
                     className="w-24"
                     value={chunkEnd}
@@ -197,7 +245,11 @@ export const MappingRangeEditorDialog = ({
             </div>
           ) : (
             <div className="flex flex-col gap-2">
-              <Label className="font-semibold">Sequence Steps</Label>
+              <Label className="font-semibold">
+                <Trans id="deviceClassEditor.dmxMappingRange.sequenceSteps">
+                  Sequence Steps
+                </Trans>
+              </Label>
               <SequenceStepEditor
                 steps={steps}
                 onStepsChange={setSteps}
@@ -208,12 +260,20 @@ export const MappingRangeEditorDialog = ({
         </div>
 
         <DialogFooter>
-          <Button aria-label="Save" disabled={!canSave} onClick={handleSave}>
+          <Button
+            aria-label={_(MESSAGES.save)}
+            disabled={!canSave}
+            onClick={handleSave}
+          >
             <CheckIcon />
-            Save
+            <Trans id="deviceClassEditor.dmxMappingRange.save">Save</Trans>
           </Button>
-          <Button variant="secondary" aria-label="Cancel" onClick={onClose}>
-            Cancel
+          <Button
+            variant="secondary"
+            aria-label={_(MESSAGES.cancel)}
+            onClick={onClose}
+          >
+            <Trans id="deviceClassEditor.dmxMappingRange.cancel">Cancel</Trans>
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -283,7 +343,9 @@ const NumericBoundInputs = ({
   return (
     <>
       <div className="flex items-center gap-2">
-        <Label>Start:</Label>
+        <Label>
+          <Trans id="deviceClassEditor.dmxMappingRange.start">Start:</Trans>
+        </Label>
         <Input
           type="text"
           inputMode="decimal"
@@ -294,7 +356,9 @@ const NumericBoundInputs = ({
         />
       </div>
       <div className="flex items-center gap-2">
-        <Label>End:</Label>
+        <Label>
+          <Trans id="deviceClassEditor.dmxMappingRange.end">End:</Trans>
+        </Label>
         <Input
           type="text"
           inputMode="decimal"
@@ -346,7 +410,9 @@ const BooleanBoundInputs = ({
   return (
     <>
       <div className="flex items-center gap-2">
-        <Label>Start:</Label>
+        <Label>
+          <Trans id="deviceClassEditor.dmxMappingRange.start">Start:</Trans>
+        </Label>
         <Select
           value={startValue}
           onValueChange={(v) => onStartChange(parseBoolean(v))}
@@ -362,7 +428,9 @@ const BooleanBoundInputs = ({
         </Select>
       </div>
       <div className="flex items-center gap-2">
-        <Label>End:</Label>
+        <Label>
+          <Trans id="deviceClassEditor.dmxMappingRange.end">End:</Trans>
+        </Label>
         <Select value={endValue} onValueChange={handleEndChange}>
           <SelectTrigger className="w-24">
             <SelectValue />
@@ -410,14 +478,15 @@ const EnumBoundInputs = ({
   };
 
   // Format choice label: "Name (index)"
-  const formatChoice = (choice: EffectiveEnumChoice): string => {
-    return `${choice.name.value} (${choice.index})`;
-  };
+  const formatChoice = (choice: EffectiveEnumChoice): string =>
+    formatEnumBoundValue(choice.index, choices);
 
   return (
     <>
       <div className="flex items-center gap-2">
-        <Label>Start:</Label>
+        <Label>
+          <Trans id="deviceClassEditor.dmxMappingRange.start">Start:</Trans>
+        </Label>
         <Select
           value={startInfo.selectValue}
           onValueChange={(v) => onStartChange(parseEnumValue(v))}
@@ -436,7 +505,9 @@ const EnumBoundInputs = ({
         </Select>
       </div>
       <div className="flex items-center gap-2">
-        <Label>End:</Label>
+        <Label>
+          <Trans id="deviceClassEditor.dmxMappingRange.end">End:</Trans>
+        </Label>
         <Select value={endInfo.selectValue} onValueChange={handleEndChange}>
           <SelectTrigger className={`w-40 ${endInfo.borderClass}`}>
             <SelectValue placeholder={endInfo.placeholderText} />
@@ -483,7 +554,7 @@ function getBoundRenderInfo(
     return {
       selectValue: "",
       borderClass: invalidBorderClass,
-      placeholderText: `Invalid: ${val}`,
+      placeholderText: formatEnumBoundValue(val, choices),
     };
   }
 

@@ -28,6 +28,8 @@ git submodule update --init --recursive
 
 ### Developing
 
+Node 22.19 or newer is required. Use `nvm use` to use the version specified in our `.nvmrc`.
+
 Please familiarize yourself with the project's architecture using the documentation in `docs/`, and match the existing architecture with your contributions. Please run the `npm run lint` and `npm run format` scripts before opening a merge request.
 
 ### Available Scripts
@@ -50,3 +52,7 @@ In the project directory, the following scripts are available to you:
 - `npm run formatcheck`: Runs prettier in 'check' mode, typically used in CI.
 - `npm run format`: Runs prettier to reformat all code.
 - `npm run typecheck`: Run the Typescript compiler on the project.
+
+**Translation:**
+
+- `npm run i18n:extract`: Collects the app's user-facing strings into `src/locales/`. Run this after adding or changing any user-facing text.

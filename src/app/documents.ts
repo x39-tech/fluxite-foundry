@@ -9,6 +9,7 @@
 
 import { Draft, Patch } from "immer";
 import { useShallow } from "zustand/react/shallow";
+import { MessageDescriptor } from "@lingui/core";
 import {
   AppPersistentState,
   Document,
@@ -170,7 +171,7 @@ export function useDocumentLayout(
  */
 export function updateCurrentDocumentOfType<T extends DocumentType>(
   type: T,
-  label: string,
+  label: MessageDescriptor,
   updater: (document: Draft<DocumentOfType<T>>) => void,
 ) {
   updateAppPersistentState(

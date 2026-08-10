@@ -1,4 +1,5 @@
 import { Draft } from "immer";
+import { msg } from "@lingui/core/macro";
 import {
   updateCurrentEditor,
   useCurrentEditorPartShallow,
@@ -8,7 +9,14 @@ import { setDeviceClassLocalizedValue } from "../localizationRegistry";
 import { DeviceClassBasicData } from "app/persistentState";
 import { Unlocalized } from "features/localizations/types";
 import { localize, LocalizedString } from "features/localizations/localize";
-import { useCurrentLocale } from "app/store";
+import { useAuthoringLocale } from "app/store";
+
+const UNDO = {
+  editDeviceInfo: msg({
+    id: "deviceClassEditor.deviceInfo.undo.editDeviceInfo",
+    message: "Edit Device Info",
+  }),
+};
 
 export interface LocalizedBasicData extends Unlocalized<DeviceClassBasicData> {
   description: LocalizedString;
@@ -19,7 +27,7 @@ export interface LocalizedBasicData extends Unlocalized<DeviceClassBasicData> {
 // ---------------------------------------------------------------------------
 
 export function useBasicData(): LocalizedBasicData | undefined {
-  const locale = useCurrentLocale();
+  const locale = useAuthoringLocale();
   const sourceLocale = useSourceLocale();
   const editorPart = useCurrentEditorPartShallow((editor) => {
     return [editor.basicData, editor.localizations] as const;
@@ -51,7 +59,7 @@ export function useBasicData(): LocalizedBasicData | undefined {
 export function modifyBasicData(
   recipe: (state: Draft<Unlocalized<DeviceClassBasicData>>) => void,
 ) {
-  updateCurrentEditor("Edit Device Info", (editor) => {
+  updateCurrentEditor(UNDO.editDeviceInfo, (editor) => {
     recipe(editor.basicData);
   });
 }
@@ -61,7 +69,7 @@ export function modifyBasicDataLocalizedValue(
   newValue: string,
   locale: string,
 ) {
-  updateCurrentEditor("Edit Device Info", (editor) => {
+  updateCurrentEditor(UNDO.editDeviceInfo, (editor) => {
     setDeviceClassLocalizedValue(
       editor,
       { table: "basicData", field: key },

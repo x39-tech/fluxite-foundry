@@ -1,3 +1,6 @@
+import { Trans } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
 import { Fragment } from "react";
 import {
   DmxChunkRefCondition,
@@ -17,6 +20,36 @@ import {
   updateConditionMatch,
   useDmxSerializer,
 } from "./state";
+
+const MESSAGES = {
+  selectSlot: msg({
+    id: "deviceClassEditor.dmxCondition.selectSlot",
+    message: "Select a slot...",
+  }),
+  match: msg({ id: "deviceClassEditor.dmxCondition.match", message: "Match" }),
+  rangeStart: msg({
+    id: "deviceClassEditor.dmxCondition.rangeStart",
+    message: "Range start",
+  }),
+  rangeEnd: msg({
+    id: "deviceClassEditor.dmxCondition.rangeEnd",
+    message: "Range end",
+  }),
+  deleteCondition: msg({
+    id: "deviceClassEditor.dmxCondition.deleteCondition",
+    message: "Delete condition",
+  }),
+  matchAll: msg({
+    id: "deviceClassEditor.dmxCondition.matchAll",
+    message: "And",
+    comment: "Logical AND",
+  }),
+  matchAny: msg({
+    id: "deviceClassEditor.dmxCondition.matchAny",
+    message: "Or",
+    comment: "Logical OR",
+  }),
+};
 
 interface DmxConditionTreeProps {
   conditionId: EntityId;
@@ -68,7 +101,13 @@ export const DmxConditionTree = ({
     );
   }
 
-  return <>Invalid condition data</>;
+  return (
+    <>
+      <Trans id="deviceClassEditor.dmxCondition.invalid">
+        Invalid condition data
+      </Trans>
+    </>
+  );
 };
 
 interface ConditionMatchDividerProps {
@@ -82,15 +121,17 @@ const ConditionMatchDivider = ({
   editable,
   onMatchChanged,
 }: ConditionMatchDividerProps) => {
+  const { _ } = useLingui();
+
   return (
     <div className="relative flex items-center justify-center py-2">
       <Separator className="absolute" />
       {editable ? (
         <SelectField
           className="relative w-24 bg-background"
-          aria-label="Match"
+          aria-label={_(MESSAGES.match)}
           values={["all", "any"]}
-          displayValues={["And", "Or"]}
+          displayValues={[_(MESSAGES.matchAll), _(MESSAGES.matchAny)]}
           selectedValue={match}
           onSelectionChanged={(newValue) =>
             onMatchChanged(newValue as "any" | "all")
@@ -98,7 +139,7 @@ const ConditionMatchDivider = ({
         />
       ) : (
         <span className="relative rounded-md border bg-background px-3 py-1.5 text-sm font-medium">
-          {match === "any" ? "Or" : "And"}
+          {match === "any" ? _(MESSAGES.matchAny) : _(MESSAGES.matchAll)}
         </span>
       )}
     </div>
@@ -116,6 +157,8 @@ const DmxChunkRefConditionView = ({
   condition,
   parentChunkId,
 }: DmxChunkRefConditionViewProps) => {
+  const { _ } = useLingui();
+
   const dmx = useDmxSerializer();
 
   if (!dmx) {
@@ -137,7 +180,7 @@ const DmxChunkRefConditionView = ({
         items={availableChunkIds}
         displayNames={displayNames}
         selectedItem={condition.chunkId}
-        placeholderText="Select a slot..."
+        placeholderText={MESSAGES.selectSlot}
         onSelectedItemChanged={(newChunkId) =>
           updateCondition(conditionId, {
             ...condition,
@@ -145,10 +188,17 @@ const DmxChunkRefConditionView = ({
           })
         }
       />
-      <span className="text-sm">is between</span>
+      <span className="text-sm">
+        <Trans
+          id="deviceClassEditor.dmxCondition.isBetween"
+          comment="Full form: '{slot ID} is between {number selector} {number selector}'"
+        >
+          is between
+        </Trans>
+      </span>
       <TextEditorField
         className="w-24"
-        aria-label="Range start"
+        aria-label={_(MESSAGES.rangeStart)}
         value={condition.chunkStart.toString()}
         onConfirm={(newValue) => {
           const parsed = parseInt(newValue);
@@ -161,7 +211,7 @@ const DmxChunkRefConditionView = ({
       />
       <TextEditorField
         className="w-24"
-        aria-label="Range end"
+        aria-label={_(MESSAGES.rangeEnd)}
         value={condition.chunkEnd.toString()}
         onConfirm={(newValue) => {
           const parsed = parseInt(newValue);
@@ -176,10 +226,10 @@ const DmxChunkRefConditionView = ({
       <Button
         variant="ghost"
         className="text-primary"
-        aria-label="Delete condition"
+        aria-label={_(MESSAGES.deleteCondition)}
         onClick={() => removeCondition(conditionId)}
       >
-        Remove
+        <Trans id="deviceClassEditor.dmxCondition.remove">Remove</Trans>
       </Button>
     </div>
   );

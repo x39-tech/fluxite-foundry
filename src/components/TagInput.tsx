@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { useState, useRef } from "react";
 import { XIcon } from "lucide-react";
 import { cn } from "utils/utils";
@@ -94,7 +95,9 @@ export const TagInput = ({
               tabIndex={-1}
             >
               <XIcon className="size-2.5" />
-              <span className="sr-only">Remove tag</span>
+              <span className="sr-only">
+                <Trans id="tagInput.removeItem">Remove item</Trans>
+              </span>
             </button>
           )}
         </div>

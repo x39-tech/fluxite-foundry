@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { ReactNode, useId } from "react";
 import { Checkbox } from "./scn-ui/Checkbox";
 import { Label } from "./scn-ui/Label";
 import { cn } from "utils/utils";
@@ -8,7 +8,7 @@ export interface CheckboxProps {
   onChange: (checked: boolean) => void;
   disabled?: boolean;
   className?: string;
-  children: string;
+  children: ReactNode;
 }
 
 export const LabeledCheckbox = ({

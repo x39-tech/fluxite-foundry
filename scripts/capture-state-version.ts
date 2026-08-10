@@ -75,7 +75,7 @@ function buildStateToCapture(): AppPersistentState {
         id,
         version,
         deviceClass,
-        state.appSettings.locale,
+        state.appSettings.authoringLocale,
       );
       state.session.openDocuments.push(documentId);
       state.session.layouts[documentId] = JSON.stringify(

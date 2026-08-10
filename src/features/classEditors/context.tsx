@@ -3,6 +3,7 @@
 
 import { createContext, ReactNode, useContext } from "react";
 import { Draft } from "immer";
+import { MessageDescriptor } from "@lingui/core";
 import { CodexId, EntityId, LocalizationKey } from "app/persistentState";
 import { ClassKind as ReferenceableClassKind, Library } from "codex/library";
 
@@ -85,9 +86,9 @@ export interface ClassEditingApi {
    */
   getClassUsage(kind: ReferenceableClassKind, classId: EntityId): CodexId[];
 
-  /** Applies one change. The label names it in the undo menu. */
+  /** Applies one change. The label is for the action in the undo menu. */
   update(
-    label: string,
+    label: MessageDescriptor,
     recipe: (draft: Draft<ClassDocument>, localizer: ClassLocalizer) => void,
   ): void;
 }

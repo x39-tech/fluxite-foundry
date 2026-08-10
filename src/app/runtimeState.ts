@@ -1,5 +1,6 @@
 import { DmxDriver, DelverError } from "@cpwg-community/delver";
 import { Patch } from "immer";
+import { MessageDescriptor } from "@lingui/core";
 import { LibraryStore } from "codex/library";
 import { EntityId } from "./persistentState";
 
@@ -39,7 +40,7 @@ export interface DocumentHistory {
 /** One change to one document, and what it takes to put it back either way. */
 export interface HistoryEntry {
   /** What to call the change in the undo menu. */
-  label?: string;
+  label?: MessageDescriptor;
   patches: Patch[];
   inversePatches: Patch[];
   /**

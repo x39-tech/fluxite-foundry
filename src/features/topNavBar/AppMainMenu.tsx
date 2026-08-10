@@ -15,6 +15,9 @@ import {
 } from "lucide-react";
 import { isTauri } from "@tauri-apps/api/core";
 import { toast } from "sonner";
+import { msg } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
+import { useLingui } from "@lingui/react";
 import { getMigrationReport, openMigrationReport } from "app/migrationReport";
 import {
   openDocumentFile,
@@ -45,6 +48,30 @@ import {
 } from "components/scn-ui/DropdownMenu";
 import { Button } from "components/scn-ui/Button";
 
+const MESSAGES = {
+  menuLabel: msg({ id: "navbar.mainMenu.label", message: "App Menu" }),
+  openFailed: msg({
+    id: "navbar.mainMenu.openFailed",
+    message: "Error opening document: {reason}",
+  }),
+  saveFailed: msg({
+    id: "navbar.mainMenu.saveFailed",
+    message: "Error saving document: {reason}",
+  }),
+  noMigrationReport: msg({
+    id: "navbar.mainMenu.noMigrationReport",
+    message: "No migration report available",
+  }),
+  migrationReportBlocked: msg({
+    id: "navbar.mainMenu.migrationReportBlocked",
+    message: "Failed to open migration report. Pop-ups may be blocked.",
+  }),
+  migrationReportFailed: msg({
+    id: "navbar.mainMenu.migrationReportFailed",
+    message: "Failed to open migration report: {reason}",
+  }),
+};
+
 export const AppMainMenu = () => {
   const currentDocumentId = useCurrentDocumentId();
   const [importDialogIsOpen, setImportDialogIsOpen] = useState(false);
@@ -53,12 +80,15 @@ export const AppMainMenu = () => {
   const [aboutDialogIsOpen, setAboutDialogIsOpen] = useState(false);
   const [exportStateDialogIsOpen, setExportStateDialogIsOpen] = useState(false);
   const [importStateDialogIsOpen, setImportStateDialogIsOpen] = useState(false);
+  const { _ } = useLingui();
 
   const openDocument = async () => {
     try {
       await openDocumentFile();
     } catch (error) {
-      toast.error(`Error opening document: ${errorMessage(error)}`);
+      toast.error(
+        _({ ...MESSAGES.openFailed, values: { reason: errorMessage(error) } }),
+      );
     }
   };
 
@@ -66,7 +96,9 @@ export const AppMainMenu = () => {
     try {
       await (alwaysAsk ? saveDocumentAs : saveDocument)(documentId);
     } catch (error) {
-      toast.error(`Error saving document: ${errorMessage(error)}`);
+      toast.error(
+        _({ ...MESSAGES.saveFailed, values: { reason: errorMessage(error) } }),
+      );
     }
   };
 
@@ -81,7 +113,7 @@ export const AppMainMenu = () => {
             size="icon"
             variant="outline"
             className="size-8"
-            aria-label="App Menu"
+            aria-label={_(MESSAGES.menuLabel)}
           >
             <SlidersVerticalIcon className="size-6" />
           </Button>
@@ -91,7 +123,7 @@ export const AppMainMenu = () => {
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => void openDocument()}>
             <FolderOpenIcon className="size-5" />
-            Open...
+            <Trans id="navbar.mainMenu.open">Open...</Trans>
           </DropdownMenuItem>
           <DropdownMenuItem
             disabled={currentDocumentId === undefined}
@@ -100,7 +132,7 @@ export const AppMainMenu = () => {
             }
           >
             <SaveIcon className="size-5" />
-            Save
+            <Trans id="navbar.mainMenu.save">Save</Trans>
           </DropdownMenuItem>
           {isTauri() && (
             <DropdownMenuItem
@@ -110,65 +142,72 @@ export const AppMainMenu = () => {
               }
             >
               <SaveIcon className="size-5" />
-              Save As...
+              <Trans id="navbar.mainMenu.saveAs">Save As...</Trans>
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setImportDialogIsOpen(true)}>
             <DownloadIcon className="size-5" />
-            Import Fluxite Codex...
+            <Trans id="navbar.mainMenu.importCodex">
+              Import Fluxite Codex...
+            </Trans>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setExportDialogIsOpen(true)}>
             <UploadIcon className="size-5" />
-            Export Fluxite Codex...
+            <Trans id="navbar.mainMenu.exportCodex">
+              Export Fluxite Codex...
+            </Trans>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setSettingsDialogIsOpen(true)}>
             <SettingsIcon className="size-5" />
-            Settings...
+            <Trans id="navbar.mainMenu.settings">Settings...</Trans>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuSub>
             <DropdownMenuSubTrigger className="flex gap-2">
               <WrenchIcon className="size-5 text-muted-foreground" />
-              Debug
+              <Trans id="navbar.mainMenu.debug">Debug</Trans>
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
               <DropdownMenuItem
                 onClick={() => {
                   void (async () => {
                     if (!getMigrationReport()) {
-                      toast.error("No migration report available");
+                      toast.error(_(MESSAGES.noMigrationReport));
                       return;
                     }
                     try {
                       if (!(await openMigrationReport())) {
-                        toast.error(
-                          "Failed to open migration report. Pop-ups may be blocked.",
-                        );
+                        toast.error(_(MESSAGES.migrationReportBlocked));
                       }
                     } catch (error) {
                       toast.error(
-                        `Failed to open migration report: ${errorMessage(error)}`,
+                        _({
+                          ...MESSAGES.migrationReportFailed,
+                          values: { reason: errorMessage(error) },
+                        }),
                       );
                     }
                   })();
                 }}
               >
                 <FileTextIcon className="size-5" />
-                View Migration Report
+                <Trans id="navbar.mainMenu.viewMigrationReport">
+                  View Migration Report
+                </Trans>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => setExportStateDialogIsOpen(true)}
               >
                 <HardDriveUploadIcon className="size-5" />
-                Export State...
+                <Trans id="navbar.mainMenu.exportState">Export State...</Trans>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => setImportStateDialogIsOpen(true)}
               >
                 <HardDriveDownloadIcon className="size-5" />
-                Import State...
+                <Trans id="navbar.mainMenu.importState">Import State...</Trans>
               </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
@@ -177,12 +216,14 @@ export const AppMainMenu = () => {
               onClick={() => void checkForUpdateInteractively()}
             >
               <RefreshCwIcon className="size-5" />
-              Check for Updates...
+              <Trans id="navbar.mainMenu.checkForUpdates">
+                Check for Updates...
+              </Trans>
             </DropdownMenuItem>
           )}
           <DropdownMenuItem onClick={() => setAboutDialogIsOpen(true)}>
             <CircleQuestionMarkIcon className="size-5" />
-            {`About ${APP_NAME}`}
+            <Trans id="navbar.mainMenu.about">About {APP_NAME}</Trans>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

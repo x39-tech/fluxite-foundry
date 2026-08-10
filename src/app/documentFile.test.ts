@@ -1,6 +1,10 @@
 import JSZip from "jszip";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { createEmptyDeviceClassEditor, resetAllStores } from "test/utils";
+import {
+  createEmptyDeviceClassEditor,
+  resetAllStores,
+  testUndoLabel,
+} from "test/utils";
 import { deviceClassAssets } from "features/deviceClassEditor/assets";
 import { updateCurrentEditor } from "features/deviceClassEditor/state";
 import { updateResourceAsset } from "features/deviceClassEditor/resourcesEditor/state";
@@ -104,7 +108,7 @@ describe("save files", () => {
     });
 
     test("keeps a document name that is not a usable file name out of the file name", () => {
-      updateCurrentEditor("Rename", (editor) => {
+      updateCurrentEditor(testUndoLabel("Rename"), (editor) => {
         editor.basicData.modelName = "Model 5/8 : rev?2";
       });
 
@@ -157,7 +161,7 @@ describe("save files", () => {
     test("refuses a document that does not match the version it claims", async () => {
       await expect(
         readDocumentFile(await fileWith({ document: { type: "deviceClass" } })),
-      ).rejects.toThrow(/does not match state version/);
+      ).rejects.toThrow(/malformed state data/);
     });
   });
 
@@ -272,7 +276,7 @@ describe("save files", () => {
     test("a change after saving makes the document dirty", async () => {
       await saveDocument(EDITOR);
 
-      updateCurrentEditor("Rename", (editor) => {
+      updateCurrentEditor(testUndoLabel("Rename"), (editor) => {
         editor.basicData.modelName = "A Different Model";
       });
 
@@ -289,7 +293,7 @@ describe("save files", () => {
       // Opening a document selects it, so the change below has to be aimed
       // back at the one it is about.
       setSelectedDocument(EDITOR);
-      updateCurrentEditor("Rename", (editor) => {
+      updateCurrentEditor(testUndoLabel("Rename"), (editor) => {
         editor.basicData.modelName = "A Different Model";
       });
 
@@ -309,7 +313,7 @@ describe("save files", () => {
 
     test("saving again makes the document clean", async () => {
       await saveDocument(EDITOR);
-      updateCurrentEditor("Rename", (editor) => {
+      updateCurrentEditor(testUndoLabel("Rename"), (editor) => {
         editor.basicData.modelName = "A Different Model";
       });
 
@@ -388,7 +392,7 @@ function v4Document(): Record<string, unknown> {
 }
 
 function addResource() {
-  updateCurrentEditor("Add Resource", (editor) => {
+  updateCurrentEditor(testUndoLabel("Add Resource"), (editor) => {
     editor.resources[RESOURCE] = {
       codexId: CodexId("test-resource"),
       class: { type: "local", id: EntityId("resource-class-id") },

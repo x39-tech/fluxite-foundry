@@ -2,7 +2,9 @@ import { clsx, type ClassValue } from "clsx";
 import { IJsonRowNode } from "flexlayout-react";
 import { nanoid } from "nanoid";
 import { twMerge } from "tailwind-merge";
+import { i18n } from "@lingui/core";
 import { CodexId, EntityId, FCUnit } from "app/persistentState";
+import { LocalizedError } from "./localizedError";
 
 export interface ItemEditor {
   id: EntityId;
@@ -30,8 +32,14 @@ export function cn(...inputs: ClassValue[]) {
 /**
  * Get a message to show the user from a caught value, which is not guaranteed
  * to be an Error.
+ *
+ * A {@link LocalizedError} is resolved into the language the app is being
+ * displayed in. Anything else is shown as-is.
  */
 export function errorMessage(error: unknown): string {
+  if (error instanceof LocalizedError) {
+    return i18n._(error.descriptor);
+  }
   return error instanceof Error ? error.message : String(error);
 }
 

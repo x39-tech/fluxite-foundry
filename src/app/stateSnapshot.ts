@@ -1,8 +1,10 @@
 import * as z from "zod";
+import { msg } from "@lingui/core/macro";
 import { assetStorage, AssetDump } from "./assetStorage";
 import { VERSION as STATE_VERSION } from "./persistentState";
 import { PERSISTENT_STATE_STORAGE_KEY, useAppPersistentStore } from "./store";
 import { APP_NAME, APP_VERSION, BUILD_STRING } from "consts";
+import { LocalizedError } from "utils/localizedError";
 
 /**
  * State Snapshots
@@ -16,6 +18,22 @@ import { APP_NAME, APP_VERSION, BUILD_STRING } from "consts";
  * middleware would have written it, tagged with the version it was exported at,
  * and the app is reloaded.
  */
+
+const ERRORS = {
+  notJson: msg({
+    id: "stateSnapshot.error.notJson",
+    message: "The selected file is not valid JSON.",
+  }),
+  notASnapshot: msg({
+    id: "stateSnapshot.error.notASnapshot",
+    message: "The selected file is not a {appName} state snapshot: {reason}",
+  }),
+  formatTooNew: msg({
+    id: "stateSnapshot.error.formatTooNew",
+    message:
+      "Snapshot format v{fileVersion} is newer than this build understands (v{buildVersion}).",
+  }),
+};
 
 /** Version of the snapshot file format itself, not of the state inside it. */
 export const SNAPSHOT_FORMAT_VERSION = 1;
@@ -109,20 +127,25 @@ export function parseStateSnapshot(text: string): StateSnapshot {
   try {
     json = JSON.parse(text);
   } catch {
-    throw new Error("The selected file is not valid JSON.");
+    throw new LocalizedError(ERRORS.notJson);
   }
 
   const result = StateSnapshotSchema.safeParse(json);
   if (!result.success) {
-    throw new Error(
-      `The selected file is not a ${APP_NAME} state snapshot: ${result.error.message}`,
-    );
+    throw new LocalizedError({
+      ...ERRORS.notASnapshot,
+      values: { appName: APP_NAME, reason: result.error.message },
+    });
   }
 
   if (result.data.formatVersion > SNAPSHOT_FORMAT_VERSION) {
-    throw new Error(
-      `Snapshot format v${result.data.formatVersion} is newer than this build understands (v${SNAPSHOT_FORMAT_VERSION}).`,
-    );
+    throw new LocalizedError({
+      ...ERRORS.formatTooNew,
+      values: {
+        fileVersion: result.data.formatVersion,
+        buildVersion: SNAPSHOT_FORMAT_VERSION,
+      },
+    });
   }
 
   return result.data;

@@ -1,4 +1,5 @@
-import { render, screen, within, waitFor } from "@testing-library/react";
+import { testUndoLabel } from "test/utils";
+import { render, screen, within, waitFor } from "test/render";
 import { renderHook } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ParameterEditor } from "./ParameterEditor";
@@ -69,7 +70,7 @@ describe("InstantiationProperties - Dynamic Mode", () => {
   async function setupDynamicParameter() {
     const user = userEvent.setup();
 
-    updateCurrentEditor("Test Change", (editor) => {
+    updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
       const classNameKey = LocalizationKey("test_class_name");
       editor.localizations[classNameKey] = {
         strings: LocalizationDbSchema.parse({ "en-US": "Test Class" }),

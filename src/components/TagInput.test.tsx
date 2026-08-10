@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen } from "test/render";
 import userEvent from "@testing-library/user-event";
 import { TagInput } from "./TagInput";
 
@@ -99,7 +99,7 @@ describe("TagInput", () => {
       />,
     );
 
-    const removeButtons = screen.getAllByText("Remove tag");
+    const removeButtons = screen.getAllByText("Remove item");
     await user.click(removeButtons[1].closest("button")!); // Remove second tag
 
     expect(handleChange).toHaveBeenCalledWith(["tag1", "tag3"]);
@@ -172,7 +172,7 @@ describe("TagInput", () => {
   it("does not show remove buttons when disabled", () => {
     render(<TagInput values={["tag1", "tag2"]} disabled />);
 
-    const removeButtons = screen.queryAllByText("Remove tag");
+    const removeButtons = screen.queryAllByText("Remove item");
     expect(removeButtons).toHaveLength(0);
   });
 
@@ -227,7 +227,7 @@ describe("TagInput", () => {
       </div>,
     );
 
-    const removeButton = screen.getByText("Remove tag").closest("button")!;
+    const removeButton = screen.getByText("Remove item").closest("button")!;
     await user.click(removeButton);
 
     expect(handleChange).toHaveBeenCalledWith([]);
@@ -237,7 +237,7 @@ describe("TagInput", () => {
   it("has proper accessibility attributes", () => {
     render(<TagInput values={["tag1", "tag2"]} />);
 
-    const removeTexts = screen.getAllByText("Remove tag");
+    const removeTexts = screen.getAllByText("Remove item");
     expect(removeTexts).toHaveLength(2);
 
     removeTexts.forEach((text) => {

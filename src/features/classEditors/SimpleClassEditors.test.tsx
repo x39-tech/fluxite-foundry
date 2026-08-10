@@ -2,7 +2,7 @@
 // other only in the handful of fields beyond ID, name and description.
 
 import { describe, test, expect, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen } from "test/render";
 import userEvent from "@testing-library/user-event";
 import {
   CodexId,
@@ -10,7 +10,11 @@ import {
   LocalizationDbSchema,
   LocalizationKey,
 } from "app/persistentState";
-import { resetAllStores, createEmptyDeviceClassEditor } from "test/utils";
+import {
+  createEmptyDeviceClassEditor,
+  resetAllStores,
+  testUndoLabel,
+} from "test/utils";
 import { updateCurrentEditor } from "features/deviceClassEditor/state";
 import { DeviceClassClassEditing } from "features/deviceClassEditor/classEditing";
 import { StructureClassEditor } from "./StructureClassEditor";
@@ -35,7 +39,7 @@ describe("StructureClassEditor", () => {
   beforeEach(() => {
     resetAllStores();
     createEmptyDeviceClassEditor();
-    updateCurrentEditor("Add test structure class", (draft) => {
+    updateCurrentEditor(testUndoLabel("Add test structure class"), (draft) => {
       draft.structureClasses[CLASS_ID] = {
         codexId: CodexId("emitters"),
         localized: withName(draft),
@@ -68,7 +72,7 @@ describe("SerializerClassEditor", () => {
   beforeEach(() => {
     resetAllStores();
     createEmptyDeviceClassEditor();
-    updateCurrentEditor("Add test serializer class", (draft) => {
+    updateCurrentEditor(testUndoLabel("Add test serializer class"), (draft) => {
       draft.serializerClasses[CLASS_ID] = {
         codexId: CodexId("esta-dmx"),
         localized: withName(draft),
@@ -127,7 +131,7 @@ describe("SerializerClassEditor", () => {
 
 describe("ResourceClassEditor", () => {
   function addResourceClass(mediaType: string[]) {
-    updateCurrentEditor("Add test resource class", (draft) => {
+    updateCurrentEditor(testUndoLabel("Add test resource class"), (draft) => {
       draft.resourceClasses[CLASS_ID] = {
         codexId: CodexId("gobo"),
         mediaType,
@@ -181,7 +185,7 @@ describe("ResourceClassEditor", () => {
 
     expect(screen.queryAllByRole("option")).toHaveLength(0);
     expect(
-      screen.getByText("No registered media type matches."),
+      screen.getByText("No registered media type matches the query."),
     ).toBeInTheDocument();
     expect(screen.queryByText("image/jpg")).toBeNull();
   });

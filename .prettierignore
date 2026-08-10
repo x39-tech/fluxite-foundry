@@ -11,3 +11,5 @@ tools/sacn-server/
 
 src/app/persistentState/v*/snapshot.json
 src/app/persistentState/v*/envelope.json
+
+src/locales/

@@ -1,5 +1,6 @@
 import { Draft } from "immer";
-import { useCurrentLocale, useLibraryStore } from "app/store";
+import { msg } from "@lingui/core/macro";
+import { useAuthoringLocale, useLibraryStore } from "app/store";
 import {
   ClassReference,
   CodexId,
@@ -22,6 +23,25 @@ import {
   ResolvedResourceClass,
 } from "../stateTransformations";
 import { resolveClassRef } from "../classResolution";
+
+const UNDO = {
+  addResource: msg({
+    id: "deviceClassEditor.resources.undo.addResource",
+    message: "Add Resource",
+  }),
+  editResource: msg({
+    id: "deviceClassEditor.resources.undo.editResource",
+    message: "Edit Resource",
+  }),
+  deleteResource: msg({
+    id: "deviceClassEditor.resources.undo.deleteResource",
+    message: "Delete Resource",
+  }),
+  changeResourceFile: msg({
+    id: "deviceClassEditor.resources.undo.changeResourceFile",
+    message: "Change Resource File",
+  }),
+};
 
 // ---------------------------------------------------------------------------
 // Read
@@ -62,7 +82,7 @@ export function useResourceInfo(
   const importedLibs = useLibraries();
   const resource = useCurrentEditorPart((editor) => editor.resources[id]);
   const libraryStore = useLibraryStore();
-  const locale = useCurrentLocale();
+  const locale = useAuthoringLocale();
   const sourceLocale = useSourceLocale();
 
   if (!deviceLibrary || !importedLibs || !resource) return undefined;
@@ -103,7 +123,7 @@ export function createNewResource(
   codexId: CodexId,
   _friendlyName: string,
 ) {
-  updateCurrentEditor("Add Resource", (editor) => {
+  updateCurrentEditor(UNDO.addResource, (editor) => {
     if (
       Object.values(editor.resources).some((res) => res.codexId === codexId)
     ) {
@@ -141,7 +161,7 @@ export function modifyResource(
   id: EntityId,
   recipe: (state: Draft<Unlocalized<Resource>>) => void,
 ) {
-  updateCurrentEditor("Edit Resource", (editor) => {
+  updateCurrentEditor(UNDO.editResource, (editor) => {
     const resource = editor.resources[id];
     if (!resource) {
       return;
@@ -152,7 +172,7 @@ export function modifyResource(
 }
 
 export function deleteResource(id: EntityId) {
-  updateCurrentEditor("Delete Resource", (editor) => {
+  updateCurrentEditor(UNDO.deleteResource, (editor) => {
     const resource = editor.resources[id];
     if (resource?.default) {
       delete editor.resourceAssets[resource.default];
@@ -172,7 +192,7 @@ export function deleteResource(id: EntityId) {
  * app/assetLifecycle.ts.
  */
 export function updateResourceAsset(resourceId: EntityId, newAssetId?: string) {
-  updateCurrentEditor("Change Resource File", (editor) => {
+  updateCurrentEditor(UNDO.changeResourceFile, (editor) => {
     const resource = editor.resources[resourceId];
     if (!resource) {
       return;

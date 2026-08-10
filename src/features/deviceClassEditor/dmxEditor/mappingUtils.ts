@@ -1,3 +1,5 @@
+import { i18n } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import {
   LocalOrImportedId,
   CodexId,
@@ -27,6 +29,39 @@ export interface SequenceValidationResult {
   errors: SequenceError[];
 }
 
+const MESSAGES = {
+  zeroSteps: msg({
+    id: "deviceClassEditor.sequenceValidation.zeroSteps",
+    message: "Sequence must have at least one step",
+  }),
+  indefiniteNotLast: msg({
+    id: "deviceClassEditor.sequenceValidation.indefiniteNotLast",
+    message: "Step {step} has indefinite hold but is not the last step",
+  }),
+  indefinite: msg({
+    id: "deviceClassEditor.duration.indefinite",
+    message: "indefinite",
+  }),
+  milliseconds: msg({
+    id: "deviceClassEditor.duration.milliseconds",
+    message: "{value}ms",
+  }),
+  seconds: msg({
+    id: "deviceClassEditor.duration.seconds",
+    message: "{value}s",
+  }),
+  minutes: msg({
+    id: "deviceClassEditor.duration.minutes",
+    message: "{value}m",
+  }),
+  minutesSeconds: msg({
+    id: "deviceClassEditor.duration.minutesSeconds",
+    message: "{minutes}m {seconds}s",
+  }),
+  invalidValue: msg({ id: "enumBound.invalid", message: "Invalid: {value}" }),
+  namedChoice: msg({ id: "enumBound.named", message: "{name} ({index})" }),
+};
+
 /**
  * Validates sequence steps for constraint violations.
  * - Zero steps is an error (invalid state)
@@ -41,7 +76,7 @@ export function validateSequenceSteps(
   if (steps.length === 0) {
     errors.push({
       type: "zero_steps",
-      message: "Sequence must have at least one step",
+      message: i18n._(MESSAGES.zeroSteps),
     });
   }
 
@@ -50,7 +85,10 @@ export function validateSequenceSteps(
       warnings.push({
         type: "indefinite_not_last",
         stepIndex: index,
-        message: `Step ${index + 1} has indefinite hold but is not the last step`,
+        message: i18n._({
+          ...MESSAGES.indefiniteNotLast,
+          values: { step: index + 1 },
+        }),
       });
     }
   });
@@ -86,24 +124,30 @@ export function calculateTotalDuration(
  */
 export function formatDuration(duration: number | "indefinite"): string {
   if (duration === "indefinite") {
-    return "indefinite";
+    return i18n._(MESSAGES.indefinite);
   }
 
   if (duration < 1000) {
-    return `${duration}ms`;
+    return i18n._({ ...MESSAGES.milliseconds, values: { value: duration } });
   }
 
   const seconds = duration / 1000;
   if (seconds < 60) {
-    return `${seconds.toFixed(1)}s`;
+    return i18n._({
+      ...MESSAGES.seconds,
+      values: { value: seconds.toFixed(1) },
+    });
   }
 
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
   if (remainingSeconds === 0) {
-    return `${minutes}m`;
+    return i18n._({ ...MESSAGES.minutes, values: { value: minutes } });
   }
-  return `${minutes}m ${remainingSeconds.toFixed(0)}s`;
+  return i18n._({
+    ...MESSAGES.minutesSeconds,
+    values: { minutes, seconds: remainingSeconds.toFixed(0) },
+  });
 }
 
 /**
@@ -202,15 +246,18 @@ export function formatEnumBoundValue(
 
   // Check if value is a valid integer index
   if (typeof value !== "number" || !Number.isInteger(value)) {
-    return `Invalid: ${value}`;
+    return i18n._({ ...MESSAGES.invalidValue, values: { value } });
   }
 
   const choice = choices.find((c) => c.index === value);
   if (choice) {
-    return `${choice.name.value} (${value})`;
+    return i18n._({
+      ...MESSAGES.namedChoice,
+      values: { name: choice.name.value, index: value },
+    });
   }
 
-  return `Invalid: ${value}`;
+  return i18n._({ ...MESSAGES.invalidValue, values: { value } });
 }
 
 export type BoundValue = number | boolean | undefined;

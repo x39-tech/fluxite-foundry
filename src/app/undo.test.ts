@@ -1,5 +1,9 @@
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
-import { createEmptyDeviceClassEditor, resetAllStores } from "test/utils";
+import {
+  createEmptyDeviceClassEditor,
+  resetAllStores,
+  testUndoLabel,
+} from "test/utils";
 import {
   setWindowLayout,
   updateCurrentEditor,
@@ -80,19 +84,23 @@ describe("undo and redo", () => {
   test("names a change by the label the change was made with", () => {
     rename("Renamed");
 
-    expect(undoStack(FIRST_EDITOR).at(-1)?.label).toBe("Rename Device");
+    expect(undoStack(FIRST_EDITOR).at(-1)?.label?.message).toBe(
+      "Rename Device",
+    );
   });
 
   test("records a group of updates as one change", () => {
-    asOneChange("Rename Everything", () => {
+    asOneChange(testUndoLabel("Rename Everything"), () => {
       rename("Renamed");
-      updateCurrentEditor("Rename Manufacturer", (editor) => {
+      updateCurrentEditor(testUndoLabel("Rename Manufacturer"), (editor) => {
         editor.basicData.manufacturerName = "Also renamed";
       });
     });
 
     expect(undoStack(FIRST_EDITOR)).toHaveLength(1);
-    expect(undoStack(FIRST_EDITOR).at(-1)?.label).toBe("Rename Everything");
+    expect(undoStack(FIRST_EDITOR).at(-1)?.label?.message).toBe(
+      "Rename Everything",
+    );
 
     undo(FIRST_EDITOR);
 
@@ -211,13 +219,13 @@ describe("undo and redo", () => {
 // ---------------------------------------------------------------------------
 
 function rename(name: string) {
-  updateCurrentEditor("Rename Device", (editor) => {
+  updateCurrentEditor(testUndoLabel("Rename Device"), (editor) => {
     editor.basicData.modelName = name;
   });
 }
 
 function addParameter() {
-  updateCurrentEditor("Add Parameter", (editor) => {
+  updateCurrentEditor(testUndoLabel("Add Parameter"), (editor) => {
     editor.parameters[EntityId("param1")] = {
       codexId: CodexId("param1"),
       class: { type: "local", id: EntityId("class1") },

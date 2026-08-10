@@ -1,4 +1,15 @@
+import { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
+import { useLingui } from "@lingui/react";
 import { setTheme, useTheme } from "app/store";
+import {
+  AVAILABLE_UI_LOCALES,
+  setUiLocale,
+  uiLocaleName,
+  useUiLocale,
+  UiLocale,
+} from "app/i18n";
 import { Theme } from "app/persistentState";
 import {
   Dialog,
@@ -21,14 +32,53 @@ interface Props {
   onClose: () => void;
 }
 
-const themeOptions: { value: Theme; label: string }[] = [
-  { value: "light", label: "Light" },
-  { value: "dark", label: "Dark" },
-  { value: "system", label: "System" },
+const themeOptions: { value: Theme; label: MessageDescriptor }[] = [
+  {
+    value: "light",
+    label: msg({ id: "settings.theme.light", message: "Light" }),
+  },
+  { value: "dark", label: msg({ id: "settings.theme.dark", message: "Dark" }) },
+  {
+    value: "system",
+    label: msg({ id: "settings.theme.system", message: "System" }),
+  },
 ];
+
+/** Lets the user pick the language to display the app in. */
+const LanguageSetting = () => {
+  const locale = useUiLocale();
+
+  if (AVAILABLE_UI_LOCALES.length < 2) {
+    return null;
+  }
+
+  return (
+    <div className="flex items-center justify-between">
+      <Label htmlFor="language-select">
+        <Trans id="settings.language.label">Language</Trans>
+      </Label>
+      <Select
+        value={locale}
+        onValueChange={(value) => setUiLocale(value as UiLocale)}
+      >
+        <SelectTrigger id="language-select" className="w-48">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {AVAILABLE_UI_LOCALES.map((available) => (
+            <SelectItem key={available} value={available}>
+              {uiLocaleName(available)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+};
 
 export const SettingsDialog = ({ isOpen, onClose }: Props) => {
   const theme = useTheme();
+  const { _ } = useLingui();
 
   return (
     <Dialog
@@ -39,16 +89,24 @@ export const SettingsDialog = ({ isOpen, onClose }: Props) => {
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Settings</DialogTitle>
+          <DialogTitle>
+            <Trans id="settings.title">Settings</Trans>
+          </DialogTitle>
           <DialogDescription>
-            Configure application preferences
+            <Trans id="settings.description">
+              Configure application preferences
+            </Trans>
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-6 py-4">
           <div className="space-y-2">
-            <h3 className="text-sm font-medium">Appearance</h3>
+            <h3 className="text-sm font-medium">
+              <Trans id="settings.appearance.heading">Appearance</Trans>
+            </h3>
             <div className="flex items-center justify-between">
-              <Label htmlFor="theme-select">Theme</Label>
+              <Label htmlFor="theme-select">
+                <Trans id="settings.theme.label">Theme</Trans>
+              </Label>
               <Select value={theme} onValueChange={(v) => setTheme(v as Theme)}>
                 <SelectTrigger id="theme-select" className="w-32">
                   <SelectValue />
@@ -56,12 +114,13 @@ export const SettingsDialog = ({ isOpen, onClose }: Props) => {
                 <SelectContent>
                   {themeOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                      {_(option.label)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+            <LanguageSetting />
           </div>
         </div>
       </DialogContent>

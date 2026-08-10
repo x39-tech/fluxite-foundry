@@ -1,4 +1,5 @@
-import { render, screen, within } from "@testing-library/react";
+import { testUndoLabel } from "test/utils";
+import { render, screen, within } from "test/render";
 import { renderHook } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ParameterEditor } from "./ParameterEditor";
@@ -25,7 +26,7 @@ function createParameterClass(
   dataType: "number" | "enum",
   choiceNames: string[] = [],
 ) {
-  updateCurrentEditor("Test Change", (editor) => {
+  updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
     const classNameKey = LocalizationKey(`${codexId}_name`);
     editor.localizations[classNameKey] = {
       strings: LocalizationDbSchema.parse({ "en-US": codexId }),

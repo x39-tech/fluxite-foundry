@@ -1,3 +1,6 @@
+import { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
 import { useState } from "react";
 import { ChevronDownIcon, ListIcon } from "lucide-react";
 import { useTextWidth } from "hooks/useTextWidth";
@@ -11,12 +14,17 @@ import {
 } from "./scn-ui/Command";
 import { cn } from "utils/utils";
 
+const SELECT_ITEM = msg({
+  id: "stringSelector.placeholder",
+  message: "Select an item...",
+});
+
 interface StringSelectorProps {
   className?: string;
   items: string[];
   displayNames?: string[];
   selectedItem?: string;
-  placeholderText?: string;
+  placeholderText?: MessageDescriptor;
   onSelectedItemChanged: (newItem: string) => void;
 }
 
@@ -28,6 +36,8 @@ export const StringSelector = ({
   placeholderText,
   onSelectedItemChanged,
 }: StringSelectorProps) => {
+  const { _ } = useLingui();
+
   const [open, setOpen] = useState(false);
   const itemIndex = selectedItem ? items.indexOf(selectedItem) : -1;
   const buttonDisplayName =
@@ -53,7 +63,7 @@ export const StringSelector = ({
             disabled={items.length === 0}
           >
             <ListIcon />
-            {buttonDisplayName || placeholderText || "Select an item..."}
+            {buttonDisplayName || _(placeholderText ?? SELECT_ITEM)}
             <div className="flex-grow" />
             <ChevronDownIcon />
           </Button>

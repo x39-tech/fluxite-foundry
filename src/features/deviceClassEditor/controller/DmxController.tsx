@@ -1,3 +1,6 @@
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
+import { Trans } from "@lingui/react/macro";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { toast } from "sonner";
 import { CheckIcon, XIcon } from "lucide-react";
@@ -25,6 +28,25 @@ import { DmxDisplay } from "./DmxDisplay";
 import { useDmxSequenceManager } from "./sequenceManager/useDmxSequenceManager";
 import { ActiveSequencesButton } from "./ActiveSequencesButton";
 
+const MESSAGES = {
+  connectionClosed: msg({
+    id: "deviceClassEditor.dmxController.connectionClosed",
+    message: "DMX server connection closed",
+  }),
+  connectionFailed: msg({
+    id: "deviceClassEditor.dmxController.connectionFailed",
+    message: "DMX server connection failed",
+  }),
+  connect: msg({
+    id: "deviceClassEditor.dmxController.connect",
+    message: "Connect",
+  }),
+  disconnect: msg({
+    id: "deviceClassEditor.dmxController.disconnect",
+    message: "Disconnect",
+  }),
+};
+
 interface ServerConnection {
   active: boolean;
   addressAndPort: string;
@@ -42,6 +64,8 @@ interface DmxControllerState {
 }
 
 export const DmxController = () => {
+  const { _ } = useLingui();
+
   const mappableParams = useMappableParameters();
   const dmxController = useDmxController();
   const [controllerState, setControllerState] = useState<DmxControllerState>({
@@ -133,13 +157,20 @@ export const DmxController = () => {
     case "not-created":
       return (
         <p>
-          Add a DMX parameter mapping in the DMX editor to use the test
-          controller.
+          <Trans id="deviceClassEditor.dmxController.noMapping">
+            Add a DMX parameter mapping in the DMX editor to use the test
+            controller.
+          </Trans>
         </p>
       );
     case "error": {
+      const reason = dmxController.error.message;
       return (
-        <p>{`Error compiling DMX test controller: ${dmxController.error.message}`}</p>
+        <p>
+          <Trans id="deviceClassEditor.dmxController.compileError">
+            Error compiling DMX test controller: {reason}
+          </Trans>
+        </p>
       );
     }
   }
@@ -166,8 +197,14 @@ export const DmxController = () => {
       <div
         className={`${serverAreaBg} flex flex-wrap justify-center items-center gap-2 p-1`}
       >
-        <span className="font-bold">Server</span>
-        <span>Address and Port:</span>
+        <span className="font-bold">
+          <Trans id="deviceClassEditor.dmxController.server">Server</Trans>
+        </span>
+        <span>
+          <Trans id="deviceClassEditor.dmxController.addressAndPort">
+            Address and Port:
+          </Trans>
+        </span>
         <TextEditorField
           value={serverConnection.addressAndPort}
           onValueChanged={(value) =>
@@ -175,15 +212,22 @@ export const DmxController = () => {
           }
         />
         <span className="flex items-center">
-          Status:{" "}
           {serverConnection.active ? (
             <>
-              <span className="mr-2">Connected</span>
+              <span className="mr-2">
+                <Trans id="deviceClassEditor.dmxController.statusConnected">
+                  Status: Connected
+                </Trans>
+              </span>
               <CheckIcon className="size-5" />
             </>
           ) : (
             <>
-              <span className="mr-2">Disconnected</span>
+              <span className="mr-2">
+                <Trans id="deviceClassEditor.dmxController.statusDisconnected">
+                  Status: Disconnected
+                </Trans>
+              </span>
               <XIcon className="size-5" />
             </>
           )}
@@ -196,17 +240,17 @@ export const DmxController = () => {
               setServerConnection({ ...serverConnection, active: true });
             };
             ws.onclose = () => {
-              toast(`DMX server connection closed`);
+              toast(_(MESSAGES.connectionClosed));
               setServerConnection({ ...serverConnection, active: false });
             };
             ws.onerror = () => {
-              toast(`DMX server connection failed`);
+              toast(_(MESSAGES.connectionFailed));
               setServerConnection({ ...serverConnection, active: false });
             };
             websocketConnRef.current = ws;
           }}
         >
-          {serverConnection.active ? "Disconnect" : "Connect"}
+          {_(serverConnection.active ? MESSAGES.disconnect : MESSAGES.connect)}
         </Button>
       </div>
       <div className="overflow-auto">

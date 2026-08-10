@@ -1,3 +1,6 @@
+import { i18n } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
+import { Plural, Trans } from "@lingui/react/macro";
 import { useState, useEffect } from "react";
 import { Button } from "components/scn-ui/Button";
 import {
@@ -25,14 +28,35 @@ interface SequenceDisplayInfo {
   queuedCount: number;
 }
 
+const MESSAGES = {
+  indefinite: msg({
+    id: "deviceClassEditor.activeSequences.indefinite",
+    message: "Indefinite",
+  }),
+  milliseconds: msg({
+    id: "deviceClassEditor.activeSequences.milliseconds",
+    message: "{value}ms",
+  }),
+  seconds: msg({
+    id: "deviceClassEditor.activeSequences.seconds",
+    message: "{value}s",
+  }),
+};
+
 function formatTimeRemaining(ms: number | null): string {
   if (ms === null) {
-    return "Indefinite";
+    return i18n._(MESSAGES.indefinite);
   }
   if (ms < 1000) {
-    return `${Math.ceil(ms)}ms`;
+    return i18n._({
+      ...MESSAGES.milliseconds,
+      values: { value: Math.ceil(ms) },
+    });
   }
-  return `${(ms / 1000).toFixed(1)}s`;
+  return i18n._({
+    ...MESSAGES.seconds,
+    values: { value: (ms / 1000).toFixed(1) },
+  });
 }
 
 function getSequenceDisplayInfo(
@@ -106,42 +130,73 @@ export const ActiveSequencesButton = ({
           variant="outline"
           className={activeCount > 0 ? "text-orange-500" : ""}
         >
-          Active Sequences: {activeCount}
+          <Trans id="deviceClassEditor.activeSequences.triggerLabel">
+            Active Sequences: {activeCount}
+          </Trans>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80">
         <div className="space-y-4">
-          <h4 className="font-medium">Active Sequences</h4>
+          <h4 className="font-medium">
+            <Trans id="deviceClassEditor.activeSequences.heading">
+              Active Sequences
+            </Trans>
+          </h4>
           {activeChunks.length === 0 ? (
-            <p className="text-sm text-gray-500">No active sequences</p>
+            <p className="text-sm text-gray-500">
+              <Trans id="deviceClassEditor.activeSequences.none">
+                No active sequences
+              </Trans>
+            </p>
           ) : (
             <div className="space-y-3">
-              {activeChunks.map((info, index) => (
-                <div
-                  key={index}
-                  className="border rounded-md p-2 text-sm space-y-1"
-                >
-                  <div className="font-medium">
-                    Slots: {info.chunkOffsets.join(", ")}
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-400">
-                    Step {info.currentStep} of {info.totalSteps}
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-400">
-                    {info.stepsRemaining} step
-                    {info.stepsRemaining !== 1 ? "s" : ""} remaining
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-400">
-                    Time: {formatTimeRemaining(info.timeRemaining)}
-                  </div>
-                  {info.queuedCount > 0 && (
-                    <div className="text-orange-600 dark:text-orange-400">
-                      {info.queuedCount} sequence
-                      {info.queuedCount !== 1 ? "s" : ""} queued
+              {activeChunks.map((info, index) => {
+                const slotList = info.chunkOffsets.join(", ");
+                const stepNumber = info.currentStep;
+                const stepTotal = info.totalSteps;
+                const timeRemaining = formatTimeRemaining(info.timeRemaining);
+
+                return (
+                  <div
+                    key={index}
+                    className="border rounded-md p-2 text-sm space-y-1"
+                  >
+                    <div className="font-medium">
+                      <Trans id="deviceClassEditor.activeSequences.slots">
+                        Slots: {slotList}
+                      </Trans>
                     </div>
-                  )}
-                </div>
-              ))}
+                    <div className="text-gray-600 dark:text-gray-400">
+                      <Trans id="deviceClassEditor.activeSequences.stepProgress">
+                        Step {stepNumber} of {stepTotal}
+                      </Trans>
+                    </div>
+                    <div className="text-gray-600 dark:text-gray-400">
+                      <Plural
+                        id="deviceClassEditor.activeSequences.stepsRemaining"
+                        value={info.stepsRemaining}
+                        one="# step remaining"
+                        other="# steps remaining"
+                      />
+                    </div>
+                    <div className="text-gray-600 dark:text-gray-400">
+                      <Trans id="deviceClassEditor.activeSequences.timeRemaining">
+                        Time: {timeRemaining}
+                      </Trans>
+                    </div>
+                    {info.queuedCount > 0 && (
+                      <div className="text-orange-600 dark:text-orange-400">
+                        <Plural
+                          id="deviceClassEditor.activeSequences.queuedCount"
+                          value={info.queuedCount}
+                          one="# sequence queued"
+                          other="# sequences queued"
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

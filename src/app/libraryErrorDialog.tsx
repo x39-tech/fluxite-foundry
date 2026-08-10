@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Trans } from "@lingui/react/macro";
 import {
   Dialog,
   DialogContent,
@@ -18,12 +19,16 @@ export const LibraryErrorDialog = ({ show }: Props) => {
     <Dialog open={showDialog} onOpenChange={(open) => setShowDialog(open)}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Error</DialogTitle>
+          <DialogTitle>
+            <Trans id="libraryError.title">Error</Trans>
+          </DialogTitle>
         </DialogHeader>
         <span>
-          An error occurred while trying to load the default set of ESTA
-          libraries. This is a bug in {APP_NAME}. Please open an issue in the{" "}
-          <a href={REPO_ISSUES_LINK}>repository</a>.
+          <Trans id="libraryError.description">
+            An error occurred while trying to load the default set of ESTA
+            libraries. This is a bug in {APP_NAME}. Please open an issue in the{" "}
+            <a href={REPO_ISSUES_LINK}>repository</a>.
+          </Trans>
         </span>
       </DialogContent>
     </Dialog>

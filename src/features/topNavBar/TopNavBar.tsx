@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { PlusIcon } from "lucide-react";
+import { msg } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
+import { useLingui } from "@lingui/react";
 import {
   Tooltip,
   TooltipContent,
@@ -24,11 +27,22 @@ import {
   useSelectedDocumentId,
 } from "./state";
 
+const ADD_EDITOR = msg({
+  id: "navbar.addEditor",
+  message: "Add New Editor",
+});
+
+const UNKNOWN_DOCUMENT = msg({
+  id: "navbar.unknownDocument",
+  message: "unknown",
+});
+
 export const TopNavBar = () => {
   const openDocumentIds = useOpenDocumentIds();
   const documentNames = useDocumentNames();
   const documentTypes = useDocumentTypes();
   const selectedDocumentId = useSelectedDocumentId();
+  const { _ } = useLingui();
   const [closing, setClosing] = useState<
     { id: EntityId; name: string } | undefined
   >(undefined);
@@ -56,12 +70,13 @@ export const TopNavBar = () => {
           <AppLogo />
           <div className="text-lg">
             <span className="font-bold text-primary">FLUXITE</span>{" "}
+            {/* eslint-disable-next-line lingui/no-unlocalized-strings */}
             <span className="text-muted-foreground">Foundry</span>
           </div>
         </div>
         <NavbarDivider />
         {openDocumentIds.map((id, index) => {
-          const name = documentNames[index] ?? "unknown";
+          const name = documentNames[index] ?? _(UNKNOWN_DOCUMENT);
           const type = documentTypes[index];
           return (
             <EditorTitleTab
@@ -81,15 +96,17 @@ export const TopNavBar = () => {
               size="icon"
               variant="ghost"
               className="size-8 text-primary"
-              aria-label="Add New Editor"
+              aria-label={_(ADD_EDITOR)}
               onClick={createDeviceClassEditor}
             >
               <PlusIcon className="size-5 stroke-2" />
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="text-md max-w-[260px] p-4">
-            Get started by adding a new editor, or import an existing Fluxite
-            Codex file using the import option to the right.
+            <Trans id="navbar.getStarted">
+              Get started by adding a new editor, or import an existing Fluxite
+              Codex file using the import option to the right.
+            </Trans>
           </TooltipContent>
         </Tooltip>
         <div className="flex-grow self-stretch" data-tauri-drag-region />

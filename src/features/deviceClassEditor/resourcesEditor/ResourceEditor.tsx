@@ -1,5 +1,8 @@
+import { useLingui } from "@lingui/react";
+import { Trans } from "@lingui/react/macro";
 import { useEffect, useId } from "react";
 import { capitalCase } from "change-case";
+import { msg } from "@lingui/core/macro";
 import {
   modifyResource,
   updateResourceAsset,
@@ -28,11 +31,23 @@ import {
   lifetimes,
 } from "app/persistentState";
 
+const UNDO_CHANGE_MEDIA_TYPE = msg({
+  id: "deviceClassEditor.resources.undo.changeMediaType",
+  message: "Change Media Type",
+});
+
+const DEVICE_LIBRARY = msg({
+  id: "deviceClassEditor.resourceEditor.deviceLibrary",
+  message: "Device Library",
+});
+
 interface Props {
   id: EntityId;
 }
 
 export const ResourceEditor = ({ id }: Props) => {
+  const { _ } = useLingui();
+
   const resInfo = useResourceInfo(id);
   const resourceCodexIds = useResourceCodexIds();
   const assetId = useResourceAssetId(resInfo?.resource);
@@ -78,14 +93,18 @@ export const ResourceEditor = ({ id }: Props) => {
   if (resourceClass.mediaType) {
     mediaType = (
       <FieldSet>
-        <Label htmlFor={`${idPrefix}-mediaType`}>Media Type</Label>
+        <Label htmlFor={`${idPrefix}-mediaType`}>
+          <Trans id="deviceClassEditor.resourceEditor.mediaType">
+            Media Type
+          </Trans>
+        </Label>
         <SelectField
           id={`${idPrefix}-mediaType`}
           values={resourceClass.mediaType}
           displayValues={resourceClass.mediaType}
           selectedValue={resource.mediaType || resourceClass.mediaType[0]}
           onSelectionChanged={(newValue) => {
-            asOneChange("Change Media Type", () => {
+            asOneChange(UNDO_CHANGE_MEDIA_TYPE, () => {
               modifyResource(id, (draft) => {
                 draft.mediaType = newValue;
               });
@@ -103,19 +122,23 @@ export const ResourceEditor = ({ id }: Props) => {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap gap-4">
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-library`}>Library</Label>
+          <Label htmlFor={`${idPrefix}-library`}>
+            <Trans id="deviceClassEditor.resourceEditor.library">Library</Trans>
+          </Label>
           <AppInput
             id={`${idPrefix}-class`}
             disabled
             value={
               resource.class.type === "imported"
                 ? resource.class.library
-                : "Device Library"
+                : _(DEVICE_LIBRARY)
             }
           />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-class`}>Class</Label>
+          <Label htmlFor={`${idPrefix}-class`}>
+            <Trans id="deviceClassEditor.resourceEditor.class">Class</Trans>
+          </Label>
           <ItemClassDisplay
             id={`${idPrefix}-class`}
             value={resourceClass.codexId}
@@ -125,7 +148,9 @@ export const ResourceEditor = ({ id }: Props) => {
           />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-id`}>ID</Label>
+          <Label htmlFor={`${idPrefix}-id`}>
+            <Trans id="deviceClassEditor.resourceEditor.id">ID</Trans>
+          </Label>
           <ValidatedInput
             id={`${idPrefix}-id`}
             value={resource.codexId}
@@ -141,7 +166,9 @@ export const ResourceEditor = ({ id }: Props) => {
           />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-access`}>Access</Label>
+          <Label htmlFor={`${idPrefix}-access`}>
+            <Trans id="deviceClassEditor.resourceEditor.access">Access</Trans>
+          </Label>
           <AccessCheckboxes
             id={`${idPrefix}-access`}
             access={resource.access}
@@ -154,7 +181,11 @@ export const ResourceEditor = ({ id }: Props) => {
           />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-lifetime`}>Lifetime</Label>
+          <Label htmlFor={`${idPrefix}-lifetime`}>
+            <Trans id="deviceClassEditor.resourceEditor.lifetime">
+              Lifetime
+            </Trans>
+          </Label>
           <SelectField
             id={`${idPrefix}-lifetime`}
             values={Object.values(lifetimes)}
@@ -177,7 +208,11 @@ export const ResourceEditor = ({ id }: Props) => {
         {mediaType}
       </div>
       <FieldSet>
-        <Label htmlFor={`${idPrefix}-defaultValue`}>Default Value</Label>
+        <Label htmlFor={`${idPrefix}-defaultValue`}>
+          <Trans id="deviceClassEditor.resourceEditor.defaultValue">
+            Default Value
+          </Trans>
+        </Label>
         <ResourceDefaultValue
           id={`${idPrefix}-defaultValue`}
           assetId={defaultValId}
@@ -217,14 +252,14 @@ const AccessCheckboxes = ({
         checked={access.includes(accesses.READ)}
         onChange={(checked) => updateAccess(checked, accesses.READ)}
       >
-        Read
+        <Trans id="deviceClassEditor.resourceEditor.read">Read</Trans>
       </LabeledCheckbox>
       <LabeledCheckbox
         disabled={lifetime === lifetimes.STATIC}
         checked={access.includes(accesses.WRITE)}
         onChange={(checked) => updateAccess(checked, accesses.WRITE)}
       >
-        Write
+        <Trans id="deviceClassEditor.resourceEditor.write">Write</Trans>
       </LabeledCheckbox>
     </div>
   );

@@ -1,3 +1,5 @@
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
 import { FCUnit, fcUnitNames, FCUnitName } from "app/persistentState";
 import { cn } from "utils/utils";
 import { IntegerInput } from "components/IntegerInput";
@@ -6,6 +8,12 @@ import { SelectField } from "./SelectField";
 // Unit is optional, so we need a 'none' value which is distinct from the
 // standard's own `none` unit, which is a unit that happens to be dimensionless.
 const NO_UNIT = "unspecified";
+
+const MESSAGES = {
+  unit: msg({ id: "unitField.unit", message: "Unit" }),
+  exponent: msg({ id: "unitField.exponent", message: "Unit exponent" }),
+  notSpecified: msg({ id: "unitField.notSpecified", message: "Not specified" }),
+};
 
 interface Props {
   id?: string;
@@ -17,6 +25,7 @@ interface Props {
 // sharing a border.
 export const UnitField = ({ id, value, onValueChanged }: Props) => {
   const names = Object.values(fcUnitNames);
+  const { _ } = useLingui();
 
   return (
     <div
@@ -29,9 +38,9 @@ export const UnitField = ({ id, value, onValueChanged }: Props) => {
     >
       <SelectField
         className="h-full min-w-0 flex-1 rounded-r-none border-0 bg-transparent shadow-none focus-visible:ring-0 dark:bg-transparent dark:hover:bg-transparent"
-        aria-label="Unit"
+        aria-label={_(MESSAGES.unit)}
         values={[NO_UNIT, ...names]}
-        displayValues={["Not specified", ...names]}
+        displayValues={[_(MESSAGES.notSpecified), ...names]}
         selectedValue={value?.name ?? NO_UNIT}
         onSelectionChanged={(newValue) =>
           onValueChanged(
@@ -56,7 +65,7 @@ export const UnitField = ({ id, value, onValueChanged }: Props) => {
               key={value.name}
               className="w-12"
               inputClassName="h-8 border-0 bg-transparent px-1 shadow-none focus-visible:ring-0 dark:bg-transparent"
-              aria-label="Unit exponent"
+              aria-label={_(MESSAGES.exponent)}
               placeholder="1"
               hideControls
               defaultValue={value.exponent}

@@ -1,9 +1,13 @@
 import { describe, test, expect, beforeEach } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, within } from "test/render";
 import userEvent from "@testing-library/user-event";
 import { CodexId, EntityId } from "app/persistentState";
 import { splitParameterClassId } from "codex/categories";
-import { resetAllStores, createEmptyDeviceClassEditor } from "test/utils";
+import {
+  createEmptyDeviceClassEditor,
+  resetAllStores,
+  testUndoLabel,
+} from "test/utils";
 import { updateCurrentEditor } from "features/deviceClassEditor/state";
 import { DeviceClassClassEditing } from "features/deviceClassEditor/classEditing";
 import { Toaster } from "components/scn-ui/Sonner";
@@ -265,7 +269,7 @@ describe("ClassesEditor", () => {
 // Points a parameter at whichever parameter class the document has, the way
 // the New Parameter dialog would.
 function referenceFirstParameterClass(paramCodexId: string) {
-  updateCurrentEditor("Add test parameter", (draft) => {
+  updateCurrentEditor(testUndoLabel("Add test parameter"), (draft) => {
     const classId = EntityId(Object.keys(draft.parameterClasses)[0]);
     const paramId = EntityId("test-parameter");
 

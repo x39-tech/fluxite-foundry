@@ -1,10 +1,23 @@
 import { useMemo, useState } from "react";
 import { Trash2Icon, SpotlightIcon } from "lucide-react";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
 import { DocumentType, EntityId } from "app/persistentState";
 import { useDocumentIsDirty } from "app/documentFile";
 import { Toggle } from "components/scn-ui/Toggle";
 import { Button } from "components/scn-ui/Button";
 import { NavbarDivider } from "./NavbarDivider";
+
+const MESSAGES = {
+  unsavedChanges: msg({
+    id: "navbar.editorTab.unsavedChanges",
+    message: "Unsaved changes",
+  }),
+  deleteEditor: msg({
+    id: "navbar.editorTab.deleteEditor",
+    message: "Delete Editor",
+  }),
+};
 
 interface Props {
   name: string;
@@ -24,6 +37,7 @@ export const EditorTitleTab = ({
   onDelete,
 }: Props) => {
   const [hovered, setHovered] = useState(false);
+  const { _ } = useLingui();
   const dirty = useDocumentIsDirty(id);
 
   const leftSideElement = useMemo(() => {
@@ -53,13 +67,13 @@ export const EditorTitleTab = ({
             <span
               className="size-2 rounded-full bg-primary"
               role="img"
-              aria-label="Unsaved changes"
+              aria-label={_(MESSAGES.unsavedChanges)}
             />
           )}
         </Toggle>
         <Button
           size="icon"
-          aria-label="Delete Editor"
+          aria-label={_(MESSAGES.deleteEditor)}
           variant="ghost"
           className={`absolute right-1 ${hovered ? "visible" : "invisible"}`}
           onClick={() => onDelete(id)}

@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen } from "test/render";
 import { CodexId } from "app/persistentState";
 import { resetAllStores } from "test/utils";
 import { ResolvedParameterClass } from "../stateTransformations";

@@ -1,5 +1,7 @@
 import "@testing-library/jest-dom";
 import { vi } from "vitest";
+import { i18n } from "@lingui/core";
+import { messages } from "../locales/en.json?lingui";
 import { enablePatches } from "immer";
 import Dexie from "dexie";
 import { indexedDB, IDBKeyRange } from "fake-indexeddb";
@@ -7,6 +9,9 @@ import { mockAnimationsApi } from "jsdom-testing-mocks";
 
 // Mock animations API for Headless UI
 mockAnimationsApi();
+
+// Tests read and assert on the interface in English.
+i18n.loadAndActivate({ locale: "en", messages });
 
 // Enable Immer patches for tests
 enablePatches();

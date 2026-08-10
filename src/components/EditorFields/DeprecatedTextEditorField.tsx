@@ -3,6 +3,8 @@
 
 import { useId, useState } from "react";
 import { CircleAlertIcon } from "lucide-react";
+import { Trans } from "@lingui/react/macro";
+import { useLingui } from "@lingui/react";
 import { ConfirmableInput } from "../ConfirmableInput";
 import { InputValidationResult } from "utils/inputValidation";
 import {
@@ -35,6 +37,7 @@ export const TextEditorField = ({
   TextEditorFieldProps) => {
   const [validationResult, setValidationResult] =
     useState<InputValidationResult>({ isValid: true });
+  const { _ } = useLingui();
 
   return (
     <Popover
@@ -46,7 +49,7 @@ export const TextEditorField = ({
         <ConfirmableInput
           value={value}
           validator={validator}
-          onValidationResult={(_, result) => setValidationResult(result)}
+          onValidationResult={(_value, result) => setValidationResult(result)}
           onConfirm={onValueChanged}
           placeholder={placeholder}
           {...props}
@@ -62,7 +65,13 @@ export const TextEditorField = ({
         <Alert variant="destructive">
           <CircleAlertIcon />
           <AlertDescription>
-            {validationResult.feedback || "An unknown error occurred."}
+            {validationResult.feedback ? (
+              _(validationResult.feedback)
+            ) : (
+              <Trans id="editorFields.validation.unknown">
+                An unknown error occurred.
+              </Trans>
+            )}
           </AlertDescription>
         </Alert>
       </PopoverContent>

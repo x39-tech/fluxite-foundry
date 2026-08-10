@@ -1,4 +1,5 @@
 import { getByText, screen } from "@testing-library/react";
+import { MessageDescriptor } from "@lingui/core";
 import { useAppPersistentStore, useAppRuntimeStore } from "app/store";
 import {
   AppPersistentState,
@@ -172,4 +173,8 @@ export function getEditorTableRow(
   }
 
   return labelElem.parentElement;
+}
+
+export function testUndoLabel(message: string): MessageDescriptor {
+  return { id: `test.undo.${message}`, message };
 }

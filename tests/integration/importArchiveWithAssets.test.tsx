@@ -2,7 +2,7 @@
  * Integration test for importing device class archives with asset resources.
  */
 
-import { render, screen } from "@testing-library/react";
+import { render, screen } from "../../src/test/render";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import JSZip from "jszip";

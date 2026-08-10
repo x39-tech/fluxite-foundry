@@ -2,13 +2,17 @@
 
 import { useId } from "react";
 import { PlusIcon, Trash2Icon } from "lucide-react";
+import { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
+import { useLingui } from "@lingui/react";
 import {
   CodexId,
   EntityId,
   fcDataTypes,
   FCDataType,
 } from "app/persistentState";
-import { useCurrentLocale } from "app/store";
+import { useAuthoringLocale } from "app/store";
 import { getUniqueItemId } from "utils/utils";
 import { validateNewItemId } from "utils/inputValidation";
 import { Button } from "components/scn-ui/Button";
@@ -30,16 +34,45 @@ import {
 // Display/lookup metadata for each type of command class member.
 const MEMBERS = {
   commandClassArguments: {
-    singular: "Argument",
+    add: msg({
+      id: "commandClassEditor.arguments.add",
+      message: "Add Argument",
+    }),
+    delete: msg({
+      id: "commandClassEditor.arguments.delete",
+      message: "Delete Argument {codexId}",
+    }),
+    // TODO: suitable default in the authoring locale?
+    // eslint-disable-next-line lingui/no-unlocalized-strings
+    defaultName: "New Argument",
     defaultId: "new-argument",
     choiceParent: "cmdClassArg",
   },
   commandClassReturnValues: {
-    singular: "Return Value",
+    add: msg({
+      id: "commandClassEditor.returnValues.add",
+      message: "Add Return Value",
+    }),
+    delete: msg({
+      id: "commandClassEditor.returnValues.delete",
+      message: "Delete Return Value {codexId}",
+    }),
+    // TODO: suitable default in the authoring locale?
+    // eslint-disable-next-line lingui/no-unlocalized-strings
+    defaultName: "New Return Value",
     defaultId: "new-return-value",
     choiceParent: "cmdClassRet",
   },
-} as const;
+} as const satisfies Record<
+  CommandMemberKind,
+  {
+    add: MessageDescriptor;
+    delete: MessageDescriptor;
+    defaultName: string;
+    defaultId: string;
+    choiceParent: string;
+  }
+>;
 
 interface Props {
   id?: string;
@@ -54,10 +87,11 @@ export const CommandClassMembersEditor = ({
 }: Props) => {
   const members = useCommandClassMembers(memberKind, classId);
   const operations = useClassOperations();
-  const locale = useCurrentLocale();
+  const locale = useAuthoringLocale();
 
-  const { singular, defaultId } = MEMBERS[memberKind];
+  const { add, defaultName, defaultId } = MEMBERS[memberKind];
   const takenIds = members.map((member) => member.codexId);
+  const { _ } = useLingui();
 
   return (
     <div id={id} className="flex flex-col gap-2 items-start">
@@ -78,13 +112,13 @@ export const CommandClassMembersEditor = ({
             memberKind,
             classId,
             CodexId(getUniqueItemId(takenIds, defaultId)),
-            `New ${singular}`,
+            defaultName,
             locale,
           )
         }
       >
         <PlusIcon className="size-4" />
-        Add {singular}
+        {_(add)}
       </Button>
     </div>
   );
@@ -102,16 +136,19 @@ const CommandClassMemberEditor = ({
   takenIds,
 }: MemberProps) => {
   const operations = useClassOperations();
-  const locale = useCurrentLocale();
+  const locale = useAuthoringLocale();
   const idPrefix = useId();
 
-  const { singular, choiceParent } = MEMBERS[memberKind];
+  const { delete: deleteLabel, choiceParent } = MEMBERS[memberKind];
+  const { _ } = useLingui();
 
   return (
     <Item variant="outline" className="flex-col items-stretch">
       <div className="flex flex-wrap items-end gap-4">
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-id`}>ID</Label>
+          <Label htmlFor={`${idPrefix}-id`}>
+            <Trans id="commandClassEditor.field.id">ID</Trans>
+          </Label>
           <ValidatedInput
             id={`${idPrefix}-id`}
             value={member.codexId}
@@ -133,7 +170,9 @@ const CommandClassMemberEditor = ({
           />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-name`}>Name</Label>
+          <Label htmlFor={`${idPrefix}-name`}>
+            <Trans id="commandClassEditor.field.name">Name</Trans>
+          </Label>
           <ValidatedInput
             id={`${idPrefix}-name`}
             value={member.name.value}
@@ -149,7 +188,9 @@ const CommandClassMemberEditor = ({
           />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-description`}>Description</Label>
+          <Label htmlFor={`${idPrefix}-description`}>
+            <Trans id="commandClassEditor.field.description">Description</Trans>
+          </Label>
           <ValidatedInput
             id={`${idPrefix}-description`}
             value={member.description?.value ?? ""}
@@ -165,7 +206,9 @@ const CommandClassMemberEditor = ({
           />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-dataType`}>Data Type</Label>
+          <Label htmlFor={`${idPrefix}-dataType`}>
+            <Trans id="commandClassEditor.field.dataType">Data Type</Trans>
+          </Label>
           <SelectField
             id={`${idPrefix}-dataType`}
             values={Object.values(fcDataTypes)}
@@ -182,7 +225,9 @@ const CommandClassMemberEditor = ({
           />
         </FieldSet>
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-unit`}>Unit</Label>
+          <Label htmlFor={`${idPrefix}-unit`}>
+            <Trans id="commandClassEditor.field.unit">Unit</Trans>
+          </Label>
           <UnitField
             id={`${idPrefix}-unit`}
             value={member.unit}
@@ -214,12 +259,16 @@ const CommandClassMemberEditor = ({
             )
           }
         >
-          Required
+          <Trans id="commandClassEditor.field.required">Required</Trans>
         </LabeledCheckbox>
       </div>
       {member.dataType === fcDataTypes.ENUM && (
         <FieldSet>
-          <Label htmlFor={`${idPrefix}-enumChoices`}>Enum Choices</Label>
+          <Label htmlFor={`${idPrefix}-enumChoices`}>
+            <Trans id="commandClassEditor.field.enumChoices">
+              Enum Choices
+            </Trans>
+          </Label>
           <ClassEnumChoicesEditor
             id={`${idPrefix}-enumChoices`}
             parentType={choiceParent}
@@ -230,7 +279,10 @@ const CommandClassMemberEditor = ({
       <div className="flex justify-end">
         <Button
           variant="ghost"
-          aria-label={`Delete ${singular} ${member.codexId}`}
+          aria-label={_({
+            ...deleteLabel,
+            values: { codexId: member.codexId },
+          })}
           onClick={() =>
             operations.deleteCommandClassMember(memberKind, member.id)
           }

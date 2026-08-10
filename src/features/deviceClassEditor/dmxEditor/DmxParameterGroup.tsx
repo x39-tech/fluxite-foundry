@@ -1,3 +1,6 @@
+import { Trans } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
 import { CirclePlusIcon, XIcon } from "lucide-react";
 import { DmxMappingGroup, EntityId } from "app/persistentState";
 import { Button } from "components/scn-ui/Button";
@@ -19,6 +22,17 @@ import {
 import { DmxParameterMapping } from "./DmxParameterMapping";
 import { DmxConditionTree } from "./DmxCondition";
 
+const MESSAGES = {
+  addToMappingGroup: msg({
+    id: "deviceClassEditor.dmxGroup.addToMappingGroup",
+    message: "Add to Mapping Group",
+  }),
+  removeMappingGroup: msg({
+    id: "deviceClassEditor.dmxGroup.removeMappingGroup",
+    message: "Remove Mapping Group",
+  }),
+};
+
 interface DmxParameterGroupProps {
   chunkId: EntityId;
   mappingGroupId: EntityId;
@@ -30,6 +44,8 @@ export const DmxParameterGroup = ({
   mappingGroupId,
   mappingGroup,
 }: DmxParameterGroupProps) => {
+  const { _ } = useLingui();
+
   const dmx = useDmxSerializer();
   const chunksCount = dmx ? Object.keys(dmx.chunks).length : 0;
   const conditions = dmx
@@ -39,14 +55,18 @@ export const DmxParameterGroup = ({
   return (
     <div className="flex flex-col gap-4 rounded-lg border bg-sidebar p-4">
       <div className="flex items-center gap-2">
-        <span className="text-base font-semibold">Mapping Group</span>
+        <span className="text-base font-semibold">
+          <Trans id="deviceClassEditor.dmxGroup.mappingGroup">
+            Mapping Group
+          </Trans>
+        </span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
               className="text-primary"
-              aria-label="Add to Mapping Group"
+              aria-label={_(MESSAGES.addToMappingGroup)}
             >
               <CirclePlusIcon className="size-5" />
             </Button>
@@ -55,7 +75,9 @@ export const DmxParameterGroup = ({
             <DropdownMenuItem
               onClick={() => addParameterMapping(mappingGroupId)}
             >
-              Parameter Mapping
+              <Trans id="deviceClassEditor.dmxGroup.parameterMapping">
+                Parameter Mapping
+              </Trans>
             </DropdownMenuItem>
             <DropdownMenuItem
               // A condition compares another slot group's value, so there has
@@ -63,7 +85,7 @@ export const DmxParameterGroup = ({
               disabled={chunksCount <= 1}
               onClick={() => addCondition(mappingGroupId, chunkId)}
             >
-              Condition
+              <Trans id="deviceClassEditor.dmxGroup.condition">Condition</Trans>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -71,7 +93,7 @@ export const DmxParameterGroup = ({
         <Button
           variant="ghost"
           size="icon"
-          aria-label="Remove Mapping Group"
+          aria-label={_(MESSAGES.removeMappingGroup)}
           onClick={() => removeParameterMappingGroup(chunkId, mappingGroupId)}
         >
           <XIcon className="size-5" />
@@ -89,7 +111,9 @@ export const DmxParameterGroup = ({
       ))}
       {conditions.length > 0 && (
         <div className="flex flex-col gap-2">
-          <span className="text-base font-semibold">Conditions</span>
+          <span className="text-base font-semibold">
+            <Trans id="deviceClassEditor.dmxGroup.conditions">Conditions</Trans>
+          </span>
           {conditions.map((condition) => (
             <DmxConditionTree
               key={condition.id}

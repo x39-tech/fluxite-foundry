@@ -1,7 +1,11 @@
 import { describe, test, expect, beforeEach } from "vitest";
 import { act, renderHook } from "@testing-library/react";
 import { updateCurrentEditor } from "../state";
-import { resetAllStores, createEmptyDeviceClassEditor } from "test/utils";
+import {
+  createEmptyDeviceClassEditor,
+  resetAllStores,
+  testUndoLabel,
+} from "test/utils";
 import {
   CodexId,
   EntityId,
@@ -40,7 +44,7 @@ function createTestParamClass(
   dataType: FCDataType = "number",
   nameLocalizations: Record<string, string> = { "en-US": "Test Class" },
 ) {
-  updateCurrentEditor("Test Change", (editor) => {
+  updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
     const locKey = LocalizationKey(`paramClass_${id}`);
     editor.localizations[locKey] = {
       strings: LocalizationDbSchema.parse(nameLocalizations),
@@ -62,7 +66,7 @@ function createTestParameter(
   classCodexId: CodexId = TEST_CLASS_CODEX_ID,
   count?: number,
 ) {
-  updateCurrentEditor("Test Change", (editor) => {
+  updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
     editor.parameters[id] = {
       codexId,
       class: {
@@ -309,7 +313,7 @@ describe("dmxEditor/state.ts", () => {
           addParameterMapping(mappingGroupId);
           addParameterMapping(mappingGroupId);
 
-          updateCurrentEditor("Test Change", (editor) => {
+          updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
             const mappingGroup =
               editor.dmxSerializer?.mappingGroups[mappingGroupId];
             if (mappingGroup) {

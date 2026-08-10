@@ -1,6 +1,7 @@
 // Where a device class document keeps its localized strings. See
 // features/localizations/types.ts for what a registry is for and how to use it.
 
+import { msg } from "@lingui/core/macro";
 import { DeviceClassDocument } from "app/persistentState";
 import { ClassLocalizer } from "features/classEditors/context";
 import {
@@ -29,10 +30,16 @@ export const DEVICE_CLASS_LOCALIZATIONS: LocalizationRegistry<DeviceClassDocumen
   {
     basicData: {
       kind: "singleton",
-      label: "Device class",
+      label: msg({
+        id: "localizations.entity.deviceClass",
+        message: "Device class",
+      }),
       fields: {
         description: {
-          label: "Description",
+          label: msg({
+            id: "localizations.field.description",
+            message: "Description",
+          }),
           required: true,
         },
       },
@@ -40,76 +47,112 @@ export const DEVICE_CLASS_LOCALIZATIONS: LocalizationRegistry<DeviceClassDocumen
 
     parameterClasses: {
       kind: "table",
-      label: "Parameter class",
+      label: msg({
+        id: "localizations.entity.parameterClass",
+        message: "Parameter class",
+      }),
       fields: nameAndDescription(),
     },
 
     structureClasses: {
       kind: "table",
-      label: "Structure class",
+      label: msg({
+        id: "localizations.entity.structureClass",
+        message: "Structure class",
+      }),
       fields: nameAndDescription(),
     },
 
     serializerClasses: {
       kind: "table",
-      label: "Serializer class",
+      label: msg({
+        id: "localizations.entity.serializerClass",
+        message: "Serializer class",
+      }),
       fields: nameAndDescription(),
     },
 
     resourceClasses: {
       kind: "table",
-      label: "Resource class",
+      label: msg({
+        id: "localizations.entity.resourceClass",
+        message: "Resource class",
+      }),
       fields: nameAndDescription(),
     },
 
     commandClasses: {
       kind: "table",
-      label: "Command class",
+      label: msg({
+        id: "localizations.entity.commandClass",
+        message: "Command class",
+      }),
       fields: nameAndDescription(),
     },
 
     commandClassArguments: {
       kind: "table",
-      label: "Command argument",
+      label: msg({
+        id: "localizations.entity.commandArgument",
+        message: "Command argument",
+      }),
       fields: nameAndDescription(),
     },
 
     commandClassReturnValues: {
       kind: "table",
-      label: "Command return value",
+      label: msg({
+        id: "localizations.entity.commandReturnValue",
+        message: "Command return value",
+      }),
       fields: nameAndDescription(),
     },
 
     parameters: {
       kind: "table",
-      label: "Parameter",
+      label: msg({
+        id: "localizations.entity.parameter",
+        message: "Parameter",
+      }),
       fields: {
         friendlyName: {
-          label: "Friendly name",
+          label: msg({
+            id: "localizations.field.friendlyName",
+            message: "Friendly name",
+          }),
         },
       },
     },
 
     commands: {
       kind: "table",
-      label: "Command",
+      label: msg({ id: "localizations.entity.command", message: "Command" }),
       fields: {
         friendlyName: {
-          label: "Friendly name",
+          label: msg({
+            id: "localizations.field.friendlyName",
+            message: "Friendly name",
+          }),
         },
       },
     },
 
     enumChoices: {
       kind: "table",
-      label: "Enum choice",
+      label: msg({
+        id: "localizations.entity.enumChoice",
+        message: "Enum choice",
+      }),
       fields: {
         name: {
-          label: "Name",
+          label: msg({ id: "localizations.field.name", message: "Name" }),
           required: true,
         },
         description: {
-          label: "Description",
+          label: msg({
+            id: "localizations.field.description",
+            message: "Description",
+          }),
         },
       },
     },
@@ -125,11 +168,14 @@ type NameAndDescriptionFields = {
 function nameAndDescription(): NameAndDescriptionFields {
   return {
     name: {
-      label: "Name",
+      label: msg({ id: "localizations.field.name", message: "Name" }),
       required: true,
     },
     description: {
-      label: "Description",
+      label: msg({
+        id: "localizations.field.description",
+        message: "Description",
+      }),
     },
   };
 }

@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { useId } from "react";
 import { EntityId } from "app/persistentState";
 import { RenderError } from "components/RenderError";
@@ -41,7 +42,9 @@ export const StructureClassEditor = ({ id }: Props) => {
           })
         }
       >
-        Multiple Allowed
+        <Trans id="structureClassEditor.multipleAllowed">
+          Multiple Allowed
+        </Trans>
       </LabeledCheckbox>
     </div>
   );

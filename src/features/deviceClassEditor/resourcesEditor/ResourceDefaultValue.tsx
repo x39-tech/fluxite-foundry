@@ -1,3 +1,6 @@
+import { Trans } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -20,6 +23,36 @@ import {
 import { SmallIconButton } from "components/SmallIconButton";
 import { Alert } from "components/scn-ui/Alert";
 
+const MESSAGES = {
+  size: msg({ id: "deviceClassEditor.resourceDefault.size", message: "Size" }),
+  originalFileName: msg({
+    id: "deviceClassEditor.resourceDefault.originalFileName",
+    message: "Original File Name",
+  }),
+  sha1: msg({ id: "deviceClassEditor.resourceDefault.sha1", message: "SHA-1" }),
+  sha256: msg({
+    id: "deviceClassEditor.resourceDefault.sha256",
+    message: "SHA-256",
+  }),
+  readFailed: msg({
+    id: "deviceClassEditor.resourceDefault.readFailed",
+    message: "Error reading selected file",
+  }),
+  wrongType: msg({
+    id: "deviceClassEditor.resourceDefault.wrongType",
+    message: "Selected file is of invalid type {actual} (expected {expected})",
+  }),
+  // Describes the image to a screen reader when the file has no name of its own.
+  altText: msg({
+    id: "deviceClassEditor.resourceDefault.altText",
+    message: "Default resource value of type {mediaType}",
+  }),
+  unknownMediaType: msg({
+    id: "deviceClassEditor.resourceDefault.unknownMediaType",
+    message: "unknown",
+  }),
+};
+
 export type AssetId =
   | { state: "none" }
   | { state: "valid"; id: string }
@@ -40,6 +73,8 @@ export const ResourceDefaultValue = ({
   onChange,
   onDelete,
 }: Props) => {
+  const { _ } = useLingui();
+
   const [isLoading, setIsLoading] = useState(
     assetId.state === "valid" ? true : false,
   );
@@ -67,13 +102,16 @@ export const ResourceDefaultValue = ({
   ) => {
     const file = event.currentTarget.files?.item(0) ?? null;
     if (!file) {
-      toast("Error reading selected file");
+      toast(_(MESSAGES.readFailed));
       return;
     }
 
     if (!acceptsMediaType(file.type, mediaType)) {
       toast(
-        `Selected file is of invalid type ${file.type} (expected ${mediaType})`,
+        _({
+          ...MESSAGES.wrongType,
+          values: { actual: file.type, expected: mediaType },
+        }),
       );
       return;
     }
@@ -102,7 +140,9 @@ export const ResourceDefaultValue = ({
       <div className="flex gap-2 items-center">
         <LoaderCircle className="h-6 w-6 animate-spin" />
         <div id={id} className="text-lg">
-          Loading...
+          <Trans id="deviceClassEditor.resourceDefault.loading">
+            Loading...
+          </Trans>
         </div>
       </div>
     );
@@ -134,6 +174,8 @@ interface WidgetProps {
 }
 
 const DefaultValWidget = ({ id, asset, onChange, onDelete }: WidgetProps) => {
+  const { _ } = useLingui();
+
   const changeRef = useRef<HTMLInputElement>(null);
 
   const handleChangeBtn = () => {
@@ -159,30 +201,36 @@ const DefaultValWidget = ({ id, asset, onChange, onDelete }: WidgetProps) => {
       <div className="flex gap-2">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="outline">Details</Button>
+            <Button variant="outline">
+              <Trans id="deviceClassEditor.resourceDefault.details">
+                Details
+              </Trans>
+            </Button>
           </TooltipTrigger>
           <TooltipContent>
             <div className="flex flex-col">
-              <WidgetInfoRow label="Size">
+              <WidgetInfoRow label={_(MESSAGES.size)}>
                 {formatFileSize(asset.data.byteLength)}
               </WidgetInfoRow>
               {asset.originalFileName && (
-                <WidgetInfoRow label="Original File Name">
+                <WidgetInfoRow label={_(MESSAGES.originalFileName)}>
                   {asset.originalFileName}
                 </WidgetInfoRow>
               )}
-              <WidgetInfoRow label="SHA-1" withCopyIcon>
+              <WidgetInfoRow label={_(MESSAGES.sha1)} withCopyIcon>
                 {asset.sha1}
               </WidgetInfoRow>
-              <WidgetInfoRow label="SHA-256" withCopyIcon>
+              <WidgetInfoRow label={_(MESSAGES.sha256)} withCopyIcon>
                 {asset.sha256}
               </WidgetInfoRow>
             </div>
           </TooltipContent>
         </Tooltip>
-        <Button onClick={handleChangeBtn}>Change</Button>
+        <Button onClick={handleChangeBtn}>
+          <Trans id="deviceClassEditor.resourceDefault.change">Change</Trans>
+        </Button>
         <Button variant="destructive" onClick={onDelete}>
-          Remove
+          <Trans id="deviceClassEditor.resourceDefault.remove">Remove</Trans>
         </Button>
         <AppInput
           ref={changeRef}
@@ -215,12 +263,16 @@ const AssetError = ({ mediaType, onChange, onDelete }: AssetErrorProps) => {
     <div className="flex flex-col gap-2 p-2 border rounded-sm">
       <Alert>
         <CircleAlertIcon className="size-8" />
-        Error loading asset.
+        <Trans id="deviceClassEditor.resourceDefault.loadFailed">
+          Error loading asset.
+        </Trans>
       </Alert>
       <div className="flex gap-2">
-        <Button onClick={handleChangeBtn}>Change</Button>
+        <Button onClick={handleChangeBtn}>
+          <Trans id="deviceClassEditor.resourceDefault.change">Change</Trans>
+        </Button>
         <Button variant="destructive" onClick={onDelete}>
-          Remove
+          <Trans id="deviceClassEditor.resourceDefault.remove">Remove</Trans>
         </Button>
         <AppInput
           ref={changeRef}
@@ -274,11 +326,18 @@ interface WidgetInteriorProps {
 }
 
 const ImageWidget = ({ id, asset }: WidgetInteriorProps) => {
+  const { _ } = useLingui();
+
   const blob = new Blob([asset.data], { type: asset.mediaType });
   const url = URL.createObjectURL(blob);
   const altText =
     asset.originalFileName ||
-    `Default resource value of type ${asset.mediaType || "unknown"}`;
+    _({
+      ...MESSAGES.altText,
+      values: {
+        mediaType: asset.mediaType || _(MESSAGES.unknownMediaType),
+      },
+    });
 
   return (
     <Dialog>
@@ -308,7 +367,11 @@ const OpaqueDataWidget = ({ id }: WidgetInteriorProps) => {
   return (
     <div className="flex items-center gap-2">
       <SquareCodeIcon className="size-10" />
-      <div id={id}>Opaque data</div>
+      <div id={id}>
+        <Trans id="deviceClassEditor.resourceDefault.opaqueData">
+          Opaque data
+        </Trans>
+      </div>
     </div>
   );
 };

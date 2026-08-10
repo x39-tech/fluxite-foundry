@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, within } from "test/render";
 import userEvent from "@testing-library/user-event";
 import { Toaster } from "components/scn-ui/Sonner";
 import {
@@ -8,7 +8,11 @@ import {
   LocalizationDbSchema,
   LocalizationKey,
 } from "app/persistentState";
-import { resetAllStores, createEmptyDeviceClassEditor } from "test/utils";
+import {
+  createEmptyDeviceClassEditor,
+  resetAllStores,
+  testUndoLabel,
+} from "test/utils";
 import { updateCurrentEditor } from "features/deviceClassEditor/state";
 import { DeviceClassClassEditing } from "features/deviceClassEditor/classEditing";
 import { ParameterClassEditor } from "./ParameterClassEditor";
@@ -19,7 +23,7 @@ const OTHER_CLASS_ID = EntityId("other-parameter-class");
 const OTHER_NAME_KEY = LocalizationKey("other-parameter-class-name");
 
 function createTestParameterClass() {
-  updateCurrentEditor("Add test parameter class", (draft) => {
+  updateCurrentEditor(testUndoLabel("Add test parameter class"), (draft) => {
     draft.localizations[NAME_KEY] = {
       strings: LocalizationDbSchema.parse({ "en-US": "Mode" }),
     };
@@ -33,7 +37,7 @@ function createTestParameterClass() {
 
 /** A second class, for the uniqueness checking. */
 function createOtherParameterClass(codexId: string) {
-  updateCurrentEditor("Add other parameter class", (draft) => {
+  updateCurrentEditor(testUndoLabel("Add other parameter class"), (draft) => {
     draft.localizations[OTHER_NAME_KEY] = {
       strings: LocalizationDbSchema.parse({ "en-US": "Other" }),
     };
@@ -133,7 +137,7 @@ describe("ParameterClassEditor", () => {
     // The path separator is what divides a category from an identifier, so it
     // cannot appear inside one.
     expect(
-      await screen.findByText(/must not contain "\/"/),
+      await screen.findByText(/must not contain the character "\/"/),
     ).toBeInTheDocument();
 
     await user.type(idField, "{Enter}");

@@ -43,24 +43,24 @@ interface TestDocument {
 const REGISTRY: LocalizationRegistry<TestDocument> = {
   banner: {
     kind: "singleton",
-    label: "Banner",
+    label: { id: "test.label.banner", message: "Banner" },
     fields: {
       title: {
-        label: "Title",
+        label: { id: "test.label.title", message: "Title" },
         required: true,
       },
     },
   },
   widgets: {
     kind: "table",
-    label: "Widget",
+    label: { id: "test.label.widget", message: "Widget" },
     fields: {
       label: {
-        label: "Label",
+        label: { id: "test.label.label", message: "Label" },
         required: true,
       },
       note: {
-        label: "Note",
+        label: { id: "test.label.note", message: "Note" },
       },
     },
   },
@@ -114,14 +114,14 @@ const OPTIONAL_TABLE_REGISTRY: LocalizationRegistry<DocumentWithOptionalTable> =
   {
     widgets: {
       kind: "table",
-      label: "Widget",
+      label: { id: "test.label.widget", message: "Widget" },
       fields: {
         label: {
-          label: "Label",
+          label: { id: "test.label.label", message: "Label" },
           required: true,
         },
         note: {
-          label: "Note",
+          label: { id: "test.label.note", message: "Note" },
         },
       },
     },
@@ -291,7 +291,10 @@ describe("createLocalizedFields", () => {
       document,
       REGISTRY,
       "widgets",
-      { label: "Another one", note: undefined },
+      {
+        label: "Another one",
+        note: undefined,
+      },
       "en-US",
     );
 

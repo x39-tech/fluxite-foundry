@@ -1,3 +1,6 @@
+import { msg } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
+import { useLingui } from "@lingui/react";
 import { useState, useMemo, JSX } from "react";
 import { CheckIcon, ChevronDownIcon, ListIcon } from "lucide-react";
 import {
@@ -30,7 +33,7 @@ import {
 } from "components/scn-ui/Tooltip";
 import { Button, ButtonProps } from "components/scn-ui/Button";
 import { useTextWidth } from "hooks/useTextWidth";
-import { useCurrentLocale } from "app/store";
+import { useAuthoringLocale } from "app/store";
 import { localize } from "features/localizations/localize";
 import { CodexId, EntityId } from "app/persistentState";
 import { ResolvedClassRef } from "features/deviceClassEditor/classResolution";
@@ -71,6 +74,17 @@ interface ItemClassGroup {
   options: ItemClassOption[];
 }
 
+const MESSAGES = {
+  placeholder: msg({
+    id: "itemClassSelector.placeholder",
+    message: "Select an item class...",
+  }),
+  search: msg({
+    id: "itemClassSelector.search",
+    message: "Search item classes...",
+  }),
+};
+
 export function ItemClassSelector({
   selectedClass,
   kind,
@@ -81,7 +95,7 @@ export function ItemClassSelector({
   ...props
 }: ItemClassSelectorProps) {
   const [open, setOpen] = useState(false);
-  const locale = useCurrentLocale();
+  const locale = useAuthoringLocale();
 
   const libraries = useMemo(
     () =>
@@ -114,7 +128,8 @@ export function ItemClassSelector({
     [localLibrary, libraries, kind, locale],
   );
 
-  const placeholderText = "Select an item class...";
+  const { _ } = useLingui();
+  const placeholderText = _(MESSAGES.placeholder);
   const allPossibleTexts = useMemo(
     () => [
       ...groups.flatMap(({ options }) => options.map((o) => o.name)),
@@ -199,9 +214,13 @@ export function ItemClassSelector({
           onWheel={(e) => e.stopPropagation()}
         >
           <Command>
-            <CommandInput placeholder="Search item classes..." />
+            <CommandInput placeholder={_(MESSAGES.search)} />
             <CommandList>
-              <CommandEmpty>No item class found.</CommandEmpty>
+              <CommandEmpty>
+                <Trans id="itemClassSelector.noMatches">
+                  No item class found.
+                </Trans>
+              </CommandEmpty>
               {commandGroups}
             </CommandList>
           </Command>

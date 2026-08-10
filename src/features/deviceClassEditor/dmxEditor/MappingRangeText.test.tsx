@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen } from "test/render";
 import { describe, it, expect } from "vitest";
 import { CodexId, DmxMappingRange } from "app/persistentState";
 import { MappingRangeText } from "./MappingRangeText";

@@ -1,14 +1,49 @@
+import { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import { firstInvalidIdentifierCharacter } from "codex/categories";
 
 export interface InputValidationResult {
   isValid: boolean;
-  feedback?: string;
+  /** Why the input was rejected. */
+  feedback?: MessageDescriptor;
 }
+
+const FEEDBACK = {
+  notANumber: msg({
+    id: "validation.notANumber",
+    message: "Input must be a valid number",
+  }),
+  notANumberOrEmpty: msg({
+    id: "validation.notANumberOrEmpty",
+    message: "Input must be a valid number or empty",
+  }),
+  outOfRange: msg({
+    id: "validation.outOfRange",
+    message: "Input must be between minimum and maximum value",
+  }),
+  idEmpty: msg({ id: "validation.id.empty", message: "ID must not be empty" }),
+  idNotUnique: msg({
+    id: "validation.id.notUnique",
+    message: "ID must be unique",
+  }),
+  idHasSpace: msg({
+    id: "validation.id.hasSpace",
+    message: "ID must not contain a space",
+  }),
+  idHasTab: msg({
+    id: "validation.id.hasTab",
+    message: "ID must not contain a tab",
+  }),
+  idHasCharacter: msg({
+    id: "validation.id.hasCharacter",
+    message: "ID must not contain the character {character}",
+  }),
+};
 
 export function validateStringIsNumber(input: string): InputValidationResult {
   return !isNaN(Number(input)) && input.trim() !== ""
     ? { isValid: true }
-    : { isValid: false, feedback: "Input must be a valid number" };
+    : { isValid: false, feedback: FEEDBACK.notANumber };
 }
 
 export function validateStringIsNumberOrEmpty(
@@ -20,7 +55,7 @@ export function validateStringIsNumberOrEmpty(
 
   return !isNaN(Number(input)) && input.trim() !== ""
     ? { isValid: true }
-    : { isValid: false, feedback: "Input must be a valid number or empty" };
+    : { isValid: false, feedback: FEEDBACK.notANumberOrEmpty };
 }
 
 export function validateStringIsNumberAndBetweenMinAndMaxOrEmpty(
@@ -45,7 +80,7 @@ export function validateStringIsNumberAndBetweenMinAndMaxOrEmpty(
   ) {
     return {
       isValid: false,
-      feedback: "Input must be between minimum and maximum value",
+      feedback: FEEDBACK.outOfRange,
     };
   }
 
@@ -57,35 +92,38 @@ export function validateNewItemId(
   existingItemIds: string[],
 ): InputValidationResult {
   if (!input) {
-    return { isValid: false, feedback: "ID must not be empty" };
+    return { isValid: false, feedback: FEEDBACK.idEmpty };
   }
 
   const invalidCharacter = firstInvalidIdentifierCharacter(input);
   if (invalidCharacter !== undefined) {
     return {
       isValid: false,
-      feedback: `ID must not contain ${describeCharacter(invalidCharacter)}`,
+      feedback: describeInvalidCharacter(invalidCharacter),
     };
   }
 
   if (existingItemIds.includes(input)) {
     return {
       isValid: false,
-      feedback: "ID must be unique",
+      feedback: FEEDBACK.idNotUnique,
     };
   }
 
   return { isValid: true };
 }
 
-// Names a non-printing character in a way that reads in a message.
-export function describeCharacter(character: string): string {
+// Names for characters a user cannot see in a way that reads in a message.
+function describeInvalidCharacter(character: string): MessageDescriptor {
   switch (character) {
     case " ":
-      return "a space";
+      return FEEDBACK.idHasSpace;
     case "\t":
-      return "a tab";
+      return FEEDBACK.idHasTab;
     default:
-      return `"${character}"`;
+      return {
+        ...FEEDBACK.idHasCharacter,
+        values: { character: `"${character}"` },
+      };
   }
 }

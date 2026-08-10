@@ -7,7 +7,11 @@ import {
 } from "app/store";
 import { DmxController } from "app/runtimeState";
 import { initUndo, undo } from "app/undo";
-import { resetAllStores, createEmptyDeviceClassEditor } from "test/utils";
+import {
+  createEmptyDeviceClassEditor,
+  resetAllStores,
+  testUndoLabel,
+} from "test/utils";
 import { closeDocument, setSelectedDocument } from "features/topNavBar/state";
 import { updateCurrentEditor, setWindowLayout } from "./state";
 import { initDeviceClassEditorEffects } from "./effects";
@@ -35,7 +39,7 @@ describe("DMX driver effect", () => {
   });
 
   test("leaves a document with no DMX serializer without a driver", () => {
-    updateCurrentEditor("Test Change", (editor) => {
+    updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
       editor.dmxSerializer = undefined;
     });
 
@@ -45,7 +49,7 @@ describe("DMX driver effect", () => {
   });
 
   test("leaves a document with nothing mapped yet without a driver", () => {
-    updateCurrentEditor("Test Change", (editor) => {
+    updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
       editor.dmxSerializer = {
         chunks: {},
         mappingGroups: {},
@@ -171,7 +175,7 @@ function addDmxSerializer(editorId: EntityId) {
 }
 
 function addParameter() {
-  updateCurrentEditor("Test Change", (editor) => {
+  updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
     editor.parameters[EntityId("param1")] = {
       codexId: CodexId("param1"),
       class: { type: "local", id: EntityId("class1") },

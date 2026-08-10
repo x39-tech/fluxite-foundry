@@ -1,0 +1,6654 @@
+{
+  "deviceClassEditor.paramInstantiation.noMaximum": {
+    "message": "(no maximum)",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/InstantiationProperties.tsx"
+      ]
+    ],
+    "translation": "(no maximum)"
+  },
+  "deviceClassEditor.activeSequences.queuedCount": {
+    "message": "{0, plural, one {# sequence queued} other {# sequences queued}}",
+    "placeholders": {
+      "0": [
+        "info.queuedCount"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+      ]
+    ],
+    "translation": "{0, plural, one {# sequence queued} other {# sequences queued}}"
+  },
+  "deviceClassEditor.activeSequences.stepsRemaining": {
+    "message": "{0, plural, one {# step remaining} other {# steps remaining}}",
+    "placeholders": {
+      "0": [
+        "info.stepsRemaining"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+      ]
+    ],
+    "translation": "{0, plural, one {# step remaining} other {# steps remaining}}"
+  },
+  "mediaType.unregisteredWarning": {
+    "message": "{0, plural, one {1 media type is not in the IANA registry as of {ianaRegistryRetrieved}. Replace it with a registered type, or remove it.} other {# media types are not in the IANA registry as of {ianaRegistryRetrieved}. Replace them with registered types, or remove them.}}",
+    "placeholders": {
+      "0": [
+        "unregistered.length"
+      ],
+      "ianaRegistryRetrieved": [
+        "ianaRegistryRetrieved"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/components/MediaTypeSelector.tsx"
+      ]
+    ],
+    "translation": "{0, plural, one {1 media type is not in the IANA registry as of {ianaRegistryRetrieved}. Replace it with a registered type, or remove it.} other {# media types are not in the IANA registry as of {ianaRegistryRetrieved}. Replace them with registered types, or remove them.}}"
+  },
+  "navbar.exportState.fileTypeName": {
+    "message": "{appName} State Snapshot",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportStateDialog.tsx"
+      ]
+    ],
+    "translation": "{appName} State Snapshot"
+  },
+  "navbar.importState.summary.assetsIncluded": {
+    "message": "{count} included (replaces stored assets)",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportStateDialog.tsx"
+      ]
+    ],
+    "translation": "{count} included (replaces stored assets)"
+  },
+  "importFluxiteCodex.feedback.errorList": {
+    "message": "{errors}",
+    "placeholders": {},
+    "comments": [
+      "Shows the Fluxite Codex parser's errors verbatim. Leave as-is."
+    ],
+    "origin": [
+      [
+        "src/features/topNavBar/importUtils.ts"
+      ]
+    ],
+    "translation": "{errors}"
+  },
+  "importFluxiteCodex.feedback.errorsInFile": {
+    "message": "{fileName}:n{errors}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/importUtils.ts"
+      ]
+    ],
+    "translation": "{fileName}:n{errors}"
+  },
+  "navbar.importCodex.deviceClassWithVersion": {
+    "message": "{id} ({version})",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "{id} ({version})"
+  },
+  "deviceClassEditor.duration.minutesSeconds": {
+    "message": "{minutes}m {seconds}s",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/mappingUtils.ts"
+      ]
+    ],
+    "translation": "{minutes}m {seconds}s"
+  },
+  "enumBound.named": {
+    "message": "{name} ({index})",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/mappingUtils.ts"
+      ]
+    ],
+    "translation": "{name} ({index})"
+  },
+  "deviceClassEditor.dmxDisplay.activeSlot": {
+    "message": "{value} (sequence)",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/DmxDisplay.tsx"
+      ]
+    ],
+    "translation": "{value} (sequence)"
+  },
+  "tagSelector.invalidValue": {
+    "message": "{value}: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/TagSelector.tsx"
+      ]
+    ],
+    "translation": "{value}: {reason}"
+  },
+  "deviceClassEditor.duration.minutes": {
+    "message": "{value}m",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/mappingUtils.ts"
+      ]
+    ],
+    "translation": "{value}m"
+  },
+  "deviceClassEditor.duration.milliseconds": {
+    "message": "{value}ms",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/mappingUtils.ts"
+      ]
+    ],
+    "translation": "{value}ms"
+  },
+  "deviceClassEditor.activeSequences.milliseconds": {
+    "message": "{value}ms",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+      ]
+    ],
+    "translation": "{value}ms"
+  },
+  "deviceClassEditor.duration.seconds": {
+    "message": "{value}s",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/mappingUtils.ts"
+      ]
+    ],
+    "translation": "{value}s"
+  },
+  "deviceClassEditor.activeSequences.seconds": {
+    "message": "{value}s",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+      ]
+    ],
+    "translation": "{value}s"
+  },
+  "paramClassCategory.hasSpace": {
+    "message": "A category must not contain a space.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/CategoryField.tsx"
+      ]
+    ],
+    "translation": "A category must not contain a space."
+  },
+  "paramClassCategory.hasTab": {
+    "message": "A category must not contain a tab.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/CategoryField.tsx"
+      ]
+    ],
+    "translation": "A category must not contain a tab."
+  },
+  "paramClassCategory.hasCharacter": {
+    "message": "A category must not contain the character {character}.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/CategoryField.tsx"
+      ]
+    ],
+    "translation": "A category must not contain the character {character}."
+  },
+  "itemClasses.commandClasses.duplicateId": {
+    "message": "A command class with the ID {codexId} already exists.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "A command class with the ID {codexId} already exists."
+  },
+  "itemClasses.parameterClasses.duplicateId": {
+    "message": "A parameter class with the ID {codexId} already exists.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "A parameter class with the ID {codexId} already exists."
+  },
+  "itemClasses.resourceClasses.duplicateId": {
+    "message": "A resource class with the ID {codexId} already exists.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "A resource class with the ID {codexId} already exists."
+  },
+  "itemClasses.serializerClasses.duplicateId": {
+    "message": "A serializer class with the ID {codexId} already exists.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "A serializer class with the ID {codexId} already exists."
+  },
+  "itemClasses.structureClasses.duplicateId": {
+    "message": "A structure class with the ID {codexId} already exists.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "A structure class with the ID {codexId} already exists."
+  },
+  "navbar.about.title": {
+    "message": "About",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AboutDialog.tsx"
+      ]
+    ],
+    "translation": "About"
+  },
+  "navbar.mainMenu.about": {
+    "message": "About {APP_NAME}",
+    "placeholders": {
+      "APP_NAME": [
+        "APP_NAME"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AppMainMenu.tsx"
+      ]
+    ],
+    "translation": "About {APP_NAME}"
+  },
+  "deviceClassEditor.resourceEditor.access": {
+    "message": "Access",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceEditor.tsx"
+      ]
+    ],
+    "translation": "Access"
+  },
+  "deviceClassEditor.paramEditor.access": {
+    "message": "Access",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParameterEditor.tsx"
+      ]
+    ],
+    "translation": "Access"
+  },
+  "deviceClassEditor.dmxMapping.columnAction": {
+    "message": "Action",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ]
+    ],
+    "translation": "Action"
+  },
+  "deviceClassEditor.activeSequences.heading": {
+    "message": "Active Sequences",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+      ]
+    ],
+    "translation": "Active Sequences"
+  },
+  "deviceClassEditor.activeSequences.triggerLabel": {
+    "message": "Active Sequences: {activeCount}",
+    "placeholders": {
+      "activeCount": [
+        "activeCount"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+      ]
+    ],
+    "translation": "Active Sequences: {activeCount}"
+  },
+  "deviceClassEditor.newResource.add": {
+    "message": "Add",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/NewResourceDialog.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/resourcesEditor/NewResourceDialog.tsx"
+      ]
+    ],
+    "translation": "Add"
+  },
+  "deviceClassEditor.newParameter.add": {
+    "message": "Add",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/NewParameterDialog.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/parametersEditor/NewParameterDialog.tsx"
+      ]
+    ],
+    "translation": "Add"
+  },
+  "deviceClassEditor.newCommand.add": {
+    "message": "Add",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/NewCommandDialog.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/commandsEditor/NewCommandDialog.tsx"
+      ]
+    ],
+    "translation": "Add"
+  },
+  "itemClasses.new.addLabel": {
+    "message": "Add",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/NewClassDialog.tsx"
+      ]
+    ],
+    "translation": "Add"
+  },
+  "itemClasses.new.add": {
+    "message": "Add",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/NewClassDialog.tsx"
+      ]
+    ],
+    "translation": "Add"
+  },
+  "tagSelector.add": {
+    "message": "Add",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/TagSelector.tsx"
+      ]
+    ],
+    "translation": "Add"
+  },
+  "itemClasses.commandClasses.list.emptyState": {
+    "message": "Add a command class to start editing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Add a command class to start editing"
+  },
+  "deviceClassEditor.commands.list.emptyState": {
+    "message": "Add a command to start editing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandsEditor.tsx"
+      ]
+    ],
+    "translation": "Add a command to start editing"
+  },
+  "deviceClassEditor.dmxController.noMapping": {
+    "message": "Add a DMX parameter mapping in the DMX editor to use the test controller.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/DmxController.tsx"
+      ]
+    ],
+    "translation": "Add a DMX parameter mapping in the DMX editor to use the test controller."
+  },
+  "deviceClassEditor.dmxEditor.list.emptyState": {
+    "message": "Add a DMX slot group to start editing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxEditor.tsx"
+      ]
+    ],
+    "translation": "Add a DMX slot group to start editing"
+  },
+  "itemClasses.parameterClasses.list.emptyState": {
+    "message": "Add a parameter class to start editing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Add a parameter class to start editing"
+  },
+  "deviceClassEditor.parameters.list.emptyState": {
+    "message": "Add a parameter to start editing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParametersEditor.tsx"
+      ]
+    ],
+    "translation": "Add a parameter to start editing"
+  },
+  "itemClasses.resourceClasses.list.emptyState": {
+    "message": "Add a resource class to start editing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Add a resource class to start editing"
+  },
+  "deviceClassEditor.resources.list.emptyState": {
+    "message": "Add a resource to start editing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourcesEditor.tsx"
+      ]
+    ],
+    "translation": "Add a resource to start editing"
+  },
+  "itemClasses.serializerClasses.list.emptyState": {
+    "message": "Add a serializer class to start editing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Add a serializer class to start editing"
+  },
+  "itemClasses.structureClasses.list.emptyState": {
+    "message": "Add a structure class to start editing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Add a structure class to start editing"
+  },
+  "commandClassEditor.arguments.add": {
+    "message": "Add Argument",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/CommandClassMembersEditor.tsx"
+      ]
+    ],
+    "translation": "Add Argument"
+  },
+  "deviceClassEditor.commands.list.add": {
+    "message": "Add Command",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandsEditor.tsx"
+      ]
+    ],
+    "translation": "Add Command"
+  },
+  "deviceClassEditor.commands.undo.addCommand": {
+    "message": "Add Command",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/state.ts"
+      ]
+    ],
+    "translation": "Add Command"
+  },
+  "itemClasses.commandClasses.list.add": {
+    "message": "Add Command Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Add Command Class"
+  },
+  "itemClasses.commandClasses.undo.add": {
+    "message": "Add Command Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Add Command Class"
+  },
+  "itemClasses.commandClassArguments.undo.add": {
+    "message": "Add Command Class Argument",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Add Command Class Argument"
+  },
+  "itemClasses.commandClassReturnValues.undo.add": {
+    "message": "Add Command Class Return Value",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Add Command Class Return Value"
+  },
+  "deviceClassEditor.dmx.undo.addChunk": {
+    "message": "Add DMX Chunk",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/state.ts"
+      ]
+    ],
+    "translation": "Add DMX Chunk"
+  },
+  "deviceClassEditor.dmx.undo.addMappingCondition": {
+    "message": "Add DMX Mapping Condition",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/state.ts"
+      ]
+    ],
+    "translation": "Add DMX Mapping Condition"
+  },
+  "deviceClassEditor.dmx.undo.addMappingGroup": {
+    "message": "Add DMX Mapping Group",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/state.ts"
+      ]
+    ],
+    "translation": "Add DMX Mapping Group"
+  },
+  "deviceClassEditor.dmx.undo.addParameterMapping": {
+    "message": "Add DMX Parameter Mapping",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/state.ts"
+      ]
+    ],
+    "translation": "Add DMX Parameter Mapping"
+  },
+  "deviceClassEditor.dmxEditor.list.add": {
+    "message": "Add DMX Slot Group",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxEditor.tsx"
+      ]
+    ],
+    "translation": "Add DMX Slot Group"
+  },
+  "deviceClassEditor.undo.addEnumChoice": {
+    "message": "Add Enum Choice",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/state.ts"
+      ]
+    ],
+    "translation": "Add Enum Choice"
+  },
+  "itemClassEnumChoices.addEnumChoice": {
+    "message": "Add Enum Choice",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/ClassEnumChoicesEditor.tsx"
+      ]
+    ],
+    "translation": "Add Enum Choice"
+  },
+  "itemClasses.enumChoices.undo.add": {
+    "message": "Add Enum Choice",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Add Enum Choice"
+  },
+  "mediaType.add": {
+    "message": "Add media type",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/MediaTypeSelector.tsx"
+      ]
+    ],
+    "translation": "Add media type"
+  },
+  "navbar.addEditor": {
+    "message": "Add New Editor",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/TopNavBar.tsx"
+      ]
+    ],
+    "translation": "Add New Editor"
+  },
+  "deviceClassEditor.parameters.list.add": {
+    "message": "Add Parameter",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParametersEditor.tsx"
+      ]
+    ],
+    "translation": "Add Parameter"
+  },
+  "deviceClassEditor.parameters.undo.addParameter": {
+    "message": "Add Parameter",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/state.ts"
+      ]
+    ],
+    "translation": "Add Parameter"
+  },
+  "itemClasses.parameterClasses.list.add": {
+    "message": "Add Parameter Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Add Parameter Class"
+  },
+  "itemClasses.parameterClasses.undo.add": {
+    "message": "Add Parameter Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Add Parameter Class"
+  },
+  "deviceClassEditor.dmxMapping.addRange": {
+    "message": "Add Range",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ]
+    ],
+    "translation": "Add Range"
+  },
+  "deviceClassEditor.resources.list.add": {
+    "message": "Add Resource",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourcesEditor.tsx"
+      ]
+    ],
+    "translation": "Add Resource"
+  },
+  "deviceClassEditor.resources.undo.addResource": {
+    "message": "Add Resource",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/state.ts"
+      ]
+    ],
+    "translation": "Add Resource"
+  },
+  "itemClasses.resourceClasses.list.add": {
+    "message": "Add Resource Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Add Resource Class"
+  },
+  "itemClasses.resourceClasses.undo.add": {
+    "message": "Add Resource Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Add Resource Class"
+  },
+  "commandClassEditor.returnValues.add": {
+    "message": "Add Return Value",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/CommandClassMembersEditor.tsx"
+      ]
+    ],
+    "translation": "Add Return Value"
+  },
+  "itemClasses.serializerClasses.list.add": {
+    "message": "Add Serializer Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Add Serializer Class"
+  },
+  "itemClasses.serializerClasses.undo.add": {
+    "message": "Add Serializer Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Add Serializer Class"
+  },
+  "deviceClassEditor.sequenceStep.addStep": {
+    "message": "Add Step",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/SequenceStepEditor.tsx"
+      ]
+    ],
+    "translation": "Add Step"
+  },
+  "itemClasses.structureClasses.list.add": {
+    "message": "Add Structure Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Add Structure Class"
+  },
+  "itemClasses.structureClasses.undo.add": {
+    "message": "Add Structure Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Add Structure Class"
+  },
+  "deviceClassEditor.addTab": {
+    "message": "Add Tab",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/DeviceClassEditor.tsx"
+      ]
+    ],
+    "translation": "Add Tab"
+  },
+  "deviceClassEditor.dmxGroup.addToMappingGroup": {
+    "message": "Add to Mapping Group",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterGroup.tsx"
+      ]
+    ],
+    "translation": "Add to Mapping Group"
+  },
+  "deviceClassEditor.dmxMapping.addUnmapped": {
+    "message": "Add Unmapped Parameter",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ]
+    ],
+    "translation": "Add Unmapped Parameter"
+  },
+  "deviceClassEditor.dmxController.addressAndPort": {
+    "message": "Address and Port:",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/DmxController.tsx"
+      ]
+    ],
+    "translation": "Address and Port:"
+  },
+  "navbar.importState.warningDescription": {
+    "message": "All editors and settings will be replaced, and the app will reload.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportStateDialog.tsx"
+      ]
+    ],
+    "translation": "All editors and settings will be replaced, and the app will reload."
+  },
+  "deviceClassEditor.resourceClassDisplay.allowedMediaTypes": {
+    "message": "Allowed Media Types",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceClassDisplay.tsx"
+      ]
+    ],
+    "translation": "Allowed Media Types"
+  },
+  "libraryError.description": {
+    "message": "An error occurred while trying to load the default set of ESTA libraries. This is a bug in {APP_NAME}. Please open an issue in the <0>repository</0>.",
+    "placeholders": {
+      "APP_NAME": [
+        "APP_NAME"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/app/libraryErrorDialog.tsx"
+      ]
+    ],
+    "translation": "An error occurred while trying to load the default set of ESTA libraries. This is a bug in {APP_NAME}. Please open an issue in the <0>repository</0>."
+  },
+  "navbar.importCodex.unknownError": {
+    "message": "An unknown error occurred importing the selected file.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "An unknown error occurred importing the selected file."
+  },
+  "validation.unknown": {
+    "message": "An unknown error occurred.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ValidationPopover.tsx"
+      ]
+    ],
+    "translation": "An unknown error occurred."
+  },
+  "editorFields.validation.unknown": {
+    "message": "An unknown error occurred.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/EditorFields/DeprecatedTextEditorField.tsx"
+      ],
+      [
+        "src/components/EditorFields/TextEditorField.tsx"
+      ]
+    ],
+    "translation": "An unknown error occurred."
+  },
+  "deviceClassEditor.dmxCondition.matchAll": {
+    "message": "And",
+    "placeholders": {},
+    "comments": [
+      "Logical AND"
+    ],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxCondition.tsx"
+      ]
+    ],
+    "translation": "And"
+  },
+  "navbar.mainMenu.label": {
+    "message": "App Menu",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AppMainMenu.tsx"
+      ]
+    ],
+    "translation": "App Menu"
+  },
+  "navbar.importState.summary.appVersionLabel": {
+    "message": "App version",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportStateDialog.tsx"
+      ]
+    ],
+    "translation": "App version"
+  },
+  "settings.appearance.heading": {
+    "message": "Appearance",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/SettingsDialog.tsx"
+      ]
+    ],
+    "translation": "Appearance"
+  },
+  "importFluxiteCodex.feedback.archiveValidationFailed": {
+    "message": "Archive validation failed: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/importUtils.ts"
+      ]
+    ],
+    "translation": "Archive validation failed: {reason}"
+  },
+  "deviceClassEditor.commandEditor.arguments": {
+    "message": "Arguments",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandEditor.tsx"
+      ]
+    ],
+    "translation": "Arguments"
+  },
+  "commandClassEditor.arguments": {
+    "message": "Arguments",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/CommandClassEditor.tsx"
+      ]
+    ],
+    "translation": "Arguments"
+  },
+  "navbar.importState.summary.assetsLabel": {
+    "message": "Assets",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportStateDialog.tsx"
+      ]
+    ],
+    "translation": "Assets"
+  },
+  "deviceClassEditor.deviceInfo.author": {
+    "message": "Author",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/deviceInfoEditor/DeviceInfoEditor.tsx"
+      ]
+    ],
+    "translation": "Author"
+  },
+  "navbar.closeDocument.cancel": {
+    "message": "Cancel",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/CloseDocumentDialog.tsx"
+      ]
+    ],
+    "translation": "Cancel"
+  },
+  "navbar.exportCodex.cancel": {
+    "message": "Cancel",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Cancel"
+  },
+  "navbar.exportState.cancel": {
+    "message": "Cancel",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportStateDialog.tsx"
+      ]
+    ],
+    "translation": "Cancel"
+  },
+  "navbar.importCodex.cancel": {
+    "message": "Cancel",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Cancel"
+  },
+  "navbar.importState.cancel": {
+    "message": "Cancel",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportStateDialog.tsx"
+      ]
+    ],
+    "translation": "Cancel"
+  },
+  "deviceClassEditor.newResource.cancel": {
+    "message": "Cancel",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/NewResourceDialog.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/resourcesEditor/NewResourceDialog.tsx"
+      ]
+    ],
+    "translation": "Cancel"
+  },
+  "deviceClassEditor.newParameter.cancel": {
+    "message": "Cancel",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/NewParameterDialog.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/parametersEditor/NewParameterDialog.tsx"
+      ]
+    ],
+    "translation": "Cancel"
+  },
+  "deviceClassEditor.dmxMappingRange.cancel": {
+    "message": "Cancel",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
+      ]
+    ],
+    "translation": "Cancel"
+  },
+  "deviceClassEditor.newCommand.cancel": {
+    "message": "Cancel",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/NewCommandDialog.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/commandsEditor/NewCommandDialog.tsx"
+      ]
+    ],
+    "translation": "Cancel"
+  },
+  "itemClasses.new.cancelLabel": {
+    "message": "Cancel",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/NewClassDialog.tsx"
+      ]
+    ],
+    "translation": "Cancel"
+  },
+  "itemClasses.new.cancel": {
+    "message": "Cancel",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/NewClassDialog.tsx"
+      ]
+    ],
+    "translation": "Cancel"
+  },
+  "deviceClassEditor.paramClassDisplay.category": {
+    "message": "Category",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParameterClassDisplay.tsx"
+      ]
+    ],
+    "translation": "Category"
+  },
+  "deviceClassEditor.deviceInfo.category": {
+    "message": "Category",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/deviceInfoEditor/DeviceInfoEditor.tsx"
+      ]
+    ],
+    "translation": "Category"
+  },
+  "itemClasses.identity.category": {
+    "message": "Category",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/ClassIdentityFields.tsx"
+      ]
+    ],
+    "translation": "Category"
+  },
+  "itemClasses.new.category": {
+    "message": "Category",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/NewClassDialog.tsx"
+      ]
+    ],
+    "translation": "Category"
+  },
+  "deviceClassEditor.resourceDefault.change": {
+    "message": "Change",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceDefaultValue.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceDefaultValue.tsx"
+      ]
+    ],
+    "translation": "Change"
+  },
+  "deviceClassEditor.dmx.undo.changeOffsets": {
+    "message": "Change DMX Offsets",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/state.ts"
+      ]
+    ],
+    "translation": "Change DMX Offsets"
+  },
+  "deviceClassEditor.resources.undo.changeMediaType": {
+    "message": "Change Media Type",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceEditor.tsx"
+      ]
+    ],
+    "translation": "Change Media Type"
+  },
+  "deviceClassEditor.resources.undo.changeResourceFile": {
+    "message": "Change Resource File",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/state.ts"
+      ]
+    ],
+    "translation": "Change Resource File"
+  },
+  "navbar.mainMenu.checkForUpdates": {
+    "message": "Check for Updates...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AppMainMenu.tsx"
+      ]
+    ],
+    "translation": "Check for Updates..."
+  },
+  "updater.checking": {
+    "message": "Checking for updates...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/updater/updatePrompt.ts"
+      ]
+    ],
+    "translation": "Checking for updates..."
+  },
+  "itemClassEnumChoices.choiceId": {
+    "message": "Choice ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/ClassEnumChoicesEditor.tsx"
+      ]
+    ],
+    "translation": "Choice ID"
+  },
+  "itemClassEnumChoices.choiceName": {
+    "message": "Choice name",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/ClassEnumChoicesEditor.tsx"
+      ]
+    ],
+    "translation": "Choice name"
+  },
+  "deviceClassEditor.newResource.class": {
+    "message": "Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/NewResourceDialog.tsx"
+      ]
+    ],
+    "translation": "Class"
+  },
+  "deviceClassEditor.resourceEditor.class": {
+    "message": "Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceEditor.tsx"
+      ]
+    ],
+    "translation": "Class"
+  },
+  "deviceClassEditor.newParameter.class": {
+    "message": "Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/NewParameterDialog.tsx"
+      ]
+    ],
+    "translation": "Class"
+  },
+  "deviceClassEditor.paramEditor.class": {
+    "message": "Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParameterEditor.tsx"
+      ]
+    ],
+    "translation": "Class"
+  },
+  "deviceClassEditor.commandEditor.class": {
+    "message": "Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandEditor.tsx"
+      ]
+    ],
+    "translation": "Class"
+  },
+  "deviceClassEditor.newCommand.class": {
+    "message": "Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/NewCommandDialog.tsx"
+      ]
+    ],
+    "translation": "Class"
+  },
+  "deviceClassEditor.paramEditor.importedClassNotFound": {
+    "message": "Class <0>{codexId}</0> not found.",
+    "placeholders": {
+      "codexId": [
+        "codexId"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParameterEditor.tsx"
+      ]
+    ],
+    "translation": "Class <0>{codexId}</0> not found."
+  },
+  "deviceClassEditor.commandEditor.importedClassNotFound": {
+    "message": "Class <0>{codexId}</0> not found.",
+    "placeholders": {
+      "codexId": [
+        "codexId"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandEditor.tsx"
+      ]
+    ],
+    "translation": "Class <0>{codexId}</0> not found."
+  },
+  "classes.tabs.label": {
+    "message": "Class kind",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/ClassesEditor.tsx"
+      ]
+    ],
+    "translation": "Class kind"
+  },
+  "deviceClassEditor.widget.classesEditor.name": {
+    "message": "Classes",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/widgets.tsx"
+      ]
+    ],
+    "translation": "Classes"
+  },
+  "integerInput.clearValue": {
+    "message": "Clear value",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/IntegerInput.tsx"
+      ]
+    ],
+    "translation": "Clear value"
+  },
+  "dialog.close": {
+    "message": "Close",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/scn-ui/Dialog.tsx"
+      ]
+    ],
+    "translation": "Close"
+  },
+  "navbar.closeDocument.title": {
+    "message": "Close {name}?",
+    "placeholders": {
+      "name": [
+        "name"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/CloseDocumentDialog.tsx"
+      ]
+    ],
+    "translation": "Close {name}?"
+  },
+  "navbar.closeDocument.closeWithoutSaving": {
+    "message": "Close Without Saving",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/CloseDocumentDialog.tsx"
+      ]
+    ],
+    "translation": "Close Without Saving"
+  },
+  "localizations.entity.command": {
+    "message": "Command",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/localizationRegistry.ts"
+      ]
+    ],
+    "translation": "Command"
+  },
+  "itemClasses.commandClasses.tab": {
+    "message": "Command",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Command"
+  },
+  "localizations.entity.commandArgument": {
+    "message": "Command argument",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/localizationRegistry.ts"
+      ]
+    ],
+    "translation": "Command argument"
+  },
+  "localizations.entity.commandClass": {
+    "message": "Command class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/localizationRegistry.ts"
+      ]
+    ],
+    "translation": "Command class"
+  },
+  "itemClasses.commandClasses.inUse": {
+    "message": "Command class {codexId} is in use. Remove it from these commands first: {referrers}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Command class {codexId} is in use. Remove it from these commands first: {referrers}"
+  },
+  "cmdPalette.defaultTitle": {
+    "message": "Command Palette",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/scn-ui/Command.tsx"
+      ]
+    ],
+    "translation": "Command Palette"
+  },
+  "localizations.entity.commandReturnValue": {
+    "message": "Command return value",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/localizationRegistry.ts"
+      ]
+    ],
+    "translation": "Command return value"
+  },
+  "deviceClassEditor.widget.commandsEditor.name": {
+    "message": "Commands",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/widgets.tsx"
+      ]
+    ],
+    "translation": "Commands"
+  },
+  "deviceClassEditor.deviceInfo.compatibilityHeading": {
+    "message": "Compatibility",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/deviceInfoEditor/DeviceInfoEditor.tsx"
+      ]
+    ],
+    "translation": "Compatibility"
+  },
+  "deviceClassEditor.dmxGroup.condition": {
+    "message": "Condition",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterGroup.tsx"
+      ]
+    ],
+    "translation": "Condition"
+  },
+  "deviceClassEditor.dmxGroup.conditions": {
+    "message": "Conditions",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterGroup.tsx"
+      ]
+    ],
+    "translation": "Conditions"
+  },
+  "settings.description": {
+    "message": "Configure application preferences",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/SettingsDialog.tsx"
+      ]
+    ],
+    "translation": "Configure application preferences"
+  },
+  "deviceClassEditor.dmxMappingRange.configureHowParameterValuesMapToDmxOutputValues": {
+    "message": "Configure how parameter values map to DMX output values",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
+      ]
+    ],
+    "translation": "Configure how parameter values map to DMX output values"
+  },
+  "deviceClassEditor.dmxController.connect": {
+    "message": "Connect",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/DmxController.tsx"
+      ]
+    ],
+    "translation": "Connect"
+  },
+  "updater.checkFailed": {
+    "message": "Could not check for updates: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/updater/updatePrompt.ts"
+      ]
+    ],
+    "translation": "Could not check for updates: {reason}"
+  },
+  "updater.installFailed": {
+    "message": "Could not install version {version}: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/updater/updatePrompt.ts"
+      ]
+    ],
+    "translation": "Could not install version {version}: {reason}"
+  },
+  "itemClasses.commandClasses.newDialog.description": {
+    "message": "Create a new command class by providing an ID and a name",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Create a new command class by providing an ID and a name"
+  },
+  "deviceClassEditor.newParameter.dialogDescription": {
+    "message": "Create a new parameter by selecting a class and providing an ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/NewParameterDialog.tsx"
+      ]
+    ],
+    "translation": "Create a new parameter by selecting a class and providing an ID"
+  },
+  "itemClasses.parameterClasses.newDialog.description": {
+    "message": "Create a new parameter class by providing a category, an ID and a name",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Create a new parameter class by providing a category, an ID and a name"
+  },
+  "itemClasses.resourceClasses.newDialog.description": {
+    "message": "Create a new resource class by providing an ID and a name",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Create a new resource class by providing an ID and a name"
+  },
+  "itemClasses.serializerClasses.newDialog.description": {
+    "message": "Create a new serializer class by providing an ID and a name",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Create a new serializer class by providing an ID and a name"
+  },
+  "itemClasses.structureClasses.newDialog.description": {
+    "message": "Create a new structure class by providing an ID and a name",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Create a new structure class by providing an ID and a name"
+  },
+  "deviceClassEditor.widget.commandsEditor.description": {
+    "message": "Create and edit commands for the device class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/widgets.tsx"
+      ]
+    ],
+    "translation": "Create and edit commands for the device class"
+  },
+  "deviceClassEditor.widget.parametersEditor.description": {
+    "message": "Create and edit parameters for the device class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/widgets.tsx"
+      ]
+    ],
+    "translation": "Create and edit parameters for the device class"
+  },
+  "deviceClassEditor.widget.resourcesEditor.description": {
+    "message": "Create and edit resources (e.g. assets) for the device class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/widgets.tsx"
+      ]
+    ],
+    "translation": "Create and edit resources (e.g. assets) for the device class"
+  },
+  "deviceClassEditor.widget.classesEditor.description": {
+    "message": "Create and edit the item classes the device class defines",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/widgets.tsx"
+      ]
+    ],
+    "translation": "Create and edit the item classes the device class defines"
+  },
+  "settings.theme.dark": {
+    "message": "Dark",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/SettingsDialog.tsx"
+      ]
+    ],
+    "translation": "Dark"
+  },
+  "deviceClassEditor.paramClassDisplay.dataType": {
+    "message": "Data Type",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParameterClassDisplay.tsx"
+      ]
+    ],
+    "translation": "Data Type"
+  },
+  "deviceClassEditor.commandEditor.dataType": {
+    "message": "Data Type",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandEditor.tsx"
+      ]
+    ],
+    "translation": "Data Type"
+  },
+  "commandClassEditor.field.dataType": {
+    "message": "Data Type",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/CommandClassMembersEditor.tsx"
+      ]
+    ],
+    "translation": "Data Type"
+  },
+  "paramClassEditor.dataType": {
+    "message": "Data Type",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/ParameterClassEditor.tsx"
+      ]
+    ],
+    "translation": "Data Type"
+  },
+  "navbar.mainMenu.debug": {
+    "message": "Debug",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AppMainMenu.tsx"
+      ]
+    ],
+    "translation": "Debug"
+  },
+  "deviceClassEditor.dmxDisplay.decimal": {
+    "message": "decimal",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/DmxDisplay.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/controller/DmxDisplay.tsx"
+      ]
+    ],
+    "translation": "decimal"
+  },
+  "integerInput.decrement": {
+    "message": "Decrement",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/IntegerInput.tsx"
+      ]
+    ],
+    "translation": "Decrement"
+  },
+  "deviceClassEditor.resourceDefault.altText": {
+    "message": "Default resource value of type {mediaType}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceDefaultValue.tsx"
+      ]
+    ],
+    "translation": "Default resource value of type {mediaType}"
+  },
+  "deviceClassEditor.resourceEditor.defaultValue": {
+    "message": "Default Value",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceEditor.tsx"
+      ]
+    ],
+    "translation": "Default Value"
+  },
+  "deviceClassEditor.paramMinMaxDefault.defaultValue": {
+    "message": "Default Value",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/MinMaxDefaultProperties.tsx"
+      ]
+    ],
+    "translation": "Default Value"
+  },
+  "itemClasses.new.namePlaceholder": {
+    "message": "Defaults to the ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/NewClassDialog.tsx"
+      ]
+    ],
+    "translation": "Defaults to the ID"
+  },
+  "listItemsEditor.deleteSelected": {
+    "message": "Delete",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ListItemsEditor.tsx"
+      ]
+    ],
+    "translation": "Delete"
+  },
+  "commandClassEditor.arguments.delete": {
+    "message": "Delete Argument {codexId}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/CommandClassMembersEditor.tsx"
+      ]
+    ],
+    "translation": "Delete Argument {codexId}"
+  },
+  "itemClassEnumChoices.deleteChoice": {
+    "message": "Delete choice {codexId}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/ClassEnumChoicesEditor.tsx"
+      ]
+    ],
+    "translation": "Delete choice {codexId}"
+  },
+  "deviceClassEditor.commands.list.delete": {
+    "message": "Delete Command",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandsEditor.tsx"
+      ]
+    ],
+    "translation": "Delete Command"
+  },
+  "deviceClassEditor.commands.undo.deleteCommand": {
+    "message": "Delete Command",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/state.ts"
+      ]
+    ],
+    "translation": "Delete Command"
+  },
+  "itemClasses.commandClasses.list.delete": {
+    "message": "Delete Command Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Delete Command Class"
+  },
+  "itemClasses.commandClasses.undo.delete": {
+    "message": "Delete Command Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Delete Command Class"
+  },
+  "itemClasses.commandClassArguments.undo.delete": {
+    "message": "Delete Command Class Argument",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Delete Command Class Argument"
+  },
+  "itemClasses.commandClassReturnValues.undo.delete": {
+    "message": "Delete Command Class Return Value",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Delete Command Class Return Value"
+  },
+  "deviceClassEditor.dmxCondition.deleteCondition": {
+    "message": "Delete condition",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxCondition.tsx"
+      ]
+    ],
+    "translation": "Delete condition"
+  },
+  "deviceClassEditor.dmx.undo.deleteChunk": {
+    "message": "Delete DMX Chunk",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/state.ts"
+      ]
+    ],
+    "translation": "Delete DMX Chunk"
+  },
+  "deviceClassEditor.dmx.undo.deleteMappingCondition": {
+    "message": "Delete DMX Mapping Condition",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/state.ts"
+      ]
+    ],
+    "translation": "Delete DMX Mapping Condition"
+  },
+  "deviceClassEditor.dmx.undo.deleteMappingGroup": {
+    "message": "Delete DMX Mapping Group",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/state.ts"
+      ]
+    ],
+    "translation": "Delete DMX Mapping Group"
+  },
+  "deviceClassEditor.dmx.undo.deleteParameterMapping": {
+    "message": "Delete DMX Parameter Mapping",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/state.ts"
+      ]
+    ],
+    "translation": "Delete DMX Parameter Mapping"
+  },
+  "deviceClassEditor.dmxEditor.list.delete": {
+    "message": "Delete DMX Slot Group",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxEditor.tsx"
+      ]
+    ],
+    "translation": "Delete DMX Slot Group"
+  },
+  "navbar.editorTab.deleteEditor": {
+    "message": "Delete Editor",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/EditorTitleTab.tsx"
+      ]
+    ],
+    "translation": "Delete Editor"
+  },
+  "deviceClassEditor.undo.deleteEnumChoice": {
+    "message": "Delete Enum Choice",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/state.ts"
+      ]
+    ],
+    "translation": "Delete Enum Choice"
+  },
+  "itemClasses.enumChoices.undo.delete": {
+    "message": "Delete Enum Choice",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Delete Enum Choice"
+  },
+  "deviceClassEditor.parameters.list.delete": {
+    "message": "Delete Parameter",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParametersEditor.tsx"
+      ]
+    ],
+    "translation": "Delete Parameter"
+  },
+  "deviceClassEditor.parameters.undo.deleteParameter": {
+    "message": "Delete Parameter",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/state.ts"
+      ]
+    ],
+    "translation": "Delete Parameter"
+  },
+  "itemClasses.parameterClasses.list.delete": {
+    "message": "Delete Parameter Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Delete Parameter Class"
+  },
+  "itemClasses.parameterClasses.undo.delete": {
+    "message": "Delete Parameter Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Delete Parameter Class"
+  },
+  "deviceClassEditor.dmxMapping.deleteRange": {
+    "message": "Delete range",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ]
+    ],
+    "translation": "Delete range"
+  },
+  "deviceClassEditor.resources.list.delete": {
+    "message": "Delete Resource",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourcesEditor.tsx"
+      ]
+    ],
+    "translation": "Delete Resource"
+  },
+  "deviceClassEditor.resources.undo.deleteResource": {
+    "message": "Delete Resource",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/state.ts"
+      ]
+    ],
+    "translation": "Delete Resource"
+  },
+  "itemClasses.resourceClasses.list.delete": {
+    "message": "Delete Resource Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Delete Resource Class"
+  },
+  "itemClasses.resourceClasses.undo.delete": {
+    "message": "Delete Resource Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Delete Resource Class"
+  },
+  "commandClassEditor.returnValues.delete": {
+    "message": "Delete Return Value {codexId}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/CommandClassMembersEditor.tsx"
+      ]
+    ],
+    "translation": "Delete Return Value {codexId}"
+  },
+  "itemClasses.serializerClasses.list.delete": {
+    "message": "Delete Serializer Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Delete Serializer Class"
+  },
+  "itemClasses.serializerClasses.undo.delete": {
+    "message": "Delete Serializer Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Delete Serializer Class"
+  },
+  "itemClasses.structureClasses.list.delete": {
+    "message": "Delete Structure Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Delete Structure Class"
+  },
+  "itemClasses.structureClasses.undo.delete": {
+    "message": "Delete Structure Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Delete Structure Class"
+  },
+  "localizations.field.description": {
+    "message": "Description",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/localizationRegistry.ts"
+      ],
+      [
+        "src/features/deviceClassEditor/localizationRegistry.ts"
+      ],
+      [
+        "src/features/deviceClassEditor/localizationRegistry.ts"
+      ]
+    ],
+    "translation": "Description"
+  },
+  "deviceClassEditor.resourceClassDisplay.description": {
+    "message": "Description",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceClassDisplay.tsx"
+      ]
+    ],
+    "translation": "Description"
+  },
+  "deviceClassEditor.paramClassDisplay.description": {
+    "message": "Description",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParameterClassDisplay.tsx"
+      ]
+    ],
+    "translation": "Description"
+  },
+  "deviceClassEditor.deviceInfo.description": {
+    "message": "Description",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/deviceInfoEditor/DeviceInfoEditor.tsx"
+      ]
+    ],
+    "translation": "Description"
+  },
+  "deviceClassEditor.commandClassDisplay.description": {
+    "message": "Description",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandClassDisplay.tsx"
+      ]
+    ],
+    "translation": "Description"
+  },
+  "itemClasses.identity.description": {
+    "message": "Description",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/ClassIdentityFields.tsx"
+      ]
+    ],
+    "translation": "Description"
+  },
+  "commandClassEditor.field.description": {
+    "message": "Description",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/CommandClassMembersEditor.tsx"
+      ]
+    ],
+    "translation": "Description"
+  },
+  "deviceClassEditor.resourceDefault.details": {
+    "message": "Details",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceDefaultValue.tsx"
+      ]
+    ],
+    "translation": "Details"
+  },
+  "localizations.entity.deviceClass": {
+    "message": "Device class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/localizationRegistry.ts"
+      ]
+    ],
+    "translation": "Device class"
+  },
+  "deviceClassEditor.deviceInfo.deviceClassHeading": {
+    "message": "Device Class Information",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/deviceInfoEditor/DeviceInfoEditor.tsx"
+      ]
+    ],
+    "translation": "Device Class Information"
+  },
+  "navbar.exportCodex.deviceClassLabel": {
+    "message": "Device Class to export",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Device Class to export"
+  },
+  "deviceClassEditor.widget.deviceInfoEditor.name": {
+    "message": "Device Info",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/widgets.tsx"
+      ]
+    ],
+    "translation": "Device Info"
+  },
+  "deviceClassEditor.resourceEditor.deviceLibrary": {
+    "message": "Device Library",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceEditor.tsx"
+      ]
+    ],
+    "translation": "Device Library"
+  },
+  "deviceClassEditor.paramEditor.deviceLibrary": {
+    "message": "Device Library",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParameterEditor.tsx"
+      ]
+    ],
+    "translation": "Device Library"
+  },
+  "deviceClassEditor.commandEditor.deviceLibrary": {
+    "message": "Device Library",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandEditor.tsx"
+      ]
+    ],
+    "translation": "Device Library"
+  },
+  "deviceClassEditor.dmxController.disconnect": {
+    "message": "Disconnect",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/DmxController.tsx"
+      ]
+    ],
+    "translation": "Disconnect"
+  },
+  "deviceClassEditor.newResource.displayName": {
+    "message": "Display Name",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/NewResourceDialog.tsx"
+      ]
+    ],
+    "translation": "Display Name"
+  },
+  "deviceClassEditor.paramEditor.displayName": {
+    "message": "Display Name",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParameterEditor.tsx"
+      ]
+    ],
+    "translation": "Display Name"
+  },
+  "deviceClassEditor.commandEditor.displayName": {
+    "message": "Display Name",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandEditor.tsx"
+      ]
+    ],
+    "translation": "Display Name"
+  },
+  "deviceClassEditor.newCommand.displayName": {
+    "message": "Display Name",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/NewCommandDialog.tsx"
+      ]
+    ],
+    "translation": "Display Name"
+  },
+  "deviceClassEditor.widget.dmxEditor.name": {
+    "message": "DMX Footprint",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/widgets.tsx"
+      ]
+    ],
+    "translation": "DMX Footprint"
+  },
+  "deviceClassEditor.dmxDisplay.title": {
+    "message": "DMX Output",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/DmxDisplay.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/controller/DmxDisplay.tsx"
+      ]
+    ],
+    "translation": "DMX Output"
+  },
+  "deviceClassEditor.dmxMappingRange.dmxOutputRange": {
+    "message": "DMX Output Range",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
+      ]
+    ],
+    "translation": "DMX Output Range"
+  },
+  "deviceClassEditor.dmxController.connectionClosed": {
+    "message": "DMX server connection closed",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/DmxController.tsx"
+      ]
+    ],
+    "translation": "DMX server connection closed"
+  },
+  "deviceClassEditor.dmxController.connectionFailed": {
+    "message": "DMX server connection failed",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/DmxController.tsx"
+      ]
+    ],
+    "translation": "DMX server connection failed"
+  },
+  "deviceClassEditor.sequenceStep.dmx": {
+    "message": "DMX:",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/SequenceStepEditor.tsx"
+      ]
+    ],
+    "translation": "DMX:"
+  },
+  "importFluxiteCodex.feedback.documentValidationFailed": {
+    "message": "Document validation failed: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/importUtils.ts"
+      ]
+    ],
+    "translation": "Document validation failed: {reason}"
+  },
+  "updater.downloading": {
+    "message": "Downloading version {version}...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/updater/updatePrompt.ts"
+      ]
+    ],
+    "translation": "Downloading version {version}..."
+  },
+  "deviceClassEditor.sequenceStep.duration": {
+    "message": "Duration",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/SequenceStepEditor.tsx"
+      ]
+    ],
+    "translation": "Duration"
+  },
+  "deviceClassEditor.paramInstantiation.dynamic": {
+    "message": "Dynamic",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/InstantiationProperties.tsx"
+      ]
+    ],
+    "translation": "Dynamic"
+  },
+  "importFluxiteCodex.feedback.archiveManifestMissing": {
+    "message": "e173archive.json not found in archive root",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/importUtils.ts"
+      ]
+    ],
+    "translation": "e173archive.json not found in archive root"
+  },
+  "deviceClassEditor.dmxMapping.editRange": {
+    "message": "Edit",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ]
+    ],
+    "translation": "Edit"
+  },
+  "deviceClassEditor.widget.deviceInfoEditor.description": {
+    "message": "Edit basic device information",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/widgets.tsx"
+      ]
+    ],
+    "translation": "Edit basic device information"
+  },
+  "deviceClassEditor.commands.undo.editCommand": {
+    "message": "Edit Command",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/state.ts"
+      ]
+    ],
+    "translation": "Edit Command"
+  },
+  "itemClasses.commandClasses.undo.edit": {
+    "message": "Edit Command Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Edit Command Class"
+  },
+  "itemClasses.commandClassArguments.undo.edit": {
+    "message": "Edit Command Class Argument",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Edit Command Class Argument"
+  },
+  "itemClasses.commandClassReturnValues.undo.edit": {
+    "message": "Edit Command Class Return Value",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Edit Command Class Return Value"
+  },
+  "deviceClassEditor.deviceInfo.undo.editDeviceInfo": {
+    "message": "Edit Device Info",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/deviceInfoEditor/state.ts"
+      ]
+    ],
+    "translation": "Edit Device Info"
+  },
+  "deviceClassEditor.dmx.undo.editMappingCondition": {
+    "message": "Edit DMX Mapping Condition",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/state.ts"
+      ]
+    ],
+    "translation": "Edit DMX Mapping Condition"
+  },
+  "deviceClassEditor.dmx.undo.editParameterMapping": {
+    "message": "Edit DMX Parameter Mapping",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/state.ts"
+      ]
+    ],
+    "translation": "Edit DMX Parameter Mapping"
+  },
+  "deviceClassEditor.undo.editEnumChoice": {
+    "message": "Edit Enum Choice",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/state.ts"
+      ]
+    ],
+    "translation": "Edit Enum Choice"
+  },
+  "itemClasses.enumChoices.undo.edit": {
+    "message": "Edit Enum Choice",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Edit Enum Choice"
+  },
+  "deviceClassEditor.dmxMappingRange.editMappingRange": {
+    "message": "Edit Mapping Range",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
+      ]
+    ],
+    "translation": "Edit Mapping Range"
+  },
+  "deviceClassEditor.parameters.undo.editParameter": {
+    "message": "Edit Parameter",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/state.ts"
+      ]
+    ],
+    "translation": "Edit Parameter"
+  },
+  "itemClasses.parameterClasses.undo.edit": {
+    "message": "Edit Parameter Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Edit Parameter Class"
+  },
+  "deviceClassEditor.resources.undo.editResource": {
+    "message": "Edit Resource",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/state.ts"
+      ]
+    ],
+    "translation": "Edit Resource"
+  },
+  "itemClasses.resourceClasses.undo.edit": {
+    "message": "Edit Resource Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Edit Resource Class"
+  },
+  "itemClasses.serializerClasses.undo.edit": {
+    "message": "Edit Serializer Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Edit Serializer Class"
+  },
+  "itemClasses.structureClasses.undo.edit": {
+    "message": "Edit Structure Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Edit Structure Class"
+  },
+  "deviceClassEditor.widget.dmxEditor.description": {
+    "message": "Edit the DMX footprint of the device class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/widgets.tsx"
+      ]
+    ],
+    "translation": "Edit the DMX footprint of the device class"
+  },
+  "deviceClassEditor.windowTitle": {
+    "message": "Editing: {editorName} -- {appName}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/DeviceClassEditor.tsx"
+      ]
+    ],
+    "translation": "Editing: {editorName} -- {appName}"
+  },
+  "deviceClassEditor.dmxMapping.rangeEnd": {
+    "message": "End",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ]
+    ],
+    "translation": "End"
+  },
+  "deviceClassEditor.dmxMapping.columnEnd": {
+    "message": "End",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ]
+    ],
+    "translation": "End"
+  },
+  "deviceClassEditor.dmxMappingRange.end": {
+    "message": "End:",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
+      ]
+    ],
+    "translation": "End:"
+  },
+  "localizations.entity.enumChoice": {
+    "message": "Enum choice",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/localizationRegistry.ts"
+      ]
+    ],
+    "translation": "Enum choice"
+  },
+  "deviceClassEditor.paramEditor.enumChoices": {
+    "message": "Enum Choices",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParameterEditor.tsx"
+      ]
+    ],
+    "translation": "Enum Choices"
+  },
+  "deviceClassEditor.commandEditor.enumChoices": {
+    "message": "Enum Choices",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandEditor.tsx"
+      ]
+    ],
+    "translation": "Enum Choices"
+  },
+  "commandClassEditor.field.enumChoices": {
+    "message": "Enum Choices",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/CommandClassMembersEditor.tsx"
+      ]
+    ],
+    "translation": "Enum Choices"
+  },
+  "paramClassEditor.enumChoices": {
+    "message": "Enum Choices",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/ParameterClassEditor.tsx"
+      ]
+    ],
+    "translation": "Enum Choices"
+  },
+  "enumChoices.dialogTitle": {
+    "message": "Enum Choices for {forName}",
+    "placeholders": {
+      "forName": [
+        "forName"
+      ]
+    },
+    "comments": [
+      "forName is a string ID"
+    ],
+    "origin": [
+      [
+        "src/components/EnumChoicesEditor.tsx"
+      ]
+    ],
+    "translation": "Enum Choices for {forName}"
+  },
+  "libraryError.title": {
+    "message": "Error",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/app/libraryErrorDialog.tsx"
+      ]
+    ],
+    "translation": "Error"
+  },
+  "deviceClassEditor.dmxController.compileError": {
+    "message": "Error compiling DMX test controller: {reason}",
+    "placeholders": {
+      "reason": [
+        "reason"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/DmxController.tsx"
+      ]
+    ],
+    "translation": "Error compiling DMX test controller: {reason}"
+  },
+  "navbar.exportCodex.invalidDeviceClass": {
+    "message": "Error constructing Fluxite Codex Document. Please make sure the selected device class is valid.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Error constructing Fluxite Codex Document. Please make sure the selected device class is valid."
+  },
+  "navbar.exportCodex.assetMissing": {
+    "message": "Error creating archive: couldn't load resource asset for {id}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Error creating archive: couldn't load resource asset for {id}"
+  },
+  "navbar.exportCodex.zipDirectoryFailed": {
+    "message": "Error creating ZIP file: couldn't add directory.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Error creating ZIP file: couldn't add directory."
+  },
+  "navbar.exportState.exportFailed": {
+    "message": "Error exporting state: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportStateDialog.tsx"
+      ]
+    ],
+    "translation": "Error exporting state: {reason}"
+  },
+  "navbar.importCodex.importFailed": {
+    "message": "Error importing device class: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Error importing device class: {reason}"
+  },
+  "navbar.importState.importFailed": {
+    "message": "Error importing state: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportStateDialog.tsx"
+      ]
+    ],
+    "translation": "Error importing state: {reason}"
+  },
+  "deviceClassEditor.resourceDefault.loadFailed": {
+    "message": "Error loading asset.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceDefaultValue.tsx"
+      ]
+    ],
+    "translation": "Error loading asset."
+  },
+  "navbar.importCodex.loadFailed": {
+    "message": "Error loading device class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Error loading device class"
+  },
+  "navbar.mainMenu.openFailed": {
+    "message": "Error opening document: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AppMainMenu.tsx"
+      ]
+    ],
+    "translation": "Error opening document: {reason}"
+  },
+  "deviceClassEditor.resourceDefault.readFailed": {
+    "message": "Error reading selected file",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceDefaultValue.tsx"
+      ]
+    ],
+    "translation": "Error reading selected file"
+  },
+  "navbar.exportCodex.saveFailed": {
+    "message": "Error saving {fileName}: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Error saving {fileName}: {reason}"
+  },
+  "navbar.closeDocument.saveFailed": {
+    "message": "Error saving {name}: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/CloseDocumentDialog.tsx"
+      ]
+    ],
+    "translation": "Error saving {name}: {reason}"
+  },
+  "navbar.mainMenu.saveFailed": {
+    "message": "Error saving document: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AppMainMenu.tsx"
+      ]
+    ],
+    "translation": "Error saving document: {reason}"
+  },
+  "navbar.exportCodex.export": {
+    "message": "Export",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Export"
+  },
+  "navbar.exportState.export": {
+    "message": "Export",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportStateDialog.tsx"
+      ]
+    ],
+    "translation": "Export"
+  },
+  "navbar.exportCodex.description": {
+    "message": "Export a device class to a Fluxite Codex archive or document file",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Export a device class to a Fluxite Codex archive or document file"
+  },
+  "navbar.exportCodex.title": {
+    "message": "Export Fluxite Codex",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Export Fluxite Codex"
+  },
+  "navbar.mainMenu.exportCodex": {
+    "message": "Export Fluxite Codex...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AppMainMenu.tsx"
+      ]
+    ],
+    "translation": "Export Fluxite Codex..."
+  },
+  "navbar.exportState.title": {
+    "message": "Export State",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportStateDialog.tsx"
+      ]
+    ],
+    "translation": "Export State"
+  },
+  "navbar.mainMenu.exportState": {
+    "message": "Export State...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AppMainMenu.tsx"
+      ]
+    ],
+    "translation": "Export State..."
+  },
+  "navbar.importState.summary.exportedLabel": {
+    "message": "Exported",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportStateDialog.tsx"
+      ]
+    ],
+    "translation": "Exported"
+  },
+  "navbar.mainMenu.migrationReportFailed": {
+    "message": "Failed to open migration report: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AppMainMenu.tsx"
+      ]
+    ],
+    "translation": "Failed to open migration report: {reason}"
+  },
+  "navbar.mainMenu.migrationReportBlocked": {
+    "message": "Failed to open migration report. Pop-ups may be blocked.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AppMainMenu.tsx"
+      ]
+    ],
+    "translation": "Failed to open migration report. Pop-ups may be blocked."
+  },
+  "navbar.importCodex.archiveParseFailed": {
+    "message": "Failed to parse Fluxite Codex archive.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Failed to parse Fluxite Codex archive."
+  },
+  "importFluxiteCodex.feedback.zipUnreadable": {
+    "message": "Failed to read ZIP archive: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/importUtils.ts"
+      ]
+    ],
+    "translation": "Failed to read ZIP archive: {reason}"
+  },
+  "deviceClassEditor.deviceInfo.firmwareVersions": {
+    "message": "Firmware Versions",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/deviceInfoEditor/DeviceInfoEditor.tsx"
+      ]
+    ],
+    "translation": "Firmware Versions"
+  },
+  "navbar.exportCodex.archiveFileType": {
+    "message": "Fluxite Codex Archive",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Fluxite Codex Archive"
+  },
+  "navbar.exportCodex.documentFileType": {
+    "message": "Fluxite Codex Document",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Fluxite Codex Document"
+  },
+  "updater.upToDate": {
+    "message": "Fluxite Foundry is up to date",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/updater/updatePrompt.ts"
+      ]
+    ],
+    "translation": "Fluxite Foundry is up to date"
+  },
+  "navbar.exportCodex.formatted": {
+    "message": "Formatted",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Formatted"
+  },
+  "localizations.field.friendlyName": {
+    "message": "Friendly name",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/localizationRegistry.ts"
+      ],
+      [
+        "src/features/deviceClassEditor/localizationRegistry.ts"
+      ]
+    ],
+    "translation": "Friendly name"
+  },
+  "enumChoices.fromClass": {
+    "message": "From Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/EnumChoicesEditor.tsx"
+      ]
+    ],
+    "translation": "From Class"
+  },
+  "enumChoices.fromInstance": {
+    "message": "From Instance",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/EnumChoicesEditor.tsx"
+      ]
+    ],
+    "translation": "From Instance"
+  },
+  "itemClasses.identity.fullId": {
+    "message": "Full ID: <0>{codexId}</0>",
+    "placeholders": {
+      "codexId": [
+        "codexId"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/ClassIdentityFields.tsx"
+      ]
+    ],
+    "translation": "Full ID: <0>{codexId}</0>"
+  },
+  "navbar.getStarted": {
+    "message": "Get started by adding a new editor, or import an existing Fluxite Codex file using the import option to the right.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/TopNavBar.tsx"
+      ]
+    ],
+    "translation": "Get started by adding a new editor, or import an existing Fluxite Codex file using the import option to the right."
+  },
+  "deviceClassEditor.dmxDisplay.hex": {
+    "message": "hex",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/DmxDisplay.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/controller/DmxDisplay.tsx"
+      ]
+    ],
+    "translation": "hex"
+  },
+  "deviceClassEditor.sequenceStep.hold": {
+    "message": "Hold:",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/SequenceStepEditor.tsx"
+      ]
+    ],
+    "translation": "Hold:"
+  },
+  "deviceClassEditor.newResource.id": {
+    "message": "ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/NewResourceDialog.tsx"
+      ]
+    ],
+    "translation": "ID"
+  },
+  "deviceClassEditor.resourceClassDisplay.id": {
+    "message": "ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceClassDisplay.tsx"
+      ]
+    ],
+    "translation": "ID"
+  },
+  "deviceClassEditor.resourceEditor.id": {
+    "message": "ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceEditor.tsx"
+      ]
+    ],
+    "translation": "ID"
+  },
+  "deviceClassEditor.newParameter.id": {
+    "message": "ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/NewParameterDialog.tsx"
+      ]
+    ],
+    "translation": "ID"
+  },
+  "deviceClassEditor.paramClassDisplay.id": {
+    "message": "ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParameterClassDisplay.tsx"
+      ]
+    ],
+    "translation": "ID"
+  },
+  "deviceClassEditor.paramEditor.id": {
+    "message": "ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParameterEditor.tsx"
+      ]
+    ],
+    "translation": "ID"
+  },
+  "deviceClassEditor.commandClassDisplay.id": {
+    "message": "ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandClassDisplay.tsx"
+      ]
+    ],
+    "translation": "ID"
+  },
+  "deviceClassEditor.commandEditor.id": {
+    "message": "ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandEditor.tsx"
+      ]
+    ],
+    "translation": "ID"
+  },
+  "deviceClassEditor.newCommand.id": {
+    "message": "ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/NewCommandDialog.tsx"
+      ]
+    ],
+    "translation": "ID"
+  },
+  "itemClassEnumChoices.id": {
+    "message": "ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/ClassEnumChoicesEditor.tsx"
+      ]
+    ],
+    "translation": "ID"
+  },
+  "itemClasses.identity.id": {
+    "message": "ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/ClassIdentityFields.tsx"
+      ]
+    ],
+    "translation": "ID"
+  },
+  "commandClassEditor.field.id": {
+    "message": "ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/CommandClassMembersEditor.tsx"
+      ]
+    ],
+    "translation": "ID"
+  },
+  "itemClasses.new.id": {
+    "message": "ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/NewClassDialog.tsx"
+      ]
+    ],
+    "translation": "ID"
+  },
+  "enumChoices.column.id": {
+    "message": "ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/EnumChoicesEditor.tsx"
+      ]
+    ],
+    "translation": "ID"
+  },
+  "validation.id.notUnique": {
+    "message": "ID must be unique",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/utils/inputValidation.ts"
+      ]
+    ],
+    "translation": "ID must be unique"
+  },
+  "validation.id.empty": {
+    "message": "ID must not be empty",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/utils/inputValidation.ts"
+      ]
+    ],
+    "translation": "ID must not be empty"
+  },
+  "validation.id.hasSpace": {
+    "message": "ID must not contain a space",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/utils/inputValidation.ts"
+      ]
+    ],
+    "translation": "ID must not contain a space"
+  },
+  "validation.id.hasTab": {
+    "message": "ID must not contain a tab",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/utils/inputValidation.ts"
+      ]
+    ],
+    "translation": "ID must not contain a tab"
+  },
+  "validation.id.hasCharacter": {
+    "message": "ID must not contain the character {character}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/utils/inputValidation.ts"
+      ]
+    ],
+    "translation": "ID must not contain the character {character}"
+  },
+  "navbar.exportCodex.includeAssetsHelp": {
+    "message": "If selected, a Fluxite Codex Archive will be created including any resource assets added to this device class. Otherwise, a Fluxite Codex Document will be created without including assets.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "If selected, a Fluxite Codex Archive will be created including any resource assets added to this device class. Otherwise, a Fluxite Codex Document will be created without including assets."
+  },
+  "navbar.importCodex.import": {
+    "message": "Import",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Import"
+  },
+  "navbar.importState.import": {
+    "message": "Import",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportStateDialog.tsx"
+      ]
+    ],
+    "translation": "Import"
+  },
+  "navbar.importCodex.description": {
+    "message": "Import a device class from a Fluxite Codex archive or document file",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Import a device class from a Fluxite Codex archive or document file"
+  },
+  "navbar.importCodex.title": {
+    "message": "Import Fluxite Codex",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Import Fluxite Codex"
+  },
+  "navbar.mainMenu.importCodex": {
+    "message": "Import Fluxite Codex...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AppMainMenu.tsx"
+      ]
+    ],
+    "translation": "Import Fluxite Codex..."
+  },
+  "navbar.importState.title": {
+    "message": "Import State",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportStateDialog.tsx"
+      ]
+    ],
+    "translation": "Import State"
+  },
+  "navbar.mainMenu.importState": {
+    "message": "Import State...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AppMainMenu.tsx"
+      ]
+    ],
+    "translation": "Import State..."
+  },
+  "navbar.importState.warningTitle": {
+    "message": "Importing discards everything currently in the app.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportStateDialog.tsx"
+      ]
+    ],
+    "translation": "Importing discards everything currently in the app."
+  },
+  "navbar.exportState.includeAssets": {
+    "message": "Include assets",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportStateDialog.tsx"
+      ]
+    ],
+    "translation": "Include assets"
+  },
+  "navbar.exportCodex.includeAssets": {
+    "message": "Include Assets",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Include Assets"
+  },
+  "navbar.exportState.includeAssetsWithInfo": {
+    "message": "Include assets ({count}, {size})",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportStateDialog.tsx"
+      ]
+    ],
+    "translation": "Include assets ({count}, {size})"
+  },
+  "integerInput.increment": {
+    "message": "Increment",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/IntegerInput.tsx"
+      ]
+    ],
+    "translation": "Increment"
+  },
+  "deviceClassEditor.duration.indefinite": {
+    "message": "indefinite",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/mappingUtils.ts"
+      ]
+    ],
+    "translation": "indefinite"
+  },
+  "deviceClassEditor.sequenceStep.indefinite": {
+    "message": "Indefinite",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/SequenceStepEditor.tsx"
+      ]
+    ],
+    "translation": "Indefinite"
+  },
+  "deviceClassEditor.activeSequences.indefinite": {
+    "message": "Indefinite",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+      ]
+    ],
+    "translation": "Indefinite"
+  },
+  "validation.notANumber": {
+    "message": "Input must be a valid number",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/utils/inputValidation.ts"
+      ]
+    ],
+    "translation": "Input must be a valid number"
+  },
+  "validation.notANumberOrEmpty": {
+    "message": "Input must be a valid number or empty",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/utils/inputValidation.ts"
+      ]
+    ],
+    "translation": "Input must be a valid number or empty"
+  },
+  "validation.outOfRange": {
+    "message": "Input must be between minimum and maximum value",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/utils/inputValidation.ts"
+      ]
+    ],
+    "translation": "Input must be between minimum and maximum value"
+  },
+  "updater.install": {
+    "message": "Install and restart",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/updater/updatePrompt.ts"
+      ]
+    ],
+    "translation": "Install and restart"
+  },
+  "deviceClassEditor.paramInstantiation.instanceCount": {
+    "message": "Instance Count",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/InstantiationProperties.tsx"
+      ]
+    ],
+    "translation": "Instance Count"
+  },
+  "deviceClassEditor.paramInstantiation.instances": {
+    "message": "Instances",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/InstantiationProperties.tsx"
+      ]
+    ],
+    "translation": "Instances"
+  },
+  "deviceClassEditor.dmxCondition.invalid": {
+    "message": "Invalid condition data",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxCondition.tsx"
+      ]
+    ],
+    "translation": "Invalid condition data"
+  },
+  "enumBound.invalid": {
+    "message": "Invalid: {value}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/mappingUtils.ts"
+      ]
+    ],
+    "translation": "Invalid: {value}"
+  },
+  "deviceClassEditor.dmxCondition.isBetween": {
+    "message": "is between",
+    "placeholders": {},
+    "comments": [
+      "Full form: '{slot ID} is between {number selector} {number selector}'"
+    ],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxCondition.tsx"
+      ]
+    ],
+    "translation": "is between"
+  },
+  "settings.language.label": {
+    "message": "Language",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/SettingsDialog.tsx"
+      ]
+    ],
+    "translation": "Language"
+  },
+  "deviceClassEditor.resourceEditor.library": {
+    "message": "Library",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceEditor.tsx"
+      ]
+    ],
+    "translation": "Library"
+  },
+  "deviceClassEditor.paramEditor.library": {
+    "message": "Library",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParameterEditor.tsx"
+      ]
+    ],
+    "translation": "Library"
+  },
+  "deviceClassEditor.commandEditor.library": {
+    "message": "Library",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandEditor.tsx"
+      ]
+    ],
+    "translation": "Library"
+  },
+  "navbar.about.license": {
+    "message": "License:",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AboutDialog.tsx"
+      ]
+    ],
+    "translation": "License:"
+  },
+  "deviceClassEditor.resourceEditor.lifetime": {
+    "message": "Lifetime",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceEditor.tsx"
+      ]
+    ],
+    "translation": "Lifetime"
+  },
+  "deviceClassEditor.paramEditor.lifetime": {
+    "message": "Lifetime",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParameterEditor.tsx"
+      ]
+    ],
+    "translation": "Lifetime"
+  },
+  "settings.theme.light": {
+    "message": "Light",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/SettingsDialog.tsx"
+      ]
+    ],
+    "translation": "Light"
+  },
+  "navbar.importState.description": {
+    "message": "Load a previously exported state file. It is migrated to the current state version.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportStateDialog.tsx"
+      ]
+    ],
+    "translation": "Load a previously exported state file. It is migrated to the current state version."
+  },
+  "navbar.importCodex.loading": {
+    "message": "Loading file contents...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Loading file contents..."
+  },
+  "deviceClassEditor.resourceDefault.loading": {
+    "message": "Loading...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceDefaultValue.tsx"
+      ]
+    ],
+    "translation": "Loading..."
+  },
+  "enumChoices.dialogDescription": {
+    "message": "Manage class-level enum choices and add custom instance-specific enum choices",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/EnumChoicesEditor.tsx"
+      ]
+    ],
+    "translation": "Manage class-level enum choices and add custom instance-specific enum choices"
+  },
+  "deviceClassEditor.deviceInfo.manufacturerEstaId": {
+    "message": "Manufacturer ESTA ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/deviceInfoEditor/DeviceInfoEditor.tsx"
+      ]
+    ],
+    "translation": "Manufacturer ESTA ID"
+  },
+  "deviceClassEditor.deviceInfo.manufacturerHeading": {
+    "message": "Manufacturer Information",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/deviceInfoEditor/DeviceInfoEditor.tsx"
+      ]
+    ],
+    "translation": "Manufacturer Information"
+  },
+  "deviceClassEditor.deviceInfo.manufacturerName": {
+    "message": "Manufacturer Name",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/deviceInfoEditor/DeviceInfoEditor.tsx"
+      ]
+    ],
+    "translation": "Manufacturer Name"
+  },
+  "deviceClassEditor.deviceInfo.manufacturerUrl": {
+    "message": "Manufacturer URL",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/deviceInfoEditor/DeviceInfoEditor.tsx"
+      ]
+    ],
+    "translation": "Manufacturer URL"
+  },
+  "deviceClassEditor.dmxChunk.mappingGroup": {
+    "message": "Mapping Group",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxChunkEditor.tsx"
+      ]
+    ],
+    "translation": "Mapping Group"
+  },
+  "deviceClassEditor.dmxGroup.mappingGroup": {
+    "message": "Mapping Group",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterGroup.tsx"
+      ]
+    ],
+    "translation": "Mapping Group"
+  },
+  "deviceClassEditor.dmxMapping.mappingRanges": {
+    "message": "Mapping Ranges",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ]
+    ],
+    "translation": "Mapping Ranges"
+  },
+  "deviceClassEditor.dmxCondition.match": {
+    "message": "Match",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxCondition.tsx"
+      ]
+    ],
+    "translation": "Match"
+  },
+  "deviceClassEditor.paramInstantiation.maximumInstanceCount": {
+    "message": "Maximum Instance Count",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/InstantiationProperties.tsx"
+      ]
+    ],
+    "translation": "Maximum Instance Count"
+  },
+  "deviceClassEditor.paramMinMaxDefault.maximumValue": {
+    "message": "Maximum Value",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/MinMaxDefaultProperties.tsx"
+      ]
+    ],
+    "translation": "Maximum Value"
+  },
+  "deviceClassEditor.resourceEditor.mediaType": {
+    "message": "Media Type",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceEditor.tsx"
+      ]
+    ],
+    "translation": "Media Type"
+  },
+  "resourceClassEditor.mediaTypes": {
+    "message": "Media Types",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/ResourceClassEditor.tsx"
+      ]
+    ],
+    "translation": "Media Types"
+  },
+  "deviceClassEditor.paramInstantiation.minimumInstanceCount": {
+    "message": "Minimum Instance Count",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/InstantiationProperties.tsx"
+      ]
+    ],
+    "translation": "Minimum Instance Count"
+  },
+  "deviceClassEditor.paramMinMaxDefault.minimumValue": {
+    "message": "Minimum Value",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/MinMaxDefaultProperties.tsx"
+      ]
+    ],
+    "translation": "Minimum Value"
+  },
+  "deviceClassEditor.deviceInfo.modelHeading": {
+    "message": "Model Information",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/deviceInfoEditor/DeviceInfoEditor.tsx"
+      ]
+    ],
+    "translation": "Model Information"
+  },
+  "deviceClassEditor.deviceInfo.modelName": {
+    "message": "Model Name",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/deviceInfoEditor/DeviceInfoEditor.tsx"
+      ]
+    ],
+    "translation": "Model Name"
+  },
+  "enumChoices.modify": {
+    "message": "Modify",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/EnumChoicesEditor.tsx"
+      ]
+    ],
+    "translation": "Modify"
+  },
+  "deviceClassEditor.sequenceStep.ms": {
+    "message": "ms",
+    "placeholders": {},
+    "comments": [
+      "milliseconds"
+    ],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/SequenceStepEditor.tsx"
+      ]
+    ],
+    "translation": "ms"
+  },
+  "deviceClassEditor.paramInstantiation.multiple": {
+    "message": "Multiple",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/InstantiationProperties.tsx"
+      ]
+    ],
+    "translation": "Multiple"
+  },
+  "structureClassEditor.multipleAllowed": {
+    "message": "Multiple Allowed",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/StructureClassEditor.tsx"
+      ]
+    ],
+    "translation": "Multiple Allowed"
+  },
+  "localizations.field.name": {
+    "message": "Name",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/localizationRegistry.ts"
+      ],
+      [
+        "src/features/deviceClassEditor/localizationRegistry.ts"
+      ]
+    ],
+    "translation": "Name"
+  },
+  "deviceClassEditor.commandEditor.name": {
+    "message": "Name",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandEditor.tsx"
+      ]
+    ],
+    "translation": "Name"
+  },
+  "itemClassEnumChoices.name": {
+    "message": "Name",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/ClassEnumChoicesEditor.tsx"
+      ]
+    ],
+    "translation": "Name"
+  },
+  "itemClasses.identity.name": {
+    "message": "Name",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/ClassIdentityFields.tsx"
+      ]
+    ],
+    "translation": "Name"
+  },
+  "commandClassEditor.field.name": {
+    "message": "Name",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/CommandClassMembersEditor.tsx"
+      ]
+    ],
+    "translation": "Name"
+  },
+  "itemClasses.new.name": {
+    "message": "Name",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/NewClassDialog.tsx"
+      ]
+    ],
+    "translation": "Name"
+  },
+  "enumChoices.column.name": {
+    "message": "Name",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/EnumChoicesEditor.tsx"
+      ]
+    ],
+    "translation": "Name"
+  },
+  "deviceClassEditor.newCommand.newCommand": {
+    "message": "New Command",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/NewCommandDialog.tsx"
+      ]
+    ],
+    "translation": "New Command"
+  },
+  "itemClasses.commandClasses.newDialog.title": {
+    "message": "New Command Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "New Command Class"
+  },
+  "deviceClassEditor.newParameter.dialogTitle": {
+    "message": "New Parameter",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/NewParameterDialog.tsx"
+      ]
+    ],
+    "translation": "New Parameter"
+  },
+  "itemClasses.parameterClasses.newDialog.title": {
+    "message": "New Parameter Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "New Parameter Class"
+  },
+  "deviceClassEditor.newResource.dialogTitle": {
+    "message": "New Resource",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/NewResourceDialog.tsx"
+      ]
+    ],
+    "translation": "New Resource"
+  },
+  "itemClasses.resourceClasses.newDialog.title": {
+    "message": "New Resource Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "New Resource Class"
+  },
+  "itemClasses.serializerClasses.newDialog.title": {
+    "message": "New Serializer Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "New Serializer Class"
+  },
+  "itemClasses.structureClasses.newDialog.title": {
+    "message": "New Structure Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "New Structure Class"
+  },
+  "deviceClassEditor.commandEditor.required.no": {
+    "message": "No",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandEditor.tsx"
+      ]
+    ],
+    "translation": "No"
+  },
+  "deviceClassEditor.activeSequences.none": {
+    "message": "No active sequences",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+      ]
+    ],
+    "translation": "No active sequences"
+  },
+  "navbar.importCodex.noDeviceClassSelected": {
+    "message": "No device class selected",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "No device class selected"
+  },
+  "navbar.importCodex.noDeviceClasses": {
+    "message": "No Device Classes found in selected document.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "No Device Classes found in selected document."
+  },
+  "deviceClassEditor.dmxDisplay.noSlots": {
+    "message": "No DMX slots to display",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/DmxDisplay.tsx"
+      ]
+    ],
+    "translation": "No DMX slots to display"
+  },
+  "deviceClassEditor.dmxMapping.noEnumChoicesHelp": {
+    "message": "No enum choices are defined for this parameter. The parameter class or instance must define choices for enum values to be selectable.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ]
+    ],
+    "translation": "No enum choices are defined for this parameter. The parameter class or instance must define choices for enum values to be selectable."
+  },
+  "itemClassSelector.noMatches": {
+    "message": "No item class found.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ItemClassSelector.tsx"
+      ]
+    ],
+    "translation": "No item class found."
+  },
+  "paramClassCategory.noMatches": {
+    "message": "No matches.",
+    "placeholders": {},
+    "comments": [
+      "Indicates that a parameter class category entered by a user did not match any existing categories."
+    ],
+    "origin": [
+      [
+        "src/components/CategoryField.tsx"
+      ]
+    ],
+    "translation": "No matches."
+  },
+  "tagSelector.noMatches": {
+    "message": "No matches.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/TagSelector.tsx"
+      ]
+    ],
+    "translation": "No matches."
+  },
+  "navbar.mainMenu.noMigrationReport": {
+    "message": "No migration report available",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AppMainMenu.tsx"
+      ]
+    ],
+    "translation": "No migration report available"
+  },
+  "mediaType.noMatches": {
+    "message": "No registered media type matches the query.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/MediaTypeSelector.tsx"
+      ]
+    ],
+    "translation": "No registered media type matches the query."
+  },
+  "navbar.importState.summary.assetsNotIncluded": {
+    "message": "not included (stored assets kept)",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportStateDialog.tsx"
+      ]
+    ],
+    "translation": "not included (stored assets kept)"
+  },
+  "mediaType.unregisteredReason": {
+    "message": "Not registered with IANA. E1.73 requires every media type to be listed in the IANA registry.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/MediaTypeSelector.tsx"
+      ]
+    ],
+    "translation": "Not registered with IANA. E1.73 requires every media type to be listed in the IANA registry."
+  },
+  "unitField.notSpecified": {
+    "message": "Not specified",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/EditorFields/UnitField.tsx"
+      ]
+    ],
+    "translation": "Not specified"
+  },
+  "deviceClassEditor.dmxChunk.offsetsUsed": {
+    "message": "Offsets Used",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxChunkEditor.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxChunkEditor.tsx"
+      ]
+    ],
+    "translation": "Offsets Used"
+  },
+  "importFluxiteCodex.feedback.unsupportedFileType": {
+    "message": "Only Fluxite Codex Document or Archive files are supported",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/importUtils.ts"
+      ]
+    ],
+    "translation": "Only Fluxite Codex Document or Archive files are supported"
+  },
+  "deviceClassEditor.resourceDefault.opaqueData": {
+    "message": "Opaque data",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceDefaultValue.tsx"
+      ]
+    ],
+    "translation": "Opaque data"
+  },
+  "navbar.mainMenu.open": {
+    "message": "Open...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AppMainMenu.tsx"
+      ]
+    ],
+    "translation": "Open..."
+  },
+  "deviceClassEditor.dmxCondition.matchAny": {
+    "message": "Or",
+    "placeholders": {},
+    "comments": [
+      "Logical OR"
+    ],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxCondition.tsx"
+      ]
+    ],
+    "translation": "Or"
+  },
+  "deviceClassEditor.resourceDefault.originalFileName": {
+    "message": "Original File Name",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceDefaultValue.tsx"
+      ]
+    ],
+    "translation": "Original File Name"
+  },
+  "deviceClassEditor.dmxMappingRange.outputMode": {
+    "message": "Output Mode",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
+      ]
+    ],
+    "translation": "Output Mode"
+  },
+  "localizations.entity.parameter": {
+    "message": "Parameter",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/localizationRegistry.ts"
+      ]
+    ],
+    "translation": "Parameter"
+  },
+  "deviceClassEditor.dmxMapping.parameter": {
+    "message": "Parameter",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ]
+    ],
+    "translation": "Parameter"
+  },
+  "deviceClassEditor.dmxMapping.columnParameter": {
+    "message": "Parameter",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ]
+    ],
+    "translation": "Parameter"
+  },
+  "itemClasses.parameterClasses.tabTitle": {
+    "message": "Parameter",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Parameter"
+  },
+  "localizations.entity.parameterClass": {
+    "message": "Parameter class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/localizationRegistry.ts"
+      ]
+    ],
+    "translation": "Parameter class"
+  },
+  "itemClasses.parameterClasses.inUse": {
+    "message": "Parameter class {codexId} is in use. Remove it from these parameters first: {referrers}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Parameter class {codexId} is in use. Remove it from these parameters first: {referrers}"
+  },
+  "deviceClassEditor.dmxGroup.parameterMapping": {
+    "message": "Parameter Mapping",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterGroup.tsx"
+      ]
+    ],
+    "translation": "Parameter Mapping"
+  },
+  "deviceClassEditor.dmxMapping.badData": {
+    "message": "Parameter mapping has bad data",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ]
+    ],
+    "translation": "Parameter mapping has bad data"
+  },
+  "deviceClassEditor.mappingRangeText.range": {
+    "message": "Parameter range <0>{paramRangeText}</0> maps to DMX range <1>{dmxRangeText}</1>",
+    "placeholders": {
+      "paramRangeText": [
+        "paramRangeText"
+      ],
+      "dmxRangeText": [
+        "dmxRangeText"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeText.tsx"
+      ]
+    ],
+    "translation": "Parameter range <0>{paramRangeText}</0> maps to DMX range <1>{dmxRangeText}</1>"
+  },
+  "deviceClassEditor.mappingRangeText.sequence.indefinite": {
+    "message": "Parameter range <0>{paramRangeText}</0> triggers a sequence with <1>{stepCount, plural, one {# step} other {# steps}}</1> and <2>indefinite length</2>",
+    "placeholders": {
+      "paramRangeText": [
+        "paramRangeText"
+      ],
+      "stepCount": [
+        "stepCount"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeText.tsx"
+      ]
+    ],
+    "translation": "Parameter range <0>{paramRangeText}</0> triggers a sequence with <1>{stepCount, plural, one {# step} other {# steps}}</1> and <2>indefinite length</2>"
+  },
+  "deviceClassEditor.mappingRangeText.sequence.timed": {
+    "message": "Parameter range <0>{paramRangeText}</0> triggers a sequence with <1>{stepCount, plural, one {# step} other {# steps}}</1> and <2>length {durationText}</2>",
+    "placeholders": {
+      "paramRangeText": [
+        "paramRangeText"
+      ],
+      "stepCount": [
+        "stepCount"
+      ],
+      "durationText": [
+        "durationText"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeText.tsx"
+      ]
+    ],
+    "translation": "Parameter range <0>{paramRangeText}</0> triggers a sequence with <1>{stepCount, plural, one {# step} other {# steps}}</1> and <2>length {durationText}</2>"
+  },
+  "deviceClassEditor.dmxMappingRange.parameterValueRange": {
+    "message": "Parameter Value Range",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
+      ]
+    ],
+    "translation": "Parameter Value Range"
+  },
+  "deviceClassEditor.widget.parametersEditor.name": {
+    "message": "Parameters",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/widgets.tsx"
+      ]
+    ],
+    "translation": "Parameters"
+  },
+  "deviceClassEditor.deviceInfo.publishDate": {
+    "message": "Publish Date",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/deviceInfoEditor/DeviceInfoEditor.tsx"
+      ]
+    ],
+    "translation": "Publish Date"
+  },
+  "deviceClassEditor.dmxMappingRange.range": {
+    "message": "Range",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
+      ]
+    ],
+    "translation": "Range"
+  },
+  "deviceClassEditor.dmxCondition.rangeEnd": {
+    "message": "Range end",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxCondition.tsx"
+      ]
+    ],
+    "translation": "Range end"
+  },
+  "deviceClassEditor.dmxCondition.rangeStart": {
+    "message": "Range start",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxCondition.tsx"
+      ]
+    ],
+    "translation": "Range start"
+  },
+  "deviceClassEditor.resourceEditor.read": {
+    "message": "Read",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceEditor.tsx"
+      ]
+    ],
+    "translation": "Read"
+  },
+  "deviceClassEditor.paramEditor.readActual": {
+    "message": "Read Actual",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParameterEditor.tsx"
+      ]
+    ],
+    "translation": "Read Actual"
+  },
+  "deviceClassEditor.paramEditor.readTarget": {
+    "message": "Read Target",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParameterEditor.tsx"
+      ]
+    ],
+    "translation": "Read Target"
+  },
+  "menu.redo": {
+    "message": "Redo",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/UndoRedoMenuItems.tsx"
+      ]
+    ],
+    "translation": "Redo"
+  },
+  "menu.redo.named": {
+    "message": "Redo {redoAction}",
+    "placeholders": {
+      "redoAction": [
+        "redoAction"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/UndoRedoMenuItems.tsx"
+      ]
+    ],
+    "translation": "Redo {redoAction}"
+  },
+  "deviceClassEditor.paramEditor.referencedClassNotFound": {
+    "message": "Referenced class not found. It may have been deleted.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParameterEditor.tsx"
+      ]
+    ],
+    "translation": "Referenced class not found. It may have been deleted."
+  },
+  "deviceClassEditor.commandEditor.referencedClassNotFound": {
+    "message": "Referenced class not found. It may have been deleted.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandEditor.tsx"
+      ]
+    ],
+    "translation": "Referenced class not found. It may have been deleted."
+  },
+  "deviceClassEditor.resourceDefault.remove": {
+    "message": "Remove",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceDefaultValue.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceDefaultValue.tsx"
+      ]
+    ],
+    "translation": "Remove"
+  },
+  "deviceClassEditor.dmxCondition.remove": {
+    "message": "Remove",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxCondition.tsx"
+      ]
+    ],
+    "translation": "Remove"
+  },
+  "deviceClassEditor.dmxMapping.remove": {
+    "message": "Remove",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ]
+    ],
+    "translation": "Remove"
+  },
+  "deviceClassEditor.dmxMapping.removeUnmapped": {
+    "message": "Remove",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ]
+    ],
+    "translation": "Remove"
+  },
+  "tagSelector.remove": {
+    "message": "Remove {value}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/TagSelector.tsx"
+      ]
+    ],
+    "translation": "Remove {value}"
+  },
+  "tagInput.removeItem": {
+    "message": "Remove item",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/TagInput.tsx"
+      ]
+    ],
+    "translation": "Remove item"
+  },
+  "deviceClassEditor.dmxGroup.removeMappingGroup": {
+    "message": "Remove Mapping Group",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterGroup.tsx"
+      ]
+    ],
+    "translation": "Remove Mapping Group"
+  },
+  "deviceClassEditor.commandEditor.required": {
+    "message": "Required",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandEditor.tsx"
+      ]
+    ],
+    "translation": "Required"
+  },
+  "commandClassEditor.field.required": {
+    "message": "Required",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/CommandClassMembersEditor.tsx"
+      ]
+    ],
+    "translation": "Required"
+  },
+  "itemClasses.resourceClasses.tab": {
+    "message": "Resource",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Resource"
+  },
+  "localizations.entity.resourceClass": {
+    "message": "Resource class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/localizationRegistry.ts"
+      ]
+    ],
+    "translation": "Resource class"
+  },
+  "itemClasses.resourceClasses.inUse": {
+    "message": "Resource class {codexId} is in use. Remove it from these resources first: {referrers}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Resource class {codexId} is in use. Remove it from these resources first: {referrers}"
+  },
+  "deviceClassEditor.widget.resourcesEditor.name": {
+    "message": "Resources",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/widgets.tsx"
+      ]
+    ],
+    "translation": "Resources"
+  },
+  "commandClassEditor.returnValues": {
+    "message": "Return Values",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/CommandClassEditor.tsx"
+      ]
+    ],
+    "translation": "Return Values"
+  },
+  "navbar.mainMenu.save": {
+    "message": "Save",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AppMainMenu.tsx"
+      ]
+    ],
+    "translation": "Save"
+  },
+  "deviceClassEditor.dmxMappingRange.save": {
+    "message": "Save",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
+      ]
+    ],
+    "translation": "Save"
+  },
+  "navbar.closeDocument.saveAndClose": {
+    "message": "Save and Close",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/CloseDocumentDialog.tsx"
+      ]
+    ],
+    "translation": "Save and Close"
+  },
+  "navbar.mainMenu.saveAs": {
+    "message": "Save As...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AppMainMenu.tsx"
+      ]
+    ],
+    "translation": "Save As..."
+  },
+  "navbar.exportState.description": {
+    "message": "Save the entire persistent state to a file, so it can be imported again later to test state migrations.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportStateDialog.tsx"
+      ]
+    ],
+    "translation": "Save the entire persistent state to a file, so it can be imported again later to test state migrations."
+  },
+  "documentFile.warning.savedWithoutAssets": {
+    "message": "Saved a document without {count} asset(s) whose data could not be found",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/app/documentFile.ts"
+      ]
+    ],
+    "translation": "Saved a document without {count} asset(s) whose data could not be found"
+  },
+  "paramClassCategory.search": {
+    "message": "Search categories",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/CategoryField.tsx"
+      ]
+    ],
+    "translation": "Search categories"
+  },
+  "paramClassCategory.searchPlaceholder": {
+    "message": "Search categories...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/CategoryField.tsx"
+      ]
+    ],
+    "translation": "Search categories..."
+  },
+  "itemClasses.commandClasses.list.search": {
+    "message": "Search Command Classes",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Search Command Classes"
+  },
+  "deviceClassEditor.commands.list.search": {
+    "message": "Search Commands",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandsEditor.tsx"
+      ]
+    ],
+    "translation": "Search Commands"
+  },
+  "deviceClassEditor.dmxEditor.list.search": {
+    "message": "Search DMX Slot Groups",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxEditor.tsx"
+      ]
+    ],
+    "translation": "Search DMX Slot Groups"
+  },
+  "cmdPalette.defaultDescription": {
+    "message": "Search for a command to run...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/scn-ui/Command.tsx"
+      ]
+    ],
+    "translation": "Search for a command to run..."
+  },
+  "itemClassSelector.search": {
+    "message": "Search item classes...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ItemClassSelector.tsx"
+      ]
+    ],
+    "translation": "Search item classes..."
+  },
+  "mediaType.search": {
+    "message": "Search media types...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/MediaTypeSelector.tsx"
+      ]
+    ],
+    "translation": "Search media types..."
+  },
+  "itemClasses.parameterClasses.list.search": {
+    "message": "Search Parameter Classes",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Search Parameter Classes"
+  },
+  "deviceClassEditor.parameters.list.search": {
+    "message": "Search Parameters",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParametersEditor.tsx"
+      ]
+    ],
+    "translation": "Search Parameters"
+  },
+  "itemClasses.resourceClasses.list.search": {
+    "message": "Search Resource Classes",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Search Resource Classes"
+  },
+  "deviceClassEditor.resources.list.search": {
+    "message": "Search Resources",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourcesEditor.tsx"
+      ]
+    ],
+    "translation": "Search Resources"
+  },
+  "itemClasses.serializerClasses.list.search": {
+    "message": "Search Serializer Classes",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Search Serializer Classes"
+  },
+  "itemClasses.structureClasses.list.search": {
+    "message": "Search Structure Classes",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Search Structure Classes"
+  },
+  "tagSelector.search": {
+    "message": "Search...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/TagSelector.tsx"
+      ]
+    ],
+    "translation": "Search..."
+  },
+  "paramClassCategory.selectPlaceholder": {
+    "message": "Select a category...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/CategoryField.tsx"
+      ]
+    ],
+    "translation": "Select a category..."
+  },
+  "itemClasses.commandClasses.list.selectPrompt": {
+    "message": "Select a command class to start editing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Select a command class to start editing"
+  },
+  "deviceClassEditor.commands.list.selectPrompt": {
+    "message": "Select a command to start editing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandsEditor.tsx"
+      ]
+    ],
+    "translation": "Select a command to start editing"
+  },
+  "navbar.importCodex.selectPlaceholder": {
+    "message": "Select a device class...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Select a device class..."
+  },
+  "deviceClassEditor.dmxEditor.list.selectPrompt": {
+    "message": "Select a DMX slot group to start editing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxEditor.tsx"
+      ]
+    ],
+    "translation": "Select a DMX slot group to start editing"
+  },
+  "itemClasses.parameterClasses.list.selectPrompt": {
+    "message": "Select a parameter class to start editing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Select a parameter class to start editing"
+  },
+  "deviceClassEditor.parameters.list.selectPrompt": {
+    "message": "Select a parameter to start editing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParametersEditor.tsx"
+      ]
+    ],
+    "translation": "Select a parameter to start editing"
+  },
+  "itemClasses.resourceClasses.list.selectPrompt": {
+    "message": "Select a resource class to start editing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Select a resource class to start editing"
+  },
+  "deviceClassEditor.resources.list.selectPrompt": {
+    "message": "Select a resource to start editing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourcesEditor.tsx"
+      ]
+    ],
+    "translation": "Select a resource to start editing"
+  },
+  "itemClasses.serializerClasses.list.selectPrompt": {
+    "message": "Select a serializer class to start editing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Select a serializer class to start editing"
+  },
+  "deviceClassEditor.dmxCondition.selectSlot": {
+    "message": "Select a slot...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxCondition.tsx"
+      ]
+    ],
+    "translation": "Select a slot..."
+  },
+  "itemClasses.structureClasses.list.selectPrompt": {
+    "message": "Select a structure class to start editing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Select a structure class to start editing"
+  },
+  "itemClassSelector.placeholder": {
+    "message": "Select an item class...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ItemClassSelector.tsx"
+      ]
+    ],
+    "translation": "Select an item class..."
+  },
+  "stringSelector.placeholder": {
+    "message": "Select an item...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/StringSelector.tsx"
+      ]
+    ],
+    "translation": "Select an item..."
+  },
+  "navbar.importCodex.selectDeviceClass": {
+    "message": "Select Device Class to import:",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Select Device Class to import:"
+  },
+  "navbar.importCodex.selectFile": {
+    "message": "Select Fluxite Codex file to import",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "Select Fluxite Codex file to import"
+  },
+  "navbar.importState.selectFile": {
+    "message": "Select state file to import",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportStateDialog.tsx"
+      ]
+    ],
+    "translation": "Select state file to import"
+  },
+  "deviceClassEditor.resourceDefault.wrongType": {
+    "message": "Selected file is of invalid type {actual} (expected {expected})",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceDefaultValue.tsx"
+      ]
+    ],
+    "translation": "Selected file is of invalid type {actual} (expected {expected})"
+  },
+  "deviceClassEditor.dmxMappingRange.sequence": {
+    "message": "Sequence",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
+      ]
+    ],
+    "translation": "Sequence"
+  },
+  "deviceClassEditor.sequenceStep.atLeastOneStep": {
+    "message": "Sequence must have at least one step",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/SequenceStepEditor.tsx"
+      ]
+    ],
+    "translation": "Sequence must have at least one step"
+  },
+  "deviceClassEditor.sequenceValidation.zeroSteps": {
+    "message": "Sequence must have at least one step",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/mappingUtils.ts"
+      ]
+    ],
+    "translation": "Sequence must have at least one step"
+  },
+  "deviceClassEditor.dmxMappingRange.sequenceSteps": {
+    "message": "Sequence Steps",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
+      ]
+    ],
+    "translation": "Sequence Steps"
+  },
+  "itemClasses.serializerClasses.tab": {
+    "message": "Serializer",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Serializer"
+  },
+  "localizations.entity.serializerClass": {
+    "message": "Serializer class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/localizationRegistry.ts"
+      ]
+    ],
+    "translation": "Serializer class"
+  },
+  "deviceClassEditor.dmxController.server": {
+    "message": "Server",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/DmxController.tsx"
+      ]
+    ],
+    "translation": "Server"
+  },
+  "settings.title": {
+    "message": "Settings",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/SettingsDialog.tsx"
+      ]
+    ],
+    "translation": "Settings"
+  },
+  "navbar.mainMenu.settings": {
+    "message": "Settings...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AppMainMenu.tsx"
+      ]
+    ],
+    "translation": "Settings..."
+  },
+  "deviceClassEditor.resourceDefault.sha1": {
+    "message": "SHA-1",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceDefaultValue.tsx"
+      ]
+    ],
+    "translation": "SHA-1"
+  },
+  "deviceClassEditor.resourceDefault.sha256": {
+    "message": "SHA-256",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceDefaultValue.tsx"
+      ]
+    ],
+    "translation": "SHA-256"
+  },
+  "mediaType.browseNote": {
+    "message": "Showing {shown} of {total} registered media types. Type to search.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/MediaTypeSelector.tsx"
+      ]
+    ],
+    "translation": "Showing {shown} of {total} registered media types. Type to search."
+  },
+  "mediaType.searchLimitNote": {
+    "message": "Showing the first {limit} matches. Keep typing to narrow.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/MediaTypeSelector.tsx"
+      ]
+    ],
+    "translation": "Showing the first {limit} matches. Keep typing to narrow."
+  },
+  "deviceClassEditor.paramInstantiation.single": {
+    "message": "Single",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/InstantiationProperties.tsx"
+      ]
+    ],
+    "translation": "Single"
+  },
+  "deviceClassEditor.resourceDefault.size": {
+    "message": "Size",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceDefaultValue.tsx"
+      ]
+    ],
+    "translation": "Size"
+  },
+  "deviceClassEditor.dmxChunk.slotLabel": {
+    "message": "Slot {offsets}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/state.ts"
+      ]
+    ],
+    "translation": "Slot {offsets}"
+  },
+  "deviceClassEditor.activeSequences.slots": {
+    "message": "Slots: {slotList}",
+    "placeholders": {
+      "slotList": [
+        "slotList"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+      ]
+    ],
+    "translation": "Slots: {slotList}"
+  },
+  "stateSnapshot.error.formatTooNew": {
+    "message": "Snapshot format v{fileVersion} is newer than this build understands (v{buildVersion}).",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/app/stateSnapshot.ts"
+      ]
+    ],
+    "translation": "Snapshot format v{fileVersion} is newer than this build understands (v{buildVersion})."
+  },
+  "renderError.message": {
+    "message": "Something has gone wrong!",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/RenderError.tsx"
+      ]
+    ],
+    "translation": "Something has gone wrong!"
+  },
+  "deviceClassEditor.dmxMapping.rangeStart": {
+    "message": "Start",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ]
+    ],
+    "translation": "Start"
+  },
+  "deviceClassEditor.dmxMapping.columnStart": {
+    "message": "Start",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ]
+    ],
+    "translation": "Start"
+  },
+  "deviceClassEditor.dmxMappingRange.start": {
+    "message": "Start:",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
+      ]
+    ],
+    "translation": "Start:"
+  },
+  "navbar.importState.summary.stateVersionLabel": {
+    "message": "State version",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportStateDialog.tsx"
+      ]
+    ],
+    "translation": "State version"
+  },
+  "navbar.exportState.stateVersion": {
+    "message": "State version {version}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ExportStateDialog.tsx"
+      ]
+    ],
+    "translation": "State version {version}"
+  },
+  "deviceClassEditor.dmxController.statusConnected": {
+    "message": "Status: Connected",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/DmxController.tsx"
+      ]
+    ],
+    "translation": "Status: Connected"
+  },
+  "deviceClassEditor.dmxController.statusDisconnected": {
+    "message": "Status: Disconnected",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/DmxController.tsx"
+      ]
+    ],
+    "translation": "Status: Disconnected"
+  },
+  "deviceClassEditor.sequenceValidation.indefiniteNotLast": {
+    "message": "Step {step} has indefinite hold but is not the last step",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/mappingUtils.ts"
+      ]
+    ],
+    "translation": "Step {step} has indefinite hold but is not the last step"
+  },
+  "deviceClassEditor.activeSequences.stepProgress": {
+    "message": "Step {stepNumber} of {stepTotal}",
+    "placeholders": {
+      "stepNumber": [
+        "stepNumber"
+      ],
+      "stepTotal": [
+        "stepTotal"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+      ]
+    ],
+    "translation": "Step {stepNumber} of {stepTotal}"
+  },
+  "itemClasses.structureClasses.tab": {
+    "message": "Structure",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": "Structure"
+  },
+  "localizations.entity.structureClass": {
+    "message": "Structure class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/localizationRegistry.ts"
+      ]
+    ],
+    "translation": "Structure class"
+  },
+  "deviceClassEditor.deviceInfo.subcategory": {
+    "message": "Subcategory",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/deviceInfoEditor/DeviceInfoEditor.tsx"
+      ]
+    ],
+    "translation": "Subcategory"
+  },
+  "deviceClassEditor.commandEditor.supportsCompletionNotification": {
+    "message": "Supports Completion Notification",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandEditor.tsx"
+      ]
+    ],
+    "translation": "Supports Completion Notification"
+  },
+  "deviceClassEditor.dmxMappingRange.discardStepsConfirm": {
+    "message": "Switching to Range mode will discard sequence steps. Continue?",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
+      ]
+    ],
+    "translation": "Switching to Range mode will discard sequence steps. Continue?"
+  },
+  "settings.theme.system": {
+    "message": "System",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/SettingsDialog.tsx"
+      ]
+    ],
+    "translation": "System"
+  },
+  "deviceClassEditor.widget.dmxController.name": {
+    "message": "Test DMX Controller",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/widgets.tsx"
+      ]
+    ],
+    "translation": "Test DMX Controller"
+  },
+  "deviceClassEditor.widget.dmxController.description": {
+    "message": "Test the device class with a virtual controller",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/widgets.tsx"
+      ]
+    ],
+    "translation": "Test the device class with a virtual controller"
+  },
+  "deviceClassEditor.dmxChunk.offsetsUsedHelp": {
+    "message": "The DMX slot offsets this group occupies, relative to the start of the footprint.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxChunkEditor.tsx"
+      ]
+    ],
+    "translation": "The DMX slot offsets this group occupies, relative to the start of the footprint."
+  },
+  "documentFile.error.documentClosed": {
+    "message": "The document is no longer open.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/app/documentFile.ts"
+      ]
+    ],
+    "translation": "The document is no longer open."
+  },
+  "navbar.importState.parseFailed": {
+    "message": "The selected file cannot be imported.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportStateDialog.tsx"
+      ]
+    ],
+    "translation": "The selected file cannot be imported."
+  },
+  "navbar.importCodex.invalidData": {
+    "message": "The selected file contains invalid Fluxite Codex data.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "The selected file contains invalid Fluxite Codex data."
+  },
+  "navbar.importCodex.unreadable": {
+    "message": "The selected file could not be read.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportFluxiteCodexDialog.tsx"
+      ]
+    ],
+    "translation": "The selected file could not be read."
+  },
+  "documentFile.error.manifestInvalid": {
+    "message": "The selected file is not a {appName} document: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/app/documentFile.ts"
+      ]
+    ],
+    "translation": "The selected file is not a {appName} document: {reason}"
+  },
+  "documentFile.error.noManifest": {
+    "message": "The selected file is not a {appName} document: it has no {manifestName}.",
+    "placeholders": {},
+    "comments": [
+      "{manifestName} is a file name that must be present in the save file archive."
+    ],
+    "origin": [
+      [
+        "src/app/documentFile.ts"
+      ]
+    ],
+    "translation": "The selected file is not a {appName} document: it has no {manifestName}."
+  },
+  "documentFile.error.manifestNotJson": {
+    "message": "The selected file is not a {appName} document: its {manifestName} is not valid JSON.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/app/documentFile.ts"
+      ]
+    ],
+    "translation": "The selected file is not a {appName} document: its {manifestName} is not valid JSON."
+  },
+  "documentFile.error.notADocument": {
+    "message": "The selected file is not a {appName} document.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/app/documentFile.ts"
+      ]
+    ],
+    "translation": "The selected file is not a {appName} document."
+  },
+  "stateSnapshot.error.notASnapshot": {
+    "message": "The selected file is not a {appName} state snapshot: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/app/stateSnapshot.ts"
+      ]
+    ],
+    "translation": "The selected file is not a {appName} state snapshot: {reason}"
+  },
+  "stateSnapshot.error.notJson": {
+    "message": "The selected file is not valid JSON.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/app/stateSnapshot.ts"
+      ]
+    ],
+    "translation": "The selected file is not valid JSON."
+  },
+  "settings.theme.label": {
+    "message": "Theme",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/SettingsDialog.tsx"
+      ]
+    ],
+    "translation": "Theme"
+  },
+  "documentFile.error.stateUnreadable": {
+    "message": "This build cannot read a document written at state version {fileVersion}.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/app/documentFile.ts"
+      ]
+    ],
+    "translation": "This build cannot read a document written at state version {fileVersion}."
+  },
+  "documentFile.error.unknownDocumentType": {
+    "message": "This build does not know how to open a document of type \"{documentType}\". Update {appName} to open it.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/app/documentFile.ts"
+      ]
+    ],
+    "translation": "This build does not know how to open a document of type \"{documentType}\". Update {appName} to open it."
+  },
+  "paramClassCategory.unrecognizedWarning": {
+    "message": "This category is not defined in any loaded library. The standard reserves categories to published ESTA libraries, so other applications may not recognize it.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/CategoryField.tsx"
+      ]
+    ],
+    "translation": "This category is not defined in any loaded library. The standard reserves categories to published ESTA libraries, so other applications may not recognize it."
+  },
+  "deviceClassEditor.ownLibrary": {
+    "message": "This Device Class",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/state.ts"
+      ]
+    ],
+    "translation": "This Device Class"
+  },
+  "documentFile.error.noMigration": {
+    "message": "This document cannot be migrated from state version {fromVersion}.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/app/documentFile.ts"
+      ]
+    ],
+    "translation": "This document cannot be migrated from state version {fromVersion}."
+  },
+  "documentFile.error.migrationResultInvalid": {
+    "message": "This document could not be migrated: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/app/documentFile.ts"
+      ]
+    ],
+    "translation": "This document could not be migrated: {reason}"
+  },
+  "documentFile.error.migrationFailed": {
+    "message": "This document could not migrated from state version {fromVersion} to {toVersion}: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/app/documentFile.ts"
+      ]
+    ],
+    "translation": "This document could not migrated from state version {fromVersion} to {toVersion}: {reason}"
+  },
+  "navbar.closeDocument.description": {
+    "message": "This document has unsaved changes which will be lost.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/CloseDocumentDialog.tsx"
+      ]
+    ],
+    "translation": "This document has unsaved changes which will be lost."
+  },
+  "documentFile.error.documentLost": {
+    "message": "This document was lost while being migrated.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/app/documentFile.ts"
+      ]
+    ],
+    "translation": "This document was lost while being migrated."
+  },
+  "documentFile.error.stateTooNew": {
+    "message": "This document was written at state version {fileVersion}, which is newer than this build understands ({buildVersion}). Update {appName} to open it.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/app/documentFile.ts"
+      ]
+    ],
+    "translation": "This document was written at state version {fileVersion}, which is newer than this build understands ({buildVersion}). Update {appName} to open it."
+  },
+  "documentFile.error.formatTooNew": {
+    "message": "This document was written in save file format v{fileVersion}, which is newer than this build understands (v{buildVersion}). Update {appName} to open it.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/app/documentFile.ts"
+      ]
+    ],
+    "translation": "This document was written in save file format v{fileVersion}, which is newer than this build understands (v{buildVersion}). Update {appName} to open it."
+  },
+  "documentFile.error.stateMalformed": {
+    "message": "This document written at state version {fileVersion} contains malformed state data.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/app/documentFile.ts"
+      ]
+    ],
+    "translation": "This document written at state version {fileVersion} contains malformed state data."
+  },
+  "navbar.about.prototypeNotice": {
+    "message": "This is an early prototype application, and likely has bugs. Please file issues on the <0>GitHub repository</0>. Please consider <1>joining the Control Protocols Working Group</1> to participate in the development of the Fluxite standards suite.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AboutDialog.tsx"
+      ]
+    ],
+    "translation": "This is an early prototype application, and likely has bugs. Please file issues on the <0>GitHub repository</0>. Please consider <1>joining the Control Protocols Working Group</1> to participate in the development of the Fluxite standards suite."
+  },
+  "deviceClassEditor.dmxMapping.deletedParameterHelp": {
+    "message": "This mapping references a deleted parameter. Choose a parameter above to fix it.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ]
+    ],
+    "translation": "This mapping references a deleted parameter. Choose a parameter above to fix it."
+  },
+  "deviceClassEditor.paramEditor.referencedClassNotFoundDesc": {
+    "message": "This may be an indication of invalid Fluxite Codex.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParameterEditor.tsx"
+      ]
+    ],
+    "translation": "This may be an indication of invalid Fluxite Codex."
+  },
+  "deviceClassEditor.commandEditor.referencedClassNotFoundDesc": {
+    "message": "This may be an indication of invalid Fluxite Codex.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandEditor.tsx"
+      ]
+    ],
+    "translation": "This may be an indication of invalid Fluxite Codex."
+  },
+  "deviceClassEditor.activeSequences.timeRemaining": {
+    "message": "Time: {timeRemaining}",
+    "placeholders": {
+      "timeRemaining": [
+        "timeRemaining"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+      ]
+    ],
+    "translation": "Time: {timeRemaining}"
+  },
+  "deviceClassEditor.sequenceStep.total": {
+    "message": "Total: {totalDurationText}",
+    "placeholders": {
+      "totalDurationText": [
+        "totalDurationText"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/SequenceStepEditor.tsx"
+      ]
+    ],
+    "translation": "Total: {totalDurationText}"
+  },
+  "menu.undo": {
+    "message": "Undo",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/UndoRedoMenuItems.tsx"
+      ]
+    ],
+    "translation": "Undo"
+  },
+  "menu.undo.named": {
+    "message": "Undo {undoAction}",
+    "placeholders": {
+      "undoAction": [
+        "undoAction"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/UndoRedoMenuItems.tsx"
+      ]
+    ],
+    "translation": "Undo {undoAction}"
+  },
+  "deviceClassEditor.paramClassDisplay.unit": {
+    "message": "Unit",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParameterClassDisplay.tsx"
+      ]
+    ],
+    "translation": "Unit"
+  },
+  "deviceClassEditor.commandEditor.unit": {
+    "message": "Unit",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandEditor.tsx"
+      ]
+    ],
+    "translation": "Unit"
+  },
+  "commandClassEditor.field.unit": {
+    "message": "Unit",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/CommandClassMembersEditor.tsx"
+      ]
+    ],
+    "translation": "Unit"
+  },
+  "paramClassEditor.unit": {
+    "message": "Unit",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/classEditors/ParameterClassEditor.tsx"
+      ]
+    ],
+    "translation": "Unit"
+  },
+  "unitField.unit": {
+    "message": "Unit",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/EditorFields/UnitField.tsx"
+      ]
+    ],
+    "translation": "Unit"
+  },
+  "unitField.exponent": {
+    "message": "Unit exponent",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/EditorFields/UnitField.tsx"
+      ]
+    ],
+    "translation": "Unit exponent"
+  },
+  "navbar.unknownDocument": {
+    "message": "unknown",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/TopNavBar.tsx"
+      ]
+    ],
+    "translation": "unknown"
+  },
+  "deviceClassEditor.resourceDefault.unknownMediaType": {
+    "message": "unknown",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceDefaultValue.tsx"
+      ]
+    ],
+    "translation": "unknown"
+  },
+  "deviceClassEditor.unknownWidget": {
+    "message": "Unknown Editor",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/DeviceClassEditor.tsx"
+      ]
+    ],
+    "translation": "Unknown Editor"
+  },
+  "deviceClassEditor.dmxMapping.deletedParameter": {
+    "message": "Unmapped parameter references a deleted parameter",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ]
+    ],
+    "translation": "Unmapped parameter references a deleted parameter"
+  },
+  "deviceClassEditor.dmxMapping.unmappedParameters": {
+    "message": "Unmapped Parameters",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ]
+    ],
+    "translation": "Unmapped Parameters"
+  },
+  "paramClassCategory.unrecognizedLabel": {
+    "message": "Unrecognized category",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/CategoryField.tsx"
+      ]
+    ],
+    "translation": "Unrecognized category"
+  },
+  "navbar.editorTab.unsavedChanges": {
+    "message": "Unsaved changes",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/EditorTitleTab.tsx"
+      ]
+    ],
+    "translation": "Unsaved changes"
+  },
+  "paramClassCategory.useCustom": {
+    "message": "Use \"{category}\" as a custom category",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/CategoryField.tsx"
+      ]
+    ],
+    "translation": "Use \"{category}\" as a custom category"
+  },
+  "navbar.importState.summary.versionCurrent": {
+    "message": "v{version} (no migration needed)",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportStateDialog.tsx"
+      ]
+    ],
+    "translation": "v{version} (no migration needed)"
+  },
+  "navbar.importState.summary.versionWillMigrate": {
+    "message": "v{version} (will migrate to v{currentVersion})",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/ImportStateDialog.tsx"
+      ]
+    ],
+    "translation": "v{version} (will migrate to v{currentVersion})"
+  },
+  "navbar.about.version": {
+    "message": "Version {APP_VERSION} (build {BUILD_STRING})",
+    "placeholders": {
+      "APP_VERSION": [
+        "APP_VERSION"
+      ],
+      "BUILD_STRING": [
+        "BUILD_STRING"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AboutDialog.tsx"
+      ]
+    ],
+    "translation": "Version {APP_VERSION} (build {BUILD_STRING})"
+  },
+  "updater.available": {
+    "message": "Version {version} is available",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/updater/updatePrompt.ts"
+      ]
+    ],
+    "translation": "Version {version} is available"
+  },
+  "enumChoices.view": {
+    "message": "View",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/EnumChoicesEditor.tsx"
+      ]
+    ],
+    "translation": "View"
+  },
+  "navbar.mainMenu.viewMigrationReport": {
+    "message": "View Migration Report",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/topNavBar/AppMainMenu.tsx"
+      ]
+    ],
+    "translation": "View Migration Report"
+  },
+  "deviceClassEditor.resourceEditor.write": {
+    "message": "Write",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceEditor.tsx"
+      ]
+    ],
+    "translation": "Write"
+  },
+  "deviceClassEditor.paramEditor.write": {
+    "message": "Write",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/ParameterEditor.tsx"
+      ]
+    ],
+    "translation": "Write"
+  },
+  "deviceClassEditor.commandEditor.required.yes": {
+    "message": "Yes",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/commandsEditor/CommandEditor.tsx"
+      ]
+    ],
+    "translation": "Yes"
+  }
+}

@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { toast } from "sonner";
+import { msg } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
+import { useLingui } from "@lingui/react";
 import { EntityId } from "app/persistentState";
 import { saveDocument } from "app/documentFile";
 import { errorMessage } from "utils/utils";
@@ -12,6 +15,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "components/scn-ui/Dialog";
+
+const SAVE_FAILED = msg({
+  id: "navbar.closeDocument.saveFailed",
+  message: "Error saving {name}: {reason}",
+});
 
 interface Props {
   documentId: EntityId;
@@ -34,6 +42,7 @@ export const CloseDocumentDialog = ({
   onCancel,
 }: Props) => {
   const [saving, setSaving] = useState(false);
+  const { _ } = useLingui();
 
   const saveAndClose = async () => {
     setSaving(true);
@@ -44,7 +53,9 @@ export const CloseDocumentDialog = ({
       }
     } catch (error) {
       setSaving(false);
-      toast.error(`Error saving ${name}: ${errorMessage(error)}`);
+      toast.error(
+        _({ ...SAVE_FAILED, values: { name, reason: errorMessage(error) } }),
+      );
       return;
     }
 
@@ -55,20 +66,26 @@ export const CloseDocumentDialog = ({
     <Dialog open={true} onOpenChange={(open) => !open && onCancel()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{`Close ${name}?`}</DialogTitle>
+          <DialogTitle>
+            <Trans id="navbar.closeDocument.title">Close {name}?</Trans>
+          </DialogTitle>
           <DialogDescription>
-            This document has unsaved changes which will be lost.
+            <Trans id="navbar.closeDocument.description">
+              This document has unsaved changes which will be lost.
+            </Trans>
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button disabled={saving} onClick={() => void saveAndClose()}>
-            Save and Close
+            <Trans id="navbar.closeDocument.saveAndClose">Save and Close</Trans>
           </Button>
           <Button variant="destructive" disabled={saving} onClick={onConfirm}>
-            Close Without Saving
+            <Trans id="navbar.closeDocument.closeWithoutSaving">
+              Close Without Saving
+            </Trans>
           </Button>
           <Button variant="secondary" disabled={saving} onClick={onCancel}>
-            Cancel
+            <Trans id="navbar.closeDocument.cancel">Cancel</Trans>
           </Button>
         </DialogFooter>
       </DialogContent>
