@@ -93,8 +93,7 @@ export const InstantiationProperties = ({ paramId, param }: Props) => {
             className="w-xs"
             value={param.count.value}
             min={1}
-            onValueChange={(newValue) =>
-              newValue &&
+            onCommit={(newValue) =>
               modifyParameter(paramId, (draft) => {
                 draft.count = { type: "fixed", value: newValue };
               })
@@ -132,28 +131,21 @@ const DynamicCountInputs = ({ paramId, count }: DynamicCountInputsProps) => {
           className="w-xs"
           value={count.min}
           min={1}
-          onValueChange={(newValue) =>
-            newValue &&
+          onCommit={(newValue) =>
             modifyParameter(paramId, (draft) => {
+              // Raise the maximum if the new minimum exceeds it.
               const currentMax =
                 draft.count?.type === "dynamic" ? draft.count.max : count.max;
               draft.count = {
                 type: "dynamic",
                 min: newValue,
-                max: currentMax,
+                max:
+                  currentMax === undefined
+                    ? undefined
+                    : Math.max(currentMax, newValue),
               };
             })
           }
-          onValueConfirm={(newValue) => {
-            // On blur, adjust max up if min exceeds it
-            if (newValue === null) return;
-            modifyParameter(paramId, (draft) => {
-              if (draft.count?.type !== "dynamic") return;
-              if (draft.count.max !== undefined && draft.count.max < newValue) {
-                draft.count.max = newValue;
-              }
-            });
-          }}
         />
       </FieldSet>
       <FieldSet>
@@ -163,33 +155,27 @@ const DynamicCountInputs = ({ paramId, count }: DynamicCountInputsProps) => {
           </Trans>
         </Label>
         <IntegerInput
-          clearable
           id={`${idPrefix}-maxCount`}
           className="w-xs"
+          nullable
           value={count.max ?? null}
           placeholder={_(NO_MAXIMUM)}
           min={1}
-          onValueChange={(newValue) => {
+          onCommit={(newValue) =>
             modifyParameter(paramId, (draft) => {
+              // Lower the minimum if the new maximum is below it.
               const currentMin =
                 draft.count?.type === "dynamic" ? draft.count.min : count.min;
               draft.count = {
                 type: "dynamic",
-                min: currentMin,
-                max: newValue || undefined,
+                min:
+                  newValue === null
+                    ? currentMin
+                    : Math.min(currentMin, newValue),
+                max: newValue ?? undefined,
               };
-            });
-          }}
-          onValueConfirm={(newValue) => {
-            // On blur, adjust min down if max is below it
-            if (newValue === null) return;
-            modifyParameter(paramId, (draft) => {
-              if (draft.count?.type !== "dynamic") return;
-              if (draft.count.min > newValue) {
-                draft.count.min = newValue;
-              }
-            });
-          }}
+            })
+          }
         />
       </FieldSet>
     </>

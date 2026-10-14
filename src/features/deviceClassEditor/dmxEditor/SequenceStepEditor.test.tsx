@@ -190,8 +190,9 @@ describe("SequenceStepEditor", () => {
       const inputs = screen.getAllByRole("textbox");
       const chunkStartInput = inputs[0];
 
-      // Type a single digit to trigger onStepsChange
+      // Type a digit and leave the field to commit it
       await user.type(chunkStartInput, "5");
+      await user.tab();
 
       // Verify onStepsChange was called with a step that has updated chunkStart
       expect(mockOnStepsChange).toHaveBeenCalled();
@@ -214,8 +215,9 @@ describe("SequenceStepEditor", () => {
       const inputs = screen.getAllByRole("textbox");
       const chunkEndInput = inputs[1];
 
-      // Type a single digit to trigger onStepsChange
+      // Type a digit and leave the field to commit it
       await user.type(chunkEndInput, "8");
+      await user.tab();
 
       expect(mockOnStepsChange).toHaveBeenCalled();
       const lastCall =
@@ -237,8 +239,9 @@ describe("SequenceStepEditor", () => {
       const inputs = screen.getAllByRole("textbox");
       const holdInput = inputs[2];
 
-      // Type a single digit to trigger onStepsChange
+      // Type a digit and leave the field to commit it
       await user.type(holdInput, "5");
+      await user.tab();
 
       expect(mockOnStepsChange).toHaveBeenCalled();
       const lastCall =

@@ -223,6 +223,31 @@ describe("MappingRangeEditorDialog", () => {
       });
     });
 
+    it("lets a DMX bound be emptied and retyped", async () => {
+      const user = userEvent.setup();
+      const range: DmxMappingRange = {
+        start: 0,
+        end: 100,
+        chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
+      };
+
+      renderDialog(range);
+
+      const chunkEndInput = screen.getAllByRole("textbox")[3];
+      await user.click(chunkEndInput);
+      await user.keyboard("{End}{Backspace}{Backspace}{Backspace}");
+      expect(chunkEndInput).toHaveValue("");
+
+      await user.type(chunkEndInput, "128");
+      await user.click(screen.getByRole("button", { name: "Save" }));
+
+      expect(mockOnSave).toHaveBeenCalledWith({
+        start: 0,
+        end: 100,
+        chunkValues: { type: "range", chunkStart: 0, chunkEnd: 128 },
+      });
+    });
+
     it("saves sequence mode data correctly", async () => {
       const user = userEvent.setup();
       const range: DmxMappingRange = {
@@ -246,20 +271,19 @@ describe("MappingRangeEditorDialog", () => {
       // allInputs[2] = step 1 DMX start, allInputs[3] = step 1 DMX end, allInputs[4] = step 1 hold ms
       // allInputs[5] = step 2 DMX start, allInputs[6] = step 2 DMX end, allInputs[7] = step 2 hold ms
 
-      // Helper to set input value in controlled inputs
-      // Uses fireEvent.change for reliable value replacement
-      const setInputValue = (input: HTMLElement, value: string) => {
-        fireEvent.change(input, { target: { value } });
+      const setInputValue = async (input: HTMLElement, value: string) => {
+        await user.clear(input);
+        await user.type(input, `${value}{Enter}`);
       };
 
       // Modify the first step's DMX start value
-      setInputValue(allInputs[2], "10");
+      await setInputValue(allInputs[2], "10");
 
       // Modify the first step's hold duration
-      setInputValue(allInputs[4], "750");
+      await setInputValue(allInputs[4], "750");
 
       // Modify the second step's DMX end value
-      setInputValue(allInputs[6], "200");
+      await setInputValue(allInputs[6], "200");
 
       // Change the second step's hold type to indefinite (it's the last step)
       const holdTypeSelectors = screen.getAllByRole("combobox");

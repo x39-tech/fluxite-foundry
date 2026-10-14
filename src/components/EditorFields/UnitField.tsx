@@ -59,17 +59,14 @@ export const UnitField = ({ id, value, onValueChanged }: Props) => {
               ^
             </span>
             <IntegerInput
-              // Uncontrolled, to work around a limitation: exponents are
-              // routinely negative, and a controlled input cannot hold the lone
-              // "-" a user types while entering a negative number.
-              key={value.name}
               className="w-12"
               inputClassName="h-8 border-0 bg-transparent px-1 shadow-none focus-visible:ring-0 dark:bg-transparent"
               aria-label={_(MESSAGES.exponent)}
               placeholder="1"
               hideControls
-              defaultValue={value.exponent}
-              onValueConfirm={(exponent) =>
+              nullable
+              value={value.exponent ?? null}
+              onCommit={(exponent) =>
                 onValueChanged(
                   exponent === null
                     ? { name: value.name }

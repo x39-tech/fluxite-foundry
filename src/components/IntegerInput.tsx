@@ -1,29 +1,59 @@
 import { Trans } from "@lingui/react/macro";
-import { useState, useRef, forwardRef, useCallback } from "react";
+import { useState, useRef, forwardRef } from "react";
 import { ChevronDownIcon, ChevronUpIcon, XIcon } from "lucide-react";
 import { cn } from "utils/utils";
 import { Input } from "./scn-ui/Input";
 
-export interface IntegerInputProps {
-  value?: number | null;
-  defaultValue?: number;
-  onValueChange?: (value: number | null) => void;
-  onValueConfirm?: (value: number | null) => void;
+type IntegerValueProps =
+  | {
+      // An emptied field reverts to the last committed value.
+      nullable?: false;
+      value: number;
+      onCommit: (value: number) => void;
+    }
+  | {
+      // An emptied field commits null, and a clear button is shown.
+      nullable: true;
+      value: number | null;
+      onCommit: (value: number | null) => void;
+    };
+
+export type IntegerInputProps = IntegerValueProps & {
   placeholder?: string;
   disabled?: boolean;
   // Classes for the wrapper element
   className?: string;
   // Classes for the input element
   inputClassName?: string;
-  clearable?: boolean;
   // Hide the clear and increment/decrement buttons, leaving a plain numeric
   // box. The arrow keys still step the value.
   hideControls?: boolean;
   min?: number;
   max?: number;
   step?: number;
-}
+};
 
+const INTEGER_DRAFT_PATTERN = /^-?\d*$/;
+
+/**
+ * A text box for entering an integer.
+ *
+ * It behaves similarly to ValidatedInput in that the user can type certain
+ * classes of invalid values which are only rejected when editing finishes.
+ * While editing, integers outside the range provided by min/max as well as a
+ * standalone negative ('-') are allowed, but if the value is still invalid on
+ * blur or Enter, it is clamped to the bounds or reverted to the previous valid
+ * value as appropriate.
+ *
+ * Non-integer text is not accepted even in editing state.
+ *
+ * Step up and down arrows are rendered next to the box unless `hideControls`
+ * is true. If `nullable`, an 'x' for clearing the value is also rendered,
+ * unless `hideControls` is true.
+ *
+ * Step and clear buttons commit the value immediately, and Escape discards a
+ * draft currently being edited.
+ */
 export const IntegerInput = forwardRef<
   HTMLInputElement,
   IntegerInputProps &
@@ -35,153 +65,89 @@ export const IntegerInput = forwardRef<
   (
     {
       value,
-      defaultValue,
-      onValueChange,
-      onValueConfirm,
+      onCommit,
+      nullable,
       placeholder,
       disabled,
       className,
       inputClassName,
-      clearable = false,
       hideControls = false,
       min,
       max,
       step = 1,
+      onBlur,
+      onKeyDown,
       ...props
     },
     ref,
   ) => {
-    const [internalValue, setInternalValue] = useState<number | null>(
-      value ?? defaultValue ?? null,
-    );
-    const [inputValue, setInputValue] = useState<string>(
-      value?.toString() ?? defaultValue?.toString() ?? "",
-    );
-    const inputRef = useRef<HTMLInputElement>(null);
+    // The text being typed, or null when not editing.
+    const [draft, setDraft] = useState<string | null>(null);
+    // Set by Escape so that the blur which follows it does not commit.
+    const discardOnBlur = useRef(false);
 
-    // Use controlled value if provided, otherwise use internal state
-    const currentValue = value !== undefined ? value : internalValue;
-    const currentInputValue =
-      value !== undefined ? (value?.toString() ?? "") : inputValue;
+    const clamp = (num: number): number => {
+      if (min !== undefined && num < min) return min;
+      if (max !== undefined && num > max) return max;
+      return num;
+    };
 
-    const validateAndClamp = useCallback(
-      (num: number): number => {
-        // Ensure it's an integer
-        const integer = Math.round(num);
-
-        // Apply min/max constraints
-        if (min !== undefined && integer < min) return min;
-        if (max !== undefined && integer > max) return max;
-
-        return integer;
-      },
-      [min, max],
-    );
-
-    const updateValue = useCallback(
-      (
-        newValue: number | null,
-        options?: { inputText?: string; commit?: boolean },
-      ) => {
-        const validatedValue =
-          newValue !== null ? validateAndClamp(newValue) : null;
-
-        if (value === undefined) {
-          // Uncontrolled mode
-          setInternalValue(validatedValue);
-          // Only update input value if no input text is provided (for manual updates)
-          if (options?.inputText === undefined) {
-            setInputValue(validatedValue?.toString() ?? "");
-          }
-        }
-
-        onValueChange?.(validatedValue);
-        if (options?.commit) {
-          onValueConfirm?.(validatedValue);
-        }
-      },
-      [value, validateAndClamp, onValueChange, onValueConfirm],
-    );
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const inputVal = e.target.value;
-
-      if (value === undefined) {
-        setInputValue(inputVal);
+    const commit = (newValue: number | null) => {
+      setDraft(null);
+      if (newValue === null) {
+        if (nullable && value !== null) onCommit(null);
+        return;
       }
+      const clamped = clamp(newValue);
+      if (clamped !== value) {
+        // The union does not narrow through destructuring, but a number is
+        // valid for either variant.
+        (onCommit as (value: number) => void)(clamped);
+      }
+    };
 
-      if (inputVal === "" || inputVal === "-") {
-        updateValue(null, { inputText: inputVal });
-      } else {
-        const numValue = parseInt(inputVal, 10);
-        if (!isNaN(numValue)) {
-          updateValue(numValue, { inputText: inputVal });
-        }
+    const parseDraft = (text: string): number | null =>
+      text === "" || text === "-" ? null : parseInt(text, 10);
+
+    const commitDraft = () => {
+      if (draft !== null) commit(parseDraft(draft));
+    };
+
+    const stepBy = (delta: number) => {
+      if (disabled) return;
+      const base = (draft !== null ? parseDraft(draft) : null) ?? value ?? 0;
+      commit(base + delta);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      onKeyDown?.(e);
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        stepBy(step);
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        stepBy(-step);
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        e.currentTarget.blur();
+      } else if (e.key === "Escape" && draft !== null) {
+        setDraft(null);
+        discardOnBlur.current = true;
+        e.currentTarget.blur();
       }
     };
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-      const inputVal = e.target.value;
-
-      // On blur, validate and clean up the input
-      if (inputVal && !/^-?\d*$/.test(inputVal)) {
-        // Invalid input - revert to last valid value
-        if (currentValue !== null) {
-          const displayValue = currentValue.toString();
-          if (value === undefined) {
-            setInputValue(displayValue);
-          }
-        } else {
-          if (value === undefined) {
-            setInputValue("");
-          }
-        }
+      if (discardOnBlur.current) {
+        discardOnBlur.current = false;
       } else {
-        // Valid input - ensure consistent display
-        if (currentValue !== null) {
-          const displayValue = currentValue.toString();
-          if (value === undefined) {
-            setInputValue(displayValue);
-          }
-        } else {
-          if (value === undefined) {
-            setInputValue("");
-          }
-        }
+        commitDraft();
       }
-
-      onValueConfirm?.(currentValue);
+      onBlur?.(e);
     };
 
-    const increment = () => {
-      if (disabled) return;
-      const newValue = (currentValue ?? 0) + step;
-      updateValue(newValue, { commit: true });
-    };
-
-    const decrement = () => {
-      if (disabled) return;
-      const newValue = (currentValue ?? 0) - step;
-      updateValue(newValue, { commit: true });
-    };
-
-    const clear = () => {
-      if (disabled) return;
-      updateValue(null, { commit: true });
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "ArrowUp") {
-        e.preventDefault();
-        increment();
-      } else if (e.key === "ArrowDown") {
-        e.preventDefault();
-        decrement();
-      } else if (e.key === "Enter") {
-        e.preventDefault();
-        e.currentTarget.blur();
-      }
-    };
+    const displayedValue = draft ?? value?.toString() ?? "";
+    const showClear = nullable && !hideControls;
 
     return (
       <div
@@ -193,23 +159,15 @@ export const IntegerInput = forwardRef<
         data-slot="integer-input"
       >
         <Input
-          ref={ref || inputRef}
+          ref={ref}
           type="text"
           inputMode="numeric"
-          value={currentInputValue}
+          value={displayedValue}
           onChange={(e) => {
-            // Filter input to only allow valid integer patterns
-            const inputVal = e.target.value;
-
-            // Only process valid input
-            if (
-              inputVal === "" ||
-              inputVal === "-" ||
-              /^-?\d*$/.test(inputVal)
-            ) {
-              handleInputChange(e);
+            // Ignore keystrokes that could not lead to an integer.
+            if (INTEGER_DRAFT_PATTERN.test(e.target.value)) {
+              setDraft(e.target.value);
             }
-            // For invalid input, just ignore it and keep the current value
           }}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
@@ -217,7 +175,7 @@ export const IntegerInput = forwardRef<
           disabled={disabled}
           className={cn(
             // Add right padding for buttons
-            hideControls ? undefined : clearable ? "pr-20" : "pr-12",
+            hideControls ? undefined : showClear ? "pr-20" : "pr-12",
             inputClassName,
           )}
           {...props}
@@ -226,11 +184,11 @@ export const IntegerInput = forwardRef<
         {/* Control buttons container */}
         {!hideControls && (
           <div className="absolute right-1 flex items-center gap-0.5">
-            {clearable && (
+            {showClear && (
               <button
                 type="button"
-                onClick={clear}
-                disabled={disabled || currentValue === null}
+                onClick={() => !disabled && commit(null)}
+                disabled={disabled || value === null}
                 className={cn(
                   "inline-flex size-7 items-center justify-center rounded-sm text-muted-foreground transition-colors",
                   "hover:text-foreground hover:bg-accent",
@@ -250,12 +208,10 @@ export const IntegerInput = forwardRef<
             <div className="flex flex-col">
               <button
                 type="button"
-                onClick={increment}
+                onClick={() => stepBy(step)}
                 disabled={
                   disabled ||
-                  (max !== undefined &&
-                    currentValue !== null &&
-                    currentValue >= max)
+                  (max !== undefined && value !== null && value >= max)
                 }
                 className={cn(
                   "inline-flex size-3.5 items-center justify-center rounded-xs text-muted-foreground transition-colors",
@@ -272,12 +228,10 @@ export const IntegerInput = forwardRef<
               </button>
               <button
                 type="button"
-                onClick={decrement}
+                onClick={() => stepBy(-step)}
                 disabled={
                   disabled ||
-                  (min !== undefined &&
-                    currentValue !== null &&
-                    currentValue <= min)
+                  (min !== undefined && value !== null && value <= min)
                 }
                 className={cn(
                   "inline-flex size-3.5 items-center justify-center rounded-xs text-muted-foreground transition-colors",

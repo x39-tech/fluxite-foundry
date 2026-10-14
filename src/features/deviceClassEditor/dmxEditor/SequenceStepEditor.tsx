@@ -139,12 +139,12 @@ const StepCard = ({
   const holdMs = getHoldMilliseconds(step.hold);
   const isIndefinite = step.hold === "indefinite";
 
-  const handleChunkStartChange = (value: number | null) => {
-    onUpdate({ ...step, chunkStart: value ?? 0 });
+  const handleChunkStartChange = (value: number) => {
+    onUpdate({ ...step, chunkStart: value });
   };
 
-  const handleChunkEndChange = (value: number | null) => {
-    onUpdate({ ...step, chunkEnd: value ?? 0 });
+  const handleChunkEndChange = (value: number) => {
+    onUpdate({ ...step, chunkEnd: value });
   };
 
   const handleHoldTypeChange = (value: string) => {
@@ -155,10 +155,8 @@ const StepCard = ({
     }
   };
 
-  const handleHoldMsChange = (value: number | null) => {
-    if (value !== null && value >= 0) {
-      onUpdate({ ...step, hold: createHoldValue(value) });
-    }
+  const handleHoldMsChange = (value: number) => {
+    onUpdate({ ...step, hold: createHoldValue(value) });
   };
 
   return (
@@ -178,7 +176,7 @@ const StepCard = ({
           <IntegerInput
             className="w-28"
             value={step.chunkStart}
-            onValueChange={handleChunkStartChange}
+            onCommit={handleChunkStartChange}
             min={0}
             max={4294967295}
           />
@@ -186,7 +184,7 @@ const StepCard = ({
           <IntegerInput
             className="w-28"
             value={step.chunkEnd}
-            onValueChange={handleChunkEndChange}
+            onCommit={handleChunkEndChange}
             min={0}
             max={4294967295}
           />
@@ -222,7 +220,7 @@ const StepCard = ({
               <IntegerInput
                 className="w-28"
                 value={holdMs ?? 0}
-                onValueChange={handleHoldMsChange}
+                onCommit={handleHoldMsChange}
                 min={0}
               />
               <span className="text-sm text-muted-foreground">

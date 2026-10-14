@@ -188,8 +188,6 @@ interface NumberSettingProps {
   onCommit: (value: number) => void;
 }
 
-// A number that only takes effect once editing is finished, so that typing
-// "12" does not pass through 1 on the way.
 const NumberSetting = ({
   label,
   value,
@@ -198,12 +196,6 @@ const NumberSetting = ({
   onCommit,
 }: NumberSettingProps) => {
   const id = useId();
-  const [draft, setDraft] = useState<number | null>(value);
-  const [previousValue, setPreviousValue] = useState(value);
-  if (value !== previousValue) {
-    setPreviousValue(value);
-    setDraft(value);
-  }
 
   return (
     <div className="flex items-center gap-2">
@@ -212,17 +204,10 @@ const NumberSetting = ({
         id={id}
         className="w-28"
         inputClassName="h-8 bg-background"
-        value={draft}
+        value={value}
         min={min}
         max={max}
-        onValueChange={setDraft}
-        onValueConfirm={(confirmed) => {
-          if (confirmed === null) {
-            setDraft(value);
-          } else if (confirmed !== value) {
-            onCommit(confirmed);
-          }
-        }}
+        onCommit={onCommit}
       />
     </div>
   );

@@ -222,7 +222,7 @@ export const MappingRangeEditorDialog = ({
                   <IntegerInput
                     className="w-24"
                     value={chunkStart}
-                    onValueChange={(val) => setChunkStart(val ?? 0)}
+                    onCommit={setChunkStart}
                     min={0}
                     max={65535}
                   />
@@ -236,7 +236,7 @@ export const MappingRangeEditorDialog = ({
                   <IntegerInput
                     className="w-24"
                     value={chunkEnd}
-                    onValueChange={(val) => setChunkEnd(val ?? 255)}
+                    onCommit={setChunkEnd}
                     min={0}
                     max={65535}
                   />
