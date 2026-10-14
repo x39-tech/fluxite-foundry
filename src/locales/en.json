@@ -957,17 +957,6 @@
     ],
     "translation": "Add Unmapped Parameter"
   },
-  "deviceClassEditor.dmxController.addressAndPort": {
-    "message": "Address and Port:",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/features/deviceClassEditor/controller/DmxController.tsx"
-      ]
-    ],
-    "translation": "Address and Port:"
-  },
   "navbar.importState.warningDescription": {
     "message": "All editors and settings will be replaced, and the app will reload.",
     "placeholders": {},
@@ -1719,17 +1708,6 @@
     ],
     "translation": "Configure how parameter values map to DMX output values"
   },
-  "deviceClassEditor.dmxController.connect": {
-    "message": "Connect",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/features/deviceClassEditor/controller/DmxController.tsx"
-      ]
-    ],
-    "translation": "Connect"
-  },
   "updater.checkFailed": {
     "message": "Could not check for updates: {reason}",
     "placeholders": {},
@@ -1751,6 +1729,28 @@
       ]
     ],
     "translation": "Could not install version {version}: {reason}"
+  },
+  "deviceClassEditor.sacnOutput.listInterfacesFailed": {
+    "message": "Could not list network interfaces: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/sacnOutput/SacnOutputControls.tsx"
+      ]
+    ],
+    "translation": "Could not list network interfaces: {reason}"
+  },
+  "deviceClassEditor.sacnOutput.startFailed": {
+    "message": "Could not start sACN output: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/sacnOutput/effects.ts"
+      ]
+    ],
+    "translation": "Could not start sACN output: {reason}"
   },
   "itemClasses.commandClasses.newDialog.description": {
     "message": "Create a new command class by providing an ID and a name",
@@ -2520,17 +2520,6 @@
     ],
     "translation": "Device Library"
   },
-  "deviceClassEditor.dmxController.disconnect": {
-    "message": "Disconnect",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/features/deviceClassEditor/controller/DmxController.tsx"
-      ]
-    ],
-    "translation": "Disconnect"
-  },
   "deviceClassEditor.newResource.displayName": {
     "message": "Display Name",
     "placeholders": {},
@@ -2610,28 +2599,6 @@
       ]
     ],
     "translation": "DMX Output Range"
-  },
-  "deviceClassEditor.dmxController.connectionClosed": {
-    "message": "DMX server connection closed",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/features/deviceClassEditor/controller/DmxController.tsx"
-      ]
-    ],
-    "translation": "DMX server connection closed"
-  },
-  "deviceClassEditor.dmxController.connectionFailed": {
-    "message": "DMX server connection failed",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/features/deviceClassEditor/controller/DmxController.tsx"
-      ]
-    ],
-    "translation": "DMX server connection failed"
   },
   "deviceClassEditor.sequenceStep.dmx": {
     "message": "DMX:",
@@ -3927,6 +3894,17 @@
     ],
     "translation": "Instances"
   },
+  "deviceClassEditor.sacnOutput.interface": {
+    "message": "Interface",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/sacnOutput/SacnOutputControls.tsx"
+      ]
+    ],
+    "translation": "Interface"
+  },
   "deviceClassEditor.dmxCondition.invalid": {
     "message": "Invalid condition data",
     "placeholders": {},
@@ -4552,6 +4530,17 @@
       ]
     ],
     "translation": "No enum choices are defined for this parameter. The parameter class or instance must define choices for enum values to be selectable."
+  },
+  "deviceClassEditor.sacnOutput.noIpv4Address": {
+    "message": "No IPv4 address",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/sacnOutput/SacnOutputControls.tsx"
+      ]
+    ],
+    "translation": "No IPv4 address"
   },
   "itemClassSelector.noMatches": {
     "message": "No item class found.",
@@ -5540,6 +5529,17 @@
     ],
     "translation": "Select a structure class to start editing"
   },
+  "deviceClassEditor.sacnOutput.selectInterface": {
+    "message": "Select an interface",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/sacnOutput/SacnOutputControls.tsx"
+      ]
+    ],
+    "translation": "Select an interface"
+  },
   "itemClassSelector.placeholder": {
     "message": "Select an item class...",
     "placeholders": {},
@@ -5606,6 +5606,35 @@
     ],
     "translation": "Selected file is of invalid type {actual} (expected {expected})"
   },
+  "deviceClassEditor.sacnOutput.enable": {
+    "message": "Send sACN",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/sacnOutput/SacnOutputControls.tsx"
+      ]
+    ],
+    "translation": "Send sACN"
+  },
+  "deviceClassEditor.sacnOutput.slotsDropped": {
+    "message": "Sending only {sentSlots} of {totalSlots} slot(s) due to high start address.",
+    "placeholders": {
+      "sentSlots": [
+        "sentSlots"
+      ],
+      "totalSlots": [
+        "totalSlots"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/sacnOutput/SacnOutputControls.tsx"
+      ]
+    ],
+    "translation": "Sending only {sentSlots} of {totalSlots} slot(s) due to high start address."
+  },
   "deviceClassEditor.dmxMappingRange.sequence": {
     "message": "Sequence",
     "placeholders": {},
@@ -5671,17 +5700,6 @@
       ]
     ],
     "translation": "Serializer class"
-  },
-  "deviceClassEditor.dmxController.server": {
-    "message": "Server",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/features/deviceClassEditor/controller/DmxController.tsx"
-      ]
-    ],
-    "translation": "Server"
   },
   "settings.title": {
     "message": "Settings",
@@ -5841,6 +5859,17 @@
     ],
     "translation": "Start"
   },
+  "deviceClassEditor.sacnOutput.startAddress": {
+    "message": "Start Address",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/sacnOutput/SacnOutputControls.tsx"
+      ]
+    ],
+    "translation": "Start Address"
+  },
   "deviceClassEditor.dmxMappingRange.start": {
     "message": "Start:",
     "placeholders": {},
@@ -5882,28 +5911,6 @@
       ]
     ],
     "translation": "State version {version}"
-  },
-  "deviceClassEditor.dmxController.statusConnected": {
-    "message": "Status: Connected",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/features/deviceClassEditor/controller/DmxController.tsx"
-      ]
-    ],
-    "translation": "Status: Connected"
-  },
-  "deviceClassEditor.dmxController.statusDisconnected": {
-    "message": "Status: Disconnected",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/features/deviceClassEditor/controller/DmxController.tsx"
-      ]
-    ],
-    "translation": "Status: Disconnected"
   },
   "deviceClassEditor.sequenceValidation.indefiniteNotLast": {
     "message": "Step {step} has indefinite hold but is not the last step",
@@ -6362,6 +6369,17 @@
     ],
     "translation": "Total: {totalDurationText}"
   },
+  "deviceClassEditor.sacnOutput.unavailable": {
+    "message": "Unavailable",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/sacnOutput/SacnOutputControls.tsx"
+      ]
+    ],
+    "translation": "Unavailable"
+  },
   "menu.undo": {
     "message": "Undo",
     "placeholders": {},
@@ -6453,6 +6471,17 @@
       ]
     ],
     "translation": "Unit exponent"
+  },
+  "deviceClassEditor.sacnOutput.universe": {
+    "message": "Universe",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/sacnOutput/SacnOutputControls.tsx"
+      ]
+    ],
+    "translation": "Universe"
   },
   "navbar.unknownDocument": {
     "message": "unknown",

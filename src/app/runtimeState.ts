@@ -8,6 +8,8 @@ export interface AppRuntimeState {
   // One DMX test driver per open device class document, keyed by the document's
   // id. A document with no DMX serializer has no entry.
   dmxControllers: Record<EntityId, DmxController>;
+  // Live sACN output from the DMX test controller (only possible on desktop).
+  sacnOutput: SacnOutputState;
   libraries: LibraryStore;
   systemDarkModePreference: boolean;
   // Each document's undo/redo stack. See app/undo.ts
@@ -67,4 +69,20 @@ export interface DmxControllerAvailable {
 export interface DmxControllerError {
   state: "error";
   error: DelverError;
+}
+
+export interface SacnOutputState {
+  // Each device class document's output settings.
+  settings: Record<EntityId, SacnOutputSettings>;
+  // The document whose test controller is transmitting. Only one transmits at
+  // a time.
+  activeDocumentId?: EntityId;
+}
+
+export interface SacnOutputSettings {
+  // The name of the network interface to transmit from.
+  interfaceName?: string;
+  universe: number;
+  // The start address at which to send the device's footprint (1 to 512).
+  startAddress: number;
 }

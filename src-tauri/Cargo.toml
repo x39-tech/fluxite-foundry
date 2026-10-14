@@ -15,11 +15,15 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
+if-addrs = "0.15"
 tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
 tauri-plugin-opener = "2"
 tauri-plugin-process = "2"
+tokio = { version = "1", features = ["sync", "time", "macros", "rt"] }
+uuid = { version = "1", features = ["v4"] }
+x39-sacn = "0.2"
 
 [target.'cfg(any(target_os = "macos", windows, target_os = "linux"))'.dependencies]
 tauri-plugin-updater = "2"

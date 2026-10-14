@@ -11,11 +11,15 @@ vi.mock("../dmxEditor/state", () => ({
   useMappableParameters: vi.fn(),
 }));
 
-vi.mock("app/store", () => ({
+vi.mock("app/store", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("app/store")>()),
   useDarkMode: vi.fn(() => false),
 }));
 
 import { useDmxController, useMappableParameters } from "../dmxEditor/state";
+import { updateAppPersistentState } from "app/store";
+import { EntityId } from "app/persistentState";
+import { resetAppPersistentStore } from "test/utils";
 
 const mockUseMappableParameters = useMappableParameters as ReturnType<
   typeof vi.fn
@@ -24,6 +28,7 @@ const mockUseDmxController = useDmxController as ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   vi.clearAllMocks();
+  resetAppPersistentStore();
 });
 
 const noMappingsMessage =
@@ -113,4 +118,19 @@ test("Shows Active Sequences button with count 0 when no sequences are active", 
   expect(
     screen.getByRole("button", { name: "Active Sequences: 0" }),
   ).toBeInTheDocument();
+});
+
+test("Does not offer sACN output in the browser", () => {
+  mockUseMappableParameters.mockReturnValue({});
+  mockUseDmxController.mockReturnValue({
+    state: "available" as const,
+    driver: createMockDriver([]),
+  });
+  updateAppPersistentState((state) => {
+    state.session.selectedDocumentId = "doc" as EntityId;
+  });
+
+  render(<DmxController />);
+
+  expect(screen.queryByLabelText("Send sACN")).not.toBeInTheDocument();
 });

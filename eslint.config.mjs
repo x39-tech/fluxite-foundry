@@ -22,7 +22,6 @@ export default defineConfig([
     "**/dist/",
     "**/node_modules/",
     "coverage/",
-    "tools/sacn-server/",
     "src-tauri/target/",
     "src-tauri/gen/",
   ]),

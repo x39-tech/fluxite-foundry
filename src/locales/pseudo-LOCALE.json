@@ -957,17 +957,6 @@
     ],
     "translation": ""
   },
-  "deviceClassEditor.dmxController.addressAndPort": {
-    "message": "Address and Port:",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/features/deviceClassEditor/controller/DmxController.tsx"
-      ]
-    ],
-    "translation": ""
-  },
   "navbar.importState.warningDescription": {
     "message": "All editors and settings will be replaced, and the app will reload.",
     "placeholders": {},
@@ -1719,17 +1708,6 @@
     ],
     "translation": ""
   },
-  "deviceClassEditor.dmxController.connect": {
-    "message": "Connect",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/features/deviceClassEditor/controller/DmxController.tsx"
-      ]
-    ],
-    "translation": ""
-  },
   "updater.checkFailed": {
     "message": "Could not check for updates: {reason}",
     "placeholders": {},
@@ -1748,6 +1726,28 @@
     "origin": [
       [
         "src/features/updater/updatePrompt.ts"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.sacnOutput.listInterfacesFailed": {
+    "message": "Could not list network interfaces: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/sacnOutput/SacnOutputControls.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.sacnOutput.startFailed": {
+    "message": "Could not start sACN output: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/sacnOutput/effects.ts"
       ]
     ],
     "translation": ""
@@ -2520,17 +2520,6 @@
     ],
     "translation": ""
   },
-  "deviceClassEditor.dmxController.disconnect": {
-    "message": "Disconnect",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/features/deviceClassEditor/controller/DmxController.tsx"
-      ]
-    ],
-    "translation": ""
-  },
   "deviceClassEditor.newResource.displayName": {
     "message": "Display Name",
     "placeholders": {},
@@ -2607,28 +2596,6 @@
     "origin": [
       [
         "src/features/deviceClassEditor/dmxEditor/MappingRangeEditorDialog.tsx"
-      ]
-    ],
-    "translation": ""
-  },
-  "deviceClassEditor.dmxController.connectionClosed": {
-    "message": "DMX server connection closed",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/features/deviceClassEditor/controller/DmxController.tsx"
-      ]
-    ],
-    "translation": ""
-  },
-  "deviceClassEditor.dmxController.connectionFailed": {
-    "message": "DMX server connection failed",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/features/deviceClassEditor/controller/DmxController.tsx"
       ]
     ],
     "translation": ""
@@ -3927,6 +3894,17 @@
     ],
     "translation": ""
   },
+  "deviceClassEditor.sacnOutput.interface": {
+    "message": "Interface",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/sacnOutput/SacnOutputControls.tsx"
+      ]
+    ],
+    "translation": ""
+  },
   "deviceClassEditor.dmxCondition.invalid": {
     "message": "Invalid condition data",
     "placeholders": {},
@@ -4549,6 +4527,17 @@
     "origin": [
       [
         "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.sacnOutput.noIpv4Address": {
+    "message": "No IPv4 address",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/sacnOutput/SacnOutputControls.tsx"
       ]
     ],
     "translation": ""
@@ -5540,6 +5529,17 @@
     ],
     "translation": ""
   },
+  "deviceClassEditor.sacnOutput.selectInterface": {
+    "message": "Select an interface",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/sacnOutput/SacnOutputControls.tsx"
+      ]
+    ],
+    "translation": ""
+  },
   "itemClassSelector.placeholder": {
     "message": "Select an item class...",
     "placeholders": {},
@@ -5606,6 +5606,35 @@
     ],
     "translation": ""
   },
+  "deviceClassEditor.sacnOutput.enable": {
+    "message": "Send sACN",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/sacnOutput/SacnOutputControls.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.sacnOutput.slotsDropped": {
+    "message": "Sending only {sentSlots} of {totalSlots} slot(s) due to high start address.",
+    "placeholders": {
+      "sentSlots": [
+        "sentSlots"
+      ],
+      "totalSlots": [
+        "totalSlots"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/sacnOutput/SacnOutputControls.tsx"
+      ]
+    ],
+    "translation": ""
+  },
   "deviceClassEditor.dmxMappingRange.sequence": {
     "message": "Sequence",
     "placeholders": {},
@@ -5668,17 +5697,6 @@
     "origin": [
       [
         "src/features/deviceClassEditor/localizationRegistry.ts"
-      ]
-    ],
-    "translation": ""
-  },
-  "deviceClassEditor.dmxController.server": {
-    "message": "Server",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/features/deviceClassEditor/controller/DmxController.tsx"
       ]
     ],
     "translation": ""
@@ -5841,6 +5859,17 @@
     ],
     "translation": ""
   },
+  "deviceClassEditor.sacnOutput.startAddress": {
+    "message": "Start Address",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/sacnOutput/SacnOutputControls.tsx"
+      ]
+    ],
+    "translation": ""
+  },
   "deviceClassEditor.dmxMappingRange.start": {
     "message": "Start:",
     "placeholders": {},
@@ -5879,28 +5908,6 @@
     "origin": [
       [
         "src/features/topNavBar/ExportStateDialog.tsx"
-      ]
-    ],
-    "translation": ""
-  },
-  "deviceClassEditor.dmxController.statusConnected": {
-    "message": "Status: Connected",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/features/deviceClassEditor/controller/DmxController.tsx"
-      ]
-    ],
-    "translation": ""
-  },
-  "deviceClassEditor.dmxController.statusDisconnected": {
-    "message": "Status: Disconnected",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/features/deviceClassEditor/controller/DmxController.tsx"
       ]
     ],
     "translation": ""
@@ -6362,6 +6369,17 @@
     ],
     "translation": ""
   },
+  "deviceClassEditor.sacnOutput.unavailable": {
+    "message": "Unavailable",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/sacnOutput/SacnOutputControls.tsx"
+      ]
+    ],
+    "translation": ""
+  },
   "menu.undo": {
     "message": "Undo",
     "placeholders": {},
@@ -6450,6 +6468,17 @@
     "origin": [
       [
         "src/components/EditorFields/UnitField.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.sacnOutput.universe": {
+    "message": "Universe",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/sacnOutput/SacnOutputControls.tsx"
       ]
     ],
     "translation": ""

@@ -25,12 +25,9 @@ let stopEffects: (() => void) | undefined;
 
 /**
  * Starts the device class editor's effects and brings them up to date with the
- * state as it stands.
- *
- * Returns a function that stops them again. Calling this twice replaces the
- * first registration rather than adding a second.
+ * state.
  */
-export function initDeviceClassEditorEffects(): () => void {
+export function initDeviceClassEditorEffects() {
   stopDeviceClassEditorEffects();
 
   const unsubscribe = useAppPersistentStore.subscribe(onPersistentStateChanged);
@@ -43,8 +40,6 @@ export function initDeviceClassEditorEffects(): () => void {
   stopEffects = stop;
 
   syncDmxDrivers(deviceClasses(useAppPersistentStore.getState()), {});
-
-  return stop;
 }
 
 export function stopDeviceClassEditorEffects() {

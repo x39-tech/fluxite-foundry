@@ -1,3 +1,5 @@
+mod sacn_output;
+
 #[cfg(target_os = "macos")]
 use tauri::{
     AppHandle, Wry,
@@ -73,7 +75,17 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_process::init());
+        .plugin(tauri_plugin_process::init())
+        .setup(|app| {
+            sacn_output::init(app.handle());
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![
+            sacn_output::sacn_list_interfaces,
+            sacn_output::sacn_start,
+            sacn_output::sacn_stop,
+            sacn_output::sacn_set_levels,
+        ]);
 
     // The updater replaces the installed app, which only makes sense on desktop.
     #[cfg(desktop)]

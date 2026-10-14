@@ -5,6 +5,7 @@ import App from "./app/App";
 import { applyNativeWindowControlsInset } from "./app/nativeWindowControls";
 import { applyPlatformTag } from "./app/platform";
 import { initDeviceClassEditorEffects } from "features/deviceClassEditor/effects";
+import { initSacnOutputEffects } from "features/deviceClassEditor/controller/sacnOutput/effects";
 import { deviceClassAssets } from "features/deviceClassEditor/assets";
 import {
   assetIdsOfDocument,
@@ -30,6 +31,7 @@ initUndo({
 });
 initDocumentFiles();
 initDeviceClassEditorEffects();
+initSacnOutputEffects();
 void applyNativeWindowControlsInset();
 
 // Awaited so that the first render already has a catalog to read from.

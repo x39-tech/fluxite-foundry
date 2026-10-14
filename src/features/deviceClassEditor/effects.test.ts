@@ -14,14 +14,15 @@ import {
 } from "test/utils";
 import { closeDocument, setSelectedDocument } from "features/topNavBar/state";
 import { updateCurrentEditor, setWindowLayout } from "./state";
-import { initDeviceClassEditorEffects } from "./effects";
+import {
+  initDeviceClassEditorEffects,
+  stopDeviceClassEditorEffects,
+} from "./effects";
 
 const FIRST_EDITOR = EntityId("test-editor-id");
 const SECOND_EDITOR = EntityId("second-editor-id");
 
 describe("DMX driver effect", () => {
-  let stopEffects: () => void = () => {};
-
   beforeEach(() => {
     resetAllStores();
     createEmptyDeviceClassEditor();
@@ -29,11 +30,11 @@ describe("DMX driver effect", () => {
   });
 
   afterEach(() => {
-    stopEffects();
+    stopDeviceClassEditorEffects();
   });
 
   test("builds a driver for a document that was already open", () => {
-    stopEffects = initDeviceClassEditorEffects();
+    initDeviceClassEditorEffects();
 
     expect(controllerFor(FIRST_EDITOR)?.state).toBe("available");
   });
@@ -43,7 +44,7 @@ describe("DMX driver effect", () => {
       editor.dmxSerializer = undefined;
     });
 
-    stopEffects = initDeviceClassEditorEffects();
+    initDeviceClassEditorEffects();
 
     expect(controllerFor(FIRST_EDITOR)).toBeUndefined();
   });
@@ -57,13 +58,13 @@ describe("DMX driver effect", () => {
       };
     });
 
-    stopEffects = initDeviceClassEditorEffects();
+    initDeviceClassEditorEffects();
 
     expect(controllerFor(FIRST_EDITOR)).toBeUndefined();
   });
 
   test("rebuilds the driver when the document changes", () => {
-    stopEffects = initDeviceClassEditorEffects();
+    initDeviceClassEditorEffects();
     const before = controllerFor(FIRST_EDITOR);
 
     addParameter();
@@ -72,7 +73,7 @@ describe("DMX driver effect", () => {
   });
 
   test("does not rebuild the driver when the window layout changes", () => {
-    stopEffects = initDeviceClassEditorEffects();
+    initDeviceClassEditorEffects();
     const before = controllerFor(FIRST_EDITOR);
 
     setWindowLayout(FIRST_EDITOR, { layout: { type: "row", children: [] } });
@@ -83,7 +84,7 @@ describe("DMX driver effect", () => {
 
   test("does not rebuild any driver when the selected document changes", () => {
     openSecondEditor();
-    stopEffects = initDeviceClassEditorEffects();
+    initDeviceClassEditorEffects();
     const first = controllerFor(FIRST_EDITOR);
     const second = controllerFor(SECOND_EDITOR);
 
@@ -95,7 +96,7 @@ describe("DMX driver effect", () => {
 
   test("gives each open document its own driver", () => {
     openSecondEditor();
-    stopEffects = initDeviceClassEditorEffects();
+    initDeviceClassEditorEffects();
 
     expect(controllerFor(FIRST_EDITOR)).toBeDefined();
     expect(controllerFor(SECOND_EDITOR)).toBeDefined();
@@ -104,7 +105,7 @@ describe("DMX driver effect", () => {
 
   test("rebuilds only the driver of the document that changed", () => {
     openSecondEditor();
-    stopEffects = initDeviceClassEditorEffects();
+    initDeviceClassEditorEffects();
     const first = controllerFor(FIRST_EDITOR);
     const second = controllerFor(SECOND_EDITOR);
 
@@ -117,7 +118,7 @@ describe("DMX driver effect", () => {
 
   test("removes the driver when the document is closed", () => {
     openSecondEditor();
-    stopEffects = initDeviceClassEditorEffects();
+    initDeviceClassEditorEffects();
 
     closeDocument(SECOND_EDITOR);
 
@@ -129,7 +130,7 @@ describe("DMX driver effect", () => {
   // undo having to know that drivers exist.
   test("rebuilds the driver when a change is undone", () => {
     const stopUndo = initUndo();
-    stopEffects = initDeviceClassEditorEffects();
+    initDeviceClassEditorEffects();
     const before = controllerFor(FIRST_EDITOR);
 
     addParameter();
@@ -146,9 +147,9 @@ describe("DMX driver effect", () => {
   });
 
   test("stops following the state once stopped", () => {
-    stopEffects = initDeviceClassEditorEffects();
+    initDeviceClassEditorEffects();
     const before = controllerFor(FIRST_EDITOR);
-    stopEffects();
+    stopDeviceClassEditorEffects();
 
     addParameter();
 

@@ -1,9 +1,6 @@
-import { msg } from "@lingui/core/macro";
-import { useLingui } from "@lingui/react";
 import { Trans } from "@lingui/react/macro";
-import { useEffect, useRef, useState, useCallback } from "react";
-import { toast } from "sonner";
-import { CheckIcon, XIcon } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { isTauri } from "@tauri-apps/api/core";
 import {
   DriverParamState,
   DriverParamValue,
@@ -20,43 +17,13 @@ import {
   useDmxController,
   useMappableParameters,
 } from "../dmxEditor/state";
-import { Button } from "components/scn-ui/Button";
 import { Slider } from "components/scn-ui/Slider";
-import { TextEditorField } from "components/EditorFields/DeprecatedTextEditorField";
 import { useDarkMode } from "app/store";
+import { useCurrentEditorId } from "../state";
 import { DmxDisplay } from "./DmxDisplay";
 import { useDmxSequenceManager } from "./sequenceManager/useDmxSequenceManager";
 import { ActiveSequencesButton } from "./ActiveSequencesButton";
-
-const MESSAGES = {
-  connectionClosed: msg({
-    id: "deviceClassEditor.dmxController.connectionClosed",
-    message: "DMX server connection closed",
-  }),
-  connectionFailed: msg({
-    id: "deviceClassEditor.dmxController.connectionFailed",
-    message: "DMX server connection failed",
-  }),
-  connect: msg({
-    id: "deviceClassEditor.dmxController.connect",
-    message: "Connect",
-  }),
-  disconnect: msg({
-    id: "deviceClassEditor.dmxController.disconnect",
-    message: "Disconnect",
-  }),
-};
-
-interface ServerConnection {
-  active: boolean;
-  addressAndPort: string;
-}
-
-interface WebSocketPayload {
-  universe: number;
-  offset: number;
-  slots: number[];
-}
+import { SacnOutputControls } from "./sacnOutput/SacnOutputControls";
 
 interface DmxControllerState {
   paramStates: Map<string, DriverParamState>;
@@ -64,19 +31,13 @@ interface DmxControllerState {
 }
 
 export const DmxController = () => {
-  const { _ } = useLingui();
-
+  const documentId = useCurrentEditorId();
   const mappableParams = useMappableParameters();
   const dmxController = useDmxController();
   const [controllerState, setControllerState] = useState<DmxControllerState>({
     paramStates: new Map(),
     dmxValues: new Uint8Array(),
   });
-  const [serverConnection, setServerConnection] = useState<ServerConnection>({
-    active: false,
-    addressAndPort: "",
-  });
-  const websocketConnRef = useRef<WebSocket | null>(null);
   const darkMode = useDarkMode();
   const sequenceManager = useDmxSequenceManager();
 
@@ -99,19 +60,6 @@ export const DmxController = () => {
 
   // Use sequence-aware DMX values (base values with sequence overrides)
   const finalDmxValues = sequenceManager.dmxValues;
-
-  // Send websocket data when DMX values change
-  useEffect(() => {
-    if (serverConnection.active && websocketConnRef.current) {
-      websocketConnRef.current.send(
-        JSON.stringify({
-          universe: 1,
-          offset: 0,
-          slots: Array.from(finalDmxValues),
-        } as WebSocketPayload),
-      );
-    }
-  }, [serverConnection.active, finalDmxValues]);
 
   const handleParamChange = useCallback(
     (paramId: string, paramIndex: number | undefined, newValue: number) => {
@@ -149,7 +97,7 @@ export const DmxController = () => {
     [dmxController, sequenceManager.actions],
   );
 
-  const serverAreaBg = darkMode ? "bg-gray-800" : "bg-gray-200";
+  const outputAreaBg = darkMode ? "bg-gray-800" : "bg-gray-200";
 
   switch (dmxController.state) {
     case "available":
@@ -194,65 +142,14 @@ export const DmxController = () => {
           />
         </div>
       </div>
-      <div
-        className={`${serverAreaBg} flex flex-wrap justify-center items-center gap-2 p-1`}
-      >
-        <span className="font-bold">
-          <Trans id="deviceClassEditor.dmxController.server">Server</Trans>
-        </span>
-        <span>
-          <Trans id="deviceClassEditor.dmxController.addressAndPort">
-            Address and Port:
-          </Trans>
-        </span>
-        <TextEditorField
-          value={serverConnection.addressAndPort}
-          onValueChanged={(value) =>
-            setServerConnection({ ...serverConnection, addressAndPort: value })
-          }
-        />
-        <span className="flex items-center">
-          {serverConnection.active ? (
-            <>
-              <span className="mr-2">
-                <Trans id="deviceClassEditor.dmxController.statusConnected">
-                  Status: Connected
-                </Trans>
-              </span>
-              <CheckIcon className="size-5" />
-            </>
-          ) : (
-            <>
-              <span className="mr-2">
-                <Trans id="deviceClassEditor.dmxController.statusDisconnected">
-                  Status: Disconnected
-                </Trans>
-              </span>
-              <XIcon className="size-5" />
-            </>
-          )}
-        </span>
-        <Button
-          size="sm"
-          onClick={() => {
-            const ws = new WebSocket(`ws://${serverConnection.addressAndPort}`);
-            ws.onopen = () => {
-              setServerConnection({ ...serverConnection, active: true });
-            };
-            ws.onclose = () => {
-              toast(_(MESSAGES.connectionClosed));
-              setServerConnection({ ...serverConnection, active: false });
-            };
-            ws.onerror = () => {
-              toast(_(MESSAGES.connectionFailed));
-              setServerConnection({ ...serverConnection, active: false });
-            };
-            websocketConnRef.current = ws;
-          }}
-        >
-          {_(serverConnection.active ? MESSAGES.disconnect : MESSAGES.connect)}
-        </Button>
-      </div>
+      {isTauri() && documentId && (
+        <div className={`${outputAreaBg} p-1`}>
+          <SacnOutputControls
+            documentId={documentId}
+            dmxValues={finalDmxValues}
+          />
+        </div>
+      )}
       <div className="overflow-auto">
         {sortedMappableParams.map((mappable) => (
           <ParameterControl
