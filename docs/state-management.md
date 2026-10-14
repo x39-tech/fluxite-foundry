@@ -171,8 +171,15 @@ We also follow some structural rules when it comes to entities:
 2. Entity tables should not be optional. `{}` is sufficient to represent an empty table.
 3. Within a document, entities should not be defined inside a discriminated union arm.
 4. If entities need to be ordered, prefer to store an ordered list of IDs alongside the entity table.
+5. An entity that is the child of another entity records its parent, unless it belongs to an ordered child collection. See below.
 
 Note that we have some existing violations of these rules in the app, due to history. This is a state we are working toward, not one we have completely achieved yet.
+
+### Ordered Child Collections
+
+Most child entities point at their parent, as `EnumChoice` and `CommandArgument` do, and a feature finds one parent's children by filtering the child table. Where the children are also _ordered_, we put the ordered list of their IDs on the parent instead, and that list is the only record of membership: the child does not also carry a parent pointer. `EmitterGroup.emitters` works this way.
+
+At time of writing, `EnumChoice` is an ordered child that doesn't follow this rule due to history. Its `index` is both its display order and the enum value that DMX mappings refer to, which makes it a harder case than it first appears.
 
 ## Localizations
 

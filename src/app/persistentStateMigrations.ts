@@ -5,11 +5,13 @@ import * as V3 from "./persistentState/v3/state";
 import * as V4 from "./persistentState/v4/state";
 import * as V5 from "./persistentState/v5/state";
 import * as V6 from "./persistentState/v6/state";
+import * as V7 from "./persistentState/v7/state";
 import { migrateV1toV2 } from "./persistentState/v2/migrate";
 import { migrateV2toV3 } from "./persistentState/v3/migrate";
 import { migrateV3toV4 } from "./persistentState/v4/migrate";
 import { migrateV4toV5 } from "./persistentState/v5/migrate";
 import { migrateV5toV6 } from "./persistentState/v6/migrate";
+import { migrateV6toV7 } from "./persistentState/v7/migrate";
 
 /**
  * What every `persistentState/vN/state.ts` module exports that the chain needs.
@@ -106,6 +108,15 @@ export const MIGRATIONS: readonly Migration[] = [
     description: `
 - appSettings.locale becomes appSettings.authoringLocale, keeping its meaning of the locale new documents are authored in.
 - appSettings.uiLocale is added, holding the language to display the app in, and starts out following the browser.
+`,
+  }),
+  defineMigration({
+    from: V6,
+    to: V7,
+    migrate: migrateV6toV7,
+    description: `
+- Device class documents gain a structures table, holding the structure instances that we don't support editing so that they survive a round trip.
+- Added editor state tables for the Emitters structure.
 `,
   }),
 ];
