@@ -69,6 +69,17 @@
     ],
     "translation": "{appName} State Snapshot"
   },
+  "deviceClassEditor.resources.spdBackedUndeletable": {
+    "message": "{codexId} holds an emitter's spectral power distribution. Remove it from the emitter in the Emitters editor instead.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourcesEditor.tsx"
+      ]
+    ],
+    "translation": "{codexId} holds an emitter's spectral power distribution. Remove it from the emitter in the Emitters editor instead."
+  },
   "navbar.importState.summary.assetsIncluded": {
     "message": "{count} included (replaces stored assets)",
     "placeholders": {},
@@ -104,6 +115,21 @@
     ],
     "translation": "{fileName}:n{errors}"
   },
+  "deviceClassEditor.emitters.group.manyFullBrightness": {
+    "message": "{fullBrightnessCount} emitters in this group are at full relative brightness.",
+    "placeholders": {
+      "fullBrightnessCount": [
+        "fullBrightnessCount"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmitterGroupEditor.tsx"
+      ]
+    ],
+    "translation": "{fullBrightnessCount} emitters in this group are at full relative brightness."
+  },
   "navbar.importCodex.deviceClassWithVersion": {
     "message": "{id} ({version})",
     "placeholders": {},
@@ -136,6 +162,39 @@
       ]
     ],
     "translation": "{name} ({index})"
+  },
+  "deviceClassEditor.emitters.spdGraph.nm": {
+    "message": "{peakNm} nm",
+    "placeholders": {
+      "peakNm": [
+        "peakNm"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdGraph.tsx"
+      ]
+    ],
+    "translation": "{peakNm} nm"
+  },
+  "deviceClassEditor.emitters.spdGraph.nmRange": {
+    "message": "{startNm} to {endNm} nm",
+    "placeholders": {
+      "startNm": [
+        "startNm"
+      ],
+      "endNm": [
+        "endNm"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdGraph.tsx"
+      ]
+    ],
+    "translation": "{startNm} to {endNm} nm"
   },
   "deviceClassEditor.dmxDisplay.activeSlot": {
     "message": "{value} (sequence)",
@@ -291,6 +350,17 @@
     ],
     "translation": "A serializer class with the ID {codexId} already exists."
   },
+  "deviceClassEditor.emitters.spdImport.error.tooFewSamples": {
+    "message": "A spectral power distribution needs at least two samples.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/spdImport.ts"
+      ]
+    ],
+    "translation": "A spectral power distribution needs at least two samples."
+  },
   "itemClasses.structureClasses.duplicateId": {
     "message": "A structure class with the ID {codexId} already exists.",
     "placeholders": {},
@@ -346,6 +416,17 @@
     "origin": [
       [
         "src/features/deviceClassEditor/parametersEditor/ParameterEditor.tsx"
+      ]
+    ],
+    "translation": "Access"
+  },
+  "deviceClassEditor.emitters.access": {
+    "message": "Access",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmittersEditor.tsx"
       ]
     ],
     "translation": "Access"
@@ -572,6 +653,17 @@
     ],
     "translation": "Add a structure class to start editing"
   },
+  "deviceClassEditor.emitters.list.emptyState": {
+    "message": "Add an emitter group to start editing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmittersEditor.tsx"
+      ]
+    ],
+    "translation": "Add an emitter group to start editing"
+  },
   "commandClassEditor.arguments.add": {
     "message": "Add Argument",
     "placeholders": {},
@@ -703,6 +795,72 @@
       ]
     ],
     "translation": "Add DMX Slot Group"
+  },
+  "deviceClassEditor.emitters.group.addEmitter": {
+    "message": "Add Emitter",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmitterGroupEditor.tsx"
+      ]
+    ],
+    "translation": "Add Emitter"
+  },
+  "deviceClassEditor.emitters.undo.addEmitter": {
+    "message": "Add Emitter",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/state.ts"
+      ]
+    ],
+    "translation": "Add Emitter"
+  },
+  "deviceClassEditor.emitters.list.add": {
+    "message": "Add Emitter Group",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmittersEditor.tsx"
+      ]
+    ],
+    "translation": "Add Emitter Group"
+  },
+  "deviceClassEditor.emitters.undo.addGroup": {
+    "message": "Add Emitter Group",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/state.ts"
+      ]
+    ],
+    "translation": "Add Emitter Group"
+  },
+  "deviceClassEditor.emitters.createStructure": {
+    "message": "Add Emitters Structure",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmittersEditor.tsx"
+      ]
+    ],
+    "translation": "Add Emitters Structure"
+  },
+  "deviceClassEditor.emitters.undo.createStructure": {
+    "message": "Add Emitters Structure",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/state.ts"
+      ]
+    ],
+    "translation": "Add Emitters Structure"
   },
   "deviceClassEditor.undo.addEnumChoice": {
     "message": "Add Enum Choice",
@@ -891,6 +1049,17 @@
     ],
     "translation": "Add Serializer Class"
   },
+  "deviceClassEditor.emitters.spd.add": {
+    "message": "Add Spectral Power Distribution",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdSection.tsx"
+      ]
+    ],
+    "translation": "Add Spectral Power Distribution"
+  },
   "deviceClassEditor.sequenceStep.addStep": {
     "message": "Add Step",
     "placeholders": {},
@@ -989,6 +1158,17 @@
       ]
     ],
     "translation": "Allowed Media Types"
+  },
+  "deviceClassEditor.emitters.commonColor.amber": {
+    "message": "Amber",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/labels.ts"
+      ]
+    ],
+    "translation": "Amber"
   },
   "libraryError.description": {
     "message": "An error occurred while trying to load the default set of ESTA libraries. This is a bug in {APP_NAME}. Please open an issue in the <0>repository</0>.",
@@ -1131,6 +1311,24 @@
     ],
     "translation": "Assets"
   },
+  "deviceClassEditor.emitters.spd.curveAtValue": {
+    "message": "At parameter value {value}: {samples} samples",
+    "placeholders": {
+      "value": [
+        "value"
+      ],
+      "samples": [
+        "samples"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdSection.tsx"
+      ]
+    ],
+    "translation": "At parameter value {value}: {samples} samples"
+  },
   "deviceClassEditor.deviceInfo.author": {
     "message": "Author",
     "placeholders": {},
@@ -1141,6 +1339,17 @@
       ]
     ],
     "translation": "Author"
+  },
+  "deviceClassEditor.emitters.commonColor.blue": {
+    "message": "Blue",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/labels.ts"
+      ]
+    ],
+    "translation": "Blue"
   },
   "navbar.closeDocument.cancel": {
     "message": "Cancel",
@@ -1221,6 +1430,17 @@
       ],
       [
         "src/features/deviceClassEditor/parametersEditor/NewParameterDialog.tsx"
+      ]
+    ],
+    "translation": "Cancel"
+  },
+  "deviceClassEditor.emitters.spdImport.cancel": {
+    "message": "Cancel",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdImportDialog.tsx"
       ]
     ],
     "translation": "Cancel"
@@ -1366,6 +1586,17 @@
     ],
     "translation": "Change Resource File"
   },
+  "deviceClassEditor.emitters.undo.changeSpdStorage": {
+    "message": "Change Spectral Power Distribution Storage",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/state.ts"
+      ]
+    ],
+    "translation": "Change Spectral Power Distribution Storage"
+  },
   "navbar.mainMenu.checkForUpdates": {
     "message": "Check for Updates...",
     "placeholders": {},
@@ -1409,6 +1640,17 @@
       ]
     ],
     "translation": "Choice name"
+  },
+  "deviceClassEditor.emitters.spdImport.noFile": {
+    "message": "Choose a file to import.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdImportDialog.tsx"
+      ]
+    ],
+    "translation": "Choose a file to import."
   },
   "deviceClassEditor.newResource.class": {
     "message": "Class",
@@ -1664,6 +1906,17 @@
     ],
     "translation": "Commands"
   },
+  "deviceClassEditor.emitters.emitter.commonColor": {
+    "message": "Common Colour",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmitterEditor.tsx"
+      ]
+    ],
+    "translation": "Common Colour"
+  },
   "deviceClassEditor.deviceInfo.compatibilityHeading": {
     "message": "Compatibility",
     "placeholders": {},
@@ -1729,6 +1982,17 @@
       ]
     ],
     "translation": "Connect"
+  },
+  "deviceClassEditor.emitters.commonColor.coolWhite": {
+    "message": "Cool White",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/labels.ts"
+      ]
+    ],
+    "translation": "Cool White"
   },
   "updater.checkFailed": {
     "message": "Could not check for updates: {reason}",
@@ -1862,6 +2126,28 @@
     ],
     "translation": "Create and edit the item classes the device class defines"
   },
+  "deviceClassEditor.emitters.spd.curves": {
+    "message": "Curves",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdSection.tsx"
+      ]
+    ],
+    "translation": "Curves"
+  },
+  "deviceClassEditor.emitters.commonColor.cyan": {
+    "message": "Cyan",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/labels.ts"
+      ]
+    ],
+    "translation": "Cyan"
+  },
   "settings.theme.dark": {
     "message": "Dark",
     "placeholders": {},
@@ -1952,6 +2238,28 @@
       ]
     ],
     "translation": "Decrement"
+  },
+  "deviceClassEditor.emitters.commonColor.deepBlue": {
+    "message": "Deep Blue",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/labels.ts"
+      ]
+    ],
+    "translation": "Deep Blue"
+  },
+  "deviceClassEditor.emitters.commonColor.deepRed": {
+    "message": "Deep Red",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/labels.ts"
+      ]
+    ],
+    "translation": "Deep Red"
   },
   "deviceClassEditor.resourceDefault.altText": {
     "message": "Default resource value of type {mediaType}",
@@ -2173,6 +2481,61 @@
     ],
     "translation": "Delete Editor"
   },
+  "deviceClassEditor.emitters.emitter.delete": {
+    "message": "Delete Emitter",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmitterEditor.tsx"
+      ]
+    ],
+    "translation": "Delete Emitter"
+  },
+  "deviceClassEditor.emitters.undo.deleteEmitter": {
+    "message": "Delete Emitter",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/state.ts"
+      ]
+    ],
+    "translation": "Delete Emitter"
+  },
+  "deviceClassEditor.emitters.list.delete": {
+    "message": "Delete Emitter Group",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmittersEditor.tsx"
+      ]
+    ],
+    "translation": "Delete Emitter Group"
+  },
+  "deviceClassEditor.emitters.undo.deleteGroup": {
+    "message": "Delete Emitter Group",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/state.ts"
+      ]
+    ],
+    "translation": "Delete Emitter Group"
+  },
+  "deviceClassEditor.emitters.undo.deleteStructure": {
+    "message": "Delete Emitters Structure",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/state.ts"
+      ]
+    ],
+    "translation": "Delete Emitters Structure"
+  },
   "deviceClassEditor.undo.deleteEnumChoice": {
     "message": "Delete Enum Choice",
     "placeholders": {},
@@ -2349,6 +2712,17 @@
     ],
     "translation": "Delete Structure Class"
   },
+  "deviceClassEditor.widget.emittersEditor.description": {
+    "message": "Describe the light emitters of the device class and their spectra",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/widgets.tsx"
+      ]
+    ],
+    "translation": "Describe the light emitters of the device class and their spectra"
+  },
   "localizations.field.description": {
     "message": "Description",
     "placeholders": {},
@@ -2519,6 +2893,17 @@
       ]
     ],
     "translation": "Device Library"
+  },
+  "deviceClassEditor.emitters.emitter.directControl": {
+    "message": "Direct Control Parameter",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmitterEditor.tsx"
+      ]
+    ],
+    "translation": "Direct Control Parameter"
   },
   "deviceClassEditor.dmxController.disconnect": {
     "message": "Disconnect",
@@ -2798,6 +3183,39 @@
     ],
     "translation": "Edit DMX Parameter Mapping"
   },
+  "deviceClassEditor.emitters.undo.editEmitter": {
+    "message": "Edit Emitter",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/state.ts"
+      ]
+    ],
+    "translation": "Edit Emitter"
+  },
+  "deviceClassEditor.emitters.undo.editGroup": {
+    "message": "Edit Emitter Group",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/state.ts"
+      ]
+    ],
+    "translation": "Edit Emitter Group"
+  },
+  "deviceClassEditor.emitters.undo.editStructure": {
+    "message": "Edit Emitters Structure",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/state.ts"
+      ]
+    ],
+    "translation": "Edit Emitters Structure"
+  },
   "deviceClassEditor.undo.editEnumChoice": {
     "message": "Edit Enum Choice",
     "placeholders": {},
@@ -2886,6 +3304,17 @@
     ],
     "translation": "Edit Serializer Class"
   },
+  "deviceClassEditor.emitters.undo.editSpd": {
+    "message": "Edit Spectral Power Distribution",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/state.ts"
+      ]
+    ],
+    "translation": "Edit Spectral Power Distribution"
+  },
   "itemClasses.structureClasses.undo.edit": {
     "message": "Edit Structure Class",
     "placeholders": {},
@@ -2918,6 +3347,17 @@
       ]
     ],
     "translation": "Editing: {editorName} -- {appName}"
+  },
+  "deviceClassEditor.widget.emittersEditor.name": {
+    "message": "Emitters",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/widgets.tsx"
+      ]
+    ],
+    "translation": "Emitters"
   },
   "deviceClassEditor.dmxMapping.rangeEnd": {
     "message": "End",
@@ -3202,6 +3642,21 @@
     ],
     "translation": "Error saving document: {reason}"
   },
+  "deviceClassEditor.emitters.spd.lengthMismatchDesc": {
+    "message": "Every curve and deviation has to hold {sampleCount} samples, to match the first one. Remove the curves that do not and import them again.",
+    "placeholders": {
+      "sampleCount": [
+        "sampleCount"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdSection.tsx"
+      ]
+    ],
+    "translation": "Every curve and deviation has to hold {sampleCount} samples, to match the first one. Remove the curves that do not and import them again."
+  },
   "navbar.exportCodex.export": {
     "message": "Export",
     "placeholders": {},
@@ -3334,6 +3789,17 @@
     ],
     "translation": "Failed to read ZIP archive: {reason}"
   },
+  "deviceClassEditor.emitters.spdImport.file": {
+    "message": "File",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdImportDialog.tsx"
+      ]
+    ],
+    "translation": "File"
+  },
   "deviceClassEditor.deviceInfo.firmwareVersions": {
     "message": "Firmware Versions",
     "placeholders": {},
@@ -3344,6 +3810,28 @@
       ]
     ],
     "translation": "Firmware Versions"
+  },
+  "deviceClassEditor.emitters.spdImport.start": {
+    "message": "First Wavelength (nm)",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdImportDialog.tsx"
+      ]
+    ],
+    "translation": "First Wavelength (nm)"
+  },
+  "deviceClassEditor.emitters.spd.start": {
+    "message": "First Wavelength (nm)",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdSection.tsx"
+      ]
+    ],
+    "translation": "First Wavelength (nm)"
   },
   "navbar.exportCodex.archiveFileType": {
     "message": "Fluxite Codex Archive",
@@ -3451,6 +3939,17 @@
     ],
     "translation": "Get started by adding a new editor, or import an existing Fluxite Codex file using the import option to the right."
   },
+  "deviceClassEditor.emitters.commonColor.green": {
+    "message": "Green",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/labels.ts"
+      ]
+    ],
+    "translation": "Green"
+  },
   "deviceClassEditor.dmxDisplay.hex": {
     "message": "hex",
     "placeholders": {},
@@ -3538,6 +4037,28 @@
     "origin": [
       [
         "src/features/deviceClassEditor/parametersEditor/ParameterEditor.tsx"
+      ]
+    ],
+    "translation": "ID"
+  },
+  "deviceClassEditor.emitters.emitter.id": {
+    "message": "ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmitterEditor.tsx"
+      ]
+    ],
+    "translation": "ID"
+  },
+  "deviceClassEditor.emitters.group.id": {
+    "message": "ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmitterGroupEditor.tsx"
       ]
     ],
     "translation": "ID"
@@ -3718,6 +4239,28 @@
     ],
     "translation": "Import"
   },
+  "deviceClassEditor.emitters.spdImport.import": {
+    "message": "Import",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdImportDialog.tsx"
+      ]
+    ],
+    "translation": "Import"
+  },
+  "deviceClassEditor.emitters.spdImport.description": {
+    "message": "Import a curve from a CSV file of power values, a CSV file of wavelength and power columns, or a Fluxite Codex JSON file. Values are scaled so the peak reads 1.0.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdImportDialog.tsx"
+      ]
+    ],
+    "translation": "Import a curve from a CSV file of power values, a CSV file of wavelength and power columns, or a Fluxite Codex JSON file. Values are scaled so the peak reads 1.0."
+  },
   "navbar.importCodex.description": {
     "message": "Import a device class from a Fluxite Codex archive or document file",
     "placeholders": {},
@@ -3728,6 +4271,28 @@
       ]
     ],
     "translation": "Import a device class from a Fluxite Codex archive or document file"
+  },
+  "deviceClassEditor.emitters.spd.emptyDesc": {
+    "message": "Import a file to fill it in. A distribution imported from a document whose resource file was missing arrives empty too.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdSection.tsx"
+      ]
+    ],
+    "translation": "Import a file to fill it in. A distribution imported from a document whose resource file was missing arrives empty too."
+  },
+  "deviceClassEditor.emitters.spd.importCurve": {
+    "message": "Import Curve",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdSection.tsx"
+      ]
+    ],
+    "translation": "Import Curve"
   },
   "navbar.importCodex.title": {
     "message": "Import Fluxite Codex",
@@ -3750,6 +4315,28 @@
       ]
     ],
     "translation": "Import Fluxite Codex..."
+  },
+  "deviceClassEditor.emitters.spdImport.title": {
+    "message": "Import Spectral Power Distribution",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdImportDialog.tsx"
+      ]
+    ],
+    "translation": "Import Spectral Power Distribution"
+  },
+  "deviceClassEditor.emitters.undo.importSpd": {
+    "message": "Import Spectral Power Distribution",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/state.ts"
+      ]
+    ],
+    "translation": "Import Spectral Power Distribution"
   },
   "navbar.importState.title": {
     "message": "Import State",
@@ -3860,6 +4447,17 @@
       ]
     ],
     "translation": "Indefinite"
+  },
+  "deviceClassEditor.emitters.commonColor.indigo": {
+    "message": "Indigo",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/labels.ts"
+      ]
+    ],
+    "translation": "Indigo"
   },
   "validation.notANumber": {
     "message": "Input must be a valid number",
@@ -4039,6 +4637,17 @@
     ],
     "translation": "Lifetime"
   },
+  "deviceClassEditor.emitters.lifetime": {
+    "message": "Lifetime",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmittersEditor.tsx"
+      ]
+    ],
+    "translation": "Lifetime"
+  },
   "settings.theme.light": {
     "message": "Light",
     "placeholders": {},
@@ -4049,6 +4658,28 @@
       ]
     ],
     "translation": "Light"
+  },
+  "deviceClassEditor.emitters.commonColor.lime": {
+    "message": "Lime",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/labels.ts"
+      ]
+    ],
+    "translation": "Lime"
+  },
+  "deviceClassEditor.emitters.spdImport.error.notNumeric": {
+    "message": "Line {line} of the file is not a number.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/spdImport.ts"
+      ]
+    ],
+    "translation": "Line {line} of the file is not a number."
   },
   "navbar.importState.description": {
     "message": "Load a previously exported state file. It is migrated to the current state version.",
@@ -4250,6 +4881,17 @@
       ]
     ],
     "translation": "Minimum Value"
+  },
+  "deviceClassEditor.emitters.commonColor.mint": {
+    "message": "Mint",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/labels.ts"
+      ]
+    ],
+    "translation": "Mint"
   },
   "deviceClassEditor.deviceInfo.modelHeading": {
     "message": "Model Information",
@@ -4542,6 +5184,17 @@
     ],
     "translation": "No DMX slots to display"
   },
+  "deviceClassEditor.emitters.group.noFullBrightness": {
+    "message": "No emitter in this group is at full relative brightness.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmitterGroupEditor.tsx"
+      ]
+    ],
+    "translation": "No emitter in this group is at full relative brightness."
+  },
   "deviceClassEditor.dmxMapping.noEnumChoicesHelp": {
     "message": "No enum choices are defined for this parameter. The parameter class or instance must define choices for enum values to be selectable.",
     "placeholders": {},
@@ -4609,6 +5262,28 @@
       ]
     ],
     "translation": "No registered media type matches the query."
+  },
+  "deviceClassEditor.emitters.commonColor.none": {
+    "message": "None",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/labels.ts"
+      ]
+    ],
+    "translation": "None"
+  },
+  "deviceClassEditor.emitters.parameter.none": {
+    "message": "None",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/labels.ts"
+      ]
+    ],
+    "translation": "None"
   },
   "navbar.importState.summary.assetsNotIncluded": {
     "message": "not included (stored assets kept)",
@@ -4702,6 +5377,17 @@
       ]
     ],
     "translation": "Or"
+  },
+  "deviceClassEditor.emitters.commonColor.orange": {
+    "message": "Orange",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/labels.ts"
+      ]
+    ],
+    "translation": "Orange"
   },
   "deviceClassEditor.resourceDefault.originalFileName": {
     "message": "Original File Name",
@@ -4870,6 +5556,28 @@
     ],
     "translation": "Parameter range <0>{paramRangeText}</0> triggers a sequence with <1>{stepCount, plural, one {# step} other {# steps}}</1> and <2>length {durationText}</2>"
   },
+  "deviceClassEditor.emitters.spdGraph.columnValue": {
+    "message": "Parameter value",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdGraph.tsx"
+      ]
+    ],
+    "translation": "Parameter value"
+  },
+  "deviceClassEditor.emitters.spdImport.value": {
+    "message": "Parameter Value",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdImportDialog.tsx"
+      ]
+    ],
+    "translation": "Parameter Value"
+  },
   "deviceClassEditor.dmxMappingRange.parameterValueRange": {
     "message": "Parameter Value Range",
     "placeholders": {},
@@ -4891,6 +5599,17 @@
       ]
     ],
     "translation": "Parameters"
+  },
+  "deviceClassEditor.emitters.spdGraph.columnPeak": {
+    "message": "Peak wavelength",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdGraph.tsx"
+      ]
+    ],
+    "translation": "Peak wavelength"
   },
   "deviceClassEditor.deviceInfo.publishDate": {
     "message": "Publish Date",
@@ -4947,6 +5666,17 @@
     ],
     "translation": "Read"
   },
+  "deviceClassEditor.emitters.read": {
+    "message": "Read",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmittersEditor.tsx"
+      ]
+    ],
+    "translation": "Read"
+  },
   "deviceClassEditor.paramEditor.readActual": {
     "message": "Read Actual",
     "placeholders": {},
@@ -4968,6 +5698,17 @@
       ]
     ],
     "translation": "Read Target"
+  },
+  "deviceClassEditor.emitters.commonColor.red": {
+    "message": "Red",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/labels.ts"
+      ]
+    ],
+    "translation": "Red"
   },
   "menu.redo": {
     "message": "Redo",
@@ -5016,6 +5757,28 @@
       ]
     ],
     "translation": "Referenced class not found. It may have been deleted."
+  },
+  "deviceClassEditor.emitters.emitter.relativeBrightness": {
+    "message": "Relative Brightness",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmitterEditor.tsx"
+      ]
+    ],
+    "translation": "Relative Brightness"
+  },
+  "deviceClassEditor.emitters.group.fullBrightnessDesc": {
+    "message": "Relative brightness is measured against the brightest emitter, so exactly one emitter in the group has to be 1.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmitterGroupEditor.tsx"
+      ]
+    ],
+    "translation": "Relative brightness is measured against the brightest emitter, so exactly one emitter in the group has to be 1."
   },
   "deviceClassEditor.resourceDefault.remove": {
     "message": "Remove",
@@ -5074,6 +5837,39 @@
       ]
     ],
     "translation": "Remove {value}"
+  },
+  "deviceClassEditor.emitters.spd.removeCurve": {
+    "message": "Remove Curve",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdSection.tsx"
+      ]
+    ],
+    "translation": "Remove Curve"
+  },
+  "deviceClassEditor.emitters.spd.remove": {
+    "message": "Remove Distribution",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdSection.tsx"
+      ]
+    ],
+    "translation": "Remove Distribution"
+  },
+  "deviceClassEditor.emitters.deleteStructure": {
+    "message": "Remove Emitters Structure",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmittersEditor.tsx"
+      ]
+    ],
+    "translation": "Remove Emitters Structure"
   },
   "tagInput.removeItem": {
     "message": "Remove item",
@@ -5173,6 +5969,17 @@
       ]
     ],
     "translation": "Return Values"
+  },
+  "deviceClassEditor.emitters.spdGraph.columnSamples": {
+    "message": "Samples",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdGraph.tsx"
+      ]
+    ],
+    "translation": "Samples"
   },
   "navbar.mainMenu.save": {
     "message": "Save",
@@ -5297,6 +6104,17 @@
       ]
     ],
     "translation": "Search DMX Slot Groups"
+  },
+  "deviceClassEditor.emitters.list.search": {
+    "message": "Search Emitter Groups",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmittersEditor.tsx"
+      ]
+    ],
+    "translation": "Search Emitter Groups"
   },
   "cmdPalette.defaultDescription": {
     "message": "Search for a command to run...",
@@ -5539,6 +6357,17 @@
       ]
     ],
     "translation": "Select a structure class to start editing"
+  },
+  "deviceClassEditor.emitters.list.selectPrompt": {
+    "message": "Select an emitter group to start editing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmittersEditor.tsx"
+      ]
+    ],
+    "translation": "Select an emitter group to start editing"
   },
   "itemClassSelector.placeholder": {
     "message": "Select an item class...",
@@ -5819,6 +6648,39 @@
     ],
     "translation": "Something has gone wrong!"
   },
+  "deviceClassEditor.emitters.spd.heading": {
+    "message": "Spectral Power Distribution",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdSection.tsx"
+      ]
+    ],
+    "translation": "Spectral Power Distribution"
+  },
+  "deviceClassEditor.emitters.spdGraph.tableCaption": {
+    "message": "Spectral power distribution curves",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdGraph.tsx"
+      ]
+    ],
+    "translation": "Spectral power distribution curves"
+  },
+  "deviceClassEditor.emitters.spdGraph.label": {
+    "message": "Spectral power distribution, {curves} curves from {start} to {end} nanometres.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdGraph.tsx"
+      ]
+    ],
+    "translation": "Spectral power distribution, {curves} curves from {start} to {end} nanometres."
+  },
   "deviceClassEditor.dmxMapping.rangeStart": {
     "message": "Start",
     "placeholders": {},
@@ -5905,6 +6767,28 @@
     ],
     "translation": "Status: Disconnected"
   },
+  "deviceClassEditor.emitters.spdImport.step": {
+    "message": "Step (nm)",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdImportDialog.tsx"
+      ]
+    ],
+    "translation": "Step (nm)"
+  },
+  "deviceClassEditor.emitters.spd.step": {
+    "message": "Step (nm)",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdSection.tsx"
+      ]
+    ],
+    "translation": "Step (nm)"
+  },
   "deviceClassEditor.sequenceValidation.indefiniteNotLast": {
     "message": "Step {step} has indefinite hold but is not the last step",
     "placeholders": {},
@@ -5933,6 +6817,28 @@
       ]
     ],
     "translation": "Step {stepNumber} of {stepTotal}"
+  },
+  "deviceClassEditor.emitters.spd.storage": {
+    "message": "Storage",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdSection.tsx"
+      ]
+    ],
+    "translation": "Storage"
+  },
+  "deviceClassEditor.emitters.spd.asResource": {
+    "message": "Store in a resource file",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdSection.tsx"
+      ]
+    ],
+    "translation": "Store in a resource file"
   },
   "itemClasses.structureClasses.tab": {
     "message": "Structure",
@@ -6022,6 +6928,17 @@
     ],
     "translation": "Test the device class with a virtual controller"
   },
+  "deviceClassEditor.emitters.spd.lengthMismatch": {
+    "message": "The curves of this distribution are different lengths.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdSection.tsx"
+      ]
+    ],
+    "translation": "The curves of this distribution are different lengths."
+  },
   "deviceClassEditor.dmxChunk.offsetsUsedHelp": {
     "message": "The DMX slot offsets this group occupies, relative to the start of the footprint.",
     "placeholders": {},
@@ -6043,6 +6960,109 @@
       ]
     ],
     "translation": "The document is no longer open."
+  },
+  "deviceClassEditor.emitters.spdImport.readFailed": {
+    "message": "The file could not be read: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdImportDialog.tsx"
+      ]
+    ],
+    "translation": "The file could not be read: {reason}"
+  },
+  "deviceClassEditor.emitters.spdImport.error.tooManyColumns": {
+    "message": "The file has {columns} columns. Use one column of power values, or two columns of wavelength and power.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/spdImport.ts"
+      ]
+    ],
+    "translation": "The file has {columns} columns. Use one column of power values, or two columns of wavelength and power."
+  },
+  "deviceClassEditor.emitters.spdImport.error.empty": {
+    "message": "The file has no data in it.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/spdImport.ts"
+      ]
+    ],
+    "translation": "The file has no data in it."
+  },
+  "deviceClassEditor.emitters.spdImport.error.invalidJson": {
+    "message": "The file looks like JSON, but it could not be read.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/spdImport.ts"
+      ]
+    ],
+    "translation": "The file looks like JSON, but it could not be read."
+  },
+  "deviceClassEditor.emitters.spdImport.gridHelp": {
+    "message": "The first wavelength and step are only used for a file with no wavelength column. A file with two columns brings its own, and must be evenly spaced.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdImportDialog.tsx"
+      ]
+    ],
+    "translation": "The first wavelength and step are only used for a file with no wavelength column. A file with two columns brings its own, and must be evenly spaced."
+  },
+  "deviceClassEditor.emitters.spdImport.error.invalidJsonShape": {
+    "message": "The JSON file is not a spectral power distribution. It needs a numeric 'start' and 'step' and a list of 'mappings'.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/spdImport.ts"
+      ]
+    ],
+    "translation": "The JSON file is not a spectral power distribution. It needs a numeric 'start' and 'step' and a list of 'mappings'."
+  },
+  "deviceClassEditor.emitters.spdImport.error.noPeak": {
+    "message": "The power values are all zero or negative, so the curve cannot be normalised.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/spdImport.ts"
+      ]
+    ],
+    "translation": "The power values are all zero or negative, so the curve cannot be normalised."
+  },
+  "deviceClassEditor.emitters.spd.resourceMissing": {
+    "message": "The resource holding these samples no longer exists. Clear the checkbox and set it again to make a new one.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdSection.tsx"
+      ]
+    ],
+    "translation": "The resource holding these samples no longer exists. Clear the checkbox and set it again to make a new one."
+  },
+  "deviceClassEditor.emitters.spd.resourceName": {
+    "message": "The samples are exported to the resource <0>{resourceCodexId}</0>. Clear the checkbox to write them into the device class document instead.",
+    "placeholders": {
+      "resourceCodexId": [
+        "resourceCodexId"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdSection.tsx"
+      ]
+    ],
+    "translation": "The samples are exported to the resource <0>{resourceCodexId}</0>. Clear the checkbox to write them into the device class document instead."
   },
   "navbar.importState.parseFailed": {
     "message": "The selected file cannot be imported.",
@@ -6145,6 +7165,28 @@
     ],
     "translation": "The selected file is not valid JSON."
   },
+  "deviceClassEditor.emitters.spdImport.error.invalidStep": {
+    "message": "The wavelength step must be greater than zero.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/spdImport.ts"
+      ]
+    ],
+    "translation": "The wavelength step must be greater than zero."
+  },
+  "deviceClassEditor.emitters.spdImport.error.nonUniformSpacing": {
+    "message": "The wavelengths in the file are not evenly spaced. The step from {firstStep}nm changes at line {line}. Resample the data onto an even grid before importing it.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/spdImport.ts"
+      ]
+    ],
+    "translation": "The wavelengths in the file are not evenly spaced. The step from {firstStep}nm changes at line {line}. Resample the data onto an even grid before importing it."
+  },
   "settings.theme.label": {
     "message": "Theme",
     "placeholders": {},
@@ -6199,6 +7241,28 @@
       ]
     ],
     "translation": "This Device Class"
+  },
+  "deviceClassEditor.emitters.noStructure": {
+    "message": "This device class has no Emitters structure. Add one to describe the light emitters the device has, their colours and their spectra.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmittersEditor.tsx"
+      ]
+    ],
+    "translation": "This device class has no Emitters structure. Add one to describe the light emitters the device has, their colours and their spectra."
+  },
+  "deviceClassEditor.emitters.spd.empty": {
+    "message": "This distribution has no curves in it.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdSection.tsx"
+      ]
+    ],
+    "translation": "This distribution has no curves in it."
   },
   "documentFile.error.noMigration": {
     "message": "This document cannot be migrated from state version {fromVersion}.",
@@ -6288,6 +7352,39 @@
     ],
     "translation": "This document written at state version {fileVersion} contains malformed state data."
   },
+  "deviceClassEditor.emitters.spdImport.error.duplicateValue": {
+    "message": "This emitter already has a curve at value {value}.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/spdImport.ts"
+      ]
+    ],
+    "translation": "This emitter already has a curve at value {value}."
+  },
+  "deviceClassEditor.emitters.spdImport.error.gridMismatch": {
+    "message": "This emitter already holds {expectedCount} samples from {expectedStart}nm in {expectedStep}nm steps. The file holds {actualCount} samples from {actualStart}nm in {actualStep}nm steps.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/spdImport.ts"
+      ]
+    ],
+    "translation": "This emitter already holds {expectedCount} samples from {expectedStart}nm in {expectedStep}nm steps. The file holds {actualCount} samples from {actualStart}nm in {actualStep}nm steps."
+  },
+  "deviceClassEditor.emitters.spd.none": {
+    "message": "This emitter has no spectral power distribution.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdSection.tsx"
+      ]
+    ],
+    "translation": "This emitter has no spectral power distribution."
+  },
   "navbar.about.prototypeNotice": {
     "message": "This is an early prototype application, and likely has bugs. Please file issues on the <0>GitHub repository</0>. Please consider <1>joining the Control Protocols Working Group</1> to participate in the development of the Fluxite standards suite.",
     "placeholders": {},
@@ -6331,6 +7428,17 @@
       ]
     ],
     "translation": "This may be an indication of invalid Fluxite Codex."
+  },
+  "deviceClassEditor.resourceEditor.managedBySpd": {
+    "message": "This resource holds an emitter's spectral power distribution. Its file is written when the device class is exported, so there is nothing to attach here. Edit the curve in the Emitters editor.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/resourcesEditor/ResourceEditor.tsx"
+      ]
+    ],
+    "translation": "This resource holds an emitter's spectral power distribution. Its file is written when the device class is exported, so there is nothing to attach here. Edit the curve in the Emitters editor."
   },
   "deviceClassEditor.activeSequences.timeRemaining": {
     "message": "Time: {timeRemaining}",
@@ -6545,6 +7653,17 @@
     ],
     "translation": "Use \"{category}\" as a custom category"
   },
+  "deviceClassEditor.emitters.commonColor.uv": {
+    "message": "UV",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/labels.ts"
+      ]
+    ],
+    "translation": "UV"
+  },
   "navbar.importState.summary.versionCurrent": {
     "message": "v{version} (no migration needed)",
     "placeholders": {},
@@ -6618,6 +7737,39 @@
     ],
     "translation": "View Migration Report"
   },
+  "deviceClassEditor.emitters.commonColor.warmWhite": {
+    "message": "Warm White",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/labels.ts"
+      ]
+    ],
+    "translation": "Warm White"
+  },
+  "deviceClassEditor.emitters.spdGraph.columnRange": {
+    "message": "Wavelength range",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/SpdGraph.tsx"
+      ]
+    ],
+    "translation": "Wavelength range"
+  },
+  "deviceClassEditor.emitters.commonColor.white": {
+    "message": "White",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/labels.ts"
+      ]
+    ],
+    "translation": "White"
+  },
   "deviceClassEditor.resourceEditor.write": {
     "message": "Write",
     "placeholders": {},
@@ -6636,6 +7788,17 @@
     "origin": [
       [
         "src/features/deviceClassEditor/parametersEditor/ParameterEditor.tsx"
+      ]
+    ],
+    "translation": "Write"
+  },
+  "deviceClassEditor.emitters.write": {
+    "message": "Write",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/emittersEditor/EmittersEditor.tsx"
       ]
     ],
     "translation": "Write"

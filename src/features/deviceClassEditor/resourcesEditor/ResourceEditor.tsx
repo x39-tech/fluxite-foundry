@@ -22,6 +22,7 @@ import { SelectField } from "components/EditorFields/SelectField";
 import { ItemClassDisplay } from "components/ItemClassDisplay";
 import { ResourceClassDisplay } from "./ResourceClassDisplay";
 import { AssetId, ResourceDefaultValue } from "./ResourceDefaultValue";
+import { useSpdBackedResourceIds } from "../emittersEditor/state";
 import {
   Access,
   accesses,
@@ -51,6 +52,7 @@ export const ResourceEditor = ({ id }: Props) => {
   const resInfo = useResourceInfo(id);
   const resourceCodexIds = useResourceCodexIds();
   const assetId = useResourceAssetId(resInfo?.resource);
+  const spdBacked = useSpdBackedResourceIds().has(id);
 
   const idPrefix = useId();
 
@@ -100,6 +102,7 @@ export const ResourceEditor = ({ id }: Props) => {
         </Label>
         <SelectField
           id={`${idPrefix}-mediaType`}
+          disabled={spdBacked}
           values={resourceClass.mediaType}
           displayValues={resourceClass.mediaType}
           selectedValue={resource.mediaType || resourceClass.mediaType[0]}
@@ -213,13 +216,26 @@ export const ResourceEditor = ({ id }: Props) => {
             Default Value
           </Trans>
         </Label>
-        <ResourceDefaultValue
-          id={`${idPrefix}-defaultValue`}
-          assetId={defaultValId}
-          mediaType={resource.mediaType}
-          onChange={(newAssetId) => updateResourceAsset(id, newAssetId)}
-          onDelete={() => updateResourceAsset(id)}
-        />
+        {spdBacked ? (
+          <p
+            id={`${idPrefix}-defaultValue`}
+            className="text-sm text-muted-foreground"
+          >
+            <Trans id="deviceClassEditor.resourceEditor.managedBySpd">
+              This resource holds an emitter&apos;s spectral power distribution.
+              Its file is written when the device class is exported, so there is
+              nothing to attach here. Edit the curve in the Emitters editor.
+            </Trans>
+          </p>
+        ) : (
+          <ResourceDefaultValue
+            id={`${idPrefix}-defaultValue`}
+            assetId={defaultValId}
+            mediaType={resource.mediaType}
+            onChange={(newAssetId) => updateResourceAsset(id, newAssetId)}
+            onDelete={() => updateResourceAsset(id)}
+          />
+        )}
       </FieldSet>
     </div>
   );

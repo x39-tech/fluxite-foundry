@@ -13,7 +13,9 @@ import {
   EnumChoiceParent,
   Localization,
   LocalizationKey,
+  Parameter,
 } from "app/persistentState";
+import { useAuthoringLocale, useLibraryStore } from "app/store";
 import { Unlocalized } from "features/localizations/types";
 import {
   getCurrentDocumentOfType,
@@ -29,6 +31,11 @@ import {
   deleteEnumChoiceFrom,
   modifyEnumChoiceIn,
 } from "features/classEditors/enumChoiceOperations";
+import { resolveClassRef } from "./classResolution";
+import {
+  lookupParameterClass,
+  ResolvedParameterClass,
+} from "./stateTransformations";
 import {
   deviceClassLocalizer,
   setDeviceClassLocalizedValue,
@@ -106,6 +113,62 @@ export function useSourceLocale(): string | undefined {
 
 export function useLocalizations(): Record<LocalizationKey, Localization> {
   return useCurrentEditorPart((state) => state.localizations) || {};
+}
+
+/** A parameter of the document, paired with the class it resolves to. */
+export interface ParameterOfClass {
+  id: EntityId;
+  parameter: Parameter;
+  parameterClass: ResolvedParameterClass;
+}
+
+/**
+ * The document's parameters whose class is `classCodexId`.
+ *
+ * Editors that ask the user to point at a parameter of a particular kind — the
+ * emitter a direct-control parameter drives, the dimmer a control group's
+ * master intensity is — use this to build their candidate list.
+ */
+export function useParametersOfClass(
+  classCodexId: CodexId,
+): ParameterOfClass[] {
+  const locale = useAuthoringLocale();
+  const sourceLocale = useSourceLocale();
+  const libraryStore = useLibraryStore();
+  const importedLibs = useLibraries();
+  const deviceLibrary = useDeviceLibrary();
+  const parameters = useCurrentEditorPart((editor) => editor.parameters);
+
+  return useMemo(() => {
+    if (!deviceLibrary || !importedLibs || !parameters) return [];
+
+    return Object.entries(parameters).flatMap(([id, parameter]) => {
+      const resolved = resolveClassRef(
+        parameter.class,
+        importedLibs,
+        deviceLibrary,
+        libraryStore,
+        "parameterClasses",
+      );
+      const parameterClass = resolved
+        ? lookupParameterClass(resolved, locale, sourceLocale)
+        : undefined;
+
+      if (!parameterClass || parameterClass.codexId !== classCodexId) {
+        return [];
+      }
+
+      return [{ id: EntityId(id), parameter, parameterClass }];
+    });
+  }, [
+    classCodexId,
+    deviceLibrary,
+    importedLibs,
+    libraryStore,
+    locale,
+    parameters,
+    sourceLocale,
+  ]);
 }
 
 // ---------------------------------------------------------------------------

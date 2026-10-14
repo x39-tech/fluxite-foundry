@@ -35,7 +35,10 @@ import {
 import { assetStorage } from "app/assetStorage";
 import { saveFile } from "app/saveFile";
 import { buildQualifiedId, EntityType, errorMessage } from "utils/utils";
-import { exportDeviceClass } from "features/deviceClassEditor/export";
+import {
+  exportDeviceClass,
+  generatedAssets,
+} from "features/deviceClassEditor/export";
 import {
   APP_NAME,
   CODEX_ARCHIVE_SCHEMA_URL,
@@ -302,6 +305,12 @@ async function createFluxiteCodexArchive(
       }
       assetsDir.file(resource.default, asset.data);
     }
+  }
+
+  // Files the document generates rather than stores, such as the JSON an
+  // emitter's spectral power distribution is written to.
+  for (const [fileName, contents] of Object.entries(generatedAssets(editor))) {
+    assetsDir.file(fileName, contents);
   }
 
   return await zip.generateAsync({ type: "blob", compression: "DEFLATE" });
