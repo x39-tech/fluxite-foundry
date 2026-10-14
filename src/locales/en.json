@@ -1539,6 +1539,17 @@
     ],
     "translation": "Close"
   },
+  "sheet.close": {
+    "message": "Close",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/scn-ui/Sheet.tsx"
+      ]
+    ],
+    "translation": "Close"
+  },
   "navbar.closeDocument.title": {
     "message": "Close {name}?",
     "placeholders": {
@@ -3431,6 +3442,17 @@
       ]
     ],
     "translation": "hex"
+  },
+  "sidebarLayout.close": {
+    "message": "Hide sidebar",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/SidebarLayout.tsx"
+      ]
+    ],
+    "translation": "Hide sidebar"
   },
   "deviceClassEditor.sequenceStep.hold": {
     "message": "Hold:",
@@ -5745,6 +5767,17 @@
     ],
     "translation": "SHA-256"
   },
+  "sidebarLayout.open": {
+    "message": "Show sidebar",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/SidebarLayout.tsx"
+      ]
+    ],
+    "translation": "Show sidebar"
+  },
   "mediaType.browseNote": {
     "message": "Showing {shown} of {total} registered media types. Type to search.",
     "placeholders": {},
@@ -5766,6 +5799,17 @@
       ]
     ],
     "translation": "Showing the first {limit} matches. Keep typing to narrow."
+  },
+  "sidebarLayout.sidebar": {
+    "message": "Sidebar",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/SidebarLayout.tsx"
+      ]
+    ],
+    "translation": "Sidebar"
   },
   "deviceClassEditor.paramInstantiation.single": {
     "message": "Single",

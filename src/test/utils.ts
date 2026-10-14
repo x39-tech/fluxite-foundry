@@ -1,4 +1,5 @@
-import { getByText, screen } from "@testing-library/react";
+import { act, getByText, screen } from "@testing-library/react";
+import { vi } from "vitest";
 import { MessageDescriptor } from "@lingui/core";
 import { useAppPersistentStore, useAppRuntimeStore } from "app/store";
 import {
@@ -178,4 +179,36 @@ export function getEditorTableRow(
 
 export function testUndoLabel(message: string): MessageDescriptor {
   return { id: `test.undo.${message}`, message };
+}
+
+/**
+ * Gives every element the given rendered width, since the test DOM doesn't do
+ * any actual layout. Returns a function that resizes them later, notifying any
+ * ResizeObservers. Undo it with vi.restoreAllMocks().
+ */
+export function mockElementWidth(initialWidth: number) {
+  let width = initialWidth;
+  const callbacks = new Set<ResizeObserverCallback>();
+
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+    () => new DOMRect(0, 0, width, 0),
+  );
+  vi.mocked(ResizeObserver).mockImplementation((callback) => {
+    callbacks.add(callback);
+    return {
+      observe: vi.fn(),
+      unobserve: vi.fn(),
+      disconnect: () => callbacks.delete(callback),
+    };
+  });
+
+  return function resizeTo(newWidth: number) {
+    width = newWidth;
+    const entry = { contentRect: new DOMRect(0, 0, width, 0) };
+    act(() => {
+      for (const callback of callbacks) {
+        callback([entry as ResizeObserverEntry], {} as ResizeObserver);
+      }
+    });
+  };
 }

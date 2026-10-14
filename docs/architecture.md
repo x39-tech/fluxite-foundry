@@ -108,7 +108,9 @@ See [State Management](state-management.md) for detailed documentation on:
 
 UI components follow the [shadcn/ui](https://ui.shadcn.com/) pattern: Radix UI provides unstyled, accessible headless components, which are wrapped with Tailwind styling in `/src/components/scn-ui/`.
 
-For components in that directory, we copy them directly from the shadcn-ui website (select "Manual", not "CLI". We don't use the CLI.) Changes should be made to these components rarely. If making a change to this component from the copied code, add a comment explaining the change that was made and why.
+Our components are copied from shadcn's `new-york-v4` style using its Radix UI version. This is no longer the style the shadcn website shows by default; we used to copy components in `/src/components/scn-ui/` directly from the website, but we don't anymore. Get a component's `new-york-v4` source from `https://ui.shadcn.com/r/styles/new-york-v4/<component>.json` (the code is in `files[0].content`), or from `apps/v4/registry/new-york-v4/ui/` in the [shadcn-ui GitHub repo](https://github.com/shadcn-ui/ui). Adapt its imports to match our existing components, e.g. `@radix-ui/react-*` packages and `cn` from `utils/utils`.
+
+Changes should be made to these components rarely. If making a change to this component from the copied code, add a comment explaining the change that was made and why.
 
 We also have some of our own reusable UI components that wrap the Shadcn ones. Those are in `/src/components/`.
 

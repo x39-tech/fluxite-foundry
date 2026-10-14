@@ -17,6 +17,12 @@ import { Toggle } from "./scn-ui/Toggle";
 import { Button } from "./scn-ui/Button";
 import { Separator } from "./scn-ui/Separator";
 import { Input } from "./scn-ui/Input";
+import {
+  SidebarLayout,
+  SidebarLayoutMain,
+  SidebarLayoutSidebar,
+  useSidebarLayout,
+} from "./SidebarLayout";
 
 /** Localizable strings to display for working with items in the list. */
 export interface ListItemsEditorLabels {
@@ -70,7 +76,7 @@ export const ListItemsEditor = ({
   );
   const [searchText, setSearchText] = useState("");
   const activeEditorRef = useRef<HTMLDivElement>(null);
-  const activeListItemRef = useRef<HTMLDivElement>(null);
+  const activeListItemRef = useRef<HTMLDivElement | null>(null);
   const knownEditorIds = useRef<Set<EntityId> | null>(null);
 
   const editorTitle = useCallback(
@@ -133,8 +139,15 @@ export const ListItemsEditor = ({
   }, []);
 
   useEffect(() => {
-    scrollActiveItemIntoView();
-  }, [selectedEditorId, scrollActiveItemIntoView]);
+    activeEditorRef.current?.scrollIntoView({ block: "start" });
+  }, [selectedEditorId]);
+
+  // The selected row is revealed whenever it appears, which covers both the
+  // selection changing and the list being shown again in a drawer.
+  const setActiveListItem = useCallback((row: HTMLDivElement | null) => {
+    activeListItemRef.current = row;
+    row?.scrollIntoView({ block: "nearest" });
+  }, []);
 
   const selectEditor = (editor: ItemEditor) => {
     if (editor.id === selectedEditorId) {
@@ -172,49 +185,23 @@ export const ListItemsEditor = ({
   };
 
   return (
-    <div className="flex items-start h-full overflow-hidden">
-      <div className="flex items-start h-full p-2">
-        <div className="flex flex-col max-h-full min-w-2xs max-w-xs border rounded-lg py-5 px-4 gap-2">
-          {labels.search && (
-            <div className="relative">
-              <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none" />
-              <Input
-                type="search"
-                className="pl-9"
-                aria-label={_(labels.search)}
-                placeholder={_(labels.search)}
-                value={searchText}
-                onChange={(event) => setSearchText(event.target.value)}
-              />
-            </div>
-          )}
-          <div className="flex flex-col min-h-0 gap-2 overflow-auto">
-            {visibleEditors.map((editor, idx) => (
-              <Fragment key={editor.id}>
-                <ItemEditorRow
-                  ref={
-                    editor.id === selectedEditorId
-                      ? activeListItemRef
-                      : undefined
-                  }
-                  title={editorTitle(editor)}
-                  subtitle={editorSubtitle(editor)}
-                  deleteLabel={labels.delete}
-                  selected={editor.id === selectedEditorId}
-                  onSelect={() => selectEditor(editor)}
-                  onDelete={() => deleteEditor(editor)}
-                />
-                {idx !== visibleEditors.length - 1 && <Separator />}
-              </Fragment>
-            ))}
-          </div>
-          <Button onClick={onAddItem}>
-            <PlusIcon className="size-4" />
-            {_(labels.add)}
-          </Button>
-        </div>
-      </div>
-      <div className="relative flex flex-col w-full h-full overflow-auto">
+    <SidebarLayout className="items-start">
+      <SidebarLayoutSidebar className="flex items-start p-2">
+        <ItemsList
+          editors={visibleEditors}
+          labels={labels}
+          searchText={searchText}
+          onSearchTextChange={setSearchText}
+          selectedEditorId={selectedEditorId}
+          activeItemRef={setActiveListItem}
+          getTitle={editorTitle}
+          getSubtitle={editorSubtitle}
+          onSelect={selectEditor}
+          onDelete={deleteEditor}
+          onAdd={onAddItem}
+        />
+      </SidebarLayoutSidebar>
+      <SidebarLayoutMain className="flex flex-col overflow-auto">
         {selectedEditor ? (
           <div
             ref={activeEditorRef}
@@ -253,7 +240,87 @@ export const ListItemsEditor = ({
             )}
           </div>
         )}
+      </SidebarLayoutMain>
+    </SidebarLayout>
+  );
+};
+
+interface ItemsListProps {
+  editors: ItemEditor[];
+  labels: ListItemsEditorLabels;
+  searchText: string;
+  onSearchTextChange: (searchText: string) => void;
+  selectedEditorId: EntityId | null;
+  activeItemRef: React.Ref<HTMLDivElement>;
+  getTitle: (editor: ItemEditor) => string;
+  getSubtitle: (editor: ItemEditor) => string | undefined;
+  onSelect: (editor: ItemEditor) => void;
+  onDelete: (editor: ItemEditor) => void;
+  onAdd?: () => void;
+}
+
+/** The searchable list of items shown in the sidebar. */
+const ItemsList = ({
+  editors,
+  labels,
+  searchText,
+  onSearchTextChange,
+  selectedEditorId,
+  activeItemRef,
+  getTitle,
+  getSubtitle,
+  onSelect,
+  onDelete,
+  onAdd,
+}: ItemsListProps) => {
+  const { _ } = useLingui();
+  // When the sidebar is a drawer, it gets out of the way once the user has
+  // picked an item or started adding one, so they can get on with editing.
+  const { close } = useSidebarLayout();
+
+  return (
+    <div className="flex flex-col max-h-full min-w-2xs max-w-xs border rounded-lg py-5 px-4 gap-2">
+      {labels.search && (
+        <div className="relative">
+          <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none" />
+          <Input
+            type="search"
+            className="pl-9"
+            aria-label={_(labels.search)}
+            placeholder={_(labels.search)}
+            value={searchText}
+            onChange={(event) => onSearchTextChange(event.target.value)}
+          />
+        </div>
+      )}
+      <div className="flex flex-col min-h-0 gap-2 overflow-auto">
+        {editors.map((editor, idx) => (
+          <Fragment key={editor.id}>
+            <ItemEditorRow
+              ref={editor.id === selectedEditorId ? activeItemRef : undefined}
+              title={getTitle(editor)}
+              subtitle={getSubtitle(editor)}
+              deleteLabel={labels.delete}
+              selected={editor.id === selectedEditorId}
+              onSelect={() => {
+                close();
+                onSelect(editor);
+              }}
+              onDelete={() => onDelete(editor)}
+            />
+            {idx !== editors.length - 1 && <Separator />}
+          </Fragment>
+        ))}
       </div>
+      <Button
+        onClick={() => {
+          close();
+          onAdd?.();
+        }}
+      >
+        <PlusIcon className="size-4" />
+        {_(labels.add)}
+      </Button>
     </div>
   );
 };

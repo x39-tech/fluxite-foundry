@@ -5,6 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, expect, test, vi } from "vitest";
 import { ListItemsEditor, ListItemsEditorLabels } from "./ListItemsEditor";
 import { CodexId, EntityId } from "app/persistentState";
+import { mockElementWidth } from "test/utils";
 
 const labels: ListItemsEditorLabels = {
   add: msg({ id: "test.list.add", message: "Add Item" }),
@@ -306,4 +307,19 @@ test("prompts to add an item when the search matches nothing", async () => {
   await user.type(screen.getByRole("searchbox"), "no such item");
 
   expect(screen.getByText("Add a Item to start editing")).toBeInTheDocument();
+});
+
+test("hides the list drawer once an item is picked from it", async () => {
+  const user = userEvent.setup();
+  mockElementWidth(400);
+
+  renderListItemsEditor();
+
+  await user.click(screen.getByRole("button", { name: "Show sidebar" }));
+  await user.click(screen.getByRole("button", { name: "second-item" }));
+
+  expect(screen.getByText("second-item editor")).toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: "first-item" }),
+  ).not.toBeInTheDocument();
 });

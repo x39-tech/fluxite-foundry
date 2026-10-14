@@ -1539,6 +1539,17 @@
     ],
     "translation": ""
   },
+  "sheet.close": {
+    "message": "Close",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/scn-ui/Sheet.tsx"
+      ]
+    ],
+    "translation": ""
+  },
   "navbar.closeDocument.title": {
     "message": "Close {name}?",
     "placeholders": {
@@ -3428,6 +3439,17 @@
       ],
       [
         "src/features/deviceClassEditor/controller/DmxDisplay.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "sidebarLayout.close": {
+    "message": "Hide sidebar",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/SidebarLayout.tsx"
       ]
     ],
     "translation": ""
@@ -5745,6 +5767,17 @@
     ],
     "translation": ""
   },
+  "sidebarLayout.open": {
+    "message": "Show sidebar",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/SidebarLayout.tsx"
+      ]
+    ],
+    "translation": ""
+  },
   "mediaType.browseNote": {
     "message": "Showing {shown} of {total} registered media types. Type to search.",
     "placeholders": {},
@@ -5763,6 +5796,17 @@
     "origin": [
       [
         "src/components/MediaTypeSelector.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "sidebarLayout.sidebar": {
+    "message": "Sidebar",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/SidebarLayout.tsx"
       ]
     ],
     "translation": ""
