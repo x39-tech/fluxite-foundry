@@ -1,7 +1,17 @@
 import { useAppRuntimeStore } from "app/store";
 import dayjs from "dayjs";
 import { DeviceClass } from "@cpwg-community/delver";
+import { CodexId } from "app/persistentState";
 import { getNewestVersionOfEachLibrary } from "./libraryStore";
+
+// IDs that the app works with directly via its editors.
+export const INTENSITY_COLOR_LIBRARY = "org.esta.lib.intensity-color";
+export const EMITTERS_CLASS_CODEX_ID = CodexId("emitters");
+export const SPD_RESOURCE_CLASS_CODEX_ID = CodexId(
+  "spectral-power-distribution",
+);
+export const EMITTER_PARAM_CLASS_CODEX_ID = CodexId("color/additive/emitter");
+export const DIMMER_PARAM_CLASS_CODEX_ID = CodexId("intensity/dimmer");
 
 const DEFAULT_AUTHOR = "Firstname Lastname";
 const DEFAULT_COMPANY = "ACME Inc.";
