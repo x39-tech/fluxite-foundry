@@ -3,9 +3,14 @@ import {
   Condition,
   DeviceClass,
   E173Archive,
+  EmittersStructure as FCEmittersStructure,
   EstaDmx,
   MappingBounds,
+  GroupControl,
   MappingRange,
+  ParamReference,
+  Spd as FCSpd,
+  SpdMapping as FCSpdMapping,
   Trigger,
   UnmappedParam,
 } from "@cpwg-community/delver";
@@ -28,8 +33,15 @@ import {
   commandExclusionsToEditor,
   paramExclusionsToEditor,
   resolveCommandId,
+  resolveResourceId,
   toEditorParameterReference,
 } from "./referenceResolution";
+import {
+  DEFAULT_SPD_START,
+  DEFAULT_SPD_STEP,
+  SpdSamples,
+} from "./emittersEditor/spd";
+import { parseSpdJson } from "./emittersEditor/spdImport";
 import {
   Access,
   LocalOrImportedId,
@@ -48,13 +60,21 @@ import {
   DmxTrigger,
   DmxUnmappedParam,
   Command,
+  EmitterControlGroup,
   EntityId,
   Lifetime,
   LocalizationKey,
+  ParameterReference,
   Resource,
   ParameterCount,
+  Spd,
+  SpdMapping,
 } from "app/persistentState";
-import { getDefaultDeviceClass } from "codex/codex";
+import {
+  EMITTERS_CLASS_CODEX_ID,
+  getDefaultDeviceClass,
+  INTENSITY_COLOR_LIBRARY,
+} from "codex/codex";
 import { emptyLibraryIndex, importClasses, LibraryIndex } from "codex/library";
 import { assetStorage } from "app/assetStorage";
 
@@ -155,6 +175,11 @@ export function getImportedDeviceClassEditor(
     commandClassReturnValues: {},
     enumChoices: {},
     dmxSerializers: {},
+    structures: {},
+    emitterGroupEditors: [],
+    emitterGroups: {},
+    emitters: {},
+    emitterControlGroups: {},
     localizations,
     sourceLocale: codexClass.locale,
   };
@@ -173,6 +198,8 @@ export function getImportedDeviceClassEditor(
   importParameters(codexClass, editor, deviceLibraryIndex, locKeys);
   importResources(codexClass, editor, deviceLibraryIndex);
   importCommands(codexClass, editor, deviceLibraryIndex, locKeys);
+  // After resources: an SPD stored as a resource references one by EntityId.
+  importStructures(codexClass, editor, deviceLibraryIndex);
 
   importDmxSerializers(codexClass, editor);
 
@@ -417,6 +444,259 @@ function importCommands(
   }
 }
 
+// ---------------------------------------------------------------------------
+// Structures
+// ---------------------------------------------------------------------------
+
+function importStructures(
+  imported: DeviceClass,
+  editor: DeviceClassDocument,
+  classIndex: LibraryIndex,
+) {
+  let emittersImported = false;
+
+  for (const [id, structure] of Object.entries(imported.structures || {})) {
+    if (structure.type === "Emitters") {
+      // TODO: support multiple Emitters structures. A second one is invalid
+      // anyway, and the refined type gives us nothing to keep verbatim.
+      if (emittersImported) continue;
+      emittersImported = true;
+      importEmittersStructure(CodexId(id), structure.value, editor, classIndex);
+      continue;
+    }
+
+    const raw = structure.value;
+    editor.structures[newEntityId()] = {
+      codexId: CodexId(id),
+      class: raw.library
+        ? {
+            type: "imported",
+            library: raw.library,
+            codexId: CodexId(raw.class),
+          }
+        : {
+            type: "local",
+            id: localClassId(classIndex.structureClasses, raw.class),
+          },
+      access: raw.access,
+      lifetime: raw.lifetime,
+      default: raw.default,
+    };
+  }
+}
+
+// The refined EmittersStructure drops the library and class the document named
+// them with, so the reference is reconstructed: the device's own library when
+// it defines an `emitters` structure class, and the standard library otherwise.
+function emittersClassReference(
+  classIndex: LibraryIndex,
+  codexId: CodexId = EMITTERS_CLASS_CODEX_ID,
+): ClassReference {
+  const localId = classIndex.structureClasses.get(codexId);
+  return localId
+    ? { type: "local", id: localId }
+    : { type: "imported", library: INTENSITY_COLOR_LIBRARY, codexId };
+}
+
+function importEmittersStructure(
+  codexId: CodexId,
+  structure: FCEmittersStructure,
+  editor: DeviceClassDocument,
+  classIndex: LibraryIndex,
+) {
+  editor.emittersStructure = {
+    codexId,
+    class: emittersClassReference(classIndex),
+    access: structure.access,
+    lifetime: structure.lifetime,
+  };
+
+  if (!structure.default) return;
+
+  const groupIds = new Map<string, EntityId>();
+
+  for (const [groupCodexId, group] of Object.entries(
+    structure.default.emitterGroups,
+  )) {
+    const groupId = newEntityId();
+    groupIds.set(groupCodexId, groupId);
+    editor.emitterGroups[groupId] = {
+      codexId: CodexId(groupCodexId),
+      emitters: [],
+    };
+    editor.emitterGroupEditors.push(groupId);
+
+    for (const [emitterCodexId, emitter] of Object.entries(group.emitters)) {
+      const emitterId = newEntityId();
+      editor.emitters[emitterId] = {
+        codexId: CodexId(emitterCodexId),
+        directControl: toEditorParamRef(editor, emitter.directControl),
+        commonColor: emitter.commonColor,
+        relativeBrightness: emitter.relativeBrightness,
+        spd: emitter.spd ? toEditorSpd(editor, emitter.spd) : undefined,
+      };
+      editor.emitterGroups[groupId].emitters.push(emitterId);
+    }
+  }
+
+  for (const [controlCodexId, control] of Object.entries(
+    structure.default.controlGroups ?? {},
+  )) {
+    editor.emitterControlGroups[newEntityId()] = toEditorControlGroup(
+      editor,
+      CodexId(controlCodexId),
+      control,
+      groupIds,
+    );
+  }
+}
+
+function toEditorParamRef(
+  editor: DeviceClassDocument,
+  ref: ParamReference,
+): ParameterReference;
+function toEditorParamRef(
+  editor: DeviceClassDocument,
+  ref: ParamReference | undefined,
+): ParameterReference | undefined;
+function toEditorParamRef(
+  editor: DeviceClassDocument,
+  ref: ParamReference | undefined,
+): ParameterReference | undefined {
+  return ref
+    ? toEditorParameterReference(editor, CodexId(ref.id), ref.index)
+    : undefined;
+}
+
+function toEditorSpd(editor: DeviceClassDocument, spd: FCSpd): Spd {
+  if ("direct" in spd) {
+    return {
+      storage: { type: "inline" },
+      start: spd.direct.start,
+      step: spd.direct.step,
+      mappings: spd.direct.mappings.map(toEditorSpdMapping),
+    };
+  }
+
+  // The samples live in the resource's file, which is only available from an
+  // archive. hydrateResourceBackedSpds fills them in when there is one.
+  return {
+    storage: {
+      type: "resource",
+      resourceId: resolveResourceId(editor, CodexId(spd.local)),
+      remote: spd.remote,
+    },
+    start: DEFAULT_SPD_START,
+    step: DEFAULT_SPD_STEP,
+    mappings: [],
+  };
+}
+
+function toEditorSpdMapping(mapping: FCSpdMapping): SpdMapping {
+  return {
+    value: mapping.value,
+    powerDistribution: mapping.powerDistribution,
+    deviationPlus: mapping.deviationPlus,
+    deviationMinus: mapping.deviationMinus,
+  };
+}
+
+function toEditorControlGroup(
+  editor: DeviceClassDocument,
+  codexId: CodexId,
+  control: GroupControl,
+  groupIds: Map<string, EntityId>,
+): EmitterControlGroup {
+  const ref = (r: ParamReference) => toEditorParamRef(editor, r);
+
+  return {
+    codexId,
+    emitterGroups: control.emitterGroups.map(
+      (group) => groupIds.get(group) ?? codexIdAsEntityId(group),
+    ),
+    masterIntensity: toEditorParamRef(editor, control.masterIntensity),
+    rgb: control.rgb && {
+      red: ref(control.rgb.red),
+      green: ref(control.rgb.green),
+      blue: ref(control.rgb.blue),
+    },
+    hsv: control.hsv && {
+      hue: ref(control.hsv.hue),
+      saturation: ref(control.hsv.saturation),
+      value: ref(control.hsv.value),
+    },
+    cct: control.cct && {
+      cct: ref(control.cct.cct),
+      tint: ref(control.cct.tint),
+    },
+    cmy: control.cmy && {
+      cyan: ref(control.cmy.cyan),
+      magenta: ref(control.cmy.magenta),
+      yellow: ref(control.cmy.yellow),
+    },
+    xy: control.xy && {
+      x: ref(control.xy.x),
+      y: ref(control.xy.y),
+    },
+    xyz: control.xyz && {
+      x: ref(control.xyz.x),
+      y: ref(control.xyz.y),
+      z: ref(control.xyz.z),
+    },
+    uv: control.uv && {
+      u: ref(control.uv.u),
+      v: ref(control.uv.v),
+    },
+    crossfade: control.crossfade && {
+      parameter: ref(control.crossfade.parameter),
+      points: control.crossfade.points.map((point) => ({
+        value: point.value,
+        controlScheme: point.controlScheme,
+      })),
+    },
+  };
+}
+
+/**
+ * Reads the samples of every resource-backed SPD out of the archive's assets.
+ *
+ * The resource holds nothing afterwards: the file is regenerated from state on
+ * export, so keeping the imported copy around would only let the two disagree.
+ * A document imported without an archive, or one whose file is missing or
+ * unparseable, keeps an SPD with no mappings, which the editor reports.
+ */
+export async function hydrateResourceBackedSpds(editor: DeviceClassDocument) {
+  for (const emitter of Object.values(editor.emitters)) {
+    const spd = emitter.spd;
+    if (spd?.storage.type !== "resource") continue;
+
+    const resource = editor.resources[spd.storage.resourceId];
+    if (!resource?.default) continue;
+
+    const assetId = editor.resourceAssets[resource.default];
+    const samples = assetId ? await readSpdAsset(assetId) : undefined;
+    if (samples) {
+      spd.start = samples.start;
+      spd.step = samples.step;
+      spd.mappings = samples.mappings;
+    }
+
+    delete editor.resourceAssets[resource.default];
+    resource.default = undefined;
+  }
+}
+
+async function readSpdAsset(assetId: string): Promise<SpdSamples | undefined> {
+  try {
+    const asset = await assetStorage.getAsset(assetId);
+    if (!asset) return undefined;
+    const parsed = parseSpdJson(new TextDecoder().decode(asset.data));
+    return parsed.ok ? parsed.samples : undefined;
+  } catch (_e) {
+    return undefined;
+  }
+}
+
 // Resolves a codexId the document uses to reference one of its own classes to
 // the EntityId the class was imported under. A broken reference just uses the
 // codexId as an EntityId, which is the app-wide pattern.
@@ -452,6 +732,7 @@ async function getImportedDeviceClassEditorWithAssets(
     archive,
     editor.resources,
   );
+  await hydrateResourceBackedSpds(editor);
   return editor;
 }
 

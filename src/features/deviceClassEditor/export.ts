@@ -7,7 +7,12 @@ import {
   DataType,
   DefinitionLocalization,
   DeviceClass,
+  Direct,
+  Emitter as FCEmitter,
+  EmitterGroup,
+  Emitters,
   EstaDmx,
+  GroupControl,
   Lifetime,
   MappingBounds,
   Parameter,
@@ -18,6 +23,8 @@ import {
   Resource,
   ResourceClass,
   SerializerClass,
+  Spd as FCSpd,
+  Structure,
   StructureClass,
   Trigger,
   UnitName,
@@ -31,10 +38,13 @@ import {
   DmxMappingChunkValuesSchema,
   DmxSerializer,
   DmxTrigger,
+  Emitter as InternalEmitter,
+  EmitterControlGroup,
   EntityId,
   LocalizationKey,
   ParameterCountSchema,
   ParameterReference,
+  Spd,
 } from "app/persistentState";
 import { select, selectWithIds } from "app/stateUtils";
 import { buildExportKeys, ExportKeys } from "./exportKeys";
@@ -46,7 +56,12 @@ import {
   commandCurrentCodexId,
   paramExclusionsToCodex,
   parameterCurrentCodexId,
+  resourceCurrentCodexId,
 } from "./referenceResolution";
+import {
+  spdBackedResourceIds,
+  spdResourceFileName,
+} from "./emittersEditor/spd";
 import { z } from "zod";
 
 type InternalParameterCount = z.infer<typeof ParameterCountSchema>;
@@ -184,6 +199,7 @@ export function exportDeviceClass(editor: DeviceClassDocument): DeviceClass {
   exportParameters(editor, codexClass, keys);
   exportResources(editor, codexClass);
   exportCommands(editor, codexClass, keys);
+  exportStructures(editor, codexClass);
   exportDmxSerializers(editor, codexClass);
 
   return codexClass;
@@ -567,10 +583,18 @@ function exportResources(editor: DeviceClassDocument, codexClass: DeviceClass) {
 
   codexClass.resources = {};
 
-  for (const resource of Object.values(editor.resources)) {
+  // An SPD-backed resource carries no asset in state; its file is generated
+  // from the emitter's samples, so its name is derived here rather than stored.
+  const spdBacked = spdBackedResourceIds(editor);
+
+  for (const [id, resource] of Object.entries(editor.resources)) {
     if (resource.codexId in codexClass.resources) {
       throw new Error(`Duplicate resource ID: ${resource.codexId}`);
     }
+
+    const defaultValue = spdBacked.has(EntityId(id))
+      ? spdResourceFileName(resource)
+      : resource.default;
 
     const exportedResource: Resource = {
       class: classReferenceCodexId(resource.class, editor.resourceClasses),
@@ -582,7 +606,7 @@ function exportResources(editor: DeviceClassDocument, codexClass: DeviceClass) {
       assetId: resource.assetId,
       importPath: resource.importPath,
       provenance: resource.provenance,
-      default: resource.default,
+      default: defaultValue,
     };
 
     codexClass.resources[resource.codexId] = exportedResource;
@@ -738,6 +762,187 @@ function exportCommands(
 
     codexClass.commands[cmd.codexId] = exportedCmd;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Structures
+// ---------------------------------------------------------------------------
+
+function exportStructures(
+  editor: DeviceClassDocument,
+  codexClass: DeviceClass,
+) {
+  const structures: Record<string, Structure> = {};
+
+  for (const structure of Object.values(editor.structures)) {
+    structures[structure.codexId] = {
+      type: "Other",
+      value: {
+        class: classReferenceCodexId(structure.class, editor.structureClasses),
+        library:
+          structure.class.type === "imported"
+            ? structure.class.library
+            : undefined,
+        access: structure.access as Access[],
+        lifetime: structure.lifetime as Lifetime,
+        default: structure.default,
+      },
+    };
+  }
+
+  const emittersStructure = editor.emittersStructure;
+  if (emittersStructure) {
+    structures[emittersStructure.codexId] = {
+      type: "Emitters",
+      value: {
+        access: emittersStructure.access as Access[],
+        lifetime: emittersStructure.lifetime as Lifetime,
+        default: convertEmitters(editor),
+      },
+    };
+  }
+
+  if (Object.keys(structures).length > 0) {
+    codexClass.structures = structures;
+  }
+}
+
+function convertEmitters(editor: DeviceClassDocument): Emitters {
+  const emitterGroups: Record<string, EmitterGroup> = {};
+
+  for (const groupId of editor.emitterGroupEditors) {
+    const group = editor.emitterGroups[groupId];
+    if (!group) continue;
+
+    const emitters = group.emitters.reduce<[string, FCEmitter][]>((acc, id) => {
+      const emitter = editor.emitters[id];
+      if (emitter) {
+        acc.push([emitter.codexId, convertEmitter(editor, emitter)]);
+      }
+      return acc;
+    }, []);
+
+    emitterGroups[group.codexId] = {
+      emitters: Object.fromEntries(emitters),
+    };
+  }
+
+  const controlGroups = Object.fromEntries(
+    Object.values(editor.emitterControlGroups).map((control) => [
+      control.codexId,
+      convertGroupControl(editor, control),
+    ]),
+  );
+
+  return {
+    emitterGroups,
+    ...(Object.keys(controlGroups).length > 0 ? { controlGroups } : {}),
+  };
+}
+
+function convertEmitter(
+  editor: DeviceClassDocument,
+  emitter: InternalEmitter,
+): FCEmitter {
+  return {
+    directControl: emitter.directControl
+      ? convertParamReference(editor, emitter.directControl)
+      : undefined,
+    commonColor: emitter.commonColor,
+    relativeBrightness: emitter.relativeBrightness,
+    spd: emitter.spd ? convertSpd(editor, emitter.spd) : undefined,
+  };
+}
+
+function convertSpd(editor: DeviceClassDocument, spd: Spd): FCSpd {
+  if (spd.storage.type === "resource") {
+    return {
+      local: resourceCurrentCodexId(editor, spd.storage.resourceId),
+      remote: spd.storage.remote,
+    };
+  }
+
+  return {
+    direct: { start: spd.start, step: spd.step, mappings: spd.mappings },
+  };
+}
+
+function convertGroupControl(
+  editor: DeviceClassDocument,
+  control: EmitterControlGroup,
+): GroupControl {
+  const ref = (r: ParameterReference) => convertParamReference(editor, r);
+
+  return {
+    emitterGroups: control.emitterGroups.map(
+      (groupId) =>
+        editor.emitterGroups[groupId]?.codexId ?? entityIdAsCodexId(groupId),
+    ),
+    masterIntensity: control.masterIntensity && ref(control.masterIntensity),
+    rgb: control.rgb && {
+      red: ref(control.rgb.red),
+      green: ref(control.rgb.green),
+      blue: ref(control.rgb.blue),
+    },
+    hsv: control.hsv && {
+      hue: ref(control.hsv.hue),
+      saturation: ref(control.hsv.saturation),
+      value: ref(control.hsv.value),
+    },
+    cct: control.cct && {
+      cct: ref(control.cct.cct),
+      tint: ref(control.cct.tint),
+    },
+    cmy: control.cmy && {
+      cyan: ref(control.cmy.cyan),
+      magenta: ref(control.cmy.magenta),
+      yellow: ref(control.cmy.yellow),
+    },
+    xy: control.xy && { x: ref(control.xy.x), y: ref(control.xy.y) },
+    xyz: control.xyz && {
+      x: ref(control.xyz.x),
+      y: ref(control.xyz.y),
+      z: ref(control.xyz.z),
+    },
+    uv: control.uv && { u: ref(control.uv.u), v: ref(control.uv.v) },
+    crossfade: control.crossfade && {
+      parameter: ref(control.crossfade.parameter),
+      points: control.crossfade.points.map((point) => ({
+        value: point.value,
+        controlScheme: point.controlScheme,
+      })),
+    },
+  };
+}
+
+/**
+ * The JSON files an export has to write alongside the document: one per
+ * resource-backed SPD, keyed by the file name its resource points at.
+ *
+ * The samples live in the document's state, not in asset storage, so the file
+ * is generated at export time rather than stored and copied.
+ */
+export function generatedAssets(
+  editor: DeviceClassDocument,
+): Record<string, string> {
+  const assets: Record<string, string> = {};
+
+  for (const emitter of Object.values(editor.emitters)) {
+    const spd = emitter.spd;
+    if (spd?.storage.type !== "resource") continue;
+
+    const resource = editor.resources[spd.storage.resourceId];
+    if (!resource) continue;
+
+    const direct: Direct = {
+      start: spd.start,
+      step: spd.step,
+      mappings: spd.mappings,
+    };
+    assets[spdResourceFileName(resource)] = JSON.stringify(direct, null, 2);
+  }
+
+  return assets;
 }
 
 function exportDmxSerializers(

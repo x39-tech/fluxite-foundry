@@ -8,6 +8,9 @@ import {
 } from "app/persistentState";
 import type {
   DeviceClass,
+  Emitter,
+  Emitters,
+  RawStructure,
   ParameterClass,
   StructureClass,
   SerializerClass,
@@ -1580,5 +1583,324 @@ describe("DMX serializer import", () => {
     );
 
     expect(editor.dmxSerializers).toEqual({});
+  });
+});
+
+describe("structure import", () => {
+  function importOf(dc: DeviceClass): DeviceClassDocument {
+    return getImportedDeviceClassEditor(TEST_ORG, "test-id", "1.0.0", dc);
+  }
+
+  function withEmitters(
+    emitters: Emitters,
+    build: (dc: DeviceClass) => void = () => {},
+  ): DeviceClassDocument {
+    const dc = createMinimalDeviceClass();
+    build(dc);
+    dc.structures = {
+      emitters: {
+        type: "Emitters",
+        value: { access: ["read"], lifetime: "static", default: emitters },
+      },
+    };
+    return importOf(dc);
+  }
+
+  function oneEmitter(emitter: Emitter): Emitters {
+    return { emitterGroups: { main: { emitters: { red: emitter } } } };
+  }
+
+  describe("structures the app cannot edit", () => {
+    function withRawStructure(raw: Partial<RawStructure> = {}) {
+      const dc = createMinimalDeviceClass();
+      addStructClass(dc, "local-thing");
+      dc.structures = {
+        thing: {
+          type: "Other",
+          value: {
+            class: "local-thing",
+            access: ["read"],
+            lifetime: "static",
+            default: { anything: { at: ["all"] } },
+            ...raw,
+          },
+        },
+      };
+      return importOf(dc);
+    }
+
+    test("keeps the default value verbatim", () => {
+      const editor = withRawStructure();
+
+      expect(Object.values(editor.structures)[0].default).toEqual({
+        anything: { at: ["all"] },
+      });
+    });
+
+    test("keeps the key the structure was written under", () => {
+      const editor = withRawStructure();
+
+      expect(Object.values(editor.structures)[0].codexId).toBe("thing");
+    });
+
+    test("resolves a device library class to its entity", () => {
+      const editor = withRawStructure();
+
+      const classRef = Object.values(editor.structures)[0].class;
+      expect(classRef.type).toBe("local");
+      if (classRef.type !== "local") return;
+      expect(editor.structureClasses[classRef.id].codexId).toBe("local-thing");
+    });
+
+    test("keeps an imported class reference as it was written", () => {
+      const editor = withRawStructure({
+        library: "org.esta.lib.motion",
+        class: "structure-3d",
+      });
+
+      expect(Object.values(editor.structures)[0].class).toEqual({
+        type: "imported",
+        library: "org.esta.lib.motion",
+        codexId: "structure-3d",
+      });
+    });
+  });
+
+  describe("the emitters structure", () => {
+    test("records the structure's own fields", () => {
+      const editor = withEmitters({ emitterGroups: {} });
+
+      expect(editor.emittersStructure).toMatchObject({
+        codexId: "emitters",
+        access: ["read"],
+        lifetime: "static",
+      });
+    });
+
+    test("makes an entity of each emitter group, in file order", () => {
+      const editor = withEmitters({
+        emitterGroups: {
+          front: { emitters: {} },
+          back: { emitters: {} },
+        },
+      });
+
+      expect(
+        editor.emitterGroupEditors.map(
+          (id) => editor.emitterGroups[id].codexId,
+        ),
+      ).toEqual(["front", "back"]);
+    });
+
+    test("lists the emitters of a group in file order", () => {
+      const editor = withEmitters({
+        emitterGroups: {
+          main: { emitters: { red: {}, green: {}, blue: {} } },
+        },
+      });
+
+      const groupId = editor.emitterGroupEditors[0];
+      expect(
+        editor.emitterGroups[groupId].emitters.map(
+          (id) => editor.emitters[id].codexId,
+        ),
+      ).toEqual(["red", "green", "blue"]);
+    });
+
+    test("puts each emitter in its group's list", () => {
+      const editor = withEmitters(oneEmitter({}));
+
+      const groupId = editor.emitterGroupEditors[0];
+      const [emitterId] = Object.keys(editor.emitters);
+      expect(editor.emitterGroups[groupId].emitters).toEqual([emitterId]);
+    });
+
+    test("keeps the common colour and relative brightness", () => {
+      const editor = withEmitters(
+        oneEmitter({ commonColor: "deep-red", relativeBrightness: 0.6 }),
+      );
+
+      expect(Object.values(editor.emitters)[0]).toMatchObject({
+        commonColor: "deep-red",
+        relativeBrightness: 0.6,
+      });
+    });
+
+    test("resolves a direct control parameter to its entity", () => {
+      const editor = withEmitters(
+        oneEmitter({ directControl: { id: "red-level" } }),
+        (dc) => {
+          addParamClass(dc, "emitter-class");
+          addParam(dc, "red-level", "emitter-class");
+        },
+      );
+
+      const emitter = Object.values(editor.emitters)[0];
+      expect(editor.parameters[emitter.directControl!.id].codexId).toBe(
+        "red-level",
+      );
+    });
+
+    test("keeps a dangling parameter reference readable", () => {
+      const editor = withEmitters(
+        oneEmitter({ directControl: { id: "not-here" } }),
+      );
+
+      expect(Object.values(editor.emitters)[0].directControl).toEqual({
+        id: "not-here",
+      });
+    });
+
+    test("takes only the first emitters structure", () => {
+      const dc = createMinimalDeviceClass();
+      dc.structures = {
+        emitters: {
+          type: "Emitters",
+          value: {
+            access: ["read"],
+            lifetime: "static",
+            default: { emitterGroups: { first: { emitters: {} } } },
+          },
+        },
+        "more-emitters": {
+          type: "Emitters",
+          value: {
+            access: ["read"],
+            lifetime: "static",
+            default: { emitterGroups: { second: { emitters: {} } } },
+          },
+        },
+      };
+
+      const editor = importOf(dc);
+
+      expect(editor.emittersStructure?.codexId).toBe("emitters");
+      expect(
+        Object.values(editor.emitterGroups).map((group) => group.codexId),
+      ).toEqual(["first"]);
+    });
+  });
+
+  describe("spectral power distributions", () => {
+    test("reads an inline distribution into the document", () => {
+      const editor = withEmitters(
+        oneEmitter({
+          spd: {
+            direct: {
+              start: 380,
+              step: 5,
+              mappings: [{ value: 1, powerDistribution: [0, 1, 0] }],
+            },
+          },
+        }),
+      );
+
+      expect(Object.values(editor.emitters)[0].spd).toEqual({
+        storage: { type: "inline" },
+        start: 380,
+        step: 5,
+        mappings: [
+          {
+            value: 1,
+            powerDistribution: [0, 1, 0],
+            deviationPlus: undefined,
+            deviationMinus: undefined,
+          },
+        ],
+      });
+    });
+
+    test("resolves a resource-backed distribution to its resource", () => {
+      const editor = withEmitters(
+        oneEmitter({ spd: { local: "spd-red" } }),
+        (dc) => {
+          addResClass(dc, "spd-class");
+          addRes(dc, "spd-red", "spd-class");
+        },
+      );
+
+      const spd = Object.values(editor.emitters)[0].spd!;
+      expect(spd.storage.type).toBe("resource");
+      if (spd.storage.type !== "resource") return;
+      expect(editor.resources[spd.storage.resourceId].codexId).toBe("spd-red");
+    });
+
+    test("leaves a resource-backed distribution empty without an archive", () => {
+      const editor = withEmitters(oneEmitter({ spd: { local: "spd-red" } }));
+
+      expect(Object.values(editor.emitters)[0].spd?.mappings).toEqual([]);
+    });
+
+    test("keeps the remote location a distribution names", () => {
+      const editor = withEmitters(
+        oneEmitter({
+          spd: { local: "spd-red", remote: "https://e.com/s.json" },
+        }),
+      );
+
+      const spd = Object.values(editor.emitters)[0].spd!;
+      expect(spd.storage).toMatchObject({ remote: "https://e.com/s.json" });
+    });
+  });
+
+  describe("control groups", () => {
+    test("resolves the emitter groups it names", () => {
+      const editor = withEmitters({
+        emitterGroups: { main: { emitters: {} } },
+        controlGroups: { all: { emitterGroups: ["main"] } },
+      });
+
+      const control = Object.values(editor.emitterControlGroups)[0];
+      expect(control.emitterGroups).toEqual([editor.emitterGroupEditors[0]]);
+    });
+
+    test("keeps a dangling emitter group reference readable", () => {
+      const editor = withEmitters({
+        emitterGroups: {},
+        controlGroups: { all: { emitterGroups: ["gone"] } },
+      });
+
+      expect(
+        Object.values(editor.emitterControlGroups)[0].emitterGroups,
+      ).toEqual(["gone"]);
+    });
+
+    test("converts every parameter reference of a control scheme", () => {
+      const editor = withEmitters(
+        {
+          emitterGroups: {},
+          controlGroups: {
+            all: {
+              emitterGroups: [],
+              rgb: {
+                red: { id: "r" },
+                green: { id: "g" },
+                blue: { id: "b" },
+              },
+              crossfade: {
+                parameter: { id: "x" },
+                points: [{ value: 0, controlScheme: "rgb" }],
+              },
+            },
+          },
+        },
+        (dc) => {
+          addParamClass(dc, "c");
+          addParam(dc, "r", "c");
+          addParam(dc, "g", "c");
+          addParam(dc, "b", "c");
+          addParam(dc, "x", "c");
+        },
+      );
+
+      const control = Object.values(editor.emitterControlGroups)[0];
+      expect(editor.parameters[control.rgb!.red.id].codexId).toBe("r");
+      expect(editor.parameters[control.crossfade!.parameter.id].codexId).toBe(
+        "x",
+      );
+      expect(control.crossfade!.points).toEqual([
+        { value: 0, controlScheme: "rgb" },
+      ]);
+    });
   });
 });

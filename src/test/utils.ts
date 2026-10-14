@@ -135,6 +135,11 @@ export function createEmptyDeviceClassEditor() {
     commandClassReturnValues: {},
     enumChoices: {},
     dmxSerializers: {},
+    structures: {},
+    emitterGroupEditors: [],
+    emitterGroups: {},
+    emitters: {},
+    emitterControlGroups: {},
     localizations: {
       [descriptionKey]: {
         strings: LocalizationDbSchema.parse({ "en-US": "Test description" }),

@@ -1,7 +1,9 @@
 import { describe, test, expect } from "vitest";
-import { exportDeviceClass } from "./export";
+import { exportDeviceClass, generatedAssets } from "./export";
 import {
   CodexId,
+  Emitter,
+  RawStructure,
   DeviceClassDocument,
   documentTypes,
   EntityId,
@@ -66,6 +68,11 @@ function createMinimalEditor(): DeviceClassDocument {
     commandClassReturnValues: {},
     enumChoices: {},
     dmxSerializers: {},
+    structures: {},
+    emitterGroupEditors: [],
+    emitterGroups: {},
+    emitters: {},
+    emitterControlGroups: {},
     localizations: {},
     sourceLocale: "de-DE",
   };
@@ -1907,6 +1914,274 @@ describe("exportDmxSerializer", () => {
         chunkStart: 100,
         chunkEnd: 200,
       },
+    });
+  });
+});
+
+describe("exportStructures", () => {
+  function addRawStructure(
+    editor: DeviceClassDocument,
+    id: string,
+    codexId: string,
+    classRef: RawStructure["class"],
+    defaultValue: Record<string, unknown> = { some: "thing" },
+  ): EntityId {
+    const entityId = EntityId(id);
+    editor.structures[entityId] = {
+      codexId: CodexId(codexId),
+      class: classRef,
+      access: ["read"],
+      lifetime: "static",
+      default: defaultValue,
+    };
+    return entityId;
+  }
+
+  function addEmittersStructure(editor: DeviceClassDocument) {
+    editor.emittersStructure = {
+      codexId: CodexId("emitters"),
+      class: {
+        type: "imported",
+        library: "org.esta.lib.intensity-color",
+        codexId: CodexId("emitters"),
+      },
+      access: ["read"],
+      lifetime: "static",
+    };
+  }
+
+  function addEmitterGroup(
+    editor: DeviceClassDocument,
+    id: string,
+    codexId: string,
+  ): EntityId {
+    const entityId = EntityId(id);
+    editor.emitterGroups[entityId] = {
+      codexId: CodexId(codexId),
+      emitters: [],
+    };
+    editor.emitterGroupEditors.push(entityId);
+    return entityId;
+  }
+
+  function addEmitter(
+    editor: DeviceClassDocument,
+    id: string,
+    codexId: string,
+    groupId: EntityId,
+    opts: Partial<Omit<Emitter, "codexId">> = {},
+  ): EntityId {
+    const entityId = EntityId(id);
+    editor.emitters[entityId] = {
+      codexId: CodexId(codexId),
+      ...opts,
+    };
+    editor.emitterGroups[groupId].emitters.push(entityId);
+    return entityId;
+  }
+
+  test("writes no structures key when there is nothing to write", () => {
+    expect(exportDeviceClass(createMinimalEditor()).structures).toBeUndefined();
+  });
+
+  test("reconstructs an imported class reference", () => {
+    const editor = createMinimalEditor();
+    addRawStructure(editor, "st-1", "constraints", {
+      type: "imported",
+      library: "org.esta.lib.core",
+      codexId: CodexId("constraints"),
+    });
+
+    const result = exportDeviceClass(editor);
+
+    expect(result.structures?.constraints).toEqual({
+      type: "Other",
+      value: {
+        library: "org.esta.lib.core",
+        class: "constraints",
+        access: ["read"],
+        lifetime: "static",
+        default: { some: "thing" },
+      },
+    });
+  });
+
+  test("resolves a local class reference to the class's current codexId", () => {
+    const editor = createMinimalEditor();
+    const classId = addStructClass(editor, "sc-1", "renamed", {
+      name: "n",
+    });
+    addRawStructure(editor, "st-1", "thing", { type: "local", id: classId });
+
+    const result = exportDeviceClass(editor);
+
+    expect(result.structures?.thing).toMatchObject({
+      type: "Other",
+      value: { class: "renamed", library: undefined },
+    });
+  });
+
+  test("exports a group's emitters in the group's order", () => {
+    const editor = createMinimalEditor();
+    addEmittersStructure(editor);
+    const groupId = addEmitterGroup(editor, "g-1", "main");
+    const greenId = addEmitter(editor, "e-2", "green", groupId);
+    const redId = addEmitter(editor, "e-1", "red", groupId);
+
+    // The group's list is what orders the emitters, not the table they sit in.
+    editor.emitterGroups[groupId].emitters = [redId, greenId];
+
+    const result = exportDeviceClass(editor);
+    const structure = result.structures?.emitters;
+
+    expect(structure?.type).toBe("Emitters");
+    if (structure?.type !== "Emitters") return;
+    expect(
+      Object.keys(structure.value.default!.emitterGroups.main.emitters),
+    ).toEqual(["red", "green"]);
+  });
+
+  test("writes an inline SPD under 'direct'", () => {
+    const editor = createMinimalEditor();
+    addEmittersStructure(editor);
+    const groupId = addEmitterGroup(editor, "g-1", "main");
+    addEmitter(editor, "e-1", "red", groupId, {
+      spd: {
+        storage: { type: "inline" },
+        start: 380,
+        step: 5,
+        mappings: [{ value: 1, powerDistribution: [0, 1] }],
+      },
+    });
+
+    const structure = exportDeviceClass(editor).structures?.emitters;
+
+    if (structure?.type !== "Emitters") throw new Error("not emitters");
+    expect(
+      structure.value.default!.emitterGroups.main.emitters.red.spd,
+    ).toEqual({
+      direct: {
+        start: 380,
+        step: 5,
+        mappings: [{ value: 1, powerDistribution: [0, 1] }],
+      },
+    });
+  });
+
+  test("writes a resource-backed SPD as the resource's current codexId", () => {
+    const editor = createMinimalEditor();
+    addEmittersStructure(editor);
+    const resClassId = addResClass(editor, "rc-1", "spd-class", { name: "n" });
+    const resourceId = addRes(editor, "r-1", "spd-red", {
+      type: "local",
+      id: resClassId,
+    });
+    const groupId = addEmitterGroup(editor, "g-1", "main");
+    addEmitter(editor, "e-1", "red", groupId, {
+      spd: {
+        storage: { type: "resource", resourceId },
+        start: 380,
+        step: 5,
+        mappings: [{ value: 1, powerDistribution: [0, 1] }],
+      },
+    });
+
+    const result = exportDeviceClass(editor);
+    const structure = result.structures?.emitters;
+
+    if (structure?.type !== "Emitters") throw new Error("not emitters");
+    expect(
+      structure.value.default!.emitterGroups.main.emitters.red.spd,
+    ).toEqual({ local: "spd-red", remote: undefined });
+  });
+
+  test("names the generated file as the SPD resource's default value", () => {
+    const editor = createMinimalEditor();
+    addEmittersStructure(editor);
+    const resClassId = addResClass(editor, "rc-1", "spd-class", { name: "n" });
+    const resourceId = addRes(editor, "r-1", "spd-red", {
+      type: "local",
+      id: resClassId,
+    });
+    const groupId = addEmitterGroup(editor, "g-1", "main");
+    addEmitter(editor, "e-1", "red", groupId, {
+      spd: {
+        storage: { type: "resource", resourceId },
+        start: 380,
+        step: 5,
+        mappings: [{ value: 1, powerDistribution: [0, 1] }],
+      },
+    });
+
+    expect(exportDeviceClass(editor).resources?.["spd-red"].default).toBe(
+      "spd-red.json",
+    );
+  });
+
+  test("generates the SPD resource's file contents", () => {
+    const editor = createMinimalEditor();
+    addEmittersStructure(editor);
+    const resClassId = addResClass(editor, "rc-1", "spd-class", { name: "n" });
+    const resourceId = addRes(editor, "r-1", "spd-red", {
+      type: "local",
+      id: resClassId,
+    });
+    const groupId = addEmitterGroup(editor, "g-1", "main");
+    addEmitter(editor, "e-1", "red", groupId, {
+      spd: {
+        storage: { type: "resource", resourceId },
+        start: 380,
+        step: 5,
+        mappings: [{ value: 1, powerDistribution: [0, 1] }],
+      },
+    });
+
+    const assets = generatedAssets(editor);
+
+    expect(Object.keys(assets)).toEqual(["spd-red.json"]);
+    expect(JSON.parse(assets["spd-red.json"])).toEqual({
+      start: 380,
+      step: 5,
+      mappings: [{ value: 1, powerDistribution: [0, 1] }],
+    });
+  });
+
+  test("generates nothing for an inline SPD", () => {
+    const editor = createMinimalEditor();
+    addEmittersStructure(editor);
+    const groupId = addEmitterGroup(editor, "g-1", "main");
+    addEmitter(editor, "e-1", "red", groupId, {
+      spd: {
+        storage: { type: "inline" },
+        start: 380,
+        step: 5,
+        mappings: [{ value: 1, powerDistribution: [0, 1] }],
+      },
+    });
+
+    expect(generatedAssets(editor)).toEqual({});
+  });
+
+  test("exports a control group's emitter groups by their codexIds", () => {
+    const editor = createMinimalEditor();
+    addEmittersStructure(editor);
+    const groupId = addEmitterGroup(editor, "g-1", "main");
+    const paramId = addParam(editor, "p-1", "dimmer", {
+      type: "imported",
+      library: "org.esta.lib.intensity-color",
+      codexId: CodexId("intensity/dimmer"),
+    });
+    editor.emitterControlGroups[EntityId("cg-1")] = {
+      codexId: CodexId("all"),
+      emitterGroups: [groupId],
+      masterIntensity: { id: paramId },
+    };
+
+    const structure = exportDeviceClass(editor).structures?.emitters;
+
+    if (structure?.type !== "Emitters") throw new Error("not emitters");
+    expect(structure.value.default!.controlGroups).toEqual({
+      all: { emitterGroups: ["main"], masterIntensity: { id: "dimmer" } },
     });
   });
 });

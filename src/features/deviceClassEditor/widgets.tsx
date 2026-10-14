@@ -7,6 +7,7 @@ import { DmxEditor } from "./dmxEditor/DmxEditor";
 import { DmxController } from "./controller/DmxController";
 import { ResourcesEditor } from "./resourcesEditor/ResourcesEditor";
 import { CommandsEditor } from "./commandsEditor/CommandsEditor";
+import { EmittersEditor } from "./emittersEditor/EmittersEditor";
 import { ClassesEditor } from "features/classEditors/ClassesEditor";
 import { DeviceClassClassEditing } from "./classEditing";
 
@@ -83,6 +84,18 @@ export const WIDGETS: Record<string, EditorWidget> = {
       message: "Create and edit commands for the device class",
     }),
     factory: () => <CommandsEditor />,
+  },
+  emittersEditor: {
+    name: msg({
+      id: "deviceClassEditor.widget.emittersEditor.name",
+      message: "Emitters",
+    }),
+    description: msg({
+      id: "deviceClassEditor.widget.emittersEditor.description",
+      message:
+        "Describe the light emitters of the device class and their spectra",
+    }),
+    factory: () => <EmittersEditor />,
   },
   classesEditor: {
     name: msg({

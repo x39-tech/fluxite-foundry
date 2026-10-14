@@ -67,6 +67,26 @@ export function resolveCommandId(
   return codexToId(editor.commands).get(codexId) ?? codexIdAsEntityId(codexId);
 }
 
+// --- Resource references --------------------------------------------------
+
+// Resolves a Codex resource reference to the EntityId it was imported under.
+// An unresolvable codexId is kept verbatim, as everywhere else.
+export function resolveResourceId(
+  editor: Pick<DeviceClassDocument, "resources">,
+  codexId: CodexId,
+): EntityId {
+  return codexToId(editor.resources).get(codexId) ?? codexIdAsEntityId(codexId);
+}
+
+// The resource's current codexId. A reference that no longer resolves falls
+// back to the raw entity ID.
+export function resourceCurrentCodexId(
+  editor: Pick<DeviceClassDocument, "resources">,
+  id: EntityId,
+): CodexId {
+  return editor.resources[id]?.codexId ?? entityIdAsCodexId(id);
+}
+
 // --- Class references -----------------------------------------------------
 
 // The codexId a class reference resolves to. An imported reference carries the
