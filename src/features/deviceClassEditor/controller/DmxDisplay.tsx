@@ -1,150 +1,143 @@
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
 import { Trans } from "@lingui/react/macro";
-import { useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "components/scn-ui/Select";
+import { useId, useState } from "react";
+import { ToggleGroup, ToggleGroupItem } from "components/scn-ui/ToggleGroup";
+import { cn } from "utils/utils";
+import { SELECTED_ITEM } from "./styles";
 
 const MESSAGES = {
   activeSlot: msg({
     id: "deviceClassEditor.dmxDisplay.activeSlot",
     message: "{value} (sequence)",
   }),
+  format: msg({
+    id: "deviceClassEditor.dmxDisplay.format",
+    message: "Number format",
+  }),
 };
+
+const COLUMNS = 8;
+
+type DisplayFormat = "hex" | "decimal";
 
 interface DmxDisplayProps {
   dmxValues: Uint8Array;
   activeSlots?: Set<number>;
+  className?: string;
 }
 
-export const DmxDisplay = ({ dmxValues, activeSlots }: DmxDisplayProps) => {
+export const DmxDisplay = ({
+  dmxValues,
+  activeSlots,
+  className,
+}: DmxDisplayProps) => {
   const { _ } = useLingui();
+  const headingId = useId();
+  const [format, setFormat] = useState<DisplayFormat>("hex");
 
-  const [dmxDisplayFormat, setDmxDisplayFormat] = useState<"hex" | "decimal">(
-    "hex",
-  );
-
-  const maxSlot = dmxValues.length;
-
-  // Handle empty slot array gracefully
-  if (maxSlot === 0) {
-    return (
-      <div className="flex flex-row items-center justify-center mt-2 mb-4 sticky">
-        <div className="flex flex-col items-center">
-          <span className="mx-4 font-bold">
-            <Trans id="deviceClassEditor.dmxDisplay.title">DMX Output</Trans>
-          </span>
-          <Select
-            value={dmxDisplayFormat}
-            onValueChange={(value) =>
-              setDmxDisplayFormat(value as "hex" | "decimal")
-            }
-          >
-            <SelectTrigger className="my-1">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="hex">
-                <Trans id="deviceClassEditor.dmxDisplay.hex">hex</Trans>
-              </SelectItem>
-              <SelectItem value="decimal">
-                <Trans id="deviceClassEditor.dmxDisplay.decimal">decimal</Trans>
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex flex-col items-stretch ml-4">
-          <div className="text-gray-500 italic">
-            <Trans id="deviceClassEditor.dmxDisplay.noSlots">
-              No DMX slots to display
-            </Trans>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const slotCount = dmxValues.length;
+  const rowCount = Math.ceil(slotCount / COLUMNS);
 
   return (
-    <div className="flex flex-row items-center justify-center mt-2 mb-4 sticky">
-      <div className="flex flex-col items-center">
-        <span className="mx-4 font-bold">
+    <section
+      aria-labelledby={headingId}
+      className={cn(
+        "flex min-h-0 flex-col gap-3 rounded-lg border bg-card p-4",
+        className,
+      )}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <h2 id={headingId} className="font-semibold">
           <Trans id="deviceClassEditor.dmxDisplay.title">DMX Output</Trans>
-        </span>
-        <Select
-          value={dmxDisplayFormat}
-          onValueChange={(value) =>
-            setDmxDisplayFormat(value as "hex" | "decimal")
-          }
+        </h2>
+        <ToggleGroup
+          type="single"
+          size="sm"
+          variant="outline"
+          aria-label={_(MESSAGES.format)}
+          value={format}
+          // Choosing the selected format again would clear the selection.
+          onValueChange={(value) => value && setFormat(value as DisplayFormat)}
         >
-          <SelectTrigger className="my-1">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="hex">
-              <Trans id="deviceClassEditor.dmxDisplay.hex">hex</Trans>
-            </SelectItem>
-            <SelectItem value="decimal">
-              <Trans id="deviceClassEditor.dmxDisplay.decimal">decimal</Trans>
-            </SelectItem>
-          </SelectContent>
-        </Select>
+          <ToggleGroupItem value="hex" className={SELECTED_ITEM}>
+            <Trans id="deviceClassEditor.dmxDisplay.hex">Hex</Trans>
+          </ToggleGroupItem>
+          <ToggleGroupItem value="decimal" className={SELECTED_ITEM}>
+            <Trans id="deviceClassEditor.dmxDisplay.decimal">Decimal</Trans>
+          </ToggleGroupItem>
+        </ToggleGroup>
       </div>
-      <div className="flex flex-col items-stretch">
-        <div className="flex flex-row" key={0}>
-          <div key={0} className="flex items-center justify-center w-12 h-8" />
-          {[...Array(8).keys()].map((index) => (
-            <div
-              className="flex items-center justify-center w-12 h-8"
-              key={index + 1}
-            >
-              {index + 1}
-            </div>
-          ))}
-        </div>
-        {[...Array(Math.ceil(maxSlot / 8)).keys()].map((outerIndex) => {
-          const lastRowIndex = Math.ceil(maxSlot / 8) - 1;
-          const columnCount =
-            outerIndex === lastRowIndex ? ((maxSlot - 1) % 8) + 1 : 8;
-          return (
-            <div className="flex flex-row" key={outerIndex + 1}>
-              <div className="flex items-center justify-center w-12 h-8">
-                {outerIndex * 8}
-              </div>
-              {[...Array(columnCount).keys()].map((index) => {
-                const slotIndex = outerIndex * 8 + index;
-                const val = dmxValues[slotIndex];
-                const isActive = activeSlots?.has(slotIndex) ?? false;
-                const formattedValue = val.toString(
-                  dmxDisplayFormat === "hex" ? 16 : 10,
-                );
-                return (
-                  <div
-                    key={index}
-                    aria-label={
-                      isActive
-                        ? _({
-                            ...MESSAGES.activeSlot,
-                            values: { value: formattedValue },
-                          })
-                        : undefined
-                    }
-                    className={`flex items-center justify-center border border-gray-500 w-12 h-8 ${
-                      isActive ? "text-orange-500 font-bold" : ""
-                    }`}
+
+      {slotCount === 0 ? (
+        <p className="text-sm italic text-muted-foreground">
+          <Trans id="deviceClassEditor.dmxDisplay.noSlots">
+            No DMX slots to display
+          </Trans>
+        </p>
+      ) : (
+        <div className="min-h-0 overflow-auto rounded-md border">
+          <table className="w-full border-collapse text-center text-sm tabular-nums">
+            <thead className="sticky top-0 bg-muted text-muted-foreground">
+              <tr>
+                <th className="h-8 w-12" />
+                {[...Array(COLUMNS).keys()].map((column) => (
+                  <th
+                    key={column}
+                    scope="col"
+                    className="h-8 min-w-10 px-1 font-medium"
                   >
-                    {formattedValue}
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
-      </div>
-    </div>
+                    {column + 1}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {[...Array(rowCount).keys()].map((row) => (
+                <tr key={row} className="border-t">
+                  <th
+                    scope="row"
+                    className="h-8 w-12 bg-muted/50 font-semibold"
+                  >
+                    {row * COLUMNS}
+                  </th>
+                  {[...Array(COLUMNS).keys()].map((column) => {
+                    const slot = row * COLUMNS + column;
+                    if (slot >= slotCount) {
+                      return <td key={column} />;
+                    }
+
+                    const isActive = activeSlots?.has(slot) ?? false;
+                    const formattedValue =
+                      format === "hex"
+                        ? dmxValues[slot].toString(16).padStart(2, "0")
+                        : dmxValues[slot].toString();
+                    return (
+                      <td
+                        key={column}
+                        aria-label={
+                          isActive
+                            ? _({
+                                ...MESSAGES.activeSlot,
+                                values: { value: formattedValue },
+                              })
+                            : undefined
+                        }
+                        className={cn(
+                          "h-8 px-1",
+                          isActive && "font-bold text-orange-500",
+                        )}
+                      >
+                        {formattedValue}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
   );
 };

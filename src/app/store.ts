@@ -259,6 +259,7 @@ function getDefaultRuntimeState(): AppRuntimeState {
   return {
     dmxControllers: {},
     sacnOutput: { settings: {} },
+    dmxControllerLayouts: {},
     libraries: loadDefaultLibraries(),
     systemDarkModePreference: getSystemDarkModePreference(),
     history: {},

@@ -1,32 +1,43 @@
+import { msg } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
 import { useEffect, useState, useCallback } from "react";
+import { i18n } from "@lingui/core";
 import { isTauri } from "@tauri-apps/api/core";
+import { DriverParamValue } from "@cpwg-community/delver";
+import { Columns2Icon, Rows2Icon } from "lucide-react";
+import { toast } from "sonner";
+import { EntityId } from "app/persistentState";
+import { DmxControllerLayout } from "app/runtimeState";
 import {
-  DriverParamState,
-  DriverParamValue,
-  ParamReference,
-} from "@cpwg-community/delver";
-import {
-  fcDataTypes,
-  FCUnit,
-  fcUnitNames,
-  ParameterCount,
-} from "app/persistentState";
-import {
-  MappableParameter,
-  useDmxController,
-  useMappableParameters,
-} from "../dmxEditor/state";
-import { Slider } from "components/scn-ui/Slider";
-import { useDarkMode } from "app/store";
+  SidebarLayout,
+  SidebarLayoutMain,
+  SidebarLayoutSidebar,
+} from "components/SidebarLayout";
+import { Button } from "components/scn-ui/Button";
+import { Separator } from "components/scn-ui/Separator";
+import { cn, errorMessage } from "utils/utils";
+import { useDmxController, useMappableParameters } from "../dmxEditor/state";
+import { resetDmxDriver } from "../effects";
 import { useCurrentEditorId } from "../state";
+import { ActiveSequencesPane } from "./ActiveSequencesPane";
 import { DmxDisplay } from "./DmxDisplay";
-import { useDmxSequenceManager } from "./sequenceManager/useDmxSequenceManager";
-import { ActiveSequencesButton } from "./ActiveSequencesButton";
+import { ParametersPanel } from "./ParametersPanel";
+import { ParamStates, paramStatesByRef } from "./parameterValues";
 import { SacnOutputControls } from "./sacnOutput/SacnOutputControls";
+import { useDmxSequenceManager } from "./sequenceManager/useDmxSequenceManager";
+import { setDmxControllerLayout, useDmxControllerLayout } from "./state";
+
+const MESSAGES = {
+  setValueFailed: msg({
+    id: "deviceClassEditor.dmxController.setValueFailed",
+    message: "Could not set {paramId}: {reason}",
+  }),
+};
 
 interface DmxControllerState {
-  paramStates: Map<string, DriverParamState>;
+  paramStates: ParamStates;
+  // The states the driver started with - the reset button returns to these
+  initialParamStates: ParamStates;
   dmxValues: Uint8Array;
 }
 
@@ -34,24 +45,24 @@ export const DmxController = () => {
   const documentId = useCurrentEditorId();
   const mappableParams = useMappableParameters();
   const dmxController = useDmxController();
+  const layout = useDmxControllerLayout(documentId);
   const [controllerState, setControllerState] = useState<DmxControllerState>({
     paramStates: new Map(),
+    initialParamStates: new Map(),
     dmxValues: new Uint8Array(),
   });
-  const darkMode = useDarkMode();
   const sequenceManager = useDmxSequenceManager();
 
   // Initialize param states when the DMX driver changes
   useEffect(() => {
     if (dmxController.state === "available") {
-      const paramStates = dmxController.driver.getParamStates();
-      const stateMap = new Map<string, DriverParamState>();
-      for (const state of paramStates) {
-        stateMap.set(serializeParamRef(state.param), state);
-      }
+      const paramStates = paramStatesByRef(
+        dmxController.driver.getParamStates(),
+      );
       const dmxValues = dmxController.driver.getDmxValues();
       setControllerState({
-        paramStates: stateMap,
+        paramStates,
+        initialParamStates: paramStates,
         dmxValues,
       });
       sequenceManager.actions.setBaseDmxValues(dmxValues);
@@ -62,25 +73,37 @@ export const DmxController = () => {
   const finalDmxValues = sequenceManager.dmxValues;
 
   const handleParamChange = useCallback(
-    (paramId: string, paramIndex: number | undefined, newValue: number) => {
+    (
+      paramId: string,
+      paramIndex: number | undefined,
+      newValue: DriverParamValue,
+    ) => {
       if (dmxController.state !== "available") return;
 
-      const driverValue: DriverParamValue = {
-        type: "numeric",
-        value: newValue,
-      };
-      const result = dmxController.driver.updateParamValue(
-        paramId,
-        paramIndex ?? null,
-        driverValue,
-      );
+      let result;
+      try {
+        result = dmxController.driver.updateParamValue(
+          paramId,
+          paramIndex ?? null,
+          newValue,
+        );
+      } catch (error) {
+        toast.error(
+          i18n._({
+            ...MESSAGES.setValueFailed,
+            values: { paramId, reason: errorMessage(error) },
+          }),
+        );
+        return;
+      }
 
       setControllerState((prev) => {
         const newParamStates = new Map(prev.paramStates);
-        for (const update of result.paramStateUpdates) {
-          newParamStates.set(serializeParamRef(update.param), update);
+        for (const update of paramStatesByRef(result.paramStateUpdates)) {
+          newParamStates.set(...update);
         }
         return {
+          ...prev,
           paramStates: newParamStates,
           dmxValues: result.dmxValues,
         };
@@ -97,222 +120,123 @@ export const DmxController = () => {
     [dmxController, sequenceManager.actions],
   );
 
-  const outputAreaBg = darkMode ? "bg-gray-800" : "bg-gray-200";
-
   switch (dmxController.state) {
     case "available":
       break;
     case "not-created":
       return (
-        <p>
+        <ControllerMessage>
           <Trans id="deviceClassEditor.dmxController.noMapping">
             Add a DMX parameter mapping in the DMX editor to use the test
             controller.
           </Trans>
-        </p>
+        </ControllerMessage>
       );
     case "error": {
       const reason = dmxController.error.message;
       return (
-        <p>
+        <ControllerMessage>
           <Trans id="deviceClassEditor.dmxController.compileError">
             Error compiling DMX test controller: {reason}
           </Trans>
-        </p>
+        </ControllerMessage>
       );
     }
   }
 
-  // Get parameters sorted by codexId for display
-  const sortedMappableParams = Object.values(mappableParams).sort((a, b) =>
-    a.param.codexId.localeCompare(b.param.codexId),
-  );
+  const horizontal = layout === "horizontal";
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex flex-row items-start justify-center gap-4">
-        <DmxDisplay
-          dmxValues={finalDmxValues}
-          activeSlots={sequenceManager.state.activeSlots}
-        />
-        <div className="mt-2">
-          <ActiveSequencesButton
+    <SidebarLayout collapseBelow={1000} className="gap-2 bg-muted/50 p-2">
+      <SidebarLayoutSidebar className="h-full">
+        <div className="flex h-full w-64 flex-col gap-4 rounded-lg border bg-card p-4">
+          <h2 className="font-semibold">
+            <Trans id="deviceClassEditor.dmxController.title">
+              Test DMX Controller
+            </Trans>
+          </h2>
+          <ActiveSequencesPane
+            className="flex-1"
             chunkStates={sequenceManager.state.chunkStates}
             hasActiveSequences={sequenceManager.state.hasActiveSequences}
           />
+          {isTauri() && documentId && (
+            <>
+              <Separator />
+              <div className="flex-1 min-h-0 overflow-auto">
+                <SacnOutputControls
+                  documentId={documentId}
+                  dmxValues={finalDmxValues}
+                />
+              </div>
+            </>
+          )}
+          {documentId && (
+            <>
+              <Separator />
+              <LayoutButton documentId={documentId} layout={layout} />
+            </>
+          )}
         </div>
-      </div>
-      {isTauri() && documentId && (
-        <div className={`${outputAreaBg} p-1`}>
-          <SacnOutputControls
-            documentId={documentId}
-            dmxValues={finalDmxValues}
-          />
-        </div>
-      )}
-      <div className="overflow-auto">
-        {sortedMappableParams.map((mappable) => (
-          <ParameterControl
-            key={mappable.param.codexId}
-            mappable={mappable}
-            controllerState={controllerState}
-            onParamChange={handleParamChange}
-          />
-        ))}
-      </div>
-    </div>
+      </SidebarLayoutSidebar>
+      <SidebarLayoutMain
+        className={cn("flex gap-2", horizontal ? "flex-row" : "flex-col")}
+      >
+        <DmxDisplay
+          className={horizontal ? "w-fit shrink-0" : "max-h-2/5 shrink-0"}
+          dmxValues={finalDmxValues}
+          activeSlots={sequenceManager.state.activeSlots}
+        />
+        <ParametersPanel
+          className="min-w-0 flex-1"
+          mappableParams={Object.values(mappableParams)}
+          paramStates={controllerState.paramStates}
+          initialParamStates={controllerState.initialParamStates}
+          onParamChange={handleParamChange}
+          onResetAll={() => documentId && resetDmxDriver(documentId)}
+        />
+      </SidebarLayoutMain>
+    </SidebarLayout>
   );
 };
 
-interface ParameterControlProps {
-  mappable: MappableParameter;
-  controllerState: DmxControllerState;
-  onParamChange: (
-    paramId: string,
-    paramIndex: number | undefined,
-    newValue: number,
-  ) => void;
+const ControllerMessage = ({ children }: { children: React.ReactNode }) => (
+  <p className="p-4 text-center text-muted-foreground">{children}</p>
+);
+
+interface LayoutButtonProps {
+  documentId: EntityId;
+  layout: DmxControllerLayout;
 }
 
-const ParameterControl = ({
-  mappable,
-  controllerState,
-  onParamChange,
-}: ParameterControlProps) => {
-  const { param, paramClass } = mappable;
-
-  if (paramClass.dataType !== fcDataTypes.NUMBER) {
-    // TODO: Support boolean and enum parameters
-    return null;
-  }
-
-  if (typeof param.minimum !== "number" || typeof param.maximum !== "number") {
-    return null;
-  }
-
-  const min = param.minimum;
-  const max = param.maximum;
-  const paramId = param.codexId;
-
-  // Handle multi-count parameters
-  const count = getParameterCount(param.count);
-  const controls = [];
-
-  for (let index = 0; index < count; index++) {
-    const paramRef: ParamReference =
-      count > 1 ? { id: paramId, index } : { id: paramId };
-    const paramKey = serializeParamRef(paramRef);
-    const paramState = controllerState.paramStates.get(paramKey);
-    const currentValue = getNumericValue(paramState?.value) ?? min;
-    const isActive = paramState?.value.type !== "null";
-
-    controls.push(
-      <div key={paramKey} className="flex items-center py-2">
-        <span className="mx-4">
-          {paramKey}
-          {getUnitString(paramClass.unit)}
-        </span>
-        <div className="grow" />
-        <Slider
-          className={`max-w-96 mx-4 ${!isActive ? "opacity-50" : ""}`}
-          min={min}
-          max={max}
-          value={[currentValue]}
-          onValueChange={(values) => {
-            onParamChange(paramId, count > 1 ? index : undefined, values[0]);
-          }}
-          step={getSliderStepSize(min, max)}
-        />
-      </div>,
-    );
-  }
-
-  return <div className="flex flex-col border-b py-2">{controls}</div>;
-};
-
-const SI_PREFIXES: { [key: number]: string } = {
-  // I hate javascript
-  "-24": "yocto",
-  "-21": "zepto",
-  "-18": "atto",
-  "-15": "femto",
-  "-12": "pico",
-  "-9": "nano",
-  "-6": "micro",
-  "-3": "milli",
-  "0": "",
-  "3": "kilo",
-  "6": "mega",
-  "9": "giga",
-  "12": "tera",
-  "15": "peta",
-  "18": "exa",
-  "21": "zetta",
-  "24": "yotta",
-};
-
-function getUnitString(unit: FCUnit | undefined): string {
-  if (!unit) {
-    return "";
-  }
-
-  if (unit.name == fcUnitNames.NONE) {
-    return "";
-  } else if (
-    unit.name == fcUnitNames.OTHER ||
-    unit.name == fcUnitNames.RATIO ||
-    !unit.exponent
-  ) {
-    return ` (${unit.name})`;
-  } else if (unit.exponent in SI_PREFIXES) {
-    return ` (${SI_PREFIXES[unit.exponent]}${unit.name})`;
-  } else {
-    return ` (${unit.name} * 10^${unit.exponent})`;
-  }
-}
-
-function getSliderStepSize(min: number, max: number): number {
-  // Default 1, but ensure at least 50 steps
-  let stepSize = 1;
-  if (min >= max) {
-    return stepSize;
-  }
-  while ((max - min) / stepSize < 50) {
-    stepSize /= 10;
-  }
-  return stepSize;
-}
-
-function serializeParamRef(ref: ParamReference): string {
-  if (ref.index !== undefined) {
-    return `${ref.id}[${ref.index}]`;
-  }
-  return ref.id;
-}
-
-function getParameterCount(count: ParameterCount | undefined): number {
-  if (!count) {
-    return 1;
-  }
-  if (count.type === "fixed") {
-    return count.value;
-  }
-  // For dynamic count, use minimum as the initial count
-  return count.min;
-}
-
-function getNumericValue(value: DriverParamValue | undefined): number | null {
-  if (!value || value.type === "null") {
-    return null;
-  }
-  if (value.type === "numeric") {
-    return value.value;
-  }
-  if (value.type === "bool") {
-    return value.value ? 1 : 0;
-  }
-  if (value.type === "enum") {
-    return value.value;
-  }
-  return null;
-}
+// Switches between the output beside the parameters and above them. It shows
+// the layout in use.
+const LayoutButton = ({ documentId, layout }: LayoutButtonProps) => (
+  <Button
+    variant="ghost"
+    size="sm"
+    className="justify-start text-primary hover:text-primary"
+    onClick={() =>
+      setDmxControllerLayout(
+        documentId,
+        layout === "horizontal" ? "vertical" : "horizontal",
+      )
+    }
+  >
+    {layout === "horizontal" ? (
+      <>
+        <Columns2Icon />
+        <Trans id="deviceClassEditor.dmxController.splitHorizontal">
+          Split Horizontal
+        </Trans>
+      </>
+    ) : (
+      <>
+        <Rows2Icon />
+        <Trans id="deviceClassEditor.dmxController.splitVertical">
+          Split Vertical
+        </Trans>
+      </>
+    )}
+  </Button>
+);

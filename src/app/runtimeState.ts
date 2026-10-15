@@ -10,6 +10,9 @@ export interface AppRuntimeState {
   dmxControllers: Record<EntityId, DmxController>;
   // Live sACN output from the DMX test controller (only possible on desktop).
   sacnOutput: SacnOutputState;
+  // How each document's DMX test controller arranges its panels. A document
+  // with no entry uses the default.
+  dmxControllerLayouts: Record<EntityId, DmxControllerLayout>;
   libraries: LibraryStore;
   systemDarkModePreference: boolean;
   // Each document's undo/redo stack. See app/undo.ts
@@ -70,6 +73,10 @@ export interface DmxControllerError {
   state: "error";
   error: DelverError;
 }
+
+// "horizontal" puts the DMX output beside the parameters, and "vertical" puts
+// it above them.
+export type DmxControllerLayout = "horizontal" | "vertical";
 
 export interface SacnOutputState {
   // Each device class document's output settings.

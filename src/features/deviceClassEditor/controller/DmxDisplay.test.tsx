@@ -23,13 +23,13 @@ test("Renders 8 slots in a single row", () => {
   const dmxValues = new Uint8Array([10, 11, 12, 13, 14, 15, 16, 17]);
   render(<DmxDisplay dmxValues={dmxValues} />);
 
-  // Check all values are present in hex format (a through 11)
-  expect(screen.getByText("a")).toBeInTheDocument(); // 10
-  expect(screen.getByText("b")).toBeInTheDocument(); // 11
-  expect(screen.getByText("c")).toBeInTheDocument(); // 12
-  expect(screen.getByText("d")).toBeInTheDocument(); // 13
-  expect(screen.getByText("e")).toBeInTheDocument(); // 14
-  expect(screen.getByText("f")).toBeInTheDocument(); // 15
+  // Check all values are present in two-digit hex format (0a through 11)
+  expect(screen.getByText("0a")).toBeInTheDocument(); // 10
+  expect(screen.getByText("0b")).toBeInTheDocument(); // 11
+  expect(screen.getByText("0c")).toBeInTheDocument(); // 12
+  expect(screen.getByText("0d")).toBeInTheDocument(); // 13
+  expect(screen.getByText("0e")).toBeInTheDocument(); // 14
+  expect(screen.getByText("0f")).toBeInTheDocument(); // 15
   expect(screen.getByText("10")).toBeInTheDocument(); // 16
   expect(screen.getByText("11")).toBeInTheDocument(); // 17
 });
@@ -39,7 +39,7 @@ test("Renders 9 slots across two rows", () => {
   render(<DmxDisplay dmxValues={dmxValues} />);
 
   // All values should be present in hex format
-  expect(screen.getByText("a")).toBeInTheDocument(); // 10
+  expect(screen.getByText("0a")).toBeInTheDocument(); // 10
   expect(screen.getByText("12")).toBeInTheDocument(); // 18
 });
 
@@ -65,12 +65,16 @@ test("Switches between hex and decimal display formats", async () => {
   expect(screen.getByText("ab")).toBeInTheDocument();
 
   // Switch to decimal
-  await user.click(screen.getByRole("combobox"));
-  await user.click(screen.getByText("decimal"));
+  await user.click(screen.getByRole("radio", { name: "Decimal" }));
 
   // Should now show decimal value
   expect(screen.getByText("171")).toBeInTheDocument();
   expect(screen.queryByText("ab")).not.toBeInTheDocument();
+
+  // Choosing the selected format again keeps it selected
+  await user.click(screen.getByRole("radio", { name: "Decimal" }));
+  expect(screen.getByRole("radio", { name: "Decimal" })).toBeChecked();
+  expect(screen.getByText("171")).toBeInTheDocument();
 });
 
 test("Renders 16 slots (2 rows) correctly", () => {
@@ -82,7 +86,7 @@ test("Renders 16 slots (2 rows) correctly", () => {
   render(<DmxDisplay dmxValues={dmxValues} />);
 
   // Check first and last values are present
-  expect(screen.getByText("a")).toBeInTheDocument(); // 10
+  expect(screen.getByText("0a")).toBeInTheDocument(); // 10
   expect(screen.getByText("19")).toBeInTheDocument(); // 25
 });
 
@@ -102,7 +106,7 @@ test("Marks active slots as sequence-controlled", () => {
 
   render(<DmxDisplay dmxValues={dmxValues} activeSlots={activeSlots} />);
 
-  const slot0 = screen.getByText("a"); // 10 in hex
+  const slot0 = screen.getByText("0a"); // 10 in hex
   const slot1 = screen.getByText("14"); // 20 in hex
   const slot2 = screen.getByText("1e"); // 30 in hex
   const slot3 = screen.getByText("28"); // 40 in hex
@@ -121,7 +125,7 @@ test("Renders without highlighting when activeSlots is undefined", () => {
 
   render(<DmxDisplay dmxValues={dmxValues} />);
 
-  const slot0 = screen.getByText("a"); // 10 in hex
+  const slot0 = screen.getByText("0a"); // 10 in hex
   const slot1 = screen.getByText("14"); // 20 in hex
 
   expect(slot0).not.toHaveAccessibleName(/sequence/);
@@ -134,9 +138,20 @@ test("Renders without highlighting when activeSlots is empty", () => {
 
   render(<DmxDisplay dmxValues={dmxValues} activeSlots={activeSlots} />);
 
-  const slot0 = screen.getByText("a"); // 10 in hex
+  const slot0 = screen.getByText("0a"); // 10 in hex
   const slot1 = screen.getByText("14"); // 20 in hex
 
   expect(slot0).not.toHaveAccessibleName(/sequence/);
   expect(slot1).not.toHaveAccessibleName(/sequence/);
+});
+
+test("Pads hex values to two digits but not decimal ones", async () => {
+  const user = userEvent.setup();
+  render(<DmxDisplay dmxValues={new Uint8Array([171, 9])} />);
+
+  expect(screen.getByText("09")).toBeInTheDocument();
+
+  await user.click(screen.getByRole("radio", { name: "Decimal" }));
+
+  expect(screen.getByText("9")).toBeInTheDocument();
 });

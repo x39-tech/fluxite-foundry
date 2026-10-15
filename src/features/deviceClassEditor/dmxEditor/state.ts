@@ -103,6 +103,7 @@ export interface MappableParameter {
   paramClass: MappableParameterClass;
   entityId: EntityId;
   enumChoices: EffectiveEnumChoice[];
+  friendlyName?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -224,6 +225,14 @@ export function useMappableParameters(): Record<EntityId, MappableParameter> {
         paramClass,
         entityId: EntityId(entityId),
         enumChoices: effectiveEnumChoices,
+        friendlyName: param.localized.friendlyName
+          ? localize(
+              localizations,
+              param.localized.friendlyName,
+              locale,
+              sourceLocale,
+            ).value
+          : undefined,
       };
 
       return acc;

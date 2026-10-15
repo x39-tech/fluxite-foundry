@@ -20,7 +20,7 @@
     "comments": [],
     "origin": [
       [
-        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+        "src/features/deviceClassEditor/controller/ActiveSequencesPane.tsx"
       ]
     ],
     "translation": ""
@@ -35,7 +35,7 @@
     "comments": [],
     "origin": [
       [
-        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+        "src/features/deviceClassEditor/controller/ActiveSequencesPane.tsx"
       ]
     ],
     "translation": ""
@@ -137,6 +137,17 @@
     ],
     "translation": ""
   },
+  "deviceClassEditor.dmxController.parameters.instanceLabel": {
+    "message": "{name} [{index}]",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ParametersPanel.tsx"
+      ]
+    ],
+    "translation": ""
+  },
   "deviceClassEditor.dmxDisplay.activeSlot": {
     "message": "{value} (sequence)",
     "placeholders": {},
@@ -187,7 +198,7 @@
     "comments": [],
     "origin": [
       [
-        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+        "src/features/deviceClassEditor/controller/ActiveSequencesPane.tsx"
       ]
     ],
     "translation": ""
@@ -209,7 +220,7 @@
     "comments": [],
     "origin": [
       [
-        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+        "src/features/deviceClassEditor/controller/ActiveSequencesPane.tsx"
       ]
     ],
     "translation": ""
@@ -361,18 +372,18 @@
     ],
     "translation": ""
   },
-  "deviceClassEditor.activeSequences.heading": {
-    "message": "Active Sequences",
+  "deviceClassEditor.dmxController.parameters.actionColumn": {
+    "message": "Action",
     "placeholders": {},
     "comments": [],
     "origin": [
       [
-        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+        "src/features/deviceClassEditor/controller/ParametersPanel.tsx"
       ]
     ],
     "translation": ""
   },
-  "deviceClassEditor.activeSequences.triggerLabel": {
+  "deviceClassEditor.activeSequences.heading": {
     "message": "Active Sequences: {activeCount}",
     "placeholders": {
       "activeCount": [
@@ -382,7 +393,7 @@
     "comments": [],
     "origin": [
       [
-        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+        "src/features/deviceClassEditor/controller/ActiveSequencesPane.tsx"
       ]
     ],
     "translation": ""
@@ -957,6 +968,17 @@
     ],
     "translation": ""
   },
+  "deviceClassEditor.dmxController.parameters.allCategories": {
+    "message": "All",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ParametersPanel.tsx"
+      ]
+    ],
+    "translation": ""
+  },
   "navbar.importState.warningDescription": {
     "message": "All editors and settings will be replaced, and the app will reload.",
     "placeholders": {},
@@ -1264,6 +1286,17 @@
     ],
     "translation": ""
   },
+  "deviceClassEditor.dmxController.parameters.categories": {
+    "message": "Categories",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ParametersPanel.tsx"
+      ]
+    ],
+    "translation": ""
+  },
   "deviceClassEditor.paramClassDisplay.category": {
     "message": "Category",
     "placeholders": {},
@@ -1517,13 +1550,13 @@
     ],
     "translation": ""
   },
-  "integerInput.clearValue": {
+  "numberInput.clearValue": {
     "message": "Clear value",
     "placeholders": {},
     "comments": [],
     "origin": [
       [
-        "src/components/IntegerInput.tsx"
+        "src/components/NumberInput.tsx"
       ]
     ],
     "translation": ""
@@ -1752,6 +1785,17 @@
     ],
     "translation": ""
   },
+  "deviceClassEditor.dmxController.setValueFailed": {
+    "message": "Could not set {paramId}: {reason}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/DmxController.tsx"
+      ]
+    ],
+    "translation": ""
+  },
   "deviceClassEditor.sacnOutput.startFailed": {
     "message": "Could not start sACN output: {reason}",
     "placeholders": {},
@@ -1940,26 +1984,23 @@
     "translation": ""
   },
   "deviceClassEditor.dmxDisplay.decimal": {
-    "message": "decimal",
+    "message": "Decimal",
     "placeholders": {},
     "comments": [],
     "origin": [
-      [
-        "src/features/deviceClassEditor/controller/DmxDisplay.tsx"
-      ],
       [
         "src/features/deviceClassEditor/controller/DmxDisplay.tsx"
       ]
     ],
     "translation": ""
   },
-  "integerInput.decrement": {
+  "numberInput.decrement": {
     "message": "Decrement",
     "placeholders": {},
     "comments": [],
     "origin": [
       [
-        "src/components/IntegerInput.tsx"
+        "src/components/NumberInput.tsx"
       ]
     ],
     "translation": ""
@@ -2576,7 +2617,7 @@
     "translation": ""
   },
   "deviceClassEditor.widget.dmxEditor.name": {
-    "message": "DMX Footprint",
+    "message": "DMX Mapping",
     "placeholders": {},
     "comments": [],
     "origin": [
@@ -2591,9 +2632,6 @@
     "placeholders": {},
     "comments": [],
     "origin": [
-      [
-        "src/features/deviceClassEditor/controller/DmxDisplay.tsx"
-      ],
       [
         "src/features/deviceClassEditor/controller/DmxDisplay.tsx"
       ]
@@ -2876,7 +2914,7 @@
     "translation": ""
   },
   "deviceClassEditor.widget.dmxEditor.description": {
-    "message": "Edit the DMX footprint of the device class",
+    "message": "Edit the DMX mapping of the device class",
     "placeholders": {},
     "comments": [],
     "origin": [
@@ -3430,13 +3468,10 @@
     "translation": ""
   },
   "deviceClassEditor.dmxDisplay.hex": {
-    "message": "hex",
+    "message": "Hex",
     "placeholders": {},
     "comments": [],
     "origin": [
-      [
-        "src/features/deviceClassEditor/controller/DmxDisplay.tsx"
-      ],
       [
         "src/features/deviceClassEditor/controller/DmxDisplay.tsx"
       ]
@@ -3806,13 +3841,13 @@
     ],
     "translation": ""
   },
-  "integerInput.increment": {
+  "numberInput.increment": {
     "message": "Increment",
     "placeholders": {},
     "comments": [],
     "origin": [
       [
-        "src/components/IntegerInput.tsx"
+        "src/components/NumberInput.tsx"
       ]
     ],
     "translation": ""
@@ -3845,7 +3880,7 @@
     "comments": [],
     "origin": [
       [
-        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+        "src/features/deviceClassEditor/controller/ActiveSequencesPane.tsx"
       ]
     ],
     "translation": ""
@@ -4504,7 +4539,7 @@
     "comments": [],
     "origin": [
       [
-        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+        "src/features/deviceClassEditor/controller/ActiveSequencesPane.tsx"
       ]
     ],
     "translation": ""
@@ -4610,6 +4645,17 @@
     ],
     "translation": ""
   },
+  "deviceClassEditor.dmxController.parameters.none": {
+    "message": "No parameters to show",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ParametersPanel.tsx"
+      ]
+    ],
+    "translation": ""
+  },
   "mediaType.noMatches": {
     "message": "No registered media type matches the query.",
     "placeholders": {},
@@ -4654,6 +4700,28 @@
     ],
     "translation": ""
   },
+  "deviceClassEditor.dmxDisplay.format": {
+    "message": "Number format",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/DmxDisplay.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxController.parameters.off": {
+    "message": "Off",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ParametersPanel.tsx"
+      ]
+    ],
+    "translation": ""
+  },
   "deviceClassEditor.dmxChunk.offsetsUsed": {
     "message": "Offsets Used",
     "placeholders": {},
@@ -4664,6 +4732,17 @@
       ],
       [
         "src/features/deviceClassEditor/dmxEditor/DmxChunkEditor.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxController.parameters.on": {
+    "message": "On",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ParametersPanel.tsx"
       ]
     ],
     "translation": ""
@@ -4725,6 +4804,17 @@
     ],
     "translation": ""
   },
+  "deviceClassEditor.dmxController.parameters.otherCategories": {
+    "message": "Other",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ParametersPanel.tsx"
+      ]
+    ],
+    "translation": ""
+  },
   "deviceClassEditor.dmxMappingRange.outputMode": {
     "message": "Output Mode",
     "placeholders": {},
@@ -4765,6 +4855,17 @@
     "origin": [
       [
         "src/features/deviceClassEditor/dmxEditor/DmxParameterMapping.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxController.parameters.parameterColumn": {
+    "message": "Parameter",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ParametersPanel.tsx"
       ]
     ],
     "translation": ""
@@ -4899,6 +5000,17 @@
     "origin": [
       [
         "src/features/deviceClassEditor/widgets.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxController.parameters.title": {
+    "message": "Parameters",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ParametersPanel.tsx"
       ]
     ],
     "translation": ""
@@ -5126,6 +5238,28 @@
     "origin": [
       [
         "src/features/classEditors/CommandClassMembersEditor.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxController.parameters.resetToDefault": {
+    "message": "Reset to Default",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ParametersPanel.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxController.parameters.resetAll": {
+    "message": "Reset Values to Defaults",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ParametersPanel.tsx"
       ]
     ],
     "translation": ""
@@ -5360,6 +5494,17 @@
     "origin": [
       [
         "src/features/deviceClassEditor/parametersEditor/ParametersEditor.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxController.parameters.search": {
+    "message": "Search Parameters",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ParametersPanel.tsx"
       ]
     ],
     "translation": ""
@@ -5854,7 +5999,7 @@
     "comments": [],
     "origin": [
       [
-        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+        "src/features/deviceClassEditor/controller/ActiveSequencesPane.tsx"
       ]
     ],
     "translation": ""
@@ -5877,6 +6022,28 @@
     "origin": [
       [
         "src/components/RenderError.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxController.splitHorizontal": {
+    "message": "Split Horizontal",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/DmxController.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxController.splitVertical": {
+    "message": "Split Vertical",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/DmxController.tsx"
       ]
     ],
     "translation": ""
@@ -5980,7 +6147,7 @@
     "comments": [],
     "origin": [
       [
-        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+        "src/features/deviceClassEditor/controller/ActiveSequencesPane.tsx"
       ]
     ],
     "translation": ""
@@ -6058,6 +6225,17 @@
     "origin": [
       [
         "src/features/deviceClassEditor/widgets.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxController.title": {
+    "message": "Test DMX Controller",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/DmxController.tsx"
       ]
     ],
     "translation": ""
@@ -6393,7 +6571,7 @@
     "comments": [],
     "origin": [
       [
-        "src/features/deviceClassEditor/controller/ActiveSequencesButton.tsx"
+        "src/features/deviceClassEditor/controller/ActiveSequencesPane.tsx"
       ]
     ],
     "translation": ""
@@ -6636,6 +6814,17 @@
     "origin": [
       [
         "src/features/topNavBar/ImportStateDialog.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxController.parameters.valueColumn": {
+    "message": "Value",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/ParametersPanel.tsx"
       ]
     ],
     "translation": ""

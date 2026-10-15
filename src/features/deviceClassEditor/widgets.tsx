@@ -42,11 +42,11 @@ export const WIDGETS: Record<string, EditorWidget> = {
   dmxEditor: {
     name: msg({
       id: "deviceClassEditor.widget.dmxEditor.name",
-      message: "DMX Footprint",
+      message: "DMX Mapping",
     }),
     description: msg({
       id: "deviceClassEditor.widget.dmxEditor.description",
-      message: "Edit the DMX footprint of the device class",
+      message: "Edit the DMX mapping of the device class",
     }),
     factory: () => <DmxEditor />,
   },

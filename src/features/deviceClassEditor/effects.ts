@@ -46,6 +46,27 @@ export function stopDeviceClassEditorEffects() {
   stopEffects?.();
 }
 
+/** Replaces a document's DMX test driver with a new one. */
+export function resetDmxDriver(documentId: EntityId) {
+  const editor = documentOfType(
+    useAppPersistentStore.getState(),
+    documentId,
+    documentTypes.DEVICE_CLASS,
+  );
+  if (!editor) {
+    return;
+  }
+
+  const controller = createDmxDriver(editor);
+  updateAppRuntimeState((state) => {
+    if (controller) {
+      state.dmxControllers[documentId] = controller;
+    } else {
+      delete state.dmxControllers[documentId];
+    }
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------

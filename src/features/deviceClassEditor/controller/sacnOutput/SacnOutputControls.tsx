@@ -96,53 +96,55 @@ export const SacnOutputControls = ({
   );
 
   return (
-    <div className="flex flex-col items-center gap-1">
-      <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2">
-        <LabeledCheckbox
-          checked={active}
-          disabled={!settings.interfaceName}
-          onChange={(checked) => setSacnOutputActive(documentId, checked)}
+    <div className="flex flex-col gap-3">
+      <LabeledCheckbox
+        checked={active}
+        disabled={!settings.interfaceName}
+        onChange={(checked) => setSacnOutputActive(documentId, checked)}
+      >
+        <Trans id="deviceClassEditor.sacnOutput.enable">Send sACN</Trans>
+      </LabeledCheckbox>
+      <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2">
+        <Label htmlFor={interfaceId}>
+          <Trans id="deviceClassEditor.sacnOutput.interface">Interface</Trans>
+        </Label>
+        <Select
+          value={settings.interfaceName ?? ""}
+          onValueChange={(interfaceName) =>
+            updateSacnOutputSettings(documentId, { interfaceName })
+          }
+          onOpenChange={(open) => {
+            if (open) interfaces.refresh();
+          }}
         >
-          <Trans id="deviceClassEditor.sacnOutput.enable">Send sACN</Trans>
-        </LabeledCheckbox>
-        <div className="flex items-center gap-2">
-          <Label htmlFor={interfaceId}>
-            <Trans id="deviceClassEditor.sacnOutput.interface">Interface</Trans>
-          </Label>
-          <Select
-            value={settings.interfaceName ?? ""}
-            onValueChange={(interfaceName) =>
-              updateSacnOutputSettings(documentId, { interfaceName })
-            }
-            onOpenChange={(open) => {
-              if (open) interfaces.refresh();
-            }}
+          <SelectTrigger
+            id={interfaceId}
+            size="sm"
+            className="w-full bg-background"
           >
-            <SelectTrigger id={interfaceId} size="sm" className="bg-background">
-              <SelectValue placeholder={_(MESSAGES.selectInterface)} />
-            </SelectTrigger>
-            <SelectContent>
-              {interfaceOptions(interfaces.list, settings.interfaceName).map(
-                (option) => (
-                  <SelectItem
-                    key={option.name}
-                    value={option.name}
-                    disabled={!option.usable}
-                  >
-                    <span>{option.name}</span>
-                    {option.note && (
-                      <span className="text-muted-foreground">
-                        {typeof option.note === "string"
-                          ? option.note
-                          : _(option.note)}
-                      </span>
-                    )}
-                  </SelectItem>
-                ),
-              )}
-            </SelectContent>
-          </Select>
-        </div>
+            <SelectValue placeholder={_(MESSAGES.selectInterface)} />
+          </SelectTrigger>
+          <SelectContent>
+            {interfaceOptions(interfaces.list, settings.interfaceName).map(
+              (option) => (
+                <SelectItem
+                  key={option.name}
+                  value={option.name}
+                  disabled={!option.usable}
+                >
+                  <span>{option.name}</span>
+                  {option.note && (
+                    <span className="text-muted-foreground">
+                      {typeof option.note === "string"
+                        ? option.note
+                        : _(option.note)}
+                    </span>
+                  )}
+                </SelectItem>
+              ),
+            )}
+          </SelectContent>
+        </Select>
         <NumberSetting
           label={
             <Trans id="deviceClassEditor.sacnOutput.universe">Universe</Trans>
@@ -198,18 +200,17 @@ const NumberSetting = ({
   const id = useId();
 
   return (
-    <div className="flex items-center gap-2">
+    <>
       <Label htmlFor={id}>{label}</Label>
       <IntegerInput
         id={id}
-        className="w-28"
         inputClassName="h-8 bg-background"
         value={value}
         min={min}
         max={max}
         onCommit={onCommit}
       />
-    </div>
+    </>
   );
 };
 

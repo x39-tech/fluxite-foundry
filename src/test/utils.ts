@@ -71,6 +71,7 @@ export function resetAppRuntimeStore() {
     {
       dmxControllers: {},
       sacnOutput: { settings: {} },
+      dmxControllerLayouts: {},
       libraries: loadDefaultLibraries(),
       systemDarkModePreference: false,
       history: {},
