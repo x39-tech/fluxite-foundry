@@ -700,7 +700,7 @@ function convertTrigger(editor: DeviceClassDocument, t: Trigger): DmxTrigger {
     command: commandId,
     mappings: t.mappings.map((tm) => ({
       conditions: Object.fromEntries(
-        Object.entries(tm.conditions).map(([key, cond]) => [
+        Object.entries(tm.conditions ?? {}).map(([key, cond]) => [
           // Condition keys are argument codexIds in the codex format. Store
           // them as EntityIds when the command's class is local.
           command

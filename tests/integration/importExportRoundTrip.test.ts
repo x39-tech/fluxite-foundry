@@ -29,7 +29,7 @@ const testCases: RoundTripTestCase[] = [
   {
     name: "MAC Encore Performance CLD",
     filePath:
-      "src/e173/examples/draft-2026-1/device-classes/martin_mac_encore_performance_cld.fcd",
+      "src/e173/examples/draft-2027-1/device-classes/martin_mac_encore_performance_cld.fcd",
     qualifiedId: "com.martin.dev.encore-performance-cold",
     version: "1.0.0",
   },

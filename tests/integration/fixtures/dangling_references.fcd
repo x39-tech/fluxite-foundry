@@ -1,5 +1,5 @@
 {
-  "$schema": "https://gitlab.com/esta-cpwg/e173/-/raw/main/schemas/draft-2026-1/full/codex-document.json",
+  "$schema": "https://gitlab.com/esta-cpwg/e173/-/raw/main/schemas/draft-2027-1/full/codex-document.json",
   "e173doc": {
     "deviceClasses": {
       "com.example.dev.dangling-references": {
@@ -143,7 +143,7 @@
                                   {
                                     "chunkStart": 0,
                                     "chunkEnd": 255,
-                                    "hold": { "milliseconds": 500 }
+                                    "hold": 500
                                   }
                                 ]
                               }

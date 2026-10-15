@@ -13,9 +13,9 @@ export const TSP_WORKING_GROUPS_LINK =
   "https://tsp.esta.org/tsp/working_groups/index.html";
 
 export const CODEX_DOC_SCHEMA_URL =
-  "https://gitlab.com/cpwg-community/e173/-/raw/main/schemas/draft-2026-1/full/codex-document.json";
+  "https://gitlab.com/cpwg-community/e173/-/raw/main/schemas/draft-2027-1/full/codex-document.json";
 export const CODEX_ARCHIVE_SCHEMA_URL =
-  "https://gitlab.com/cpwg-community/e173/-/raw/main/schemas/draft-2026-1/full/codex-archive.json";
+  "https://gitlab.com/cpwg-community/e173/-/raw/main/schemas/draft-2027-1/full/codex-archive.json";
 
 // Build information
 export const BUILD_STRING = __BUILD_STRING__;

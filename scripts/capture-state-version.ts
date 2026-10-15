@@ -15,8 +15,8 @@ import {
   VERSION,
 } from "../src/app/persistentState";
 import { SNAPSHOT_FORMAT_VERSION } from "../src/app/stateSnapshot";
-import encoreDocument from "../src/e173/examples/draft-2026-1/device-classes/martin_mac_encore_performance_cld.fcd?raw";
-import movableDocument from "../src/e173/examples/draft-2026-1/device-classes/movable.fcd?raw";
+import encoreDocument from "../src/e173/examples/draft-2027-1/device-classes/martin_mac_encore_performance_cld.fcd?raw";
+import movableDocument from "../src/e173/examples/draft-2027-1/device-classes/movable.fcd?raw";
 
 /**
  * Captures the required file artifacts for this state version:

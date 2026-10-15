@@ -5,12 +5,13 @@ import { errorMessage } from "utils/utils";
 import { ImportedLibrary, LibraryStore, normalizeLibrary } from "./library";
 import { buildCategoryCatalog, CategoryCatalog } from "./categories";
 
-import core from "e173/libraries/core/draft-2026-1/library.fcd";
-import intensityColor from "e173/libraries/intensity-color/draft-2026-1/library.fcd";
-import motion from "e173/libraries/motion/draft-2026-1/library.fcd";
-import effect from "e173/libraries/effect/draft-2026-1/library.fcd";
-import shape from "e173/libraries/shape/draft-2026-1/library.fcd";
-import gobo from "e173/libraries/gobo/draft-2026-1/library.fcd";
+import core from "e173/libraries/core/draft-2027-1/library.fcd";
+import intensityColor from "e173/libraries/intensity-color/draft-2027-1/library.fcd";
+import motion from "e173/libraries/motion/draft-2027-1/library.fcd";
+import effect from "e173/libraries/effect/draft-2027-1/library.fcd";
+import shape from "e173/libraries/shape/draft-2027-1/library.fcd";
+import gobo from "e173/libraries/gobo/draft-2027-1/library.fcd";
+import config from "e173/libraries/config/draft-2027-1/library.fcd";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Public Functions
@@ -108,6 +109,7 @@ const DEFAULT_LIBRARY_DOCUMENTS = [
   effect,
   shape,
   gobo,
+  config,
 ];
 
 let defaultLibraries: LibraryStore | undefined = undefined;

@@ -1,6 +1,6 @@
 import { Trans } from "@lingui/react/macro";
 import { useId } from "react";
-import builderInfo from "e173/extras/draft-2026-1/_builder.json";
+import builderInfo from "e173/extras/draft-2027-1/_builder.json";
 import { RenderError } from "components/RenderError";
 import { FieldSet } from "components/FieldSet";
 import { Label } from "components/scn-ui/Label";
