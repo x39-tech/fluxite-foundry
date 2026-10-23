@@ -113,7 +113,11 @@ const PAN: TestParam = {
   dataType: fcDataTypes.NUMBER,
   value: { type: "numeric", value: 0 },
   description: "Rotation about the vertical axis",
-  param: { minimum: -270, maximum: 270, default: 0 },
+  param: {
+    minimum: -270,
+    maximum: 270,
+    default: { type: "numeric", value: 0 },
+  },
 };
 
 const SHUTTER: TestParam = {
@@ -273,7 +277,11 @@ test("Resets a parameter to the value the driver started it at", async () => {
 
 test("Resets a parameter the driver started with no value to its default", async () => {
   const { driver, user } = setUpController([
-    { ...PAN, value: { type: "null" }, param: { ...PAN.param, default: 10 } },
+    {
+      ...PAN,
+      value: { type: "null" },
+      param: { ...PAN.param, default: { type: "numeric", value: 10 } },
+    },
   ]);
 
   await user.click(screen.getByRole("button", { name: "Reset to Default" }));
@@ -281,6 +289,24 @@ test("Resets a parameter the driver started with no value to its default", async
   expect(driver.updateParamValue).toHaveBeenCalledWith("pan", null, {
     type: "numeric",
     value: 10,
+  });
+});
+
+test("Resets a parameter with an inactive default to inactive", async () => {
+  const { driver, user } = setUpController([
+    {
+      ...PAN,
+      value: { type: "null" },
+      param: { ...PAN.param, default: { type: "inactive" } },
+    },
+  ]);
+  const input = screen.getByRole("textbox", { name: "Pan" });
+  await user.type(input, "90{Enter}");
+
+  await user.click(screen.getByRole("button", { name: "Reset to Default" }));
+
+  expect(driver.updateParamValue).toHaveBeenLastCalledWith("pan", null, {
+    type: "null",
   });
 });
 

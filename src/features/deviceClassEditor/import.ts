@@ -6,7 +6,6 @@ import {
   EstaDmx,
   MappingBounds,
   MappingRange,
-  ParameterDefault,
   Trigger,
   UnmappedParam,
 } from "@cpwg-community/delver";
@@ -42,7 +41,7 @@ import {
   DmxConditionGroup,
   DmxConditionParent,
   DmxMapping,
-  DmxMappingBound,
+  DmxMappingBounds,
   DmxMappingRange,
   DmxSerializerState,
   DmxTrigger,
@@ -237,7 +236,7 @@ function importParameters(
       maximum: param.maximum,
       minimumModifier: param.minimumModifier,
       maximumModifier: param.maximumModifier,
-      default: convertParameterDefault(param.default),
+      default: param.default,
       wrapping: param.looping,
       localized: {
         friendlyName: locKeys.of(param["@friendlyName"]),
@@ -641,24 +640,20 @@ function convertMapping(
   };
 }
 
-function convertParameterDefault(
-  d: ParameterDefault | undefined,
-): number | boolean | undefined {
-  return d && d.type !== "inactive" ? d.value : undefined;
-}
-
-function convertMappingBounds(bounds: MappingBounds): {
-  start?: DmxMappingBound;
-  end?: DmxMappingBound;
-} {
-  return bounds.type === "null"
-    ? {}
-    : { start: bounds.value.start, end: bounds.value.end };
+function convertMappingBounds(bounds: MappingBounds): DmxMappingBounds {
+  switch (bounds.type) {
+    case "null":
+      return bounds;
+    case "numeric":
+      return { type: "numeric", ...bounds.value };
+    case "bool":
+      return { type: "bool", ...bounds.value };
+  }
 }
 
 function convertMappingRange(r: MappingRange): DmxMappingRange {
   return {
-    ...convertMappingBounds(r.bounds),
+    bounds: convertMappingBounds(r.bounds),
     chunkValues:
       r.chunkValues.type === "range"
         ? {
@@ -687,7 +682,7 @@ function convertUnmappedParam(
       CodexId(up.parameter.id),
       up.parameter.index,
     ),
-    ...convertMappingBounds(up.bounds),
+    bounds: convertMappingBounds(up.bounds),
   };
 }
 

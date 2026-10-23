@@ -315,6 +315,32 @@ describe("Min/Max/Default for Number Parameters", () => {
     ).toBeInTheDocument();
   });
 
+  test("can make a parameter inactive by default", async () => {
+    const user = userEvent.setup();
+    createParameterClass("NumberClass", "number");
+    const paramId = createParameterAndGetId(
+      undefined,
+      CodexId("NumberClass"),
+      CodexId("number-param"),
+    );
+
+    render(<ParameterEditor id={paramId} />);
+    const defaultInput = screen.getByRole("textbox", { name: "Default Value" });
+    const inactive = screen.getByRole("checkbox", {
+      name: "Inactive by default",
+    });
+
+    await user.click(inactive);
+    expect(getHookValue(useParameters)?.[paramId]?.default).toEqual({
+      type: "inactive",
+    });
+    expect(defaultInput).toBeDisabled();
+
+    await user.click(inactive);
+    expect(getHookValue(useParameters)?.[paramId]?.default).toBeUndefined();
+    expect(defaultInput).toBeEnabled();
+  });
+
   test("does not render min/max/default fields for enum parameters", async () => {
     createParameterClass("EnumClass", "enum");
 

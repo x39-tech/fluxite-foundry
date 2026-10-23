@@ -3808,6 +3808,17 @@
     ],
     "translation": ""
   },
+  "deviceClassEditor.paramMinMaxDefault.inactiveByDefault": {
+    "message": "Inactive by default",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/MinMaxDefaultProperties.tsx"
+      ]
+    ],
+    "translation": ""
+  },
   "navbar.exportState.includeAssets": {
     "message": "Include assets",
     "placeholders": {},

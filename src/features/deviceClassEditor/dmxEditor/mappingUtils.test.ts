@@ -7,6 +7,7 @@ import {
   createHoldValue,
   getEffectiveEnd,
   normalizeEndValue,
+  toBounds,
 } from "./mappingUtils";
 import { DmxSequenceStep } from "app/persistentState";
 
@@ -192,13 +193,13 @@ describe("mappingUtils", () => {
       });
     });
 
-    describe("undefined start", () => {
-      it("returns end when start is undefined and end is defined", () => {
-        expect(getEffectiveEnd(undefined, 100)).toBe(100);
+    describe("null start", () => {
+      it("returns end when start is null and end is defined", () => {
+        expect(getEffectiveEnd(null, 100)).toBe(100);
       });
 
-      it("returns undefined when both are undefined", () => {
-        expect(getEffectiveEnd(undefined, undefined)).toBe(undefined);
+      it("returns null when start is null and end is undefined", () => {
+        expect(getEffectiveEnd(null, undefined)).toBe(null);
       });
     });
   });
@@ -242,18 +243,42 @@ describe("mappingUtils", () => {
       });
     });
 
-    describe("undefined values", () => {
-      it("returns undefined when end is undefined", () => {
-        expect(normalizeEndValue(10, undefined)).toBe(undefined);
+    describe("null values", () => {
+      it("returns undefined when end is null", () => {
+        expect(normalizeEndValue(10, null)).toBe(undefined);
       });
 
-      it("returns end when start is undefined and end is defined", () => {
-        expect(normalizeEndValue(undefined, 100)).toBe(100);
+      it("returns end when start is null and end is defined", () => {
+        expect(normalizeEndValue(null, 100)).toBe(100);
       });
 
-      it("returns undefined when both are undefined", () => {
-        expect(normalizeEndValue(undefined, undefined)).toBe(undefined);
+      it("returns undefined when both are null", () => {
+        expect(normalizeEndValue(null, null)).toBe(undefined);
       });
+    });
+  });
+
+  describe("toBounds", () => {
+    it("tags the bounds with the type of the start", () => {
+      expect(toBounds(0, 100)).toEqual({ type: "numeric", start: 0, end: 100 });
+      expect(toBounds(false, true)).toEqual({
+        type: "bool",
+        start: false,
+        end: true,
+      });
+    });
+
+    it("makes null bounds from a null start, dropping the end", () => {
+      expect(toBounds(null, 100)).toEqual({ type: "null" });
+    });
+
+    it("drops an end of a different type than the start", () => {
+      expect(toBounds(5, true)).toEqual({ type: "numeric", start: 5 });
+      expect(toBounds(true, 5)).toEqual({ type: "bool", start: true });
+    });
+
+    it("keeps an absent end absent", () => {
+      expect(toBounds(5, undefined)).toEqual({ type: "numeric", start: 5 });
     });
   });
 });

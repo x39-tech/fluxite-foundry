@@ -3,6 +3,8 @@ import { msg } from "@lingui/core/macro";
 import {
   LocalOrImportedId,
   CodexId,
+  DmxMappingBound,
+  DmxMappingBounds,
   DmxSequenceStep,
   HoldValue,
 } from "app/persistentState";
@@ -173,8 +175,8 @@ export function createHoldValue(value: number | "indefinite"): HoldValue {
 /**
  * Formats a bound value for display.
  */
-export function formatBoundValue(value: number | boolean | undefined): string {
-  if (value === undefined) return "null";
+export function formatBoundValue(value: BoundValue): string {
+  if (value === null) return "null";
   if (typeof value === "boolean") return value ? "true" : "false";
   return value.toString();
 }
@@ -239,10 +241,10 @@ export function getEffectiveEnumChoices(
  * For invalid values, returns "Invalid: {value}".
  */
 export function formatEnumBoundValue(
-  value: number | boolean | undefined,
+  value: BoundValue,
   choices: EffectiveEnumChoice[],
 ): string {
-  if (value === undefined) return "null";
+  if (value === null) return "null";
 
   // Check if value is a valid integer index
   if (typeof value !== "number" || !Number.isInteger(value)) {
@@ -260,7 +262,8 @@ export function formatEnumBoundValue(
   return i18n._({ ...MESSAGES.invalidValue, values: { value } });
 }
 
-export type BoundValue = number | boolean | undefined;
+/** A mapping start value, where null means the parameter is inactive. */
+export type BoundValue = DmxMappingBound | null;
 
 /**
  * Gets the effective end value for display purposes.
@@ -268,19 +271,49 @@ export type BoundValue = number | boolean | undefined;
  */
 export function getEffectiveEnd(
   start: BoundValue,
-  end: BoundValue,
+  end: DmxMappingBound | undefined,
 ): BoundValue {
   return end === undefined ? start : end;
 }
 
 /**
  * Normalizes the end value for storage.
- * When end equals start, it should be stored as undefined.
- * This ensures that "start=5, end=5" is stored as "start=5, end=undefined".
+ * When end equals start or is null, end should be stored as undefined.
  */
 export function normalizeEndValue(
   start: BoundValue,
   newEnd: BoundValue,
-): BoundValue {
-  return newEnd === start ? undefined : newEnd;
+): DmxMappingBound | undefined {
+  return newEnd === null || newEnd === start ? undefined : newEnd;
+}
+
+/** The start of mapping bounds, or null when the parameter is inactive. */
+export function boundsStart(bounds: DmxMappingBounds): BoundValue {
+  return bounds.type === "null" ? null : bounds.start;
+}
+
+/** The end of mapping bounds as stored. */
+export function boundsEnd(
+  bounds: DmxMappingBounds,
+): DmxMappingBound | undefined {
+  return bounds.type === "null" ? undefined : bounds.end;
+}
+
+/**
+ * Builds mapping bounds from a start and end. A null start makes the bounds
+ * null. An end of a different type than the start is dropped.
+ */
+export function toBounds(
+  start: BoundValue,
+  end: DmxMappingBound | undefined,
+): DmxMappingBounds {
+  if (start === null) return { type: "null" };
+  if (typeof start === "boolean") {
+    return typeof end === "boolean"
+      ? { type: "bool", start, end }
+      : { type: "bool", start };
+  }
+  return typeof end === "number"
+    ? { type: "numeric", start, end }
+    : { type: "numeric", start };
 }

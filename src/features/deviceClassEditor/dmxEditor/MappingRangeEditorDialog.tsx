@@ -29,10 +29,14 @@ import {
 } from "components/scn-ui/Select";
 import { SequenceStepEditor } from "./SequenceStepEditor";
 import {
+  BoundValue,
+  boundsEnd,
+  boundsStart,
   EffectiveEnumChoice,
   formatEnumBoundValue,
   getEffectiveEnd,
   normalizeEndValue,
+  toBounds,
   validateSequenceSteps,
 } from "./mappingUtils";
 import { MappableDataType } from "./state";
@@ -71,8 +75,10 @@ export const MappingRangeEditorDialog = ({
   const { _ } = useLingui();
 
   // Parameter value bounds
-  const [start, setStart] = useState<DmxMappingBound | undefined>(range.start);
-  const [end, setEnd] = useState<DmxMappingBound | undefined>(range.end);
+  const [start, setStart] = useState<BoundValue>(boundsStart(range.bounds));
+  const [end, setEnd] = useState<DmxMappingBound | undefined>(
+    boundsEnd(range.bounds),
+  );
 
   // Output mode and values
   const [mode, setMode] = useState<OutputMode>("range");
@@ -83,8 +89,8 @@ export const MappingRangeEditorDialog = ({
   // Reset state when dialog opens
   useEffect(() => {
     if (isOpen) {
-      setStart(range.start);
-      setEnd(range.end);
+      setStart(boundsStart(range.bounds));
+      setEnd(boundsEnd(range.bounds));
 
       if (range.chunkValues.type === "range") {
         setMode("range");
@@ -114,8 +120,7 @@ export const MappingRangeEditorDialog = ({
 
   const handleSave = () => {
     const newRange: DmxMappingRange = {
-      start,
-      end,
+      bounds: toBounds(start, end),
       chunkValues:
         mode === "range"
           ? { type: "range", chunkStart, chunkEnd }
@@ -282,9 +287,9 @@ export const MappingRangeEditorDialog = ({
 };
 
 interface NumericBoundInputsProps {
-  start: DmxMappingBound | undefined;
+  start: BoundValue;
   end: DmxMappingBound | undefined;
-  onStartChange: (value: DmxMappingBound | undefined) => void;
+  onStartChange: (value: BoundValue) => void;
   onEndChange: (value: DmxMappingBound | undefined) => void;
 }
 
@@ -315,12 +320,12 @@ const NumericBoundInputs = ({
     );
   }, [end, start]);
 
-  const parseNumericValue = (val: string): number | undefined => {
+  const parseNumericValue = (val: string): number | null => {
     if (val === "" || val === "-" || val === "." || val === "-.") {
-      return undefined;
+      return null;
     }
     const parsed = parseFloat(val);
-    return isNaN(parsed) ? undefined : parsed;
+    return isNaN(parsed) ? null : parsed;
   };
 
   const handleStartChange = (val: string) => {
@@ -373,9 +378,9 @@ const NumericBoundInputs = ({
 };
 
 interface BooleanBoundInputsProps {
-  start: DmxMappingBound | undefined;
+  start: BoundValue;
   end: DmxMappingBound | undefined;
-  onStartChange: (value: DmxMappingBound | undefined) => void;
+  onStartChange: (value: BoundValue) => void;
   onEndChange: (value: DmxMappingBound | undefined) => void;
 }
 
@@ -388,16 +393,12 @@ const BooleanBoundInputs = ({
   const effectiveEnd = getEffectiveEnd(start, end);
 
   const startValue =
-    start === undefined ? "null" : start === true ? "true" : "false";
+    start === null ? "null" : start === true ? "true" : "false";
   const endValue =
-    effectiveEnd === undefined
-      ? "null"
-      : effectiveEnd === true
-        ? "true"
-        : "false";
+    effectiveEnd === null ? "null" : effectiveEnd === true ? "true" : "false";
 
-  const parseBoolean = (val: string): DmxMappingBound | undefined => {
-    if (val === "null") return undefined;
+  const parseBoolean = (val: string): BoundValue => {
+    if (val === "null") return null;
     return val === "true";
   };
 
@@ -447,9 +448,9 @@ const BooleanBoundInputs = ({
 };
 
 interface EnumBoundInputsProps {
-  start: DmxMappingBound | undefined;
+  start: BoundValue;
   end: DmxMappingBound | undefined;
-  onStartChange: (value: DmxMappingBound | undefined) => void;
+  onStartChange: (value: BoundValue) => void;
   onEndChange: (value: DmxMappingBound | undefined) => void;
   choices: EffectiveEnumChoice[];
 }
@@ -465,10 +466,10 @@ const EnumBoundInputs = ({
   const startInfo = getBoundRenderInfo(start, choices);
   const endInfo = getBoundRenderInfo(effectiveEnd, choices);
 
-  const parseEnumValue = (val: string): DmxMappingBound | undefined => {
-    if (val === "null") return undefined;
+  const parseEnumValue = (val: string): BoundValue => {
+    if (val === "null") return null;
     const parsed = parseInt(val, 10);
-    return isNaN(parsed) ? undefined : parsed;
+    return isNaN(parsed) ? null : parsed;
   };
 
   const handleEndChange = (val: string) => {
@@ -535,10 +536,10 @@ interface BoundRenderInfo {
 }
 
 function getBoundRenderInfo(
-  val: DmxMappingBound | undefined,
+  val: BoundValue,
   choices: EffectiveEnumChoice[],
 ): BoundRenderInfo {
-  if (val === undefined) {
+  if (val === null) {
     return {
       selectValue: "null",
       borderClass: "",

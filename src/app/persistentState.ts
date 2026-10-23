@@ -1,4 +1,4 @@
-import * as StateV6 from "./persistentState/v6/state";
+import * as StateV7 from "./persistentState/v7/state";
 import {
   CHAIN_END_VERSION,
   getMigration,
@@ -20,11 +20,11 @@ import {
 //    snapshot and save file envelope into persistentState/vN/.
 
 // Re-exports from the current (most recent) state version.
-export * from "./persistentState/v6/state";
-export const VERSION = StateV6.VERSION;
+export * from "./persistentState/v7/state";
+export const VERSION = StateV7.VERSION;
 
-export type AppPersistentState = StateV6.AppPersistentState;
-const AppStateSchema = StateV6.AppStateSchema;
+export type AppPersistentState = StateV7.AppPersistentState;
+const AppStateSchema = StateV7.AppStateSchema;
 
 if (CHAIN_END_VERSION !== VERSION) {
   throw new Error(

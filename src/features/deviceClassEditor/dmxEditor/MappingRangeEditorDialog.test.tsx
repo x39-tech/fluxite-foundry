@@ -44,8 +44,7 @@ describe("MappingRangeEditorDialog", () => {
   describe("initial values", () => {
     it("opens with correct initial values for range mode", () => {
       const range: DmxMappingRange = {
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: { type: "range", chunkStart: 10, chunkEnd: 200 },
       };
 
@@ -60,8 +59,7 @@ describe("MappingRangeEditorDialog", () => {
 
     it("opens with correct initial values for sequence mode", () => {
       const range: DmxMappingRange = {
-        start: 0,
-        end: 50,
+        bounds: { type: "numeric", start: 0, end: 50 },
         chunkValues: {
           type: "sequence",
           steps: [
@@ -81,8 +79,7 @@ describe("MappingRangeEditorDialog", () => {
   describe("mode indicator", () => {
     it("shows Range in mode selector for range mode", () => {
       const range: DmxMappingRange = {
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
 
@@ -96,8 +93,7 @@ describe("MappingRangeEditorDialog", () => {
 
     it("shows Sequence in mode selector for sequence mode", () => {
       const range: DmxMappingRange = {
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: {
           type: "sequence",
           steps: [
@@ -118,8 +114,7 @@ describe("MappingRangeEditorDialog", () => {
   describe("save button validation", () => {
     it("save button is enabled for valid range mode", () => {
       const range: DmxMappingRange = {
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
 
@@ -130,8 +125,7 @@ describe("MappingRangeEditorDialog", () => {
 
     it("save button is disabled when sequence has zero steps", () => {
       const range: DmxMappingRange = {
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: { type: "sequence", steps: [] },
       };
 
@@ -142,8 +136,7 @@ describe("MappingRangeEditorDialog", () => {
 
     it("save button is enabled for sequence with at least one step", () => {
       const range: DmxMappingRange = {
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: {
           type: "sequence",
           steps: [
@@ -162,8 +155,7 @@ describe("MappingRangeEditorDialog", () => {
     it("cancel button closes the dialog without saving", async () => {
       const user = userEvent.setup();
       const range: DmxMappingRange = {
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
 
@@ -178,8 +170,7 @@ describe("MappingRangeEditorDialog", () => {
     it("save button saves the range and closes the dialog", async () => {
       const user = userEvent.setup();
       const range: DmxMappingRange = {
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: { type: "range", chunkStart: 10, chunkEnd: 200 },
       };
 
@@ -189,8 +180,7 @@ describe("MappingRangeEditorDialog", () => {
 
       expect(mockOnSave).toHaveBeenCalledTimes(1);
       expect(mockOnSave).toHaveBeenCalledWith({
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: { type: "range", chunkStart: 10, chunkEnd: 200 },
       });
       expect(mockOnClose).toHaveBeenCalledTimes(1);
@@ -199,8 +189,7 @@ describe("MappingRangeEditorDialog", () => {
     it("saves updated DMX chunk values after editing", async () => {
       const user = userEvent.setup();
       const range: DmxMappingRange = {
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
 
@@ -217,8 +206,7 @@ describe("MappingRangeEditorDialog", () => {
       await user.click(screen.getByRole("button", { name: "Save" }));
 
       expect(mockOnSave).toHaveBeenCalledWith({
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: { type: "range", chunkStart: 50, chunkEnd: 255 },
       });
     });
@@ -226,8 +214,7 @@ describe("MappingRangeEditorDialog", () => {
     it("lets a DMX bound be emptied and retyped", async () => {
       const user = userEvent.setup();
       const range: DmxMappingRange = {
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
 
@@ -242,8 +229,7 @@ describe("MappingRangeEditorDialog", () => {
       await user.click(screen.getByRole("button", { name: "Save" }));
 
       expect(mockOnSave).toHaveBeenCalledWith({
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 128 },
       });
     });
@@ -251,8 +237,7 @@ describe("MappingRangeEditorDialog", () => {
     it("saves sequence mode data correctly", async () => {
       const user = userEvent.setup();
       const range: DmxMappingRange = {
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: {
           type: "sequence",
           steps: [
@@ -294,8 +279,7 @@ describe("MappingRangeEditorDialog", () => {
       await user.click(screen.getByRole("button", { name: "Save" }));
 
       expect(mockOnSave).toHaveBeenCalledWith({
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: {
           type: "sequence",
           steps: [
@@ -314,8 +298,7 @@ describe("MappingRangeEditorDialog", () => {
           isOpen={false}
           onClose={mockOnClose}
           range={{
-            start: 0,
-            end: 100,
+            bounds: { type: "numeric", start: 0, end: 100 },
             chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
           }}
           onSave={mockOnSave}
@@ -331,8 +314,7 @@ describe("MappingRangeEditorDialog", () => {
     it("supports floating point numbers in parameter bounds", async () => {
       const user = userEvent.setup();
       const range: DmxMappingRange = {
-        start: 0,
-        end: 1,
+        bounds: { type: "numeric", start: 0, end: 1 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
 
@@ -347,8 +329,7 @@ describe("MappingRangeEditorDialog", () => {
       await user.click(screen.getByRole("button", { name: "Save" }));
 
       expect(mockOnSave).toHaveBeenCalledWith({
-        start: 0.5,
-        end: 1,
+        bounds: { type: "numeric", start: 0.5, end: 1 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       });
     });
@@ -356,8 +337,7 @@ describe("MappingRangeEditorDialog", () => {
     it("supports negative floating point numbers", async () => {
       const user = userEvent.setup();
       const range: DmxMappingRange = {
-        start: 0,
-        end: 1,
+        bounds: { type: "numeric", start: 0, end: 1 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
 
@@ -371,8 +351,7 @@ describe("MappingRangeEditorDialog", () => {
       await user.click(screen.getByRole("button", { name: "Save" }));
 
       expect(mockOnSave).toHaveBeenCalledWith({
-        start: -10.5,
-        end: 1,
+        bounds: { type: "numeric", start: -10.5, end: 1 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       });
     });
@@ -380,8 +359,7 @@ describe("MappingRangeEditorDialog", () => {
     it("allows clearing parameter bound to undefined", async () => {
       const user = userEvent.setup();
       const range: DmxMappingRange = {
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
 
@@ -394,16 +372,14 @@ describe("MappingRangeEditorDialog", () => {
       await user.click(screen.getByRole("button", { name: "Save" }));
 
       expect(mockOnSave).toHaveBeenCalledWith({
-        start: 0,
-        end: undefined,
+        bounds: { type: "numeric", start: 0 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       });
     });
 
     it("displays placeholder for null values", () => {
       const range: DmxMappingRange = {
-        start: undefined,
-        end: undefined,
+        bounds: { type: "null" },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
 
@@ -417,8 +393,7 @@ describe("MappingRangeEditorDialog", () => {
 
     it("displays start value in end field when end is undefined", () => {
       const range: DmxMappingRange = {
-        start: 50,
-        end: undefined,
+        bounds: { type: "numeric", start: 50 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
 
@@ -433,8 +408,7 @@ describe("MappingRangeEditorDialog", () => {
     it("sets end to undefined when user enters same value as start", async () => {
       const user = userEvent.setup();
       const range: DmxMappingRange = {
-        start: 10,
-        end: 100,
+        bounds: { type: "numeric", start: 10, end: 100 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
 
@@ -448,8 +422,7 @@ describe("MappingRangeEditorDialog", () => {
 
       // End should be undefined since it matches start
       expect(mockOnSave).toHaveBeenCalledWith({
-        start: 10,
-        end: undefined,
+        bounds: { type: "numeric", start: 10 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       });
     });
@@ -458,8 +431,7 @@ describe("MappingRangeEditorDialog", () => {
   describe("boolean parameter handling", () => {
     it("displays boolean inputs when dataType is boolean", () => {
       const range: DmxMappingRange = {
-        start: false,
-        end: true,
+        bounds: { type: "bool", start: false, end: true },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
 
@@ -472,8 +444,7 @@ describe("MappingRangeEditorDialog", () => {
 
     it("displays start value in end field when end is undefined", () => {
       const range: DmxMappingRange = {
-        start: true,
-        end: undefined,
+        bounds: { type: "bool", start: true },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
 
@@ -488,8 +459,7 @@ describe("MappingRangeEditorDialog", () => {
     it("sets end to undefined when user selects same value as start", async () => {
       const user = userEvent.setup();
       const range: DmxMappingRange = {
-        start: false,
-        end: true,
+        bounds: { type: "bool", start: false, end: true },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
 
@@ -504,8 +474,7 @@ describe("MappingRangeEditorDialog", () => {
 
       // End should be undefined since it matches start
       expect(mockOnSave).toHaveBeenCalledWith({
-        start: false,
-        end: undefined,
+        bounds: { type: "bool", start: false },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       });
     });
@@ -514,8 +483,7 @@ describe("MappingRangeEditorDialog", () => {
   describe("enum parameter handling", () => {
     it("displays enum select inputs with valid choices", () => {
       const range: DmxMappingRange = {
-        start: 0,
-        end: 2,
+        bounds: { type: "numeric", start: 0, end: 2 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
       const choices = createEnumChoices(["Square", "Sine", "Sawtooth"]);
@@ -531,8 +499,8 @@ describe("MappingRangeEditorDialog", () => {
 
     it("shows invalid placeholder when enum value does not match any choice", () => {
       const range: DmxMappingRange = {
-        start: 5, // Invalid - no choice with index 5
-        end: 1,
+        // Invalid - no choice with index 5
+        bounds: { type: "numeric", start: 5, end: 1 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
       const choices = createEnumChoices(["Square", "Sine", "Sawtooth"]);
@@ -548,8 +516,8 @@ describe("MappingRangeEditorDialog", () => {
 
     it("applies warning styling to invalid enum values", () => {
       const range: DmxMappingRange = {
-        start: 99, // Invalid
-        end: 0,
+        // Invalid
+        bounds: { type: "numeric", start: 99, end: 0 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
       const choices = createEnumChoices(["Open", "Closed"]);
@@ -563,8 +531,7 @@ describe("MappingRangeEditorDialog", () => {
 
     it("shows invalid placeholder when enum has no choices", () => {
       const range: DmxMappingRange = {
-        start: 0,
-        end: 1,
+        bounds: { type: "numeric", start: 0, end: 1 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
 
@@ -581,8 +548,7 @@ describe("MappingRangeEditorDialog", () => {
     it("saves enum values correctly", async () => {
       const user = userEvent.setup();
       const range: DmxMappingRange = {
-        start: 0,
-        end: 1,
+        bounds: { type: "numeric", start: 0, end: 1 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
       const choices = createEnumChoices(["Square", "Sine", "Sawtooth"]);
@@ -597,8 +563,7 @@ describe("MappingRangeEditorDialog", () => {
       await user.click(screen.getByRole("button", { name: "Save" }));
 
       expect(mockOnSave).toHaveBeenCalledWith({
-        start: 0,
-        end: 2,
+        bounds: { type: "numeric", start: 0, end: 2 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       });
     });
@@ -606,8 +571,7 @@ describe("MappingRangeEditorDialog", () => {
     it("allows selecting null for enum values", async () => {
       const user = userEvent.setup();
       const range: DmxMappingRange = {
-        start: 0,
-        end: 1,
+        bounds: { type: "numeric", start: 0, end: 1 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
       const choices = createEnumChoices(["Square", "Sine"]);
@@ -622,16 +586,14 @@ describe("MappingRangeEditorDialog", () => {
       await user.click(screen.getByRole("button", { name: "Save" }));
 
       expect(mockOnSave).toHaveBeenCalledWith({
-        start: 0,
-        end: undefined,
+        bounds: { type: "numeric", start: 0 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       });
     });
 
     it("displays start value in end field when end is undefined", () => {
       const range: DmxMappingRange = {
-        start: 1,
-        end: undefined,
+        bounds: { type: "numeric", start: 1 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
       const choices = createEnumChoices(["Square", "Sine", "Sawtooth"]);
@@ -647,8 +609,7 @@ describe("MappingRangeEditorDialog", () => {
     it("sets end to undefined when user selects same value as start", async () => {
       const user = userEvent.setup();
       const range: DmxMappingRange = {
-        start: 0,
-        end: 2,
+        bounds: { type: "numeric", start: 0, end: 2 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       };
       const choices = createEnumChoices(["Square", "Sine", "Sawtooth"]);
@@ -664,8 +625,7 @@ describe("MappingRangeEditorDialog", () => {
 
       // End should be undefined since it matches start
       expect(mockOnSave).toHaveBeenCalledWith({
-        start: 0,
-        end: undefined,
+        bounds: { type: "numeric", start: 0 },
         chunkValues: { type: "range", chunkStart: 0, chunkEnd: 255 },
       });
     });

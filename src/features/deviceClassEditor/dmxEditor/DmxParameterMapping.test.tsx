@@ -93,8 +93,7 @@ describe("DmxParameterMapping - Unmapped Parameter Table Rows", () => {
         unmappedParams: [
           {
             parameter: paramRef(BOOL_PARAM_CODEX_ID),
-            start: true,
-            end: undefined,
+            bounds: { type: "bool", start: true },
           },
         ],
       };
@@ -128,8 +127,7 @@ describe("DmxParameterMapping - Unmapped Parameter Table Rows", () => {
         unmappedParams: [
           {
             parameter: paramRef(BOOL_PARAM_CODEX_ID),
-            start: false,
-            end: true,
+            bounds: { type: "bool", start: false, end: true },
           },
         ],
       };
@@ -154,7 +152,10 @@ describe("DmxParameterMapping - Unmapped Parameter Table Rows", () => {
 
       expect(mockOnUpdate).toHaveBeenCalled();
       const updatedMapping = mockOnUpdate.mock.calls[0][0] as DmxMapping;
-      expect(updatedMapping.unmappedParams?.[0].end).toBe(undefined);
+      expect(updatedMapping.unmappedParams?.[0].bounds).toEqual({
+        type: "bool",
+        start: false,
+      });
     });
   });
 
@@ -180,8 +181,7 @@ describe("DmxParameterMapping - Unmapped Parameter Table Rows", () => {
         unmappedParams: [
           {
             parameter: paramRef(NUM_PARAM_CODEX_ID),
-            start: 42,
-            end: undefined,
+            bounds: { type: "numeric", start: 42 },
           },
         ],
       };
@@ -210,8 +210,7 @@ describe("DmxParameterMapping - Unmapped Parameter Table Rows", () => {
         unmappedParams: [
           {
             parameter: paramRef(NUM_PARAM_CODEX_ID),
-            start: 10,
-            end: 100,
+            bounds: { type: "numeric", start: 10, end: 100 },
           },
         ],
       };
@@ -232,7 +231,10 @@ describe("DmxParameterMapping - Unmapped Parameter Table Rows", () => {
 
       expect(mockOnUpdate).toHaveBeenCalled();
       const updatedMapping = mockOnUpdate.mock.calls[0][0] as DmxMapping;
-      expect(updatedMapping.unmappedParams?.[0].end).toBe(undefined);
+      expect(updatedMapping.unmappedParams?.[0].bounds).toEqual({
+        type: "numeric",
+        start: 10,
+      });
     });
   });
 
@@ -300,8 +302,8 @@ describe("DmxParameterMapping - Unmapped Parameter Table Rows", () => {
         unmappedParams: [
           {
             parameter: paramRef(ENUM_PARAM_CODEX_ID),
-            start: 1, // Choice B
-            end: undefined,
+            // Choice B
+            bounds: { type: "numeric", start: 1 },
           },
         ],
       };
@@ -333,8 +335,9 @@ describe("DmxParameterMapping - Unmapped Parameter Table Rows", () => {
         unmappedParams: [
           {
             parameter: paramRef(ENUM_PARAM_CODEX_ID),
-            start: 0, // Choice A
-            end: 2, // Choice C
+            // Choice A
+            // Choice C
+            bounds: { type: "numeric", start: 0, end: 2 },
           },
         ],
       };
@@ -358,7 +361,10 @@ describe("DmxParameterMapping - Unmapped Parameter Table Rows", () => {
 
       expect(mockOnUpdate).toHaveBeenCalled();
       const updatedMapping = mockOnUpdate.mock.calls[0][0] as DmxMapping;
-      expect(updatedMapping.unmappedParams?.[0].end).toBe(undefined);
+      expect(updatedMapping.unmappedParams?.[0].bounds).toEqual({
+        type: "numeric",
+        start: 0,
+      });
     });
   });
 });

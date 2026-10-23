@@ -22,8 +22,7 @@ describe("MappingRangeText", () => {
   describe("range mode", () => {
     it("displays numeric parameter range and DMX range", () => {
       renderRangeText({
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: {
           type: "range",
           chunkStart: 0,
@@ -39,8 +38,7 @@ describe("MappingRangeText", () => {
 
     it("displays boolean parameter range", () => {
       renderRangeText({
-        start: false,
-        end: true,
+        bounds: { type: "bool", start: false, end: true },
         chunkValues: {
           type: "range",
           chunkStart: 0,
@@ -51,24 +49,9 @@ describe("MappingRangeText", () => {
       expect(screen.getByText("false → true")).toBeInTheDocument();
     });
 
-    it("displays null for undefined start", () => {
-      renderRangeText({
-        start: undefined,
-        end: 100,
-        chunkValues: {
-          type: "range",
-          chunkStart: 0,
-          chunkEnd: 255,
-        },
-      });
-
-      expect(screen.getByText("null → 100")).toBeInTheDocument();
-    });
-
     it("displays only start when end is undefined", () => {
       renderRangeText({
-        start: 50,
-        end: undefined,
+        bounds: { type: "numeric", start: 50 },
         chunkValues: {
           type: "range",
           chunkStart: 128,
@@ -81,10 +64,9 @@ describe("MappingRangeText", () => {
       expect(screen.queryByText(/→ null/)).not.toBeInTheDocument();
     });
 
-    it("displays both null values correctly", () => {
+    it("displays null for null bounds", () => {
       renderRangeText({
-        start: undefined,
-        end: undefined,
+        bounds: { type: "null" },
         chunkValues: {
           type: "range",
           chunkStart: 0,
@@ -92,7 +74,6 @@ describe("MappingRangeText", () => {
         },
       });
 
-      // When end is undefined, only start is shown
       expect(screen.getByText("null")).toBeInTheDocument();
       expect(screen.queryByText(/→ null/)).not.toBeInTheDocument();
     });
@@ -101,8 +82,7 @@ describe("MappingRangeText", () => {
   describe("sequence mode", () => {
     it("displays singular step count for one step", () => {
       renderRangeText({
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: {
           type: "sequence",
           steps: [
@@ -117,8 +97,7 @@ describe("MappingRangeText", () => {
 
     it("displays plural step count for multiple steps", () => {
       renderRangeText({
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: {
           type: "sequence",
           steps: [
@@ -134,8 +113,7 @@ describe("MappingRangeText", () => {
 
     it("displays 0 steps for empty sequence", () => {
       renderRangeText({
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: {
           type: "sequence",
           steps: [],
@@ -147,8 +125,7 @@ describe("MappingRangeText", () => {
 
     it("displays duration in milliseconds for short durations", () => {
       renderRangeText({
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: {
           type: "sequence",
           steps: [
@@ -162,8 +139,7 @@ describe("MappingRangeText", () => {
 
     it("displays duration in seconds for durations >= 1s", () => {
       renderRangeText({
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: {
           type: "sequence",
           steps: [
@@ -178,8 +154,7 @@ describe("MappingRangeText", () => {
 
     it("displays duration in minutes for long durations", () => {
       renderRangeText({
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: {
           type: "sequence",
           steps: [
@@ -194,8 +169,7 @@ describe("MappingRangeText", () => {
 
     it("displays indefinite length for indefinite hold", () => {
       renderRangeText({
-        start: 0,
-        end: 100,
+        bounds: { type: "numeric", start: 0, end: 100 },
         chunkValues: {
           type: "sequence",
           steps: [
@@ -210,8 +184,7 @@ describe("MappingRangeText", () => {
 
     it("displays parameter range correctly in sequence mode", () => {
       renderRangeText({
-        start: 10,
-        end: 90,
+        bounds: { type: "numeric", start: 10, end: 90 },
         chunkValues: {
           type: "sequence",
           steps: [
@@ -226,8 +199,7 @@ describe("MappingRangeText", () => {
 
     it("displays boolean parameter range in sequence mode", () => {
       const { container } = renderRangeText({
-        start: false,
-        end: true,
+        bounds: { type: "bool", start: false, end: true },
         chunkValues: {
           type: "sequence",
           steps: [{ chunkStart: 255, chunkEnd: 255, hold: "indefinite" }],
@@ -240,8 +212,7 @@ describe("MappingRangeText", () => {
 
     it("displays single value when start and end are equal", () => {
       const { container } = renderRangeText({
-        start: true,
-        end: true,
+        bounds: { type: "bool", start: true, end: true },
         chunkValues: {
           type: "sequence",
           steps: [{ chunkStart: 255, chunkEnd: 255, hold: "indefinite" }],
@@ -260,8 +231,7 @@ describe("MappingRangeText", () => {
 
       renderRangeText(
         {
-          start: 0,
-          end: 2,
+          bounds: { type: "numeric", start: 0, end: 2 },
           chunkValues: {
             type: "range",
             chunkStart: 0,
@@ -279,8 +249,7 @@ describe("MappingRangeText", () => {
 
       const { container } = renderRangeText(
         {
-          start: 1,
-          end: 1,
+          bounds: { type: "numeric", start: 1, end: 1 },
           chunkValues: {
             type: "range",
             chunkStart: 0,
@@ -302,8 +271,8 @@ describe("MappingRangeText", () => {
 
       renderRangeText(
         {
-          start: 5, // No choice with index 5
-          end: 1,
+          // No choice with index 5
+          bounds: { type: "numeric", start: 5, end: 1 },
           chunkValues: {
             type: "range",
             chunkStart: 0,
@@ -321,8 +290,7 @@ describe("MappingRangeText", () => {
 
       const { container } = renderRangeText(
         {
-          start: 0,
-          end: 1,
+          bounds: { type: "numeric", start: 0, end: 1 },
           chunkValues: {
             type: "sequence",
             steps: [
@@ -339,8 +307,7 @@ describe("MappingRangeText", () => {
 
     it("falls back to numeric display when no enum choices provided", () => {
       renderRangeText({
-        start: 0,
-        end: 2,
+        bounds: { type: "numeric", start: 0, end: 2 },
         chunkValues: {
           type: "range",
           chunkStart: 0,
@@ -355,8 +322,7 @@ describe("MappingRangeText", () => {
     it("falls back to numeric display when enum choices is empty", () => {
       renderRangeText(
         {
-          start: 0,
-          end: 2,
+          bounds: { type: "numeric", start: 0, end: 2 },
           chunkValues: {
             type: "range",
             chunkStart: 0,

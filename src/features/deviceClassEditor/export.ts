@@ -13,7 +13,6 @@ import {
   Parameter,
   ParameterAccess,
   ParameterClass,
-  ParameterDefault,
   ParameterCount,
   ParamReference as FCParamReference,
   Resource,
@@ -28,7 +27,7 @@ import {
   DeviceClassDocument,
   DmxChunkRefCondition,
   DmxConditionGroup,
-  DmxMappingBound,
+  DmxMappingBounds,
   DmxMappingChunkValuesSchema,
   DmxSerializerState,
   DmxTrigger,
@@ -133,30 +132,18 @@ function convertChunkValues(
   };
 }
 
-function convertParameterDefault(
-  d: number | boolean | undefined,
-): ParameterDefault | undefined {
-  if (d === undefined) return undefined;
-  return typeof d === "boolean"
-    ? { type: "bool", value: d }
-    : { type: "numeric", value: d };
-}
-
-function convertMappingBounds(
-  start: DmxMappingBound | undefined,
-  end: DmxMappingBound | undefined,
-): MappingBounds {
-  if (start === undefined) return { type: "null" };
-  if (typeof start === "boolean") {
-    return {
-      type: "bool",
-      value: { start, end: typeof end === "boolean" ? end : undefined },
-    };
+function convertMappingBounds(bounds: DmxMappingBounds): MappingBounds {
+  switch (bounds.type) {
+    case "null":
+      return bounds;
+    case "numeric":
+      return {
+        type: "numeric",
+        value: { start: bounds.start, end: bounds.end },
+      };
+    case "bool":
+      return { type: "bool", value: { start: bounds.start, end: bounds.end } };
   }
-  return {
-    type: "numeric",
-    value: { start, end: typeof end === "number" ? end : undefined },
-  };
 }
 
 export function exportDeviceClass(editor: DeviceClassDocument): DeviceClass {
@@ -536,7 +523,7 @@ function exportParameters(
       maximum: param.maximum,
       minimumModifier: param.minimumModifier,
       maximumModifier: param.maximumModifier,
-      default: convertParameterDefault(param.default),
+      default: param.default,
       looping: param.wrapping,
     };
 
@@ -812,14 +799,14 @@ function convertDmxSerializerToEstaDmx(
           mappings: mg.mappings.map((m) => ({
             mappedParam: convertParamReference(editor, m.mappedParam),
             ranges: m.ranges.map((r) => ({
-              bounds: convertMappingBounds(r.start, r.end),
+              bounds: convertMappingBounds(r.bounds),
               chunkValues: convertChunkValues(r.chunkValues),
             })),
             ...(m.unmappedParams
               ? {
                   unmappedParams: m.unmappedParams.map((up) => ({
                     parameter: convertParamReference(editor, up.parameter),
-                    bounds: convertMappingBounds(up.start, up.end),
+                    bounds: convertMappingBounds(up.bounds),
                   })),
                 }
               : {}),

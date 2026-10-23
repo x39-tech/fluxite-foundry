@@ -823,9 +823,31 @@ describe("getImportedDeviceClassEditor", () => {
       expect(param.maximum).toBe(100);
       expect(param.minimumModifier).toBe("minMod");
       expect(param.maximumModifier).toBe("maxMod");
-      expect(param.default).toBe(50);
+      expect(param.default).toEqual({ type: "numeric", value: 50 });
       expect(param.wrapping).toBe(true);
       expect(param.localized.friendlyName).toBe("Friendly Value");
+    });
+
+    test("imports an inactive default", () => {
+      const dc = createMinimalDeviceClass();
+      addParamClass(dc, "test.param");
+      addParam(dc, "inactive", "test.param", {
+        default: { type: "inactive" },
+      });
+      addParam(dc, "unset", "test.param");
+
+      const editor = getImportedDeviceClassEditor(
+        TEST_ORG,
+        "test-id",
+        "1.0.0",
+        dc,
+      );
+
+      const params = Object.values(editor.parameters);
+      const inactive = params.find((p) => p.codexId === "inactive")!;
+      const unset = params.find((p) => p.codexId === "unset")!;
+      expect(inactive.default).toEqual({ type: "inactive" });
+      expect(unset.default).toBeUndefined();
     });
 
     test("imports parameter with enum exclusions", () => {
@@ -1129,8 +1151,7 @@ describe("DMX serializer import", () => {
 
     const range = Object.values(editor.dmxSerializer!.mappingGroups)[0]
       .mappings[0].ranges[0];
-    expect(range.start).toBe(0);
-    expect(range.end).toBe(100);
+    expect(range.bounds).toEqual({ type: "numeric", start: 0, end: 100 });
     expect(range.chunkValues).toEqual({
       type: "range",
       chunkStart: 0,
@@ -1225,8 +1246,11 @@ describe("DMX serializer import", () => {
     )![0];
     expect(unmapped![0].parameter.id).toBe(panId);
     expect(unmapped![0].parameter.index).toBe(1);
-    expect(unmapped![0].start).toBe(0);
-    expect(unmapped![0].end).toBe(180);
+    expect(unmapped![0].bounds).toEqual({
+      type: "numeric",
+      start: 0,
+      end: 180,
+    });
   });
 
   test("imports triggers", () => {

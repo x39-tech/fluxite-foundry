@@ -3808,6 +3808,17 @@
     ],
     "translation": "Importing discards everything currently in the app."
   },
+  "deviceClassEditor.paramMinMaxDefault.inactiveByDefault": {
+    "message": "Inactive by default",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/parametersEditor/MinMaxDefaultProperties.tsx"
+      ]
+    ],
+    "translation": "Inactive by default"
+  },
   "navbar.exportState.includeAssets": {
     "message": "Include assets",
     "placeholders": {},

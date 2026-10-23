@@ -384,8 +384,7 @@ function rangeToChunkValues(range: {
   end: number;
 }) {
   return {
-    start: range.start,
-    end: range.end,
+    bounds: { type: "numeric" as const, start: range.start, end: range.end },
     chunkValues: {
       type: "range" as const,
       chunkStart: range.chunkStart,
@@ -437,8 +436,7 @@ function addDmxMappingGroup(
           id: EntityId(u.parameter.codexId),
           index: u.parameter.index,
         },
-        start: u.start,
-        end: u.end,
+        bounds: { type: "numeric", start: u.start, end: u.end },
       })),
     })),
     triggers: [],
@@ -1047,7 +1045,7 @@ describe("exportParameters", () => {
       maximum: 100,
       minimumModifier: "minMod",
       maximumModifier: "maxMod",
-      default: 50,
+      default: { type: "numeric", value: 50 },
       wrapping: true,
       friendlyName: "value.friendly",
     });
@@ -1068,6 +1066,28 @@ describe("exportParameters", () => {
       default: { type: "numeric", value: 50 },
       looping: true,
     });
+  });
+
+  test("omits the default of a parameter that has none", () => {
+    const editor = createMinimalEditor();
+    const pcId = addParamClass(editor, "pc-1", "test.param");
+    addParam(editor, "p-1", "value", localClass("test.param", pcId));
+
+    const result = exportDeviceClass(editor);
+
+    expect(result.parameters?.value.default).toBeUndefined();
+  });
+
+  test("exports an inactive default", () => {
+    const editor = createMinimalEditor();
+    const pcId = addParamClass(editor, "pc-1", "test.param");
+    addParam(editor, "p-1", "value", localClass("test.param", pcId), {
+      default: { type: "inactive" },
+    });
+
+    const result = exportDeviceClass(editor);
+
+    expect(result.parameters?.value.default).toEqual({ type: "inactive" });
   });
 
   test("exports parameter with enum exclusions", () => {

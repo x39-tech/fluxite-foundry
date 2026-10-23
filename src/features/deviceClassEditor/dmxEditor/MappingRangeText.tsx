@@ -3,6 +3,9 @@
 import { Plural, Trans } from "@lingui/react/macro";
 import { DmxMappingRange } from "app/persistentState";
 import {
+  BoundValue,
+  boundsEnd,
+  boundsStart,
   calculateTotalDuration,
   EffectiveEnumChoice,
   formatBoundValue,
@@ -20,19 +23,20 @@ export const MappingRangeText = ({
   enumChoices,
 }: MappingRangeTextProps) => {
   // Use enum formatting if enum choices are provided, otherwise use standard formatting
-  const formatValue = (value: number | boolean | undefined): string => {
+  const formatValue = (value: BoundValue): string => {
     if (enumChoices && enumChoices.length > 0) {
       return formatEnumBoundValue(value, enumChoices);
     }
     return formatBoundValue(value);
   };
 
-  const start = formatValue(range.start);
-  const end = formatValue(range.end);
+  const startValue = boundsStart(range.bounds);
+  const endValue = boundsEnd(range.bounds);
+  const start = formatValue(startValue);
   const paramRangeText =
-    range.end === undefined || range.start === range.end
+    endValue === undefined || startValue === endValue
       ? start
-      : `${start} \u2192 ${end}`;
+      : `${start} \u2192 ${formatValue(endValue)}`;
   const spanClasses = "flex-1 text-sm";
 
   if (range.chunkValues.type === "range") {

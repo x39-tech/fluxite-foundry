@@ -85,18 +85,20 @@ export function getResetValue(
   }
 
   const defaultValue = mappable.param.default;
-  switch (mappable.paramClass.dataType) {
-    case fcDataTypes.NUMBER:
-      return typeof defaultValue === "number"
-        ? { type: "numeric", value: defaultValue }
+  const dataType = mappable.paramClass.dataType;
+  switch (defaultValue?.type) {
+    case "inactive":
+      return { type: "null" };
+    case "numeric":
+      if (dataType === fcDataTypes.NUMBER) {
+        return { type: "numeric", value: defaultValue.value };
+      }
+      return dataType === fcDataTypes.ENUM
+        ? { type: "enum", value: defaultValue.value }
         : undefined;
-    case fcDataTypes.ENUM:
-      return typeof defaultValue === "number"
-        ? { type: "enum", value: defaultValue }
-        : undefined;
-    case fcDataTypes.BOOLEAN:
-      return typeof defaultValue === "boolean"
-        ? { type: "bool", value: defaultValue }
+    case "bool":
+      return dataType === fcDataTypes.BOOLEAN
+        ? { type: "bool", value: defaultValue.value }
         : undefined;
   }
 }
