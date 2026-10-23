@@ -10,6 +10,7 @@
           "@description": "device_description",
           "publishDate": "2024-01-01T00:00:00.000Z",
           "author": "Test Author",
+          "locale": "en-US",
           "info": {
             "manufacturer": {
               "name": "Test Manufacturer"

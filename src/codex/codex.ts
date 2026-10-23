@@ -6,7 +6,10 @@ import { getNewestVersionOfEachLibrary } from "./libraryStore";
 const DEFAULT_AUTHOR = "Firstname Lastname";
 const DEFAULT_COMPANY = "ACME Inc.";
 
-export function getDefaultDeviceClass(deviceClassId: string): DeviceClass {
+export function getDefaultDeviceClass(
+  deviceClassId: string,
+  locale: string,
+): DeviceClass {
   const modelName = toTitleCase(deviceClassId.replaceAll("-", " "));
 
   const libraries = getNewestVersionOfEachLibrary(
@@ -20,6 +23,7 @@ export function getDefaultDeviceClass(deviceClassId: string): DeviceClass {
     "@description": "device_class_description",
     publishDate: dayjs().format("YYYY-MM-DD"),
     author: DEFAULT_AUTHOR,
+    locale,
     history: {},
     info: {
       manufacturer: {

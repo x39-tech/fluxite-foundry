@@ -9,9 +9,11 @@ import {
   DeviceClass,
   EstaDmx,
   Lifetime,
+  MappingBounds,
   Parameter,
   ParameterAccess,
   ParameterClass,
+  ParameterDefault,
   ParameterCount,
   ParamReference as FCParamReference,
   Resource,
@@ -26,6 +28,7 @@ import {
   DeviceClassDocument,
   DmxChunkRefCondition,
   DmxConditionGroup,
+  DmxMappingBound,
   DmxMappingChunkValuesSchema,
   DmxSerializerState,
   DmxTrigger,
@@ -130,6 +133,32 @@ function convertChunkValues(
   };
 }
 
+function convertParameterDefault(
+  d: number | boolean | undefined,
+): ParameterDefault | undefined {
+  if (d === undefined) return undefined;
+  return typeof d === "boolean"
+    ? { type: "bool", value: d }
+    : { type: "numeric", value: d };
+}
+
+function convertMappingBounds(
+  start: DmxMappingBound | undefined,
+  end: DmxMappingBound | undefined,
+): MappingBounds {
+  if (start === undefined) return { type: "null" };
+  if (typeof start === "boolean") {
+    return {
+      type: "bool",
+      value: { start, end: typeof end === "boolean" ? end : undefined },
+    };
+  }
+  return {
+    type: "numeric",
+    value: { start, end: typeof end === "number" ? end : undefined },
+  };
+}
+
 export function exportDeviceClass(editor: DeviceClassDocument): DeviceClass {
   // Build a translation from the internal opaque localization keys to the ones
   // used in the exported format.
@@ -139,6 +168,7 @@ export function exportDeviceClass(editor: DeviceClassDocument): DeviceClass {
     "@description": keys.of(editor.basicData.localized.description),
     publishDate: editor.basicData.publishDate,
     author: editor.basicData.author,
+    locale: editor.sourceLocale,
     history: editor.basicData.history,
     info: {
       manufacturer: {
@@ -506,7 +536,7 @@ function exportParameters(
       maximum: param.maximum,
       minimumModifier: param.minimumModifier,
       maximumModifier: param.maximumModifier,
-      default: param.default,
+      default: convertParameterDefault(param.default),
       looping: param.wrapping,
     };
 
@@ -782,16 +812,14 @@ function convertDmxSerializerToEstaDmx(
           mappings: mg.mappings.map((m) => ({
             mappedParam: convertParamReference(editor, m.mappedParam),
             ranges: m.ranges.map((r) => ({
-              start: r.start,
-              end: r.end,
+              bounds: convertMappingBounds(r.start, r.end),
               chunkValues: convertChunkValues(r.chunkValues),
             })),
             ...(m.unmappedParams
               ? {
                   unmappedParams: m.unmappedParams.map((up) => ({
                     parameter: convertParamReference(editor, up.parameter),
-                    start: up.start,
-                    end: up.end,
+                    bounds: convertMappingBounds(up.start, up.end),
                   })),
                 }
               : {}),

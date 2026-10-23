@@ -58,6 +58,7 @@ async function createArchiveWithAssets(
             "@description": "test_desc",
             publishDate: "2025-10-18",
             author: "Test",
+            locale: "en-US",
             history: {},
             libraries: {
               "org.esta.lib.core": "1.0.0",

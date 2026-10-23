@@ -21,6 +21,7 @@ function createValidDeviceClass(
   return {
     "@description": description,
     author,
+    locale: "en-US",
     publishDate: "2024-01-01",
     history: {},
     info: {

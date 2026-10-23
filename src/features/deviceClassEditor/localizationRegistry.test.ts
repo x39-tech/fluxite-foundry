@@ -147,6 +147,7 @@ function importCommandDeviceClass(): DeviceClassDocument {
     "@description": "device.description",
     publishDate: "2024-01-01T00:00:00.000Z",
     author: "Test Author",
+    locale: "en-US",
     info: {
       manufacturer: { name: "Test Manufacturer" },
       model: {
@@ -218,6 +219,5 @@ function importCommandDeviceClass(): DeviceClassDocument {
     "test-device-class",
     "1.0.0",
     deviceClass,
-    "en-US",
   );
 }

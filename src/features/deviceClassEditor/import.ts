@@ -4,7 +4,9 @@ import {
   DeviceClass,
   E173Archive,
   EstaDmx,
+  MappingBounds,
   MappingRange,
+  ParameterDefault,
   Trigger,
   UnmappedParam,
 } from "@cpwg-community/delver";
@@ -40,6 +42,7 @@ import {
   DmxConditionGroup,
   DmxConditionParent,
   DmxMapping,
+  DmxMappingBound,
   DmxMappingRange,
   DmxSerializerState,
   DmxTrigger,
@@ -64,7 +67,6 @@ export async function importDeviceClassEditor(
   id: string,
   version: string,
   deviceClass: DeviceClass,
-  sourceLocale: string,
   archive?: ArchiveToImport,
 ) {
   const newDeviceClass = archive
@@ -73,16 +75,9 @@ export async function importDeviceClassEditor(
         id,
         version,
         deviceClass,
-        sourceLocale,
         archive,
       )
-    : getImportedDeviceClassEditor(
-        orgId,
-        id,
-        version,
-        deviceClass,
-        sourceLocale,
-      );
+    : getImportedDeviceClassEditor(orgId, id, version, deviceClass);
 
   updateAppPersistentState((state) => {
     const newId = newEntityId();
@@ -105,8 +100,7 @@ export function getNewDeviceClassEditor(
     orgId,
     deviceClassId,
     "1.0.0",
-    getDefaultDeviceClass(deviceClassId),
-    sourceLocale,
+    getDefaultDeviceClass(deviceClassId, sourceLocale),
   );
 }
 
@@ -115,7 +109,6 @@ export function getImportedDeviceClassEditor(
   id: string,
   version: string,
   codexClass: DeviceClass,
-  sourceLocale: string,
 ): DeviceClassDocument {
   const localizations: Record<LocalizationKey, Localization> = {};
   const locKeys = importDocumentLocalizations(
@@ -171,7 +164,7 @@ export function getImportedDeviceClassEditor(
     commandClassReturnValues: {},
     enumChoices: {},
     localizations,
-    sourceLocale,
+    sourceLocale: codexClass.locale,
   };
 
   // This is used only temporarily for the purpose of importing items that
@@ -244,7 +237,7 @@ function importParameters(
       maximum: param.maximum,
       minimumModifier: param.minimumModifier,
       maximumModifier: param.maximumModifier,
-      default: param.default,
+      default: convertParameterDefault(param.default),
       wrapping: param.looping,
       localized: {
         friendlyName: locKeys.of(param["@friendlyName"]),
@@ -458,16 +451,9 @@ async function getImportedDeviceClassEditorWithAssets(
   id: string,
   version: string,
   deviceClass: DeviceClass,
-  sourceLocale: string,
   archive: ArchiveToImport,
 ) {
-  const editor = getImportedDeviceClassEditor(
-    orgId,
-    id,
-    version,
-    deviceClass,
-    sourceLocale,
-  );
+  const editor = getImportedDeviceClassEditor(orgId, id, version, deviceClass);
 
   const qualifiedId = buildQualifiedId(EntityType.Dev, orgId, id);
   editor.resourceAssets = await loadResourceAssets(
@@ -655,10 +641,24 @@ function convertMapping(
   };
 }
 
+function convertParameterDefault(
+  d: ParameterDefault | undefined,
+): number | boolean | undefined {
+  return d && d.type !== "inactive" ? d.value : undefined;
+}
+
+function convertMappingBounds(bounds: MappingBounds): {
+  start?: DmxMappingBound;
+  end?: DmxMappingBound;
+} {
+  return bounds.type === "null"
+    ? {}
+    : { start: bounds.value.start, end: bounds.value.end };
+}
+
 function convertMappingRange(r: MappingRange): DmxMappingRange {
   return {
-    start: r.start,
-    end: r.end,
+    ...convertMappingBounds(r.bounds),
     chunkValues:
       r.chunkValues.type === "range"
         ? {
@@ -687,8 +687,7 @@ function convertUnmappedParam(
       CodexId(up.parameter.id),
       up.parameter.index,
     ),
-    start: up.start,
-    end: up.end,
+    ...convertMappingBounds(up.bounds),
   };
 }
 

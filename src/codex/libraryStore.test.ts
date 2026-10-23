@@ -16,6 +16,7 @@ function createMockLibrary(description = "Test library"): FCLibrary {
     "@description": description,
     publishDate: "2024-01-01",
     author: "Test Author",
+    locale: "en-US",
     localizations: {},
   };
 }

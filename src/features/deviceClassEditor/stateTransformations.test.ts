@@ -86,6 +86,7 @@ const fcLibrary: FCLibrary = {
   "@description": "lib_desc",
   publishDate: "2026-01-01",
   author: "Test Author",
+  locale: "en-US",
   ...classes,
   localizations,
 };
@@ -98,6 +99,7 @@ const deviceClass: DeviceClass = {
   "@description": "device_desc",
   publishDate: "2026-01-01",
   author: "Test Author",
+  locale: "en-US",
   history: {},
   info: {
     manufacturer: { name: "Test Manufacturer" },
@@ -117,7 +119,6 @@ const editor = getImportedDeviceClassEditor(
   "test-device",
   "1.0.0",
   deviceClass,
-  "en-US",
 );
 
 function localClassId(

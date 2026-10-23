@@ -15,6 +15,7 @@ const fcLibrary: FCLibrary = {
   "@description": "test_lib_desc",
   publishDate: "2026-01-01",
   author: "Test Author",
+  locale: "en-US",
   parameterClasses: {
     mode: {
       "@name": "mode_name",

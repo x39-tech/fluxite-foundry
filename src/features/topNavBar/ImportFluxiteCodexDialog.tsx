@@ -29,7 +29,6 @@ import { FieldSet } from "components/FieldSet";
 import { importDeviceClassEditor } from "features/deviceClassEditor/import";
 import { errorMessage } from "utils/utils";
 import { LocalizedError } from "utils/localizedError";
-import { useAuthoringLocale } from "app/store";
 import {
   validateInputFile,
   CodexImportResult,
@@ -68,7 +67,6 @@ interface Props {
 }
 
 export const ImportFluxiteCodexDialog = ({ isOpen, onClose }: Props) => {
-  const locale = useAuthoringLocale();
   const [inputFile, setInputFile] = useState<File | null>(null);
   const [inputValidation, setInputValidation] = useState<
     CodexImportResult | undefined
@@ -170,10 +168,6 @@ export const ImportFluxiteCodexDialog = ({ isOpen, onClose }: Props) => {
                     deviceClass.id,
                     deviceClass.version,
                     deviceClassDefinition,
-                    // Fluxite Codex doesn't have an authored locale field (yet)
-                    // so the best guess is the user's current locale. We intend
-                    // to make this correctible in the app.
-                    locale,
                     inputValidation?.archive
                       ? {
                           archive: inputValidation.archive,

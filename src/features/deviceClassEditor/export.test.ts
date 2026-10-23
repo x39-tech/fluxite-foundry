@@ -66,7 +66,7 @@ function createMinimalEditor(): DeviceClassDocument {
     commandClassReturnValues: {},
     enumChoices: {},
     localizations: {},
-    sourceLocale: "en-US",
+    sourceLocale: "de-DE",
   };
 }
 
@@ -488,6 +488,7 @@ describe("exportDeviceClass", () => {
     expect(result["@description"]).toBe("test.description");
     expect(result.publishDate).toBe("2024-01-01T00:00:00.000Z");
     expect(result.author).toBe("Test Author");
+    expect(result.locale).toBe("de-DE");
     expect(result.info.manufacturer.name).toBe("Test Manufacturer");
     expect(result.info.manufacturer.url).toBe("https://example.com");
     expect(result.info.manufacturer.estaId).toBe("1234");
@@ -1064,7 +1065,7 @@ describe("exportParameters", () => {
       maximum: 100,
       minimumModifier: "minMod",
       maximumModifier: "maxMod",
-      default: 50,
+      default: { type: "numeric", value: 50 },
       looping: true,
     });
   });

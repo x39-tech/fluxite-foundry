@@ -31,7 +31,7 @@
     "tauri:build:windows:offline": "tauri build --config tauri.windows-offline.conf.json"
   },
   "dependencies": {
-    "@cpwg-community/delver": "^0.1.0-alpha.12",
+    "@cpwg-community/delver": "^0.1.0-alpha.15",
     "@formatjs/intl-localematcher": "^0.8.13",
     "@lingui/core": "^6.6.0",
     "@lingui/react": "^6.6.0",

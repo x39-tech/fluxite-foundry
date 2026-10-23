@@ -7,6 +7,7 @@ const testLibrary: FCLibrary = {
   "@description": "test_lib_desc",
   publishDate: "2026-01-01",
   author: "Test Author",
+  locale: "en-US",
   parameterClasses: {
     "intensity/dimmer": {
       "@name": "dimmer_name",
