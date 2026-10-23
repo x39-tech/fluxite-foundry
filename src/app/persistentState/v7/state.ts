@@ -608,8 +608,12 @@ export const DmxChunkSchema = z.object({
   offsets: z.array(z.number()),
 });
 
-// Serializer state - flat maps for all entities
-export const DmxSerializerStateSchema = z.object({
+// An EstaDmx serializer of the device class. The serializer's default value is
+// stored as flat maps for all of its entities.
+export const DmxSerializerSchema = z.object({
+  codexId: CodexIdSchema,
+  access: z.array(AccessSchema),
+  lifetime: LifetimeSchema,
   chunks: z.record(EntityIdSchema, DmxChunkSchema),
   mappingGroups: z.record(EntityIdSchema, DmxMappingGroupSchema),
   conditions: z.record(EntityIdSchema, DmxConditionSchema),
@@ -657,8 +661,7 @@ export const DeviceClassDocumentSchema = z.object({
 
   enumChoices: z.record(EntityIdSchema, EnumChoiceSchema),
 
-  // DMX serializer
-  dmxSerializer: DmxSerializerStateSchema.optional(),
+  dmxSerializers: z.record(EntityIdSchema, DmxSerializerSchema),
 
   localizations: z.record(LocalizationKeySchema, LocalizationSchema),
 
@@ -725,7 +728,7 @@ export type DmxTriggerMapping = z.infer<typeof DmxTriggerMappingSchema>;
 export type DmxTrigger = z.infer<typeof DmxTriggerSchema>;
 export type DmxMappingGroup = z.infer<typeof DmxMappingGroupSchema>;
 export type DmxChunk = z.infer<typeof DmxChunkSchema>;
-export type DmxSerializerState = z.infer<typeof DmxSerializerStateSchema>;
+export type DmxSerializer = z.infer<typeof DmxSerializerSchema>;
 
 export const EntityId = (id: string) => id as EntityId;
 export const CodexId = (id: string) => id as CodexId;

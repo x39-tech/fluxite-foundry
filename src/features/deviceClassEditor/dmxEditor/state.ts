@@ -9,7 +9,7 @@ import {
   DmxConditionGroup,
   DmxMapping,
   DmxMappingGroup,
-  DmxSerializerState,
+  DmxSerializer,
   EntityId,
   fcDataTypes,
   Parameter,
@@ -38,6 +38,7 @@ import { resolveClassRef } from "../classResolution";
 import { EffectiveEnumChoice, getEffectiveEnumChoices } from "./mappingUtils";
 import { localize } from "features/localizations/localize";
 import { ItemEditor } from "utils/utils";
+import { NEW_DMX_SERIALIZER_ID, firstDmxSerializer } from "./firstSerializer";
 
 const UNDO = {
   addChunk: msg({
@@ -110,8 +111,8 @@ export interface MappableParameter {
 // Read
 // ---------------------------------------------------------------------------
 
-export function useDmxSerializer(): DmxSerializerState | undefined {
-  return useCurrentEditorPart((state) => state.dmxSerializer);
+export function useDmxSerializer(): DmxSerializer | undefined {
+  return useCurrentEditorPart(firstDmxSerializer);
 }
 
 const CHUNK_LABEL = msg({
@@ -124,7 +125,9 @@ export function dmxChunkLabel(offsets: number[]): string {
 }
 
 export function useDmxChunkEditors(): ItemEditor[] {
-  const chunks = useCurrentEditorPart((state) => state.dmxSerializer?.chunks);
+  const chunks = useCurrentEditorPart(
+    (state) => firstDmxSerializer(state)?.chunks,
+  );
 
   return useMemo(() => {
     const chunkEditors = Object.entries(chunks ?? {}).map(([id, chunk]) => ({
@@ -245,17 +248,26 @@ export function useMappableParameters(): Record<EntityId, MappableParameter> {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function getOrCreateDmxSerializer(
-  editor: DeviceClassDraft,
-): DmxSerializerState {
-  if (!editor.dmxSerializer) {
-    editor.dmxSerializer = { chunks: {}, mappingGroups: {}, conditions: {} };
+function getOrCreateDmxSerializer(editor: DeviceClassDraft): DmxSerializer {
+  const existing = firstDmxSerializer(editor);
+  if (existing) {
+    return existing;
   }
-  return editor.dmxSerializer;
+
+  const id = newEntityId();
+  editor.dmxSerializers[id] = {
+    codexId: NEW_DMX_SERIALIZER_ID,
+    access: ["read"],
+    lifetime: "static",
+    chunks: {},
+    mappingGroups: {},
+    conditions: {},
+  };
+  return editor.dmxSerializers[id];
 }
 
 export function getMappingGroupsForChunk(
-  dmx: DmxSerializerState,
+  dmx: DmxSerializer,
   chunkId: EntityId,
 ): (DmxMappingGroup & { id: EntityId })[] {
   return selectWithIds(dmx.mappingGroups, (mg) => mg.chunkId === chunkId).sort(
@@ -264,7 +276,7 @@ export function getMappingGroupsForChunk(
 }
 
 export function getConditionsForMappingGroup(
-  dmx: DmxSerializerState,
+  dmx: DmxSerializer,
   mappingGroupId: EntityId,
 ): (DmxCondition & { id: EntityId })[] {
   return selectWithIds(
@@ -275,7 +287,7 @@ export function getConditionsForMappingGroup(
 }
 
 export function getChildConditions(
-  dmx: DmxSerializerState,
+  dmx: DmxSerializer,
   parentConditionId: EntityId,
 ): (DmxCondition & { id: EntityId })[] {
   return selectWithIds(
@@ -336,7 +348,7 @@ export function addDmxChunk() {
 
 export function removeDmxChunk(chunkId: EntityId) {
   updateCurrentEditor(UNDO.deleteChunk, (editor) => {
-    const dmx = editor.dmxSerializer;
+    const dmx = firstDmxSerializer(editor);
     if (!dmx) return;
 
     // Find and remove all mapping groups for this chunk
@@ -366,7 +378,7 @@ export function removeDmxChunk(chunkId: EntityId) {
 }
 
 function removeConditionsForMappingGroup(
-  dmx: DmxSerializerState,
+  dmx: DmxSerializer,
   mappingGroupId: EntityId,
 ) {
   const conditionIds = selectWithIds(
@@ -380,10 +392,7 @@ function removeConditionsForMappingGroup(
   }
 }
 
-function removeConditionAndChildren(
-  dmx: DmxSerializerState,
-  conditionId: EntityId,
-) {
+function removeConditionAndChildren(dmx: DmxSerializer, conditionId: EntityId) {
   // First remove all children
   const childIds = selectWithIds(
     dmx.conditions,
@@ -400,7 +409,7 @@ function removeConditionAndChildren(
 
 export function changeDmxChunkOffsets(chunkId: EntityId, newOffsets: string[]) {
   updateCurrentEditor(UNDO.changeOffsets, (editor) => {
-    const dmx = editor.dmxSerializer;
+    const dmx = firstDmxSerializer(editor);
     if (!dmx) return;
 
     const chunk = dmx.chunks[chunkId];
@@ -435,7 +444,7 @@ export function changeDmxChunkOffsets(chunkId: EntityId, newOffsets: string[]) {
 
 export function addParameterMappingGroup(chunkId: EntityId) {
   updateCurrentEditor(UNDO.addMappingGroup, (editor) => {
-    const dmx = editor.dmxSerializer;
+    const dmx = firstDmxSerializer(editor);
     if (!dmx || !dmx.chunks[chunkId]) return;
 
     const existingGroups = getMappingGroupsForChunk(dmx, chunkId);
@@ -459,7 +468,7 @@ export function removeParameterMappingGroup(
   mappingGroupId: EntityId,
 ) {
   updateCurrentEditor(UNDO.deleteMappingGroup, (editor) => {
-    const dmx = editor.dmxSerializer;
+    const dmx = firstDmxSerializer(editor);
     if (!dmx) return;
 
     const mg = dmx.mappingGroups[mappingGroupId];
@@ -478,7 +487,7 @@ export function removeParameterMappingGroup(
 
 export function addParameterMapping(mappingGroupId: EntityId) {
   updateCurrentEditor(UNDO.addParameterMapping, (editor) => {
-    const dmx = editor.dmxSerializer;
+    const dmx = firstDmxSerializer(editor);
     if (!dmx) return;
 
     const mappingGroup = dmx.mappingGroups[mappingGroupId];
@@ -508,7 +517,7 @@ export function updateParameterMapping(
   newValue: DmxMapping,
 ) {
   updateCurrentEditor(UNDO.editParameterMapping, (editor) => {
-    const dmx = editor.dmxSerializer;
+    const dmx = firstDmxSerializer(editor);
     if (!dmx) return;
 
     const mappingGroup = dmx.mappingGroups[mappingGroupId];
@@ -523,7 +532,7 @@ export function removeParameterMapping(
   mappingIndex: number,
 ) {
   updateCurrentEditor(UNDO.deleteParameterMapping, (editor) => {
-    const dmx = editor.dmxSerializer;
+    const dmx = firstDmxSerializer(editor);
     if (!dmx) return;
 
     const mappingGroup = dmx.mappingGroups[mappingGroupId];
@@ -542,7 +551,7 @@ export function addCondition(
   parentChunkId: EntityId,
 ) {
   updateCurrentEditor(UNDO.addMappingCondition, (editor) => {
-    const dmx = editor.dmxSerializer;
+    const dmx = firstDmxSerializer(editor);
     if (!dmx) return;
 
     const mappingGroup = dmx.mappingGroups[mappingGroupId];
@@ -608,7 +617,7 @@ export function updateCondition(
   newCondition: DmxCondition,
 ) {
   updateCurrentEditor(UNDO.editMappingCondition, (editor) => {
-    const dmx = editor.dmxSerializer;
+    const dmx = firstDmxSerializer(editor);
     if (!dmx) return;
 
     if (!dmx.conditions[conditionId]) return;
@@ -622,7 +631,7 @@ export function updateConditionMatch(
   match: "any" | "all",
 ) {
   updateCurrentEditor(UNDO.editMappingCondition, (editor) => {
-    const dmx = editor.dmxSerializer;
+    const dmx = firstDmxSerializer(editor);
     if (!dmx) return;
 
     const condition = dmx.conditions[conditionId];
@@ -634,7 +643,7 @@ export function updateConditionMatch(
 
 export function removeCondition(conditionId: EntityId) {
   updateCurrentEditor(UNDO.deleteMappingCondition, (editor) => {
-    const dmx = editor.dmxSerializer;
+    const dmx = firstDmxSerializer(editor);
     if (!dmx) return;
 
     removeConditionAndChildren(dmx, conditionId);

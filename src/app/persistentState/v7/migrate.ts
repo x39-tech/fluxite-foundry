@@ -1,7 +1,9 @@
+import { nanoid } from "nanoid";
 import * as V6 from "../v6/state";
 import * as V7 from "./state";
 
-// v6 -> v7: tagged parameter defaults and DMX mapping bounds
+// v6 -> v7: tagged parameter defaults, DMX mapping bounds, multiple DMX
+// serializers
 //
 // Fluxite Codex lets a parameter default and the start of a DMX mapping range
 // or unmapped parameter be null, meaning the parameter is inactive. v6 had no
@@ -10,6 +12,9 @@ import * as V7 from "./state";
 // inactive value can be stored explicitly and a start and end of different
 // types can't be. This matches the similar interface changes made in Delver
 // between 0.1.0-alpha.13 and alpha.15.
+//
+// v7 also lets a device class have any number of DMX serializers, where v6
+// only allowed one.
 
 function migrateDefault(
   value: number | boolean | undefined,
@@ -62,9 +67,7 @@ function migrateMapping(mapping: V6.DmxMapping): V7.DmxMapping {
   };
 }
 
-function migrateDmxSerializer(
-  dmx: V6.DmxSerializerState,
-): V7.DmxSerializerState {
+function migrateDmxSerializer(dmx: V6.DmxSerializerState): V7.DmxSerializer {
   const mappingGroups: Record<string, V7.DmxMappingGroup> = {};
   for (const [id, group] of Object.entries(dmx.mappingGroups)) {
     mappingGroups[id] = {
@@ -72,7 +75,13 @@ function migrateDmxSerializer(
       mappings: group.mappings.map(migrateMapping),
     };
   }
-  return { ...dmx, mappingGroups };
+  return {
+    codexId: V7.CodexId("dmx"),
+    access: ["read"],
+    lifetime: "static",
+    ...dmx,
+    mappingGroups,
+  };
 }
 
 function migrateDocument(doc: V6.Document): V7.Document {
@@ -81,13 +90,11 @@ function migrateDocument(doc: V6.Document): V7.Document {
   for (const [id, param] of Object.entries(doc.parameters)) {
     parameters[id] = migrateParameter(param);
   }
-  return {
-    ...rest,
-    parameters,
-    ...(dmxSerializer
-      ? { dmxSerializer: migrateDmxSerializer(dmxSerializer) }
-      : {}),
-  };
+  const dmxSerializers: Record<string, V7.DmxSerializer> = {};
+  if (dmxSerializer) {
+    dmxSerializers[nanoid()] = migrateDmxSerializer(dmxSerializer);
+  }
+  return { ...rest, parameters, dmxSerializers };
 }
 
 /**
@@ -97,6 +104,7 @@ function migrateDocument(doc: V6.Document): V7.Document {
  * - `Parameter.default` is tagged with its type, and may be inactive.
  * - The `start` and `end` of a DMX mapping range or unmapped parameter become
  *   `bounds`, tagged with their type. An absent start becomes null bounds.
+ * - The optional `dmxSerializer` becomes the `dmxSerializers` table.
  */
 export function migrateV6toV7(
   state: V6.AppPersistentState,

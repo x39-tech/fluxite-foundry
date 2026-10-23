@@ -11,13 +11,11 @@ import { useAppPersistentStore, updateAppRuntimeState } from "app/store";
 import { documentIdsOfType, documentOfType } from "app/documents";
 import { DmxController } from "app/runtimeState";
 import { exportDeviceClass } from "./export";
+import { firstDmxSerializer } from "./dmxEditor/firstSerializer";
 
 // Parts of a document the DMX driver does not read. The window layout used to
 // be one of these; it is session state now and never reaches this module.
 const NON_DRIVER_FIELDS = new Set<keyof DeviceClassDocument>([]);
-
-// The name the exported device class gives its DMX serializer.
-const DMX_SERIALIZER = "dmx";
 
 type DeviceClassDocuments = Record<EntityId, DeviceClassDocument>;
 
@@ -168,19 +166,16 @@ function driverInputsEqual(
 function createDmxDriver(
   editor: DeviceClassDocument,
 ): DmxController | undefined {
-  if (!editor.dmxSerializer) {
+  const serializer = firstDmxSerializer(editor);
+  if (!serializer || Object.keys(serializer.chunks).length === 0) {
     return undefined;
   }
 
   try {
     const deviceClass = exportDeviceClass(editor);
-    if (!deviceClass.serializers?.[DMX_SERIALIZER]) {
-      return undefined;
-    }
-
     return {
       state: "available",
-      driver: new DmxDriver(deviceClass, DMX_SERIALIZER),
+      driver: new DmxDriver(deviceClass, serializer.codexId),
     };
   } catch (e) {
     return { state: "error", error: e as DelverError };

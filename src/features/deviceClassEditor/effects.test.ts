@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
-import { CodexId, EntityId } from "app/persistentState";
+import { CodexId, DmxSerializer, EntityId } from "app/persistentState";
 import {
   updateAppPersistentState,
   useAppPersistentStore,
@@ -21,6 +21,7 @@ import {
 
 const FIRST_EDITOR = EntityId("test-editor-id");
 const SECOND_EDITOR = EntityId("second-editor-id");
+const SERIALIZER = EntityId("serializer1");
 
 describe("DMX driver effect", () => {
   beforeEach(() => {
@@ -41,7 +42,7 @@ describe("DMX driver effect", () => {
 
   test("leaves a document with no DMX serializer without a driver", () => {
     updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
-      editor.dmxSerializer = undefined;
+      editor.dmxSerializers = {};
     });
 
     initDeviceClassEditorEffects();
@@ -51,16 +52,29 @@ describe("DMX driver effect", () => {
 
   test("leaves a document with nothing mapped yet without a driver", () => {
     updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
-      editor.dmxSerializer = {
-        chunks: {},
-        mappingGroups: {},
-        conditions: {},
+      editor.dmxSerializers = {
+        [SERIALIZER]: { ...emptyDmxSerializer("dmx") },
       };
     });
 
     initDeviceClassEditorEffects();
 
     expect(controllerFor(FIRST_EDITOR)).toBeUndefined();
+  });
+
+  test("builds the driver from a serializer under any ID", () => {
+    updateAppPersistentState((state) => {
+      state.documents[FIRST_EDITOR].dmxSerializers = {
+        [SERIALIZER]: {
+          ...emptyDmxSerializer("dmx-extended"),
+          chunks: { [EntityId("chunk1")]: { offsets: [0] } },
+        },
+      };
+    });
+
+    initDeviceClassEditorEffects();
+
+    expect(controllerFor(FIRST_EDITOR)?.state).toBe("available");
   });
 
   test("rebuilds the driver when the document changes", () => {
@@ -165,12 +179,24 @@ function windowLayoutOf(editorId: EntityId): string | undefined {
   return useAppPersistentStore.getState().session.layouts[editorId];
 }
 
+function emptyDmxSerializer(codexId: string): DmxSerializer {
+  return {
+    codexId: CodexId(codexId),
+    access: ["read"],
+    lifetime: "static",
+    chunks: {},
+    mappingGroups: {},
+    conditions: {},
+  };
+}
+
 function addDmxSerializer(editorId: EntityId) {
   updateAppPersistentState((state) => {
-    state.documents[editorId].dmxSerializer = {
-      chunks: { [EntityId("chunk1")]: { offsets: [0] } },
-      mappingGroups: {},
-      conditions: {},
+    state.documents[editorId].dmxSerializers = {
+      [SERIALIZER]: {
+        ...emptyDmxSerializer("dmx"),
+        chunks: { [EntityId("chunk1")]: { offsets: [0] } },
+      },
     };
   });
 }

@@ -116,6 +116,7 @@ export const MIGRATIONS: readonly Migration[] = [
     migrate: migrateV6toV7,
     description: `
 - Update Parameter default values and start and ends of DMX mapping ranges and unmapped parameters to the better tagged representation in Delver.
+- A device class's single optional DMX serializer becomes a table of DMX serializers. An existing serializer is migrated as "dmx", read-only and static.
 `,
   }),
 ];

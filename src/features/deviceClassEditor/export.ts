@@ -29,7 +29,7 @@ import {
   DmxConditionGroup,
   DmxMappingBounds,
   DmxMappingChunkValuesSchema,
-  DmxSerializerState,
+  DmxSerializer,
   DmxTrigger,
   EntityId,
   LocalizationKey,
@@ -184,7 +184,7 @@ export function exportDeviceClass(editor: DeviceClassDocument): DeviceClass {
   exportParameters(editor, codexClass, keys);
   exportResources(editor, codexClass);
   exportCommands(editor, codexClass, keys);
-  exportDmxSerializer(editor, codexClass);
+  exportDmxSerializers(editor, codexClass);
 
   return codexClass;
 }
@@ -740,24 +740,20 @@ function exportCommands(
   }
 }
 
-function exportDmxSerializer(
+function exportDmxSerializers(
   editor: DeviceClassDocument,
   codexClass: DeviceClass,
 ) {
-  if (!editor.dmxSerializer) {
-    return;
-  }
+  for (const dmx of Object.values(editor.dmxSerializers)) {
+    const estaDmx = convertDmxSerializerToEstaDmx(editor, dmx);
 
-  const estaDmx = convertDmxSerializerToEstaDmx(editor, editor.dmxSerializer);
-
-  if (Object.keys(estaDmx.chunks).length > 0) {
-    codexClass.serializers = codexClass.serializers || {};
-    codexClass.serializers.dmx = {
+    codexClass.serializers ??= {};
+    codexClass.serializers[dmx.codexId] = {
       type: "EstaDmx",
       value: {
-        access: ["read"],
-        lifetime: "static",
-        default: estaDmx,
+        access: dmx.access,
+        lifetime: dmx.lifetime,
+        ...(Object.keys(estaDmx.chunks).length > 0 ? { default: estaDmx } : {}),
       },
     };
   }
@@ -765,7 +761,7 @@ function exportDmxSerializer(
 
 function convertDmxSerializerToEstaDmx(
   editor: DeviceClassDocument,
-  dmx: DmxSerializerState,
+  dmx: DmxSerializer,
 ): EstaDmx {
   const result: EstaDmx = {
     chunks: {},
@@ -828,7 +824,7 @@ function convertDmxSerializerToEstaDmx(
 }
 
 function convertConditionsToNested(
-  dmx: DmxSerializerState,
+  dmx: DmxSerializer,
   mappingGroupId: EntityId,
   chunkIdMap: Map<EntityId, string>,
 ): Condition[] {
@@ -847,7 +843,7 @@ function convertConditionsToNested(
 }
 
 function convertConditionToNested(
-  dmx: DmxSerializerState,
+  dmx: DmxSerializer,
   conditionId: EntityId,
   chunkIdMap: Map<EntityId, string>,
 ): Condition {

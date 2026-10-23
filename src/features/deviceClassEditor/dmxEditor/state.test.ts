@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach } from "vitest";
 import { act, renderHook } from "@testing-library/react";
-import { updateCurrentEditor } from "../state";
+import { updateCurrentEditor, useCurrentEditorPart } from "../state";
 import {
   createEmptyDeviceClassEditor,
   resetAllStores,
@@ -8,6 +8,7 @@ import {
 } from "test/utils";
 import {
   CodexId,
+  DmxSerializer,
   EntityId,
   FCDataType,
   LocalizationDbSchema,
@@ -27,6 +28,7 @@ import {
   removeParameterMappingGroup,
   useDmxSerializer,
 } from "./state";
+import { firstDmxSerializer } from "./firstSerializer";
 
 const TEST_CLASS_ID = EntityId("TestClass");
 const TEST_CLASS_CODEX_ID = CodexId("TestClass");
@@ -315,7 +317,7 @@ describe("dmxEditor/state.ts", () => {
 
           updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
             const mappingGroup =
-              editor.dmxSerializer?.mappingGroups[mappingGroupId];
+              firstDmxSerializer(editor)?.mappingGroups[mappingGroupId];
             if (mappingGroup) {
               mappingGroup.mappings[0].mappedParam.index = 0;
               mappingGroup.mappings[1].mappedParam.index = 1;
@@ -802,6 +804,59 @@ describe("dmxEditor/state.ts", () => {
 
       const dmx = getHookValue(useDmxSerializer);
       expect(Object.keys(dmx!.conditions).length).toBe(0);
+    });
+  });
+
+  describe("Serializers", () => {
+    function getSerializers(): Record<EntityId, DmxSerializer> {
+      return (
+        getHookValue(() =>
+          useCurrentEditorPart((editor) => editor.dmxSerializers),
+        ) ?? {}
+      );
+    }
+
+    function emptySerializer(codexId: string): DmxSerializer {
+      return {
+        codexId: CodexId(codexId),
+        access: ["read", "write"],
+        lifetime: "persistent",
+        chunks: {},
+        mappingGroups: {},
+        conditions: {},
+      };
+    }
+
+    test("creates a read-only static serializer called dmx when the document has none", () => {
+      act(() => {
+        addDmxChunk();
+      });
+
+      const serializers = Object.values(getSerializers());
+      expect(serializers).toHaveLength(1);
+      expect(serializers[0]).toMatchObject({
+        codexId: "dmx",
+        access: ["read"],
+        lifetime: "static",
+      });
+      expect(Object.keys(serializers[0].chunks)).toHaveLength(1);
+    });
+
+    test("edits the document's first serializer when it has several", () => {
+      const first = EntityId("serializer-a");
+      const second = EntityId("serializer-b");
+      act(() => {
+        updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
+          editor.dmxSerializers[first] = emptySerializer("mode-a");
+          editor.dmxSerializers[second] = emptySerializer("mode-b");
+        });
+        addDmxChunk();
+      });
+
+      const serializers = getSerializers();
+      expect(Object.keys(serializers)).toEqual([first, second]);
+      expect(Object.keys(serializers[first].chunks)).toHaveLength(1);
+      expect(serializers[second]).toEqual(emptySerializer("mode-b"));
     });
   });
 });

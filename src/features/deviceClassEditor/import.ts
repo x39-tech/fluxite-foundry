@@ -31,6 +31,7 @@ import {
   toEditorParameterReference,
 } from "./referenceResolution";
 import {
+  Access,
   LocalOrImportedId,
   ClassReference,
   CodexId,
@@ -43,11 +44,12 @@ import {
   DmxMapping,
   DmxMappingBounds,
   DmxMappingRange,
-  DmxSerializerState,
+  DmxSerializer,
   DmxTrigger,
   DmxUnmappedParam,
   Command,
   EntityId,
+  Lifetime,
   LocalizationKey,
   Resource,
   ParameterCount,
@@ -115,16 +117,6 @@ export function getImportedDeviceClassEditor(
     localizations,
   );
 
-  let dmx: EstaDmx | undefined = undefined;
-
-  // TODO: support multiple DMX serializers
-  if (codexClass.serializers) {
-    for (const value of Object.values(codexClass.serializers ?? {})) {
-      if (value.type === "EstaDmx" && value.value.default)
-        dmx = value.value.default;
-    }
-  }
-
   const editor: DeviceClassDocument = {
     type: documentTypes.DEVICE_CLASS,
     orgId,
@@ -162,6 +154,7 @@ export function getImportedDeviceClassEditor(
     commandClassArguments: {},
     commandClassReturnValues: {},
     enumChoices: {},
+    dmxSerializers: {},
     localizations,
     sourceLocale: codexClass.locale,
   };
@@ -181,9 +174,7 @@ export function getImportedDeviceClassEditor(
   importResources(codexClass, editor, deviceLibraryIndex);
   importCommands(codexClass, editor, deviceLibraryIndex, locKeys);
 
-  if (dmx) {
-    editor.dmxSerializer = convertEstaDmxToEditorState(editor, dmx);
-  }
+  importDmxSerializers(codexClass, editor);
 
   return editor;
 }
@@ -516,11 +507,39 @@ async function loadResourceAssets(
 // DMX Conversion
 // ---------------------------------------------------------------------------
 
+function importDmxSerializers(
+  imported: DeviceClass,
+  editor: DeviceClassDocument,
+) {
+  for (const [codexId, serializer] of Object.entries(
+    imported.serializers ?? {},
+  )) {
+    if (serializer.type !== "EstaDmx") {
+      continue;
+    }
+
+    const { access, lifetime, default: estaDmx } = serializer.value;
+    editor.dmxSerializers[newEntityId()] = convertEstaDmxToEditorState(
+      editor,
+      CodexId(codexId),
+      access,
+      lifetime,
+      estaDmx ?? { chunks: {} },
+    );
+  }
+}
+
 function convertEstaDmxToEditorState(
   editor: DeviceClassDocument,
+  codexId: CodexId,
+  access: Access[],
+  lifetime: Lifetime,
   estaDmx: EstaDmx,
-): DmxSerializerState {
-  const result: DmxSerializerState = {
+): DmxSerializer {
+  const result: DmxSerializer = {
+    codexId,
+    access,
+    lifetime,
     chunks: {},
     mappingGroups: {},
     conditions: {},
@@ -576,7 +595,7 @@ function convertConditionsToNormalized(
   conditions: Condition[],
   parent: DmxConditionParent,
   chunkIdMap: Record<string, EntityId>,
-  result: DmxSerializerState,
+  result: DmxSerializer,
 ) {
   for (const condition of conditions) {
     if (condition.type === "group") {

@@ -96,10 +96,12 @@ function createV6Dmx(mapping: V6.DmxMapping): V6.DmxSerializerState {
   };
 }
 
+function migratedDmx(state: V6.AppPersistentState): V7.DmxSerializer[] {
+  return Object.values(migrateV6toV7(state).documents[DOC_ID].dmxSerializers);
+}
+
 function migratedMapping(state: V6.AppPersistentState): V7.DmxMapping {
-  const result = migrateV6toV7(state);
-  return result.documents[DOC_ID].dmxSerializer!.mappingGroups[GROUP_ID]
-    .mappings[0];
+  return migratedDmx(state)[0].mappingGroups[GROUP_ID].mappings[0];
 }
 
 const RANGE_CHUNK_VALUES = {
@@ -173,6 +175,31 @@ describe("migrateV6toV7", () => {
       type: "numeric",
       start: 1,
     });
+  });
+
+  test("moves the DMX serializer into the serializer table as dmx, read-only and static", () => {
+    const state = createV6State({
+      dmxSerializer: createV6Dmx({ mappedParam: { id: PARAM_ID }, ranges: [] }),
+    });
+
+    const serializers = migratedDmx(state);
+
+    expect(serializers).toHaveLength(1);
+    expect(serializers[0]).toMatchObject({
+      codexId: "dmx",
+      access: ["read"],
+      lifetime: "static",
+      chunks: { [CHUNK_ID]: { offsets: [1] } },
+      conditions: {},
+    });
+    expect(Object.keys(serializers[0].mappingGroups)).toEqual([GROUP_ID]);
+  });
+
+  test("gives a document without a DMX serializer an empty serializer table", () => {
+    const result = migrateV6toV7(createV6State());
+
+    expect(result.documents[DOC_ID].dmxSerializers).toEqual({});
+    expect(result.documents[DOC_ID]).not.toHaveProperty("dmxSerializer");
   });
 
   test("tags existing parameter defaults with their type", () => {
