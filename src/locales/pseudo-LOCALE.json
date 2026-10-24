@@ -496,7 +496,7 @@
     "translation": ""
   },
   "deviceClassEditor.dmxController.noMapping": {
-    "message": "Add a DMX parameter mapping in the DMX editor to use the test controller.",
+    "message": "Add a DMX parameter mapping in the DMX Mapping editor to use the test controller.",
     "placeholders": {},
     "comments": [],
     "origin": [
@@ -508,6 +508,17 @@
   },
   "deviceClassEditor.dmxEditor.list.emptyState": {
     "message": "Add a DMX slot group to start editing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxEditor.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxEditor.noModes": {
+    "message": "Add a mode to start editing DMX mappings",
     "placeholders": {},
     "comments": [],
     "origin": [
@@ -693,6 +704,17 @@
     ],
     "translation": ""
   },
+  "deviceClassEditor.dmx.undo.addMode": {
+    "message": "Add DMX Mode",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/state.ts"
+      ]
+    ],
+    "translation": ""
+  },
   "deviceClassEditor.dmx.undo.addParameterMapping": {
     "message": "Add DMX Parameter Mapping",
     "placeholders": {},
@@ -755,6 +777,17 @@
     "origin": [
       [
         "src/components/MediaTypeSelector.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxModeBar.add": {
+    "message": "Add Mode",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxModeBar.tsx"
       ]
     ],
     "translation": ""
@@ -1236,6 +1269,17 @@
     ],
     "translation": ""
   },
+  "deviceClassEditor.dmxModeBar.deleteConfirm.cancel": {
+    "message": "Cancel",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxModeBar.tsx"
+      ]
+    ],
+    "translation": ""
+  },
   "deviceClassEditor.dmxMappingRange.cancel": {
     "message": "Cancel",
     "placeholders": {},
@@ -1351,6 +1395,17 @@
       ],
       [
         "src/features/deviceClassEditor/resourcesEditor/ResourceDefaultValue.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmx.undo.changeModeId": {
+    "message": "Change DMX Mode ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/state.ts"
       ]
     ],
     "translation": ""
@@ -2192,6 +2247,17 @@
     ],
     "translation": ""
   },
+  "deviceClassEditor.dmx.undo.deleteMode": {
+    "message": "Delete DMX Mode",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/state.ts"
+      ]
+    ],
+    "translation": ""
+  },
   "deviceClassEditor.dmx.undo.deleteParameterMapping": {
     "message": "Delete DMX Parameter Mapping",
     "placeholders": {},
@@ -2243,6 +2309,39 @@
     "origin": [
       [
         "src/features/classEditors/messages.ts"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxModeBar.delete": {
+    "message": "Delete Mode",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxModeBar.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxModeBar.deleteConfirm.confirm": {
+    "message": "Delete Mode",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxModeBar.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxModeBar.deleteConfirm.title": {
+    "message": "Delete Mode?",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxModeBar.tsx"
       ]
     ],
     "translation": ""
@@ -2678,6 +2777,28 @@
     "origin": [
       [
         "src/features/updater/updatePrompt.ts"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmx.undo.duplicateMode": {
+    "message": "Duplicate DMX Mode",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/state.ts"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxModeBar.duplicate": {
+    "message": "Duplicate Mode",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxModeBar.tsx"
       ]
     ],
     "translation": ""
@@ -4293,6 +4414,39 @@
     "origin": [
       [
         "src/features/deviceClassEditor/parametersEditor/MinMaxDefaultProperties.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxModeBar.mode": {
+    "message": "Mode",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxModeBar.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxController.mode": {
+    "message": "Mode",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/controller/DmxController.tsx"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxModeBar.modeId": {
+    "message": "Mode ID",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxModeBar.tsx"
       ]
     ],
     "translation": ""
@@ -6280,6 +6434,21 @@
     "origin": [
       [
         "src/app/documentFile.ts"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxModeBar.deleteConfirm.description": {
+    "message": "The mode “{codexId}” will be deleted, along with its slot groups and parameter mappings.",
+    "placeholders": {
+      "codexId": [
+        "codexId"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxModeBar.tsx"
       ]
     ],
     "translation": ""

@@ -13,7 +13,8 @@ import { DeviceClassClassEditing } from "./classEditing";
 interface EditorWidget {
   name: MessageDescriptor;
   description: MessageDescriptor;
-  factory: () => JSX.Element;
+  // Given the id of the tab the widget is shown in.
+  factory: (tabId: string) => JSX.Element;
 }
 
 export const WIDGETS: Record<string, EditorWidget> = {
@@ -48,7 +49,7 @@ export const WIDGETS: Record<string, EditorWidget> = {
       id: "deviceClassEditor.widget.dmxEditor.description",
       message: "Edit the DMX mapping of the device class",
     }),
-    factory: () => <DmxEditor />,
+    factory: (tabId) => <DmxEditor tabId={tabId} />,
   },
   dmxController: {
     name: msg({

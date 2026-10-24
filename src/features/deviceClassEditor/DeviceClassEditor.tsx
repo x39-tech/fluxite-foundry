@@ -115,7 +115,7 @@ export const DeviceClassEditor = () => {
     const componentName = node.getComponent();
 
     if (componentName && isValidWidget(componentName)) {
-      return WIDGETS[componentName].factory();
+      return WIDGETS[componentName].factory(node.getId());
     }
     return <></>;
   };

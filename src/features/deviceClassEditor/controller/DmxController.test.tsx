@@ -3,7 +3,7 @@
  */
 import { render, screen, within } from "test/render";
 import userEvent from "@testing-library/user-event";
-import { expect, test, vi, beforeEach } from "vitest";
+import { describe, expect, test, vi, beforeEach } from "vitest";
 import { DriverParamValue } from "@cpwg-community/delver";
 import {
   CodexId,
@@ -13,12 +13,13 @@ import {
   LocalizationKey,
   Parameter,
 } from "app/persistentState";
-import { updateAppPersistentState } from "app/store";
-import { resetAllStores } from "test/utils";
-import { MappableParameter } from "../dmxEditor/state";
+import { updateAppPersistentState, useAppRuntimeStore } from "app/store";
+import { createEmptyDeviceClassEditor, resetAllStores } from "test/utils";
+import { addDmxMode, MappableParameter } from "../dmxEditor/state";
 import { DmxController } from "./DmxController";
 
-vi.mock("../dmxEditor/state", () => ({
+vi.mock("../dmxEditor/state", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../dmxEditor/state")>()),
   useDmxController: vi.fn(),
   useMappableParameters: vi.fn(),
 }));
@@ -145,7 +146,7 @@ test("Shows message when DMX controller is not created", () => {
 
   expect(
     screen.getByText(
-      /Add a DMX parameter mapping in the DMX editor to use the test controller/,
+      /Add a DMX parameter mapping in the DMX Mapping editor to use the test controller/,
     ),
   ).toBeInTheDocument();
 });
@@ -410,4 +411,91 @@ test("Switches the layout between horizontal and vertical", async () => {
   expect(
     screen.getByRole("button", { name: "Split Horizontal" }),
   ).toBeInTheDocument();
+});
+
+describe("modes", () => {
+  const EDITOR_ID = EntityId("test-editor-id");
+  const modeSelect = () => screen.getByRole("combobox", { name: "Mode" });
+
+  // A document with two modes, mode-1 and mode-2.
+  beforeEach(() => {
+    resetAllStores();
+    createEmptyDeviceClassEditor();
+    addDmxMode();
+    addDmxMode();
+  });
+
+  function controllerSelection(): EntityId | undefined {
+    return useAppRuntimeStore.getState().dmxControllerSerializers[EDITOR_ID];
+  }
+
+  test("is built from the first mode until another is selected", () => {
+    setUpController([]);
+
+    expect(modeSelect()).toHaveTextContent("mode-1");
+  });
+
+  test("selects the mode to build the controller from", async () => {
+    const { user } = setUpController([]);
+    const editedModes = useAppRuntimeStore.getState().dmxEditorSerializers;
+
+    await user.click(modeSelect());
+    await user.click(screen.getByRole("option", { name: "mode-2" }));
+
+    expect(modeSelect()).toHaveTextContent("mode-2");
+    expect(controllerSelection()).toBeDefined();
+    // The DMX editor goes on editing the mode it was editing.
+    expect(useAppRuntimeStore.getState().dmxEditorSerializers).toBe(
+      editedModes,
+    );
+  });
+
+  test("can switch modes while the selected one cannot be built", async () => {
+    vi.mocked(useMappableParameters).mockReturnValue({});
+    vi.mocked(useDmxController).mockReturnValue({ state: "not-created" });
+    const user = userEvent.setup();
+
+    render(<DmxController />);
+
+    expect(
+      screen.getByRole("heading", { name: "Test DMX Controller" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Add a DMX parameter mapping in the DMX Mapping editor/),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "DMX Output" }),
+    ).not.toBeInTheDocument();
+
+    await user.click(modeSelect());
+    await user.click(screen.getByRole("option", { name: "mode-2" }));
+
+    expect(modeSelect()).toHaveTextContent("mode-2");
+    expect(controllerSelection()).toBeDefined();
+  });
+
+  test("can switch modes while the selected one fails to compile", async () => {
+    vi.mocked(useMappableParameters).mockReturnValue({});
+    const error = Object.assign(new Error("Bad mapping"), {
+      kind: "Controller",
+    });
+    vi.mocked(useDmxController).mockReturnValue({
+      state: "error",
+      error: error as never,
+    });
+    const user = userEvent.setup();
+
+    render(<DmxController />);
+
+    expect(modeSelect()).toHaveTextContent("mode-1");
+    expect(
+      screen.getByText("Error compiling DMX test controller: Bad mapping"),
+    ).toBeInTheDocument();
+
+    await user.click(modeSelect());
+    await user.click(screen.getByRole("option", { name: "mode-2" }));
+
+    expect(modeSelect()).toHaveTextContent("mode-2");
+    expect(controllerSelection()).toBeDefined();
+  });
 });

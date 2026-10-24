@@ -18,6 +18,7 @@ import {
   removeParameterMappingGroup,
   updateParameterMapping,
   useDmxSerializer,
+  useEditedDmxSerializerId,
 } from "./state";
 import { DmxParameterMapping } from "./DmxParameterMapping";
 import { DmxConditionTree } from "./DmxCondition";
@@ -46,6 +47,7 @@ export const DmxParameterGroup = ({
 }: DmxParameterGroupProps) => {
   const { _ } = useLingui();
 
+  const serializerId = useEditedDmxSerializerId();
   const dmx = useDmxSerializer();
   const chunksCount = dmx ? Object.keys(dmx.chunks).length : 0;
   const conditions = dmx
@@ -73,7 +75,7 @@ export const DmxParameterGroup = ({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
             <DropdownMenuItem
-              onClick={() => addParameterMapping(mappingGroupId)}
+              onClick={() => addParameterMapping(serializerId, mappingGroupId)}
             >
               <Trans id="deviceClassEditor.dmxGroup.parameterMapping">
                 Parameter Mapping
@@ -83,7 +85,9 @@ export const DmxParameterGroup = ({
               // A condition compares another slot group's value, so there has
               // to be one other than this group's own.
               disabled={chunksCount <= 1}
-              onClick={() => addCondition(mappingGroupId, chunkId)}
+              onClick={() =>
+                addCondition(serializerId, mappingGroupId, chunkId)
+              }
             >
               <Trans id="deviceClassEditor.dmxGroup.condition">Condition</Trans>
             </DropdownMenuItem>
@@ -94,7 +98,9 @@ export const DmxParameterGroup = ({
           variant="ghost"
           size="icon"
           aria-label={_(MESSAGES.removeMappingGroup)}
-          onClick={() => removeParameterMappingGroup(chunkId, mappingGroupId)}
+          onClick={() =>
+            removeParameterMappingGroup(serializerId, chunkId, mappingGroupId)
+          }
         >
           <XIcon className="size-5" />
         </Button>
@@ -104,9 +110,16 @@ export const DmxParameterGroup = ({
           key={index}
           mapping={mapping}
           onUpdate={(newMapping) => {
-            updateParameterMapping(mappingGroupId, index, newMapping);
+            updateParameterMapping(
+              serializerId,
+              mappingGroupId,
+              index,
+              newMapping,
+            );
           }}
-          onRemove={() => removeParameterMapping(mappingGroupId, index)}
+          onRemove={() =>
+            removeParameterMapping(serializerId, mappingGroupId, index)
+          }
         />
       ))}
       {conditions.length > 0 && (

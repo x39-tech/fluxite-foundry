@@ -13,6 +13,7 @@ import {
   testUndoLabel,
 } from "test/utils";
 import { closeDocument, setSelectedDocument } from "features/topNavBar/state";
+import { selectControllerDmxSerializer } from "./controller/state";
 import { updateCurrentEditor, setWindowLayout } from "./state";
 import {
   initDeviceClassEditorEffects,
@@ -22,6 +23,7 @@ import {
 const FIRST_EDITOR = EntityId("test-editor-id");
 const SECOND_EDITOR = EntityId("second-editor-id");
 const SERIALIZER = EntityId("serializer1");
+const WIDE_SERIALIZER = EntityId("serializer2");
 
 describe("DMX driver effect", () => {
   beforeEach(() => {
@@ -160,6 +162,57 @@ describe("DMX driver effect", () => {
     }
   });
 
+  test("builds the driver from the first mode when none is selected", () => {
+    addWideDmxSerializer(FIRST_EDITOR);
+
+    initDeviceClassEditorEffects();
+
+    expect(footprintOf(FIRST_EDITOR)).toBe(1);
+  });
+
+  test("builds the driver from the mode the controller selected", () => {
+    addWideDmxSerializer(FIRST_EDITOR);
+    selectControllerDmxSerializer(FIRST_EDITOR, WIDE_SERIALIZER);
+
+    initDeviceClassEditorEffects();
+
+    expect(footprintOf(FIRST_EDITOR)).toBe(4);
+  });
+
+  test("rebuilds the driver when the controller selects another mode", () => {
+    addWideDmxSerializer(FIRST_EDITOR);
+    initDeviceClassEditorEffects();
+
+    selectControllerDmxSerializer(FIRST_EDITOR, WIDE_SERIALIZER);
+    expect(footprintOf(FIRST_EDITOR)).toBe(4);
+
+    selectControllerDmxSerializer(FIRST_EDITOR, SERIALIZER);
+    expect(footprintOf(FIRST_EDITOR)).toBe(1);
+  });
+
+  test("falls back to the first mode when the selected one is deleted", () => {
+    addWideDmxSerializer(FIRST_EDITOR);
+    selectControllerDmxSerializer(FIRST_EDITOR, WIDE_SERIALIZER);
+    initDeviceClassEditorEffects();
+
+    updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
+      delete editor.dmxSerializers[WIDE_SERIALIZER];
+    });
+
+    expect(footprintOf(FIRST_EDITOR)).toBe(1);
+  });
+
+  test("leaves a document without a driver when its selected mode has nothing mapped", () => {
+    updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
+      editor.dmxSerializers[WIDE_SERIALIZER] = emptyDmxSerializer("empty");
+    });
+    initDeviceClassEditorEffects();
+
+    selectControllerDmxSerializer(FIRST_EDITOR, WIDE_SERIALIZER);
+
+    expect(controllerFor(FIRST_EDITOR)).toBeUndefined();
+  });
+
   test("stops following the state once stopped", () => {
     initDeviceClassEditorEffects();
     const before = controllerFor(FIRST_EDITOR);
@@ -173,6 +226,14 @@ describe("DMX driver effect", () => {
 
 function controllerFor(editorId: EntityId): DmxController | undefined {
   return useAppRuntimeStore.getState().dmxControllers[editorId];
+}
+
+// How many DMX slots the document's driver outputs.
+function footprintOf(editorId: EntityId): number | undefined {
+  const controller = controllerFor(editorId);
+  return controller?.state === "available"
+    ? controller.driver.getDmxValues().length
+    : undefined;
 }
 
 function windowLayoutOf(editorId: EntityId): string | undefined {
@@ -197,6 +258,16 @@ function addDmxSerializer(editorId: EntityId) {
         ...emptyDmxSerializer("dmx"),
         chunks: { [EntityId("chunk1")]: { offsets: [0] } },
       },
+    };
+  });
+}
+
+// Adds a second serializer with a 4-slot footprint
+function addWideDmxSerializer(editorId: EntityId) {
+  updateAppPersistentState((state) => {
+    state.documents[editorId].dmxSerializers[WIDE_SERIALIZER] = {
+      ...emptyDmxSerializer("wide"),
+      chunks: { [EntityId("chunk1")]: { offsets: [3] } },
     };
   });
 }

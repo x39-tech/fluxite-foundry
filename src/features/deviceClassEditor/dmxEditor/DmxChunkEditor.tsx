@@ -18,6 +18,7 @@ import {
   changeDmxChunkOffsets,
   getMappingGroupsForChunk,
   useDmxSerializer,
+  useEditedDmxSerializerId,
 } from "./state";
 import { DmxParameterGroup } from "./DmxParameterGroup";
 
@@ -35,6 +36,7 @@ interface Props {
 export const DmxChunkEditor = ({ chunkId }: Props) => {
   const { _ } = useLingui();
 
+  const serializerId = useEditedDmxSerializerId();
   const dmx = useDmxSerializer();
   const chunk = dmx?.chunks[chunkId];
 
@@ -71,14 +73,14 @@ export const DmxChunkEditor = ({ chunkId }: Props) => {
             aria-label={_(MESSAGES.offsetsUsed)}
             values={chunk.offsets.map((offset) => offset.toString())}
             onValuesChanged={(newValues) =>
-              changeDmxChunkOffsets(chunkId, newValues)
+              changeDmxChunkOffsets(serializerId, chunkId, newValues)
             }
           />
         </FieldSet>
         <Button
           variant="ghost"
           className="text-primary"
-          onClick={() => addParameterMappingGroup(chunkId)}
+          onClick={() => addParameterMappingGroup(serializerId, chunkId)}
         >
           <PlusIcon className="size-5" />
           <Trans id="deviceClassEditor.dmxChunk.mappingGroup">

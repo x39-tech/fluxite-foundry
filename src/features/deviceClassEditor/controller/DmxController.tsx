@@ -1,12 +1,15 @@
 import { msg } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useId } from "react";
 import { i18n } from "@lingui/core";
 import { isTauri } from "@tauri-apps/api/core";
 import { DriverParamValue } from "@cpwg-community/delver";
 import { Columns2Icon, Rows2Icon } from "lucide-react";
 import { toast } from "sonner";
 import { EntityId } from "app/persistentState";
+import { FieldSet } from "components/FieldSet";
+import { SelectField } from "components/EditorFields/SelectField";
+import { Label } from "components/scn-ui/Label";
 import { DmxControllerLayout } from "app/runtimeState";
 import {
   SidebarLayout,
@@ -16,7 +19,11 @@ import {
 import { Button } from "components/scn-ui/Button";
 import { Separator } from "components/scn-ui/Separator";
 import { cn, errorMessage } from "utils/utils";
-import { useDmxController, useMappableParameters } from "../dmxEditor/state";
+import {
+  useDmxController,
+  useDmxModes,
+  useMappableParameters,
+} from "../dmxEditor/state";
 import { resetDmxDriver } from "../effects";
 import { useCurrentEditorId } from "../state";
 import { ActiveSequencesPane } from "./ActiveSequencesPane";
@@ -25,7 +32,12 @@ import { ParametersPanel } from "./ParametersPanel";
 import { ParamStates, paramStatesByRef } from "./parameterValues";
 import { SacnOutputControls } from "./sacnOutput/SacnOutputControls";
 import { useDmxSequenceManager } from "./sequenceManager/useDmxSequenceManager";
-import { setDmxControllerLayout, useDmxControllerLayout } from "./state";
+import {
+  selectControllerDmxSerializer,
+  setDmxControllerLayout,
+  useControllerDmxSerializerId,
+  useDmxControllerLayout,
+} from "./state";
 
 const MESSAGES = {
   setValueFailed: msg({
@@ -120,30 +132,7 @@ export const DmxController = () => {
     [dmxController, sequenceManager.actions],
   );
 
-  switch (dmxController.state) {
-    case "available":
-      break;
-    case "not-created":
-      return (
-        <ControllerMessage>
-          <Trans id="deviceClassEditor.dmxController.noMapping">
-            Add a DMX parameter mapping in the DMX editor to use the test
-            controller.
-          </Trans>
-        </ControllerMessage>
-      );
-    case "error": {
-      const reason = dmxController.error.message;
-      return (
-        <ControllerMessage>
-          <Trans id="deviceClassEditor.dmxController.compileError">
-            Error compiling DMX test controller: {reason}
-          </Trans>
-        </ControllerMessage>
-      );
-    }
-  }
-
+  const available = dmxController.state === "available";
   const horizontal = layout === "horizontal";
 
   return (
@@ -155,54 +144,108 @@ export const DmxController = () => {
               Test DMX Controller
             </Trans>
           </h2>
-          <ActiveSequencesPane
-            className="flex-1"
-            chunkStates={sequenceManager.state.chunkStates}
-            hasActiveSequences={sequenceManager.state.hasActiveSequences}
-          />
-          {isTauri() && documentId && (
+          <ModeSelect />
+          {available && (
             <>
-              <Separator />
-              <div className="flex-1 min-h-0 overflow-auto">
-                <SacnOutputControls
-                  documentId={documentId}
-                  dmxValues={finalDmxValues}
-                />
-              </div>
-            </>
-          )}
-          {documentId && (
-            <>
-              <Separator />
-              <LayoutButton documentId={documentId} layout={layout} />
+              <ActiveSequencesPane
+                className="flex-1"
+                chunkStates={sequenceManager.state.chunkStates}
+                hasActiveSequences={sequenceManager.state.hasActiveSequences}
+              />
+              {isTauri() && documentId && (
+                <>
+                  <Separator />
+                  <div className="flex-1 min-h-0 overflow-auto">
+                    <SacnOutputControls
+                      documentId={documentId}
+                      dmxValues={finalDmxValues}
+                    />
+                  </div>
+                </>
+              )}
+              {documentId && (
+                <>
+                  <Separator />
+                  <LayoutButton documentId={documentId} layout={layout} />
+                </>
+              )}
             </>
           )}
         </div>
       </SidebarLayoutSidebar>
-      <SidebarLayoutMain
-        className={cn("flex gap-2", horizontal ? "flex-row" : "flex-col")}
-      >
-        <DmxDisplay
-          className={horizontal ? "w-fit shrink-0" : "max-h-2/5 shrink-0"}
-          dmxValues={finalDmxValues}
-          activeSlots={sequenceManager.state.activeSlots}
-        />
-        <ParametersPanel
-          className="min-w-0 flex-1"
-          mappableParams={Object.values(mappableParams)}
-          paramStates={controllerState.paramStates}
-          initialParamStates={controllerState.initialParamStates}
-          onParamChange={handleParamChange}
-          onResetAll={() => documentId && resetDmxDriver(documentId)}
-        />
-      </SidebarLayoutMain>
+      {available ? (
+        <SidebarLayoutMain
+          className={cn("flex gap-2", horizontal ? "flex-row" : "flex-col")}
+        >
+          <DmxDisplay
+            className={horizontal ? "w-fit shrink-0" : "max-h-2/5 shrink-0"}
+            dmxValues={finalDmxValues}
+            activeSlots={sequenceManager.state.activeSlots}
+          />
+          <ParametersPanel
+            className="min-w-0 flex-1"
+            mappableParams={Object.values(mappableParams)}
+            paramStates={controllerState.paramStates}
+            initialParamStates={controllerState.initialParamStates}
+            onParamChange={handleParamChange}
+            onResetAll={() => documentId && resetDmxDriver(documentId)}
+          />
+        </SidebarLayoutMain>
+      ) : (
+        <SidebarLayoutMain className="flex items-center justify-center rounded-lg border bg-card p-4">
+          <p className="text-center text-muted-foreground">
+            {dmxController.state === "error" ? (
+              <CompileErrorMessage reason={dmxController.error.message} />
+            ) : (
+              <Trans id="deviceClassEditor.dmxController.noMapping">
+                Add a DMX parameter mapping in the DMX Mapping editor to use the
+                test controller.
+              </Trans>
+            )}
+          </p>
+        </SidebarLayoutMain>
+      )}
     </SidebarLayout>
   );
 };
 
-const ControllerMessage = ({ children }: { children: React.ReactNode }) => (
-  <p className="p-4 text-center text-muted-foreground">{children}</p>
+const CompileErrorMessage = ({ reason }: { reason: string }) => (
+  <Trans id="deviceClassEditor.dmxController.compileError">
+    Error compiling DMX test controller: {reason}
+  </Trans>
 );
+
+// Picks the mode the test controller is built from. Shows nothing when the
+// document has no modes.
+const ModeSelect = () => {
+  const id = useId();
+  const documentId = useCurrentEditorId();
+  const modes = useDmxModes();
+  const selectedId = useControllerDmxSerializerId();
+
+  if (!documentId || !selectedId) {
+    return null;
+  }
+
+  return (
+    <FieldSet>
+      <Label htmlFor={id}>
+        <Trans id="deviceClassEditor.dmxController.mode">Mode</Trans>
+      </Label>
+      <SelectField
+        id={id}
+        className="w-full"
+        size="sm"
+        values={modes.map((mode) => mode.id)}
+        displayValues={modes.map((mode) => mode.codexId)}
+        selectedValue={selectedId}
+        onSelectionChanged={(serializerId) =>
+          selectControllerDmxSerializer(documentId, EntityId(serializerId))
+        }
+      />
+    </FieldSet>
+  );
+};
 
 interface LayoutButtonProps {
   documentId: EntityId;

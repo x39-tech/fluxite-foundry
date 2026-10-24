@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach } from "vitest";
 import { act, renderHook } from "@testing-library/react";
-import { updateCurrentEditor, useCurrentEditorPart } from "../state";
+import { getCurrentEditor, updateCurrentEditor } from "../state";
 import {
   createEmptyDeviceClassEditor,
   resetAllStores,
@@ -14,9 +14,14 @@ import {
   LocalizationDbSchema,
   LocalizationKey,
 } from "app/persistentState";
+import { useAppPersistentStore } from "app/store";
 import {
   addCondition,
   addDmxChunk,
+  addDmxMode,
+  changeDmxModeCodexId,
+  deleteDmxMode,
+  duplicateDmxMode,
   addParameterMappingGroup,
   addParameterMapping,
   getChildConditions,
@@ -26,9 +31,9 @@ import {
   removeDmxChunk,
   removeParameterMapping,
   removeParameterMappingGroup,
-  useDmxSerializer,
+  selectTabDmxSerializer,
+  useTabDmxSerializerId,
 } from "./state";
-import { firstDmxSerializer } from "./firstSerializer";
 
 const TEST_CLASS_ID = EntityId("TestClass");
 const TEST_CLASS_CODEX_ID = CodexId("TestClass");
@@ -87,26 +92,41 @@ function createTestParameter(
 function setupBasicDmxChunk() {
   createTestParamClass();
   createTestParameter();
-  addDmxChunk();
+  addDmxChunk(serializerId);
 }
 
 function getChunkId(): EntityId {
-  const dmx = getHookValue(useDmxSerializer);
+  const dmx = getDmx();
   return Object.keys(dmx?.chunks || {})[0] as EntityId;
 }
 
 function getMappingGroupId(chunkId: EntityId): EntityId {
-  const dmx = getHookValue(useDmxSerializer);
+  const dmx = getDmx();
   if (!dmx) throw new Error("No dmx serializer");
   const groups = getMappingGroupsForChunk(dmx, chunkId);
   if (groups.length === 0) throw new Error("No mapping groups found");
   return groups[0].id;
 }
 
+// The serializer edited by the tests.
+let serializerId: EntityId;
+
+function getSerializers(): Record<EntityId, DmxSerializer> {
+  return (
+    getCurrentEditor(useAppPersistentStore.getState())?.dmxSerializers ?? {}
+  );
+}
+
+function getDmx(): DmxSerializer | undefined {
+  return getSerializers()[serializerId];
+}
+
 describe("dmxEditor/state.ts", () => {
   beforeEach(() => {
     resetAllStores();
     createEmptyDeviceClassEditor();
+    addDmxMode();
+    serializerId = Object.keys(getSerializers())[0] as EntityId;
   });
 
   describe("Parameter mapping operations", () => {
@@ -120,10 +140,10 @@ describe("dmxEditor/state.ts", () => {
         const mappingGroupId = getMappingGroupId(chunkId);
 
         act(() => {
-          addParameterMapping(mappingGroupId);
+          addParameterMapping(serializerId, mappingGroupId);
         });
 
-        const dmx = getHookValue(useDmxSerializer);
+        const dmx = getDmx();
         const mappingGroup = dmx?.mappingGroups[mappingGroupId];
 
         expect(mappingGroup?.mappings.length).toBe(1);
@@ -141,17 +161,17 @@ describe("dmxEditor/state.ts", () => {
             TEST_CLASS_CODEX_ID,
             1,
           );
-          addDmxChunk();
+          addDmxChunk(serializerId);
         });
 
         const chunkId = getChunkId();
         const mappingGroupId = getMappingGroupId(chunkId);
 
         act(() => {
-          addParameterMapping(mappingGroupId);
+          addParameterMapping(serializerId, mappingGroupId);
         });
 
-        const dmx = getHookValue(useDmxSerializer);
+        const dmx = getDmx();
         const mappingGroup = dmx?.mappingGroups[mappingGroupId];
 
         expect(mappingGroup?.mappings.length).toBe(1);
@@ -168,17 +188,17 @@ describe("dmxEditor/state.ts", () => {
             TEST_CLASS_CODEX_ID,
             3,
           );
-          addDmxChunk();
+          addDmxChunk(serializerId);
         });
 
         const chunkId = getChunkId();
         const mappingGroupId = getMappingGroupId(chunkId);
 
         act(() => {
-          addParameterMapping(mappingGroupId);
+          addParameterMapping(serializerId, mappingGroupId);
         });
 
-        const dmx = getHookValue(useDmxSerializer);
+        const dmx = getDmx();
         const mappingGroup = dmx?.mappingGroups[mappingGroupId];
 
         expect(mappingGroup?.mappings.length).toBe(1);
@@ -196,10 +216,13 @@ describe("dmxEditor/state.ts", () => {
         const mappingGroupId = getMappingGroupId(chunkId);
 
         act(() => {
-          addParameterMapping(EntityId("non-existent-mapping-group"));
+          addParameterMapping(
+            serializerId,
+            EntityId("non-existent-mapping-group"),
+          );
         });
 
-        const dmx = getHookValue(useDmxSerializer);
+        const dmx = getDmx();
         const mappingGroup = dmx?.mappingGroups[mappingGroupId];
 
         expect(mappingGroup?.mappings.length).toBe(0);
@@ -207,17 +230,17 @@ describe("dmxEditor/state.ts", () => {
 
       test("does nothing if no parameters exist", () => {
         act(() => {
-          addDmxChunk();
+          addDmxChunk(serializerId);
         });
 
         const chunkId = getChunkId();
         const mappingGroupId = getMappingGroupId(chunkId);
 
         act(() => {
-          addParameterMapping(mappingGroupId);
+          addParameterMapping(serializerId, mappingGroupId);
         });
 
-        const dmx = getHookValue(useDmxSerializer);
+        const dmx = getDmx();
         const mappingGroup = dmx?.mappingGroups[mappingGroupId];
 
         expect(mappingGroup?.mappings.length).toBe(0);
@@ -232,11 +255,11 @@ describe("dmxEditor/state.ts", () => {
         const mappingGroupId = getMappingGroupId(chunkId);
 
         act(() => {
-          addParameterMapping(mappingGroupId);
-          addParameterMapping(mappingGroupId);
+          addParameterMapping(serializerId, mappingGroupId);
+          addParameterMapping(serializerId, mappingGroupId);
         });
 
-        const dmx = getHookValue(useDmxSerializer);
+        const dmx = getDmx();
         const mappingGroup = dmx?.mappingGroups[mappingGroupId];
 
         expect(mappingGroup?.mappings.length).toBe(2);
@@ -250,20 +273,20 @@ describe("dmxEditor/state.ts", () => {
         const chunkId = getChunkId();
 
         act(() => {
-          addParameterMappingGroup(chunkId);
+          addParameterMappingGroup(serializerId, chunkId);
         });
 
-        const dmx = getHookValue(useDmxSerializer);
+        const dmx = getDmx();
         const groups = getMappingGroupsForChunk(dmx!, chunkId);
         const firstGroupId = groups[0].id;
         const secondGroupId = groups[1].id;
 
         act(() => {
-          addParameterMapping(firstGroupId);
-          addParameterMapping(secondGroupId);
+          addParameterMapping(serializerId, firstGroupId);
+          addParameterMapping(serializerId, secondGroupId);
         });
 
-        const dmx2 = getHookValue(useDmxSerializer);
+        const dmx2 = getDmx();
 
         expect(dmx2?.mappingGroups[firstGroupId].mappings.length).toBe(1);
         expect(dmx2?.mappingGroups[secondGroupId].mappings.length).toBe(1);
@@ -280,18 +303,18 @@ describe("dmxEditor/state.ts", () => {
         const mappingGroupId = getMappingGroupId(chunkId);
 
         act(() => {
-          addParameterMapping(mappingGroupId);
-          addParameterMapping(mappingGroupId);
+          addParameterMapping(serializerId, mappingGroupId);
+          addParameterMapping(serializerId, mappingGroupId);
         });
 
-        let dmx = getHookValue(useDmxSerializer);
+        let dmx = getDmx();
         expect(dmx?.mappingGroups[mappingGroupId].mappings.length).toBe(2);
 
         act(() => {
-          removeParameterMapping(mappingGroupId, 0);
+          removeParameterMapping(serializerId, mappingGroupId, 0);
         });
 
-        dmx = getHookValue(useDmxSerializer);
+        dmx = getDmx();
         expect(dmx?.mappingGroups[mappingGroupId].mappings.length).toBe(1);
       });
 
@@ -304,20 +327,20 @@ describe("dmxEditor/state.ts", () => {
             TEST_CLASS_CODEX_ID,
             3,
           );
-          addDmxChunk();
+          addDmxChunk(serializerId);
         });
 
         const chunkId = getChunkId();
         const mappingGroupId = getMappingGroupId(chunkId);
 
         act(() => {
-          addParameterMapping(mappingGroupId);
-          addParameterMapping(mappingGroupId);
-          addParameterMapping(mappingGroupId);
+          addParameterMapping(serializerId, mappingGroupId);
+          addParameterMapping(serializerId, mappingGroupId);
+          addParameterMapping(serializerId, mappingGroupId);
 
           updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
-            const mappingGroup =
-              firstDmxSerializer(editor)?.mappingGroups[mappingGroupId];
+            const mappingGroup = Object.values(editor.dmxSerializers)[0]
+              ?.mappingGroups[mappingGroupId];
             if (mappingGroup) {
               mappingGroup.mappings[0].mappedParam.index = 0;
               mappingGroup.mappings[1].mappedParam.index = 1;
@@ -327,10 +350,10 @@ describe("dmxEditor/state.ts", () => {
         });
 
         act(() => {
-          removeParameterMapping(mappingGroupId, 1);
+          removeParameterMapping(serializerId, mappingGroupId, 1);
         });
 
-        const dmx = getHookValue(useDmxSerializer);
+        const dmx = getDmx();
         const mappings = dmx?.mappingGroups[mappingGroupId].mappings;
 
         expect(mappings?.length).toBe(2);
@@ -347,11 +370,15 @@ describe("dmxEditor/state.ts", () => {
         const mappingGroupId = getMappingGroupId(chunkId);
 
         act(() => {
-          addParameterMapping(mappingGroupId);
-          removeParameterMapping(EntityId("non-existent-mapping-group"), 0);
+          addParameterMapping(serializerId, mappingGroupId);
+          removeParameterMapping(
+            serializerId,
+            EntityId("non-existent-mapping-group"),
+            0,
+          );
         });
 
-        const dmx = getHookValue(useDmxSerializer);
+        const dmx = getDmx();
         expect(dmx?.mappingGroups[mappingGroupId].mappings.length).toBe(1);
       });
 
@@ -364,11 +391,11 @@ describe("dmxEditor/state.ts", () => {
         const mappingGroupId = getMappingGroupId(chunkId);
 
         act(() => {
-          addParameterMapping(mappingGroupId);
-          removeParameterMapping(mappingGroupId, 0);
+          addParameterMapping(serializerId, mappingGroupId);
+          removeParameterMapping(serializerId, mappingGroupId, 0);
         });
 
-        const dmx = getHookValue(useDmxSerializer);
+        const dmx = getDmx();
         expect(dmx?.mappingGroups[mappingGroupId].mappings.length).toBe(0);
       });
 
@@ -380,25 +407,25 @@ describe("dmxEditor/state.ts", () => {
         const chunkId = getChunkId();
 
         act(() => {
-          addParameterMappingGroup(chunkId);
+          addParameterMappingGroup(serializerId, chunkId);
         });
 
-        const dmx = getHookValue(useDmxSerializer);
+        const dmx = getDmx();
         const groups = getMappingGroupsForChunk(dmx!, chunkId);
         const firstGroupId = groups[0].id;
         const secondGroupId = groups[1].id;
 
         act(() => {
-          addParameterMapping(firstGroupId);
-          addParameterMapping(firstGroupId);
-          addParameterMapping(secondGroupId);
+          addParameterMapping(serializerId, firstGroupId);
+          addParameterMapping(serializerId, firstGroupId);
+          addParameterMapping(serializerId, secondGroupId);
         });
 
         act(() => {
-          removeParameterMapping(firstGroupId, 1);
+          removeParameterMapping(serializerId, firstGroupId, 1);
         });
 
-        const dmx2 = getHookValue(useDmxSerializer);
+        const dmx2 = getDmx();
         expect(dmx2?.mappingGroups[firstGroupId].mappings.length).toBe(1);
         expect(dmx2?.mappingGroups[secondGroupId].mappings.length).toBe(1);
       });
@@ -416,14 +443,14 @@ describe("dmxEditor/state.ts", () => {
         const mappingGroupId = getMappingGroupId(chunkId);
 
         // Verify mapping group exists
-        let dmx = getHookValue(useDmxSerializer);
+        let dmx = getDmx();
         expect(dmx?.mappingGroups[mappingGroupId]).toBeDefined();
 
         act(() => {
-          removeDmxChunk(chunkId);
+          removeDmxChunk(serializerId, chunkId);
         });
 
-        dmx = getHookValue(useDmxSerializer);
+        dmx = getDmx();
         expect(dmx?.chunks[chunkId]).toBeUndefined();
         expect(dmx?.mappingGroups[mappingGroupId]).toBeUndefined();
       });
@@ -431,27 +458,27 @@ describe("dmxEditor/state.ts", () => {
       test("removes conditions when chunk is deleted", () => {
         act(() => {
           setupBasicDmxChunk();
-          addDmxChunk(); // Add a second chunk so we can add conditions
+          addDmxChunk(serializerId); // Add a second chunk so we can add conditions
         });
 
-        const dmx1 = getHookValue(useDmxSerializer);
+        const dmx1 = getDmx();
         const chunkIds = Object.keys(dmx1!.chunks) as EntityId[];
         const firstChunkId = chunkIds[0];
         const mappingGroupId = getMappingGroupId(firstChunkId);
 
         act(() => {
-          addCondition(mappingGroupId, firstChunkId);
+          addCondition(serializerId, mappingGroupId, firstChunkId);
         });
 
         // Verify condition was created
-        let dmx = getHookValue(useDmxSerializer);
+        let dmx = getDmx();
         expect(Object.keys(dmx!.conditions).length).toBeGreaterThan(0);
 
         act(() => {
-          removeDmxChunk(firstChunkId);
+          removeDmxChunk(serializerId, firstChunkId);
         });
 
-        dmx = getHookValue(useDmxSerializer);
+        dmx = getDmx();
         expect(dmx?.chunks[firstChunkId]).toBeUndefined();
         // All conditions for the deleted chunk's mapping groups should be gone
         const remainingConditions = Object.values(dmx!.conditions).filter(
@@ -465,10 +492,10 @@ describe("dmxEditor/state.ts", () => {
       test("removes conditions that reference the deleted chunk", () => {
         act(() => {
           setupBasicDmxChunk();
-          addDmxChunk(); // Add a second chunk
+          addDmxChunk(serializerId); // Add a second chunk
         });
 
-        const dmx1 = getHookValue(useDmxSerializer);
+        const dmx1 = getDmx();
         const chunkIds = Object.keys(dmx1!.chunks) as EntityId[];
         const firstChunkId = chunkIds[0];
         const secondChunkId = chunkIds[1];
@@ -479,11 +506,11 @@ describe("dmxEditor/state.ts", () => {
 
         // Add a condition to second chunk that references first chunk
         act(() => {
-          addCondition(secondChunkMappingGroupId, secondChunkId);
+          addCondition(serializerId, secondChunkMappingGroupId, secondChunkId);
         });
 
         // Verify condition references the first chunk
-        let dmx = getHookValue(useDmxSerializer);
+        let dmx = getDmx();
         const conditionsBefore = Object.entries(dmx!.conditions);
         expect(conditionsBefore.length).toBeGreaterThan(0);
 
@@ -496,10 +523,10 @@ describe("dmxEditor/state.ts", () => {
 
         // Delete the first chunk
         act(() => {
-          removeDmxChunk(firstChunkId);
+          removeDmxChunk(serializerId, firstChunkId);
         });
 
-        dmx = getHookValue(useDmxSerializer);
+        dmx = getDmx();
         // The chunkRef condition that referenced the deleted chunk should be gone
         const remainingChunkRefConditions = Object.values(
           dmx!.conditions,
@@ -515,20 +542,20 @@ describe("dmxEditor/state.ts", () => {
       test("removes associated conditions when mapping group is deleted", () => {
         act(() => {
           setupBasicDmxChunk();
-          addDmxChunk(); // Need two chunks for conditions
+          addDmxChunk(serializerId); // Need two chunks for conditions
         });
 
-        const dmx1 = getHookValue(useDmxSerializer);
+        const dmx1 = getDmx();
         const chunkIds = Object.keys(dmx1!.chunks) as EntityId[];
         const firstChunkId = chunkIds[0];
         const mappingGroupId = getMappingGroupId(firstChunkId);
 
         act(() => {
-          addCondition(mappingGroupId, firstChunkId);
+          addCondition(serializerId, mappingGroupId, firstChunkId);
         });
 
         // Verify conditions exist
-        let dmx = getHookValue(useDmxSerializer);
+        let dmx = getDmx();
         const conditionsBefore = getConditionsForMappingGroup(
           dmx!,
           mappingGroupId,
@@ -536,10 +563,14 @@ describe("dmxEditor/state.ts", () => {
         expect(conditionsBefore.length).toBeGreaterThan(0);
 
         act(() => {
-          removeParameterMappingGroup(firstChunkId, mappingGroupId);
+          removeParameterMappingGroup(
+            serializerId,
+            firstChunkId,
+            mappingGroupId,
+          );
         });
 
-        dmx = getHookValue(useDmxSerializer);
+        dmx = getDmx();
         expect(dmx?.mappingGroups[mappingGroupId]).toBeUndefined();
 
         // All conditions that belonged to this mapping group should be gone
@@ -554,29 +585,33 @@ describe("dmxEditor/state.ts", () => {
       test("removes child conditions when mapping group with nested conditions is deleted", () => {
         act(() => {
           setupBasicDmxChunk();
-          addDmxChunk();
+          addDmxChunk(serializerId);
         });
 
-        const dmx1 = getHookValue(useDmxSerializer);
+        const dmx1 = getDmx();
         const chunkIds = Object.keys(dmx1!.chunks) as EntityId[];
         const firstChunkId = chunkIds[0];
         const mappingGroupId = getMappingGroupId(firstChunkId);
 
         // Add multiple conditions to create a group with children
         act(() => {
-          addCondition(mappingGroupId, firstChunkId);
-          addCondition(mappingGroupId, firstChunkId);
+          addCondition(serializerId, mappingGroupId, firstChunkId);
+          addCondition(serializerId, mappingGroupId, firstChunkId);
         });
 
-        let dmx = getHookValue(useDmxSerializer);
+        let dmx = getDmx();
         const totalConditionsBefore = Object.keys(dmx!.conditions).length;
         expect(totalConditionsBefore).toBeGreaterThan(0);
 
         act(() => {
-          removeParameterMappingGroup(firstChunkId, mappingGroupId);
+          removeParameterMappingGroup(
+            serializerId,
+            firstChunkId,
+            mappingGroupId,
+          );
         });
 
-        dmx = getHookValue(useDmxSerializer);
+        dmx = getDmx();
         // All conditions (parent group and children) should be removed
         const remainingConditionsForGroup = Object.values(
           dmx!.conditions,
@@ -594,20 +629,20 @@ describe("dmxEditor/state.ts", () => {
       test("removes child conditions when parent condition is deleted", () => {
         act(() => {
           setupBasicDmxChunk();
-          addDmxChunk();
+          addDmxChunk(serializerId);
         });
 
-        const dmx1 = getHookValue(useDmxSerializer);
+        const dmx1 = getDmx();
         const chunkIds = Object.keys(dmx1!.chunks) as EntityId[];
         const firstChunkId = chunkIds[0];
         const mappingGroupId = getMappingGroupId(firstChunkId);
 
         // Add conditions - this creates a group condition with a chunkRef child
         act(() => {
-          addCondition(mappingGroupId, firstChunkId);
+          addCondition(serializerId, mappingGroupId, firstChunkId);
         });
 
-        let dmx = getHookValue(useDmxSerializer);
+        let dmx = getDmx();
         const conditions = getConditionsForMappingGroup(dmx!, mappingGroupId);
         expect(conditions.length).toBe(1);
 
@@ -622,10 +657,10 @@ describe("dmxEditor/state.ts", () => {
 
         // Remove the parent group condition
         act(() => {
-          removeCondition(groupCondition.id);
+          removeCondition(serializerId, groupCondition.id);
         });
 
-        dmx = getHookValue(useDmxSerializer);
+        dmx = getDmx();
         // Both parent and child should be gone
         expect(dmx?.conditions[groupCondition.id]).toBeUndefined();
         expect(dmx?.conditions[childConditionId]).toBeUndefined();
@@ -634,22 +669,22 @@ describe("dmxEditor/state.ts", () => {
       test("removes deeply nested child conditions", () => {
         act(() => {
           setupBasicDmxChunk();
-          addDmxChunk();
+          addDmxChunk(serializerId);
         });
 
-        const dmx1 = getHookValue(useDmxSerializer);
+        const dmx1 = getDmx();
         const chunkIds = Object.keys(dmx1!.chunks) as EntityId[];
         const firstChunkId = chunkIds[0];
         const mappingGroupId = getMappingGroupId(firstChunkId);
 
         // Add multiple conditions to create nested structure
         act(() => {
-          addCondition(mappingGroupId, firstChunkId);
-          addCondition(mappingGroupId, firstChunkId);
-          addCondition(mappingGroupId, firstChunkId);
+          addCondition(serializerId, mappingGroupId, firstChunkId);
+          addCondition(serializerId, mappingGroupId, firstChunkId);
+          addCondition(serializerId, mappingGroupId, firstChunkId);
         });
 
-        let dmx = getHookValue(useDmxSerializer);
+        let dmx = getDmx();
         const totalConditionsBefore = Object.keys(dmx!.conditions).length;
         // Should have: 1 group condition + 3 chunkRef children = 4 conditions
         expect(totalConditionsBefore).toBe(4);
@@ -659,10 +694,10 @@ describe("dmxEditor/state.ts", () => {
         const groupConditionId = conditions[0].id;
 
         act(() => {
-          removeCondition(groupConditionId);
+          removeCondition(serializerId, groupConditionId);
         });
 
-        dmx = getHookValue(useDmxSerializer);
+        dmx = getDmx();
         // All conditions should be gone
         expect(Object.keys(dmx!.conditions).length).toBe(0);
       });
@@ -670,20 +705,20 @@ describe("dmxEditor/state.ts", () => {
       test("only removes the specified condition and its children, not siblings", () => {
         act(() => {
           setupBasicDmxChunk();
-          addDmxChunk();
+          addDmxChunk(serializerId);
         });
 
-        const dmx1 = getHookValue(useDmxSerializer);
+        const dmx1 = getDmx();
         const chunkIds = Object.keys(dmx1!.chunks) as EntityId[];
         const firstChunkId = chunkIds[0];
         const mappingGroupId = getMappingGroupId(firstChunkId);
 
         act(() => {
-          addCondition(mappingGroupId, firstChunkId);
-          addCondition(mappingGroupId, firstChunkId);
+          addCondition(serializerId, mappingGroupId, firstChunkId);
+          addCondition(serializerId, mappingGroupId, firstChunkId);
         });
 
-        let dmx = getHookValue(useDmxSerializer);
+        let dmx = getDmx();
         const groupConditions = getConditionsForMappingGroup(
           dmx!,
           mappingGroupId,
@@ -697,10 +732,10 @@ describe("dmxEditor/state.ts", () => {
 
         // Remove only the first child
         act(() => {
-          removeCondition(firstChildId);
+          removeCondition(serializerId, firstChildId);
         });
 
-        dmx = getHookValue(useDmxSerializer);
+        dmx = getDmx();
         // First child should be gone
         expect(dmx?.conditions[firstChildId]).toBeUndefined();
         // Second child should still exist
@@ -715,20 +750,20 @@ describe("dmxEditor/state.ts", () => {
     test("creates group condition with chunkRef child when first condition is added", () => {
       act(() => {
         setupBasicDmxChunk();
-        addDmxChunk();
+        addDmxChunk(serializerId);
       });
 
-      const dmx1 = getHookValue(useDmxSerializer);
+      const dmx1 = getDmx();
       const chunkIds = Object.keys(dmx1!.chunks) as EntityId[];
       const firstChunkId = chunkIds[0];
       const secondChunkId = chunkIds[1];
       const mappingGroupId = getMappingGroupId(firstChunkId);
 
       act(() => {
-        addCondition(mappingGroupId, firstChunkId);
+        addCondition(serializerId, mappingGroupId, firstChunkId);
       });
 
-      const dmx = getHookValue(useDmxSerializer);
+      const dmx = getDmx();
       const topLevelConditions = getConditionsForMappingGroup(
         dmx!,
         mappingGroupId,
@@ -756,20 +791,20 @@ describe("dmxEditor/state.ts", () => {
     test("adds chunkRef child to existing group when subsequent conditions are added", () => {
       act(() => {
         setupBasicDmxChunk();
-        addDmxChunk();
+        addDmxChunk(serializerId);
       });
 
-      const dmx1 = getHookValue(useDmxSerializer);
+      const dmx1 = getDmx();
       const chunkIds = Object.keys(dmx1!.chunks) as EntityId[];
       const firstChunkId = chunkIds[0];
       const mappingGroupId = getMappingGroupId(firstChunkId);
 
       act(() => {
-        addCondition(mappingGroupId, firstChunkId);
-        addCondition(mappingGroupId, firstChunkId);
+        addCondition(serializerId, mappingGroupId, firstChunkId);
+        addCondition(serializerId, mappingGroupId, firstChunkId);
       });
 
-      const dmx = getHookValue(useDmxSerializer);
+      const dmx = getDmx();
       const topLevelConditions = getConditionsForMappingGroup(
         dmx!,
         mappingGroupId,
@@ -799,64 +834,169 @@ describe("dmxEditor/state.ts", () => {
       const mappingGroupId = getMappingGroupId(chunkId);
 
       act(() => {
-        addCondition(mappingGroupId, chunkId);
+        addCondition(serializerId, mappingGroupId, chunkId);
       });
 
-      const dmx = getHookValue(useDmxSerializer);
+      const dmx = getDmx();
       expect(Object.keys(dmx!.conditions).length).toBe(0);
     });
   });
 
-  describe("Serializers", () => {
-    function getSerializers(): Record<EntityId, DmxSerializer> {
-      return (
-        getHookValue(() =>
-          useCurrentEditorPart((editor) => editor.dmxSerializers),
-        ) ?? {}
-      );
+  describe("Modes", () => {
+    const TAB_ID = "dmx-tab";
+
+    function serializerIds(): EntityId[] {
+      return Object.keys(getSerializers()) as EntityId[];
     }
 
-    function emptySerializer(codexId: string): DmxSerializer {
-      return {
-        codexId: CodexId(codexId),
-        access: ["read", "write"],
-        lifetime: "persistent",
+    function modeIds(): string[] {
+      return Object.values(getSerializers()).map((s) => s.codexId);
+    }
+
+    function tabSerializerId(): EntityId | undefined {
+      return getHookValue(() => useTabDmxSerializerId(TAB_ID));
+    }
+
+    test("adds an empty read-only static mode named after the first free number", () => {
+      act(() => {
+        addDmxMode();
+        changeDmxModeCodexId(serializerId, CodexId("basic"));
+        addDmxMode();
+      });
+
+      expect(modeIds()).toEqual(["basic", "mode-2", "mode-1"]);
+      expect(getSerializers()[serializerIds()[2]]).toEqual({
+        codexId: "mode-1",
+        access: ["read"],
+        lifetime: "static",
         chunks: {},
         mappingGroups: {},
         conditions: {},
-      };
-    }
-
-    test("creates a read-only static serializer called dmx when the document has none", () => {
-      act(() => {
-        addDmxChunk();
       });
-
-      const serializers = Object.values(getSerializers());
-      expect(serializers).toHaveLength(1);
-      expect(serializers[0]).toMatchObject({
-        codexId: "dmx",
-        access: ["read"],
-        lifetime: "static",
-      });
-      expect(Object.keys(serializers[0].chunks)).toHaveLength(1);
     });
 
-    test("edits the document's first serializer when it has several", () => {
-      const first = EntityId("serializer-a");
-      const second = EntityId("serializer-b");
+    test("a tab edits the first mode until another is selected", () => {
       act(() => {
-        updateCurrentEditor(testUndoLabel("Test Change"), (editor) => {
-          editor.dmxSerializers[first] = emptySerializer("mode-a");
-          editor.dmxSerializers[second] = emptySerializer("mode-b");
-        });
-        addDmxChunk();
+        addDmxMode();
       });
 
-      const serializers = getSerializers();
-      expect(Object.keys(serializers)).toEqual([first, second]);
-      expect(Object.keys(serializers[first].chunks)).toHaveLength(1);
-      expect(serializers[second]).toEqual(emptySerializer("mode-b"));
+      expect(tabSerializerId()).toBe(serializerId);
+
+      act(() => {
+        selectTabDmxSerializer(TAB_ID, serializerIds()[1]);
+      });
+
+      expect(tabSerializerId()).toBe(serializerIds()[1]);
+      expect(getHookValue(() => useTabDmxSerializerId("other-tab"))).toBe(
+        serializerId,
+      );
+    });
+
+    test("a tab actively edits a mode after it is added", () => {
+      act(() => {
+        addDmxMode(TAB_ID);
+      });
+
+      expect(tabSerializerId()).toBe(serializerIds()[1]);
+    });
+
+    test("makes changes to the given mode only", () => {
+      act(() => {
+        addDmxMode();
+      });
+      const [first, second] = serializerIds();
+
+      act(() => {
+        addDmxChunk(first);
+        addDmxChunk(second);
+        addDmxChunk(second);
+      });
+
+      expect(Object.keys(getSerializers()[first].chunks)).toHaveLength(1);
+      expect(Object.keys(getSerializers()[second].chunks)).toHaveLength(2);
+    });
+
+    test("a tab has no mode if there aren't any in the document", () => {
+      act(() => {
+        deleteDmxMode(serializerId);
+      });
+
+      expect(getSerializers()).toEqual({});
+      expect(tabSerializerId()).toBeUndefined();
+    });
+
+    test("a tab falls back to the first mode when the one it is editing is deleted", () => {
+      act(() => {
+        addDmxMode(TAB_ID);
+      });
+      const [first, second] = serializerIds();
+
+      act(() => {
+        deleteDmxMode(second);
+      });
+
+      expect(serializerIds()).toEqual([first]);
+      expect(tabSerializerId()).toBe(first);
+    });
+
+    test("duplicates a mode with all its data", () => {
+      setupBasicDmxChunk();
+      act(() => {
+        addDmxChunk(serializerId);
+      });
+      const chunkId = getChunkId();
+      const mappingGroupId = getMappingGroupId(chunkId);
+      act(() => {
+        addParameterMapping(serializerId, mappingGroupId);
+        addCondition(serializerId, mappingGroupId, chunkId);
+      });
+      const original = getDmx()!;
+
+      act(() => {
+        duplicateDmxMode(serializerId, TAB_ID);
+      });
+
+      const [originalId, copyId] = serializerIds();
+      const copy = getSerializers()[copyId];
+      expect(getSerializers()[originalId]).toEqual(original);
+      expect(tabSerializerId()).toBe(copyId);
+      expect(copy.codexId).toBe("mode-2");
+
+      // Nothing in the copy shares an ID with the original.
+      for (const table of ["chunks", "mappingGroups", "conditions"] as const) {
+        expect(Object.keys(copy[table])).toHaveLength(
+          Object.keys(original[table]).length,
+        );
+        for (const id of Object.keys(copy[table])) {
+          expect(original[table]).not.toHaveProperty(id);
+        }
+      }
+
+      // The references inside the copy point at the copy's own entities.
+      const copyChunkId = Object.entries(copy.chunks).find(
+        ([, chunk]) => chunk.offsets[0] === original.chunks[chunkId].offsets[0],
+      )![0] as EntityId;
+      const [copyGroup] = getMappingGroupsForChunk(copy, copyChunkId);
+      expect(copyGroup.mappings).toEqual(
+        original.mappingGroups[mappingGroupId].mappings,
+      );
+      const [copyGroupCondition] = getConditionsForMappingGroup(
+        copy,
+        copyGroup.id,
+      );
+      const [copyChunkRef] = getChildConditions(copy, copyGroupCondition.id);
+      if (copyChunkRef.conditionType !== "chunkRef") {
+        throw new Error("Expected a chunk reference condition");
+      }
+      expect(copy.chunks).toHaveProperty(copyChunkRef.chunkId);
+    });
+
+    test("changes a mode's ID", () => {
+      act(() => {
+        changeDmxModeCodexId(serializerId, CodexId("extended"));
+      });
+
+      expect(modeIds()).toEqual(["extended"]);
     });
   });
 });

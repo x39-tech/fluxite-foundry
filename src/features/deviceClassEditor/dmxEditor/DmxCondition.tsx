@@ -19,6 +19,7 @@ import {
   updateCondition,
   updateConditionMatch,
   useDmxSerializer,
+  useEditedDmxSerializerId,
 } from "./state";
 
 const MESSAGES = {
@@ -62,6 +63,7 @@ export const DmxConditionTree = ({
   condition,
   parentChunkId,
 }: DmxConditionTreeProps) => {
+  const serializerId = useEditedDmxSerializerId();
   const dmx = useDmxSerializer();
 
   if (condition.conditionType === "chunkRef") {
@@ -86,7 +88,7 @@ export const DmxConditionTree = ({
                 // it, since one group matches the same way throughout.
                 editable={index === 1}
                 onMatchChanged={(newMatch) =>
-                  updateConditionMatch(conditionId, newMatch)
+                  updateConditionMatch(serializerId, conditionId, newMatch)
                 }
               />
             )}
@@ -159,6 +161,7 @@ const DmxChunkRefConditionView = ({
 }: DmxChunkRefConditionViewProps) => {
   const { _ } = useLingui();
 
+  const serializerId = useEditedDmxSerializerId();
   const dmx = useDmxSerializer();
 
   if (!dmx) {
@@ -182,7 +185,7 @@ const DmxChunkRefConditionView = ({
         selectedItem={condition.chunkId}
         placeholderText={MESSAGES.selectSlot}
         onSelectedItemChanged={(newChunkId) =>
-          updateCondition(conditionId, {
+          updateCondition(serializerId, conditionId, {
             ...condition,
             chunkId: newChunkId as EntityId,
           })
@@ -203,7 +206,7 @@ const DmxChunkRefConditionView = ({
         onConfirm={(newValue) => {
           const parsed = parseInt(newValue);
           if (isNaN(parsed)) return;
-          updateCondition(conditionId, {
+          updateCondition(serializerId, conditionId, {
             ...condition,
             chunkStart: parsed,
           });
@@ -216,7 +219,7 @@ const DmxChunkRefConditionView = ({
         onConfirm={(newValue) => {
           const parsed = parseInt(newValue);
           if (isNaN(parsed)) return;
-          updateCondition(conditionId, {
+          updateCondition(serializerId, conditionId, {
             ...condition,
             chunkEnd: parsed,
           });
@@ -227,7 +230,7 @@ const DmxChunkRefConditionView = ({
         variant="ghost"
         className="text-primary"
         aria-label={_(MESSAGES.deleteCondition)}
-        onClick={() => removeCondition(conditionId)}
+        onClick={() => removeCondition(serializerId, conditionId)}
       >
         <Trans id="deviceClassEditor.dmxCondition.remove">Remove</Trans>
       </Button>

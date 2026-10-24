@@ -8,6 +8,12 @@ export interface AppRuntimeState {
   // One DMX test driver per open device class document, keyed by the document's
   // id. A document with no DMX serializer has no entry.
   dmxControllers: Record<EntityId, DmxController>;
+  // The DMX serializer each DMX editor tab is editing, keyed by the tab's
+  // FlexLayout node id.
+  dmxEditorSerializers: Record<string, EntityId>;
+  // The DMX serializer each document's test driver is built from, keyed by the
+  // document's id.
+  dmxControllerSerializers: Record<EntityId, EntityId>;
   // Live sACN output from the DMX test controller (only possible on desktop).
   sacnOutput: SacnOutputState;
   // How each document's DMX test controller arranges its panels. A document

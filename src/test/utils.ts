@@ -70,6 +70,8 @@ export function resetAppRuntimeStore() {
   useAppRuntimeStore.setState(
     {
       dmxControllers: {},
+      dmxEditorSerializers: {},
+      dmxControllerSerializers: {},
       sacnOutput: { settings: {} },
       dmxControllerLayouts: {},
       libraries: loadDefaultLibraries(),

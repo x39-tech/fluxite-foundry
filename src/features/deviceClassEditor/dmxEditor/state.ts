@@ -1,4 +1,6 @@
-import { useMemo } from "react";
+import { createContext, useContext, useMemo } from "react";
+import { current } from "immer";
+import { MessageDescriptor } from "@lingui/core";
 import { i18n } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { DmxController } from "app/runtimeState";
@@ -25,6 +27,7 @@ import {
 } from "../state";
 import { newEntityId, selectWithIds } from "app/stateUtils";
 import {
+  updateAppRuntimeState,
   useAppRuntimeStore,
   useLibraryStore,
   useAuthoringLocale,
@@ -38,9 +41,30 @@ import { resolveClassRef } from "../classResolution";
 import { EffectiveEnumChoice, getEffectiveEnumChoices } from "./mappingUtils";
 import { localize } from "features/localizations/localize";
 import { ItemEditor } from "utils/utils";
-import { NEW_DMX_SERIALIZER_ID, firstDmxSerializer } from "./firstSerializer";
+import {
+  copyDmxSerializer,
+  newDmxSerializer,
+  nextModeCodexId,
+  resolveDmxSerializerId,
+} from "./modes";
 
 const UNDO = {
+  addMode: msg({
+    id: "deviceClassEditor.dmx.undo.addMode",
+    message: "Add DMX Mode",
+  }),
+  duplicateMode: msg({
+    id: "deviceClassEditor.dmx.undo.duplicateMode",
+    message: "Duplicate DMX Mode",
+  }),
+  deleteMode: msg({
+    id: "deviceClassEditor.dmx.undo.deleteMode",
+    message: "Delete DMX Mode",
+  }),
+  changeModeId: msg({
+    id: "deviceClassEditor.dmx.undo.changeModeId",
+    message: "Change DMX Mode ID",
+  }),
   addChunk: msg({
     id: "deviceClassEditor.dmx.undo.addChunk",
     message: "Add DMX Chunk",
@@ -111,8 +135,60 @@ export interface MappableParameter {
 // Read
 // ---------------------------------------------------------------------------
 
+export interface DmxMode {
+  id: EntityId;
+  codexId: CodexId;
+}
+
+export function useDmxModes(): DmxMode[] {
+  const serializers = useCurrentEditorPart((editor) => editor.dmxSerializers);
+
+  return useMemo(
+    () =>
+      Object.entries(serializers ?? {}).map(([id, serializer]) => ({
+        id: EntityId(id),
+        codexId: serializer.codexId,
+      })),
+    [serializers],
+  );
+}
+
+/**
+ * The ID of the serializer a DMX editor tab is editing. undefined if the
+ * document has no serializers.
+ */
+export function useTabDmxSerializerId(tabId: string): EntityId | undefined {
+  const selectedId = useAppRuntimeStore(
+    (state) => state.dmxEditorSerializers[tabId],
+  );
+  return useCurrentEditorPart((editor) =>
+    resolveDmxSerializerId(editor.dmxSerializers, selectedId),
+  );
+}
+
+/**
+ * Context for DMX editor components - provides the serializer that is
+ * currently being edited.
+ */
+export const EditedDmxSerializerContext = createContext<EntityId | undefined>(
+  undefined,
+);
+
+/** The ID of the serializer that the enclosing DMX editor is editing. */
+export function useEditedDmxSerializerId(): EntityId {
+  const id = useContext(EditedDmxSerializerContext);
+  if (id === undefined) {
+    throw new Error("No DMX serializer is being edited here");
+  }
+  return id;
+}
+
+/** The serializer that the enclosing DMX editor is editing. */
 export function useDmxSerializer(): DmxSerializer | undefined {
-  return useCurrentEditorPart(firstDmxSerializer);
+  const id = useContext(EditedDmxSerializerContext);
+  return useCurrentEditorPart((editor) =>
+    id ? editor.dmxSerializers[id] : undefined,
+  );
 }
 
 const CHUNK_LABEL = msg({
@@ -125,9 +201,7 @@ export function dmxChunkLabel(offsets: number[]): string {
 }
 
 export function useDmxChunkEditors(): ItemEditor[] {
-  const chunks = useCurrentEditorPart(
-    (state) => firstDmxSerializer(state)?.chunks,
-  );
+  const chunks = useDmxSerializer()?.chunks;
 
   return useMemo(() => {
     const chunkEditors = Object.entries(chunks ?? {}).map(([id, chunk]) => ({
@@ -248,22 +322,17 @@ export function useMappableParameters(): Record<EntityId, MappableParameter> {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function getOrCreateDmxSerializer(editor: DeviceClassDraft): DmxSerializer {
-  const existing = firstDmxSerializer(editor);
-  if (existing) {
-    return existing;
-  }
-
-  const id = newEntityId();
-  editor.dmxSerializers[id] = {
-    codexId: NEW_DMX_SERIALIZER_ID,
-    access: ["read"],
-    lifetime: "static",
-    chunks: {},
-    mappingGroups: {},
-    conditions: {},
-  };
-  return editor.dmxSerializers[id];
+function updateDmxSerializer(
+  serializerId: EntityId,
+  label: MessageDescriptor,
+  updater: (dmx: DmxSerializer, editor: DeviceClassDraft) => void,
+) {
+  updateCurrentEditor(label, (editor) => {
+    const dmx = editor.dmxSerializers[serializerId];
+    if (dmx) {
+      updater(dmx, editor);
+    }
+  });
 }
 
 export function getMappingGroupsForChunk(
@@ -311,10 +380,8 @@ function isMappableParamClass(
 // Write - Chunks
 // ---------------------------------------------------------------------------
 
-export function addDmxChunk() {
-  updateCurrentEditor(UNDO.addChunk, (editor) => {
-    const dmx = getOrCreateDmxSerializer(editor);
-
+export function addDmxChunk(serializerId: EntityId) {
+  updateDmxSerializer(serializerId, UNDO.addChunk, (dmx) => {
     const offsetsInUse = Object.values(dmx.chunks).reduce((acc, chunk) => {
       acc.push(...chunk.offsets);
       return acc;
@@ -346,11 +413,8 @@ export function addDmxChunk() {
   });
 }
 
-export function removeDmxChunk(chunkId: EntityId) {
-  updateCurrentEditor(UNDO.deleteChunk, (editor) => {
-    const dmx = firstDmxSerializer(editor);
-    if (!dmx) return;
-
+export function removeDmxChunk(serializerId: EntityId, chunkId: EntityId) {
+  updateDmxSerializer(serializerId, UNDO.deleteChunk, (dmx) => {
     // Find and remove all mapping groups for this chunk
     const mappingGroupIds = selectWithIds(
       dmx.mappingGroups,
@@ -407,11 +471,12 @@ function removeConditionAndChildren(dmx: DmxSerializer, conditionId: EntityId) {
   delete dmx.conditions[conditionId];
 }
 
-export function changeDmxChunkOffsets(chunkId: EntityId, newOffsets: string[]) {
-  updateCurrentEditor(UNDO.changeOffsets, (editor) => {
-    const dmx = firstDmxSerializer(editor);
-    if (!dmx) return;
-
+export function changeDmxChunkOffsets(
+  serializerId: EntityId,
+  chunkId: EntityId,
+  newOffsets: string[],
+) {
+  updateDmxSerializer(serializerId, UNDO.changeOffsets, (dmx) => {
     const chunk = dmx.chunks[chunkId];
     if (!chunk) return;
 
@@ -442,10 +507,12 @@ export function changeDmxChunkOffsets(chunkId: EntityId, newOffsets: string[]) {
 // Write - Mapping Groups
 // ---------------------------------------------------------------------------
 
-export function addParameterMappingGroup(chunkId: EntityId) {
-  updateCurrentEditor(UNDO.addMappingGroup, (editor) => {
-    const dmx = firstDmxSerializer(editor);
-    if (!dmx || !dmx.chunks[chunkId]) return;
+export function addParameterMappingGroup(
+  serializerId: EntityId,
+  chunkId: EntityId,
+) {
+  updateDmxSerializer(serializerId, UNDO.addMappingGroup, (dmx) => {
+    if (!dmx.chunks[chunkId]) return;
 
     const existingGroups = getMappingGroupsForChunk(dmx, chunkId);
     const nextIndex =
@@ -464,13 +531,11 @@ export function addParameterMappingGroup(chunkId: EntityId) {
 }
 
 export function removeParameterMappingGroup(
+  serializerId: EntityId,
   chunkId: EntityId,
   mappingGroupId: EntityId,
 ) {
-  updateCurrentEditor(UNDO.deleteMappingGroup, (editor) => {
-    const dmx = firstDmxSerializer(editor);
-    if (!dmx) return;
-
+  updateDmxSerializer(serializerId, UNDO.deleteMappingGroup, (dmx) => {
     const mg = dmx.mappingGroups[mappingGroupId];
     if (!mg || mg.chunkId !== chunkId) return;
 
@@ -485,11 +550,11 @@ export function removeParameterMappingGroup(
 // Write - Parameter Mappings
 // ---------------------------------------------------------------------------
 
-export function addParameterMapping(mappingGroupId: EntityId) {
-  updateCurrentEditor(UNDO.addParameterMapping, (editor) => {
-    const dmx = firstDmxSerializer(editor);
-    if (!dmx) return;
-
+export function addParameterMapping(
+  serializerId: EntityId,
+  mappingGroupId: EntityId,
+) {
+  updateDmxSerializer(serializerId, UNDO.addParameterMapping, (dmx, editor) => {
     const mappingGroup = dmx.mappingGroups[mappingGroupId];
     if (!mappingGroup) return;
 
@@ -512,14 +577,12 @@ export function addParameterMapping(mappingGroupId: EntityId) {
 }
 
 export function updateParameterMapping(
+  serializerId: EntityId,
   mappingGroupId: EntityId,
   mappingIndex: number,
   newValue: DmxMapping,
 ) {
-  updateCurrentEditor(UNDO.editParameterMapping, (editor) => {
-    const dmx = firstDmxSerializer(editor);
-    if (!dmx) return;
-
+  updateDmxSerializer(serializerId, UNDO.editParameterMapping, (dmx) => {
     const mappingGroup = dmx.mappingGroups[mappingGroupId];
     if (!mappingGroup) return;
 
@@ -528,13 +591,11 @@ export function updateParameterMapping(
 }
 
 export function removeParameterMapping(
+  serializerId: EntityId,
   mappingGroupId: EntityId,
   mappingIndex: number,
 ) {
-  updateCurrentEditor(UNDO.deleteParameterMapping, (editor) => {
-    const dmx = firstDmxSerializer(editor);
-    if (!dmx) return;
-
+  updateDmxSerializer(serializerId, UNDO.deleteParameterMapping, (dmx) => {
     const mappingGroup = dmx.mappingGroups[mappingGroupId];
     if (!mappingGroup) return;
 
@@ -547,13 +608,11 @@ export function removeParameterMapping(
 // ---------------------------------------------------------------------------
 
 export function addCondition(
+  serializerId: EntityId,
   mappingGroupId: EntityId,
   parentChunkId: EntityId,
 ) {
-  updateCurrentEditor(UNDO.addMappingCondition, (editor) => {
-    const dmx = firstDmxSerializer(editor);
-    if (!dmx) return;
-
+  updateDmxSerializer(serializerId, UNDO.addMappingCondition, (dmx) => {
     const mappingGroup = dmx.mappingGroups[mappingGroupId];
     if (!mappingGroup) return;
 
@@ -613,13 +672,11 @@ export function addCondition(
 }
 
 export function updateCondition(
+  serializerId: EntityId,
   conditionId: EntityId,
   newCondition: DmxCondition,
 ) {
-  updateCurrentEditor(UNDO.editMappingCondition, (editor) => {
-    const dmx = firstDmxSerializer(editor);
-    if (!dmx) return;
-
+  updateDmxSerializer(serializerId, UNDO.editMappingCondition, (dmx) => {
     if (!dmx.conditions[conditionId]) return;
 
     dmx.conditions[conditionId] = newCondition;
@@ -627,13 +684,11 @@ export function updateCondition(
 }
 
 export function updateConditionMatch(
+  serializerId: EntityId,
   conditionId: EntityId,
   match: "any" | "all",
 ) {
-  updateCurrentEditor(UNDO.editMappingCondition, (editor) => {
-    const dmx = firstDmxSerializer(editor);
-    if (!dmx) return;
-
+  updateDmxSerializer(serializerId, UNDO.editMappingCondition, (dmx) => {
     const condition = dmx.conditions[conditionId];
     if (!condition || condition.conditionType !== "group") return;
 
@@ -641,11 +696,74 @@ export function updateConditionMatch(
   });
 }
 
-export function removeCondition(conditionId: EntityId) {
-  updateCurrentEditor(UNDO.deleteMappingCondition, (editor) => {
-    const dmx = firstDmxSerializer(editor);
-    if (!dmx) return;
-
+export function removeCondition(serializerId: EntityId, conditionId: EntityId) {
+  updateDmxSerializer(serializerId, UNDO.deleteMappingCondition, (dmx) => {
     removeConditionAndChildren(dmx, conditionId);
   });
+}
+
+// ---------------------------------------------------------------------------
+// Write - Modes
+// ---------------------------------------------------------------------------
+
+/** Selects the serializer that a DMX editor tab is editing. */
+export function selectTabDmxSerializer(tabId: string, serializerId: EntityId) {
+  updateAppRuntimeState((state) => {
+    state.dmxEditorSerializers[tabId] = serializerId;
+  });
+}
+
+/** Adds an empty mode to the document. */
+export function addDmxMode(tabId?: string) {
+  addDmxSerializer(UNDO.addMode, tabId, (editor) =>
+    newDmxSerializer(nextModeCodexId(editor.dmxSerializers)),
+  );
+}
+
+/** Adds a copy of a mode to the document. */
+export function duplicateDmxMode(serializerId: EntityId, tabId?: string) {
+  addDmxSerializer(UNDO.duplicateMode, tabId, (editor) => {
+    const original = editor.dmxSerializers[serializerId];
+    if (!original) return undefined;
+
+    return copyDmxSerializer(
+      current(original),
+      nextModeCodexId(editor.dmxSerializers),
+    );
+  });
+}
+
+export function deleteDmxMode(serializerId: EntityId) {
+  updateCurrentEditor(UNDO.deleteMode, (editor) => {
+    delete editor.dmxSerializers[serializerId];
+  });
+}
+
+export function changeDmxModeCodexId(serializerId: EntityId, codexId: CodexId) {
+  updateCurrentEditor(UNDO.changeModeId, (editor) => {
+    const serializer = editor.dmxSerializers[serializerId];
+    if (serializer) {
+      serializer.codexId = codexId;
+    }
+  });
+}
+
+function addDmxSerializer(
+  label: MessageDescriptor,
+  tabId: string | undefined,
+  create: (editor: DeviceClassDraft) => DmxSerializer | undefined,
+) {
+  const id = newEntityId();
+  let added = false;
+  updateCurrentEditor(label, (editor) => {
+    const serializer = create(editor);
+    if (serializer) {
+      editor.dmxSerializers[id] = serializer;
+      added = true;
+    }
+  });
+
+  if (added && tabId !== undefined) {
+    selectTabDmxSerializer(tabId, id);
+  }
 }
