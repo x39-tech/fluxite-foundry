@@ -1,7 +1,10 @@
 import { EntityId } from "app/persistentState";
 import { DmxControllerLayout } from "app/runtimeState";
-import { updateAppRuntimeState, useAppRuntimeStore } from "app/store";
 import { resolveDmxSerializerId } from "../dmxEditor/modes";
+import {
+  updateEditorRuntimeState,
+  useEditorRuntimeField,
+} from "../runtimeState";
 import { useCurrentEditorId, useCurrentEditorPart } from "../state";
 
 export const DEFAULT_DMX_CONTROLLER_LAYOUT: DmxControllerLayout = "horizontal";
@@ -9,10 +12,9 @@ export const DEFAULT_DMX_CONTROLLER_LAYOUT: DmxControllerLayout = "horizontal";
 export function useDmxControllerLayout(
   documentId: EntityId | undefined,
 ): DmxControllerLayout {
-  return useAppRuntimeStore(
-    (state) =>
-      (documentId && state.dmxControllerLayouts[documentId]) ||
-      DEFAULT_DMX_CONTROLLER_LAYOUT,
+  return (
+    useEditorRuntimeField(documentId, "dmxControllerLayout") ??
+    DEFAULT_DMX_CONTROLLER_LAYOUT
   );
 }
 
@@ -20,8 +22,8 @@ export function setDmxControllerLayout(
   documentId: EntityId,
   layout: DmxControllerLayout,
 ) {
-  updateAppRuntimeState((state) => {
-    state.dmxControllerLayouts[documentId] = layout;
+  updateEditorRuntimeState(documentId, (state) => {
+    state.dmxControllerLayout = layout;
   });
 }
 
@@ -31,8 +33,9 @@ export function setDmxControllerLayout(
  */
 export function useControllerDmxSerializerId(): EntityId | undefined {
   const documentId = useCurrentEditorId();
-  const selectedId = useAppRuntimeStore((state) =>
-    documentId ? state.dmxControllerSerializers[documentId] : undefined,
+  const selectedId = useEditorRuntimeField(
+    documentId,
+    "dmxControllerSerializer",
   );
   return useCurrentEditorPart((editor) =>
     resolveDmxSerializerId(editor.dmxSerializers, selectedId),
@@ -44,7 +47,7 @@ export function selectControllerDmxSerializer(
   documentId: EntityId,
   serializerId: EntityId,
 ) {
-  updateAppRuntimeState((state) => {
-    state.dmxControllerSerializers[documentId] = serializerId;
+  updateEditorRuntimeState(documentId, (state) => {
+    state.dmxControllerSerializer = serializerId;
   });
 }

@@ -883,7 +883,11 @@ describe("dmxEditor/state.ts", () => {
       expect(tabSerializerId()).toBe(serializerId);
 
       act(() => {
-        selectTabDmxSerializer(TAB_ID, serializerIds()[1]);
+        selectTabDmxSerializer(
+          EntityId("test-editor-id"),
+          TAB_ID,
+          serializerIds()[1],
+        );
       });
 
       expect(tabSerializerId()).toBe(serializerIds()[1]);

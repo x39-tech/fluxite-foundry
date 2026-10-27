@@ -5,20 +5,11 @@ import { LibraryStore } from "codex/library";
 import { EntityId } from "./persistentState";
 
 export interface AppRuntimeState {
-  // One DMX test driver per open device class document, keyed by the document's
-  // id. A document with no DMX serializer has no entry.
-  dmxControllers: Record<EntityId, DmxController>;
-  // The DMX serializer each DMX editor tab is editing, keyed by the tab's
-  // FlexLayout node id.
-  dmxEditorSerializers: Record<string, EntityId>;
-  // The DMX serializer each document's test driver is built from, keyed by the
-  // document's id.
-  dmxControllerSerializers: Record<EntityId, EntityId>;
+  // The runtime state of each open device class document. Use the helpers in
+  // features/deviceClassEditor/runtimeState.ts to read and write it.
+  deviceClassEditors: Record<EntityId, DeviceClassEditorRuntimeState>;
   // Live sACN output from the DMX test controller (only possible on desktop).
   sacnOutput: SacnOutputState;
-  // How each document's DMX test controller arranges its panels. A document
-  // with no entry uses the default.
-  dmxControllerLayouts: Record<EntityId, DmxControllerLayout>;
   libraries: LibraryStore;
   systemDarkModePreference: boolean;
   // Each document's undo/redo stack. See app/undo.ts
@@ -26,6 +17,22 @@ export interface AppRuntimeState {
   // The save file each document came from or was last written to. A document
   // with no entry has never been written to a file. See app/documentFile.ts
   documentFiles: Record<EntityId, DocumentFile>;
+}
+
+export interface DeviceClassEditorRuntimeState {
+  /** The DMX test driver. */
+  dmxController?: DmxController;
+  /** The DMX serializer the test driver is built from. */
+  dmxControllerSerializer?: EntityId;
+  /** How the DMX test controller arranges its panels. */
+  dmxControllerLayout?: DmxControllerLayout;
+  /** Settings for the DMX test driver's live sACN output. */
+  sacnOutputSettings?: SacnOutputSettings;
+  /**
+   * The DMX serializer each DMX editor tab is editing, keyed by the tab's
+   * FlexLayout node id.
+   */
+  dmxEditorTabSerializers?: Record<string, EntityId>;
 }
 
 /** What a document knows about the save file it belongs to. */
@@ -85,8 +92,6 @@ export interface DmxControllerError {
 export type DmxControllerLayout = "horizontal" | "vertical";
 
 export interface SacnOutputState {
-  // Each device class document's output settings.
-  settings: Record<EntityId, SacnOutputSettings>;
   // The document whose test controller is transmitting. Only one transmits at
   // a time.
   activeDocumentId?: EntityId;

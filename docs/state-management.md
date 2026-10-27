@@ -29,7 +29,10 @@ useLocalizations -> useCurrentEditorPart -> useAppPersistentStore
 
 There are some functions in `app/stateUtils.ts` to help with common state selection patterns, e.g. selecting entities based on a filter.
 
-`useAppPersistentStore`/`useAppRuntimeStore` and derivative hooks use a selector pattern which will be familiar to anyone who has used Redux or a derived framework. **Be careful not to return newly-created objects or arrays in selectors, as this will cause unnecessary re-renders and could cause an infinite loop.**
+`useAppPersistentStore`/`useAppRuntimeStore` and derivative hooks use a selector pattern which will be familiar to anyone who has used Redux or a derived framework. This pattern carries some footguns to avoid:
+
+1. **Be careful not to return newly-created objects or arrays in selectors**, as this will cause unnecessary re-renders and could cause an infinite loop.
+2. **Be careful not to select an entire store**, e.g. `useAppRuntimeStore()` or `useAppRuntimeStore((state) => state)`. Some fields change on nearly every user action, so a component that selects the whole store will re-render constantly.
 
 If you want to write an access hook that returns a transformed form of state data, there are generally two options. If the transformed data is an array or object that does not have deep nesting, you can use the [useShallow](https://zustand.docs.pmnd.rs/hooks/use-shallow) pattern from Zustand. Or, you can return unmodified state in your selector function and then transform it outside the selector function.
 
