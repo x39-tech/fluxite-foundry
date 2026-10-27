@@ -69,11 +69,8 @@ function watchLocalizationIntegrity() {
 export function resetAppRuntimeStore() {
   useAppRuntimeStore.setState(
     {
-      dmxControllers: {},
-      dmxEditorSerializers: {},
-      dmxControllerSerializers: {},
-      sacnOutput: { settings: {} },
-      dmxControllerLayouts: {},
+      deviceClassEditors: {},
+      sacnOutput: {},
       libraries: loadDefaultLibraries(),
       systemDarkModePreference: false,
       history: {},

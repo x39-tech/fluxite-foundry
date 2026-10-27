@@ -257,11 +257,8 @@ function getSystemDarkModePreference(): boolean {
 
 function getDefaultRuntimeState(): AppRuntimeState {
   return {
-    dmxControllers: {},
-    dmxEditorSerializers: {},
-    dmxControllerSerializers: {},
-    sacnOutput: { settings: {} },
-    dmxControllerLayouts: {},
+    deviceClassEditors: {},
+    sacnOutput: {},
     libraries: loadDefaultLibraries(),
     systemDarkModePreference: getSystemDarkModePreference(),
     history: {},

@@ -1,6 +1,10 @@
 import { EntityId } from "app/persistentState";
 import { SacnOutputSettings } from "app/runtimeState";
 import { updateAppRuntimeState, useAppRuntimeStore } from "app/store";
+import {
+  updateEditorRuntimeState,
+  useEditorRuntimeField,
+} from "../../runtimeState";
 import { UNIVERSE_SIZE } from "./native";
 
 export const DEFAULT_SACN_OUTPUT_SETTINGS: SacnOutputSettings = {
@@ -11,10 +15,9 @@ export const DEFAULT_SACN_OUTPUT_SETTINGS: SacnOutputSettings = {
 export function useSacnOutputSettings(
   documentId: EntityId | undefined,
 ): SacnOutputSettings {
-  return useAppRuntimeStore(
-    (state) =>
-      (documentId && state.sacnOutput.settings[documentId]) ||
-      DEFAULT_SACN_OUTPUT_SETTINGS,
+  return (
+    useEditorRuntimeField(documentId, "sacnOutputSettings") ??
+    DEFAULT_SACN_OUTPUT_SETTINGS
   );
 }
 
@@ -30,10 +33,9 @@ export function updateSacnOutputSettings(
   documentId: EntityId,
   changes: Partial<SacnOutputSettings>,
 ) {
-  updateAppRuntimeState((state) => {
-    state.sacnOutput.settings[documentId] = {
-      ...(state.sacnOutput.settings[documentId] ??
-        DEFAULT_SACN_OUTPUT_SETTINGS),
+  updateEditorRuntimeState(documentId, (state) => {
+    state.sacnOutputSettings = {
+      ...(state.sacnOutputSettings ?? DEFAULT_SACN_OUTPUT_SETTINGS),
       ...changes,
     };
   });

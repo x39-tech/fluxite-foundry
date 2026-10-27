@@ -13,13 +13,16 @@ import {
   updateAppRuntimeState,
 } from "app/store";
 import { documentIdsOfType, documentOfType } from "app/documents";
-import { AppRuntimeState, DmxController } from "app/runtimeState";
+import { DmxController } from "app/runtimeState";
 import { exportDeviceClass } from "./export";
 import { resolveDmxSerializerId } from "./dmxEditor/modes";
-
-// Parts of a document the DMX driver does not read. The window layout used to
-// be one of these; it is session state now and never reaches this module.
-const NON_DRIVER_FIELDS = new Set<keyof DeviceClassDocument>([]);
+import {
+  editorRuntimeDraft,
+  editorRuntimeField,
+  forgetClosedEditors,
+  subscribeToEditorRuntimeField,
+  updateEditorRuntimeState,
+} from "./runtimeState";
 
 type DeviceClassDocuments = Record<EntityId, DeviceClassDocument>;
 
@@ -35,8 +38,9 @@ export function initDeviceClassEditorEffects() {
   const unsubscribePersistent = useAppPersistentStore.subscribe(
     onPersistentStateChanged,
   );
-  const unsubscribeRuntime = useAppRuntimeStore.subscribe(
-    onRuntimeStateChanged,
+  const unsubscribeRuntime = subscribeToEditorRuntimeField(
+    "dmxControllerSerializer",
+    onControllerSerializersChanged,
   );
   const stop = () => {
     unsubscribePersistent();
@@ -66,12 +70,8 @@ export function resetDmxDriver(documentId: EntityId) {
   }
 
   const controller = createDmxDriver(documentId, editor);
-  updateAppRuntimeState((state) => {
-    if (controller) {
-      state.dmxControllers[documentId] = controller;
-    } else {
-      delete state.dmxControllers[documentId];
-    }
+  updateEditorRuntimeState(documentId, (state) => {
+    state.dmxController = controller;
   });
 }
 
@@ -84,25 +84,17 @@ function onPersistentStateChanged(
   previousState: AppPersistentState,
 ) {
   syncDmxDrivers(deviceClasses(state), deviceClasses(previousState));
+  forgetClosedEditors(state.documents);
 }
 
 // Rebuilds the driver of every document whose test controller was switched to
 // another serializer.
-function onRuntimeStateChanged(
-  state: AppRuntimeState,
-  previousState: AppRuntimeState,
-) {
-  const selections = state.dmxControllerSerializers;
-  const previousSelections = previousState.dmxControllerSerializers;
-  if (selections === previousSelections) {
-    return;
-  }
-
+function onControllerSerializersChanged(changedIds: EntityId[]) {
   const editors = deviceClasses(useAppPersistentStore.getState());
   const changed = new Map<EntityId, DmxController | undefined>();
-  for (const id of documentIds(selections, previousSelections)) {
+  for (const id of changedIds) {
     const editor = editors[id];
-    if (editor && selections[id] !== previousSelections[id]) {
+    if (editor) {
       changed.set(id, createDmxDriver(id, editor));
     }
   }
@@ -123,22 +115,23 @@ function deviceClasses(state: AppPersistentState): DeviceClassDocuments {
   return documents;
 }
 
-// Rebuilds the DMX test driver of every document whose content changed, and
-// removes the driver of a document that closed. A document with no DMX
-// serializer has nothing to build a driver from and so has no entry.
+// Rebuilds the DMX test driver of every open document whose content changed.
+// A document with no DMX serializer has nothing to build a driver from and so
+// has no driver. The driver of a closed document goes with the rest of its
+// runtime state, in forgetClosedEditors.
 function syncDmxDrivers(
   editors: DeviceClassDocuments,
   previousEditors: DeviceClassDocuments,
 ) {
   const changed = new Map<EntityId, DmxController | undefined>();
 
-  for (const id of documentIds(editors, previousEditors)) {
-    const editor = editors[id];
-    if (driverInputsEqual(editor, previousEditors[id])) {
-      continue;
+  for (const [id, editor] of Object.entries(editors) as [
+    EntityId,
+    DeviceClassDocument,
+  ][]) {
+    if (editor !== previousEditors[id]) {
+      changed.set(id, createDmxDriver(id, editor));
     }
-
-    changed.set(id, editor ? createDmxDriver(id, editor) : undefined);
   }
 
   setDmxControllers(changed);
@@ -151,53 +144,9 @@ function setDmxControllers(changed: Map<EntityId, DmxController | undefined>) {
 
   updateAppRuntimeState((state) => {
     for (const [id, controller] of changed) {
-      if (controller) {
-        state.dmxControllers[id] = controller;
-      } else {
-        delete state.dmxControllers[id];
-      }
+      editorRuntimeDraft(state, id).dmxController = controller;
     }
   });
-}
-
-function documentIds(
-  current: Record<EntityId, unknown>,
-  previous: Record<EntityId, unknown>,
-): Set<EntityId> {
-  return new Set([
-    ...Object.keys(current),
-    ...Object.keys(previous),
-  ]) as Set<EntityId>;
-}
-
-// Compares the two documents field by field. Immer shares the structure a
-// change did not touch, so an untouched table is referentially equal in both.
-function driverInputsEqual(
-  editor: DeviceClassDocument | undefined,
-  previousEditor: DeviceClassDocument | undefined,
-): boolean {
-  if (editor === previousEditor) {
-    return true;
-  }
-  if (!editor || !previousEditor) {
-    return false;
-  }
-
-  const fields = new Set([
-    ...Object.keys(editor),
-    ...Object.keys(previousEditor),
-  ]) as Set<keyof DeviceClassDocument>;
-
-  for (const field of fields) {
-    if (NON_DRIVER_FIELDS.has(field)) {
-      continue;
-    }
-    if (editor[field] !== previousEditor[field]) {
-      return false;
-    }
-  }
-
-  return true;
 }
 
 // Builds the test driver for one document.
@@ -207,7 +156,11 @@ function createDmxDriver(
 ): DmxController | undefined {
   const serializerId = resolveDmxSerializerId(
     editor.dmxSerializers,
-    useAppRuntimeStore.getState().dmxControllerSerializers[documentId],
+    editorRuntimeField(
+      useAppRuntimeStore.getState(),
+      documentId,
+      "dmxControllerSerializer",
+    ),
   );
   const serializer = serializerId && editor.dmxSerializers[serializerId];
   if (!serializer || Object.keys(serializer.chunks).length === 0) {

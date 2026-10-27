@@ -16,6 +16,7 @@ import {
 import { updateAppPersistentState, useAppRuntimeStore } from "app/store";
 import { createEmptyDeviceClassEditor, resetAllStores } from "test/utils";
 import { addDmxMode, MappableParameter } from "../dmxEditor/state";
+import { editorRuntimeField } from "../runtimeState";
 import { DmxController } from "./DmxController";
 
 vi.mock("../dmxEditor/state", async (importOriginal) => ({
@@ -426,7 +427,11 @@ describe("modes", () => {
   });
 
   function controllerSelection(): EntityId | undefined {
-    return useAppRuntimeStore.getState().dmxControllerSerializers[EDITOR_ID];
+    return editorRuntimeField(
+      useAppRuntimeStore.getState(),
+      EDITOR_ID,
+      "dmxControllerSerializer",
+    );
   }
 
   test("is built from the first mode until another is selected", () => {
@@ -437,7 +442,13 @@ describe("modes", () => {
 
   test("selects the mode to build the controller from", async () => {
     const { user } = setUpController([]);
-    const editedModes = useAppRuntimeStore.getState().dmxEditorSerializers;
+    const editedModes = () =>
+      editorRuntimeField(
+        useAppRuntimeStore.getState(),
+        EDITOR_ID,
+        "dmxEditorTabSerializers",
+      );
+    const before = editedModes();
 
     await user.click(modeSelect());
     await user.click(screen.getByRole("option", { name: "mode-2" }));
@@ -445,9 +456,7 @@ describe("modes", () => {
     expect(modeSelect()).toHaveTextContent("mode-2");
     expect(controllerSelection()).toBeDefined();
     // The DMX editor goes on editing the mode it was editing.
-    expect(useAppRuntimeStore.getState().dmxEditorSerializers).toBe(
-      editedModes,
-    );
+    expect(editedModes()).toBe(before);
   });
 
   test("can switch modes while the selected one cannot be built", async () => {

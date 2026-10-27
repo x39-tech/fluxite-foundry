@@ -28,6 +28,7 @@ import {
   selectTabDmxSerializer,
   useDmxModes,
 } from "./state";
+import { useCurrentEditorId } from "../state";
 
 interface Props {
   tabId: string;
@@ -38,6 +39,7 @@ interface Props {
 /** Picks the mode a DMX editor tab is editing. Also adds, renames and deletes modes. */
 export const DmxModeBar = ({ tabId, serializerId }: Props) => {
   const idPrefix = useId();
+  const documentId = useCurrentEditorId();
   const modes = useDmxModes();
   const edited = modes.find((mode) => mode.id === serializerId);
 
@@ -57,7 +59,8 @@ export const DmxModeBar = ({ tabId, serializerId }: Props) => {
               displayValues={modes.map((mode) => mode.codexId)}
               selectedValue={edited.id}
               onSelectionChanged={(id) =>
-                selectTabDmxSerializer(tabId, EntityId(id))
+                documentId &&
+                selectTabDmxSerializer(documentId, tabId, EntityId(id))
               }
             />
           </FieldSet>

@@ -3,13 +3,14 @@ import { isTauri } from "@tauri-apps/api/core";
 import { toast } from "sonner";
 import { EntityId } from "app/persistentState";
 import { DmxController } from "app/runtimeState";
-import { updateAppRuntimeState, useAppRuntimeStore } from "app/store";
+import { useAppRuntimeStore } from "app/store";
 import { resetAppRuntimeStore } from "test/utils";
 import {
   initSacnOutputEffects,
   sacnOutputSettled,
   stopSacnOutputEffects,
 } from "./effects";
+import { updateEditorRuntimeState } from "../../runtimeState";
 import { startSacnOutput, stopSacnOutput } from "./native";
 import { setSacnOutputActive, updateSacnOutputSettings } from "./state";
 
@@ -24,8 +25,8 @@ const documentId = "doc" as EntityId;
 
 // The output only runs for a document that has a DMX test driver.
 function openDocumentWithDriver(id: EntityId) {
-  updateAppRuntimeState((state) => {
-    state.dmxControllers[id] = { state: "not-created" } as DmxController;
+  updateEditorRuntimeState(id, (state) => {
+    state.dmxController = { state: "not-created" } as DmxController;
   });
 }
 
@@ -86,8 +87,8 @@ describe("on the desktop", () => {
   it("turns off and stops when the document's driver goes away", async () => {
     setSacnOutputActive(documentId, true);
     await sacnOutputSettled();
-    updateAppRuntimeState((state) => {
-      delete state.dmxControllers[documentId];
+    updateEditorRuntimeState(documentId, (state) => {
+      delete state.dmxController;
     });
     await sacnOutputSettled();
 

@@ -17,6 +17,24 @@ const compat = new FlatCompat({
   allConfig: js.configs.all,
 });
 
+// ---------------------------------------------------------------------------
+// Project-specific no-restricted-syntax lint helpers
+// ---------------------------------------------------------------------------
+
+// Disallow selecting a whole store in zustand, to avoid constant re-rendering.
+const STORE_HOOK = "/^useApp(Runtime|Persistent)Store$/";
+const WHOLE_STORE_SELECTORS = [
+  `CallExpression[callee.name=${STORE_HOOK}][arguments.length=0]`,
+  // A selector that returns its argument, e.g. (state) => state, including
+  // inside useShallow.
+  `CallExpression[callee.name=${STORE_HOOK}] > ArrowFunctionExpression[params.0.type='Identifier'][body.type='Identifier']`,
+  `CallExpression[callee.name=${STORE_HOOK}] > CallExpression[callee.name='useShallow'] > ArrowFunctionExpression[params.0.type='Identifier'][body.type='Identifier']`,
+].map((selector) => ({
+  selector,
+  message:
+    "Select only the part of the store the component uses, not the whole store.",
+}));
+
 export default defineConfig([
   globalIgnores([
     "**/dist/",
@@ -68,6 +86,12 @@ export default defineConfig([
           ignoreRestSiblings: true,
         },
       ],
+    },
+  },
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-syntax": ["error", ...WHOLE_STORE_SELECTORS],
     },
   },
   {

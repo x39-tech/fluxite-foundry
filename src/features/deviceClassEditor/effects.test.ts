@@ -13,8 +13,13 @@ import {
   testUndoLabel,
 } from "test/utils";
 import { closeDocument, setSelectedDocument } from "features/topNavBar/state";
-import { selectControllerDmxSerializer } from "./controller/state";
+import {
+  selectControllerDmxSerializer,
+  setDmxControllerLayout,
+} from "./controller/state";
+import { updateSacnOutputSettings } from "./controller/sacnOutput/state";
 import { updateCurrentEditor, setWindowLayout } from "./state";
+import { editorRuntimeField } from "./runtimeState";
 import {
   initDeviceClassEditorEffects,
   stopDeviceClassEditorEffects,
@@ -142,6 +147,27 @@ describe("DMX driver effect", () => {
     expect(controllerFor(FIRST_EDITOR)).toBeDefined();
   });
 
+  test("forgets the test controller settings of a closed document", () => {
+    openSecondEditor();
+    initDeviceClassEditorEffects();
+    setDmxControllerLayout(FIRST_EDITOR, "vertical");
+    setDmxControllerLayout(SECOND_EDITOR, "vertical");
+    updateSacnOutputSettings(SECOND_EDITOR, { universe: 7 });
+
+    closeDocument(SECOND_EDITOR);
+
+    const state = useAppRuntimeStore.getState();
+    expect(
+      editorRuntimeField(state, SECOND_EDITOR, "sacnOutputSettings"),
+    ).toBeUndefined();
+    expect(
+      editorRuntimeField(state, SECOND_EDITOR, "dmxControllerLayout"),
+    ).toBeUndefined();
+    expect(editorRuntimeField(state, FIRST_EDITOR, "dmxControllerLayout")).toBe(
+      "vertical",
+    );
+  });
+
   // An undo is a state change like any other, so the driver follows it without
   // undo having to know that drivers exist.
   test("rebuilds the driver when a change is undone", () => {
@@ -225,7 +251,11 @@ describe("DMX driver effect", () => {
 });
 
 function controllerFor(editorId: EntityId): DmxController | undefined {
-  return useAppRuntimeStore.getState().dmxControllers[editorId];
+  return editorRuntimeField(
+    useAppRuntimeStore.getState(),
+    editorId,
+    "dmxController",
+  );
 }
 
 // How many DMX slots the document's driver outputs.

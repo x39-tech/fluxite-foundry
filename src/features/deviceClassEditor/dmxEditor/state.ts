@@ -27,8 +27,7 @@ import {
 } from "../state";
 import { newEntityId, selectWithIds } from "app/stateUtils";
 import {
-  updateAppRuntimeState,
-  useAppRuntimeStore,
+  useAppPersistentStore,
   useLibraryStore,
   useAuthoringLocale,
 } from "app/store";
@@ -47,6 +46,11 @@ import {
   nextModeCodexId,
   resolveDmxSerializerId,
 } from "./modes";
+import {
+  updateEditorRuntimeState,
+  useEditorRuntimeField,
+  useEditorTabDmxSerializer,
+} from "../runtimeState";
 
 const UNDO = {
   addMode: msg({
@@ -158,9 +162,7 @@ export function useDmxModes(): DmxMode[] {
  * document has no serializers.
  */
 export function useTabDmxSerializerId(tabId: string): EntityId | undefined {
-  const selectedId = useAppRuntimeStore(
-    (state) => state.dmxEditorSerializers[tabId],
-  );
+  const selectedId = useEditorTabDmxSerializer(useCurrentEditorId(), tabId);
   return useCurrentEditorPart((editor) =>
     resolveDmxSerializerId(editor.dmxSerializers, selectedId),
   );
@@ -219,10 +221,7 @@ export function useDmxChunkEditors(): ItemEditor[] {
 /** The DMX test driver built from the document being edited, if it has one. */
 export function useDmxController(): DmxController {
   const editorId = useCurrentEditorId();
-  return useAppRuntimeStore(
-    (state) =>
-      (editorId ? state.dmxControllers[editorId] : undefined) ?? NO_CONTROLLER,
-  );
+  return useEditorRuntimeField(editorId, "dmxController") ?? NO_CONTROLLER;
 }
 
 const NO_CONTROLLER: DmxController = { state: "not-created" };
@@ -706,10 +705,14 @@ export function removeCondition(serializerId: EntityId, conditionId: EntityId) {
 // Write - Modes
 // ---------------------------------------------------------------------------
 
-/** Selects the serializer that a DMX editor tab is editing. */
-export function selectTabDmxSerializer(tabId: string, serializerId: EntityId) {
-  updateAppRuntimeState((state) => {
-    state.dmxEditorSerializers[tabId] = serializerId;
+/** Selects the serializer that a DMX editor tab of a document is editing. */
+export function selectTabDmxSerializer(
+  documentId: EntityId,
+  tabId: string,
+  serializerId: EntityId,
+) {
+  updateEditorRuntimeState(documentId, (state) => {
+    (state.dmxEditorTabSerializers ??= {})[tabId] = serializerId;
   });
 }
 
@@ -763,7 +766,9 @@ function addDmxSerializer(
     }
   });
 
-  if (added && tabId !== undefined) {
-    selectTabDmxSerializer(tabId, id);
+  const documentId =
+    useAppPersistentStore.getState().session.selectedDocumentId;
+  if (added && tabId !== undefined && documentId !== undefined) {
+    selectTabDmxSerializer(documentId, tabId, id);
   }
 }

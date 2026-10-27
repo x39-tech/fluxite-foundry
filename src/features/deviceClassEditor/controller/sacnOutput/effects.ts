@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { AppRuntimeState } from "app/runtimeState";
 import { updateAppRuntimeState, useAppRuntimeStore } from "app/store";
 import { errorMessage } from "utils/utils";
+import { editorRuntimeField } from "../../runtimeState";
 import { startSacnOutput, stopSacnOutput } from "./native";
 import { DEFAULT_SACN_OUTPUT_SETTINGS } from "./state";
 
@@ -69,7 +70,10 @@ function onRuntimeStateChanged(state: AppRuntimeState) {
 
   // A document whose DMX test driver went away, because it closed or no longer
   // maps anything to DMX, has nothing left to send.
-  if (activeDocumentId && !(activeDocumentId in state.dmxControllers)) {
+  if (
+    activeDocumentId &&
+    !editorRuntimeField(state, activeDocumentId, "dmxController")
+  ) {
     updateAppRuntimeState((state) => {
       state.sacnOutput.activeDocumentId = undefined;
     });
@@ -84,13 +88,14 @@ function onRuntimeStateChanged(state: AppRuntimeState) {
 }
 
 function targetOf(state: AppRuntimeState): OutputTarget | null {
-  const { activeDocumentId, settings } = state.sacnOutput;
+  const { activeDocumentId } = state.sacnOutput;
   if (!activeDocumentId) {
     return null;
   }
 
   const { interfaceName, universe } =
-    settings[activeDocumentId] ?? DEFAULT_SACN_OUTPUT_SETTINGS;
+    editorRuntimeField(state, activeDocumentId, "sacnOutputSettings") ??
+    DEFAULT_SACN_OUTPUT_SETTINGS;
   return interfaceName ? { interfaceName, universe } : null;
 }
 
