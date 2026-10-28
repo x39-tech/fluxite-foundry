@@ -8,6 +8,7 @@ import type {
   ChunkKey,
 } from "./sequenceManager/sequenceTypes";
 import { getHoldDuration } from "./sequenceManager/useDmxSequenceManager";
+import { formatSlotNumbers } from "../dmxEditor/slotNumbers";
 
 interface ActiveSequencesPaneProps {
   className?: string;
@@ -141,7 +142,7 @@ export const ActiveSequencesPane = ({
       ) : (
         <ul className="flex min-h-0 flex-col gap-2 overflow-auto">
           {activeChunks.map((info, index) => {
-            const slotList = info.chunkOffsets.join(", ");
+            const slotList = formatSlotNumbers(info.chunkOffsets);
             const stepNumber = info.currentStep;
             const stepTotal = info.totalSteps;
             const timeRemaining = formatTimeRemaining(info.timeRemaining);

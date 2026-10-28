@@ -38,6 +38,7 @@ import {
 } from "../stateTransformations";
 import { resolveClassRef } from "../classResolution";
 import { EffectiveEnumChoice, getEffectiveEnumChoices } from "./mappingUtils";
+import { formatSlotNumbers, MAX_SLOT_NUMBER } from "./slotNumbers";
 import { localize } from "features/localizations/localize";
 import { ItemEditor } from "utils/utils";
 import {
@@ -195,11 +196,14 @@ export function useDmxSerializer(): DmxSerializer | undefined {
 
 const CHUNK_LABEL = msg({
   id: "deviceClassEditor.dmxChunk.slotLabel",
-  message: "Slot {offsets}",
+  message: "Slot {slots}",
 });
 
 export function dmxChunkLabel(offsets: number[]): string {
-  return i18n._({ ...CHUNK_LABEL, values: { offsets: offsets.join(", ") } });
+  return i18n._({
+    ...CHUNK_LABEL,
+    values: { slots: formatSlotNumbers(offsets) },
+  });
 }
 
 export function useDmxChunkEditors(): ItemEditor[] {
@@ -473,32 +477,24 @@ function removeConditionAndChildren(dmx: DmxSerializer, conditionId: EntityId) {
 export function changeDmxChunkOffsets(
   serializerId: EntityId,
   chunkId: EntityId,
-  newOffsets: string[],
+  newOffsets: number[],
 ) {
   updateDmxSerializer(serializerId, UNDO.changeOffsets, (dmx) => {
     const chunk = dmx.chunks[chunkId];
     if (!chunk) return;
 
-    try {
-      const newOffsetsInt = newOffsets.map((o) => parseInt(o));
-      for (const offset of newOffsetsInt) {
-        if (offset < 0 || offset >= 512) {
-          throw new Error("Invalid offset");
-        }
+    const valid = newOffsets.every(
+      (offset) =>
+        Number.isInteger(offset) &&
+        offset >= 0 &&
+        offset < MAX_SLOT_NUMBER &&
+        !Object.entries(dmx.chunks).some(
+          ([id, other]) => id !== chunkId && other.offsets.includes(offset),
+        ),
+    );
+    if (!valid) return;
 
-        for (const [curChunkId, curChunk] of Object.entries(dmx.chunks)) {
-          if (curChunkId !== chunkId && curChunk.offsets.includes(offset)) {
-            throw new Error("Offset already in use");
-          }
-        }
-      }
-
-      chunk.offsets = [...new Set(newOffsetsInt)];
-    } catch (e) {
-      // TODO user feedback
-      console.log(`Error adding DMX chunk: ${e}`);
-      return;
-    }
+    chunk.offsets = [...new Set(newOffsets)];
   });
 }
 

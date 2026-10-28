@@ -5,6 +5,7 @@ import { useId, useState } from "react";
 import { ToggleGroup, ToggleGroupItem } from "components/scn-ui/ToggleGroup";
 import { cn } from "utils/utils";
 import { SELECTED_ITEM } from "./styles";
+import { slotNumberFromOffset } from "../dmxEditor/slotNumbers";
 
 const MESSAGES = {
   activeSlot: msg({
@@ -93,47 +94,52 @@ export const DmxDisplay = ({
               </tr>
             </thead>
             <tbody>
-              {[...Array(rowCount).keys()].map((row) => (
-                <tr key={row} className="border-t">
-                  <th
-                    scope="row"
-                    className="h-8 w-12 bg-muted/50 font-semibold"
-                  >
-                    {row * COLUMNS}
-                  </th>
-                  {[...Array(COLUMNS).keys()].map((column) => {
-                    const slot = row * COLUMNS + column;
-                    if (slot >= slotCount) {
-                      return <td key={column} />;
-                    }
+              {[...Array(rowCount).keys()].map((row) => {
+                const firstOffset = row * COLUMNS;
+                const lastOffset = firstOffset + COLUMNS - 1;
+                return (
+                  <tr key={row} className="border-t">
+                    <th
+                      scope="row"
+                      className="h-8 w-18 bg-muted/50 font-semibold"
+                    >
+                      {slotNumberFromOffset(firstOffset)}-
+                      {slotNumberFromOffset(lastOffset)}
+                    </th>
+                    {[...Array(COLUMNS).keys()].map((column) => {
+                      const slot = row * COLUMNS + column;
+                      if (slot >= slotCount) {
+                        return <td key={column} />;
+                      }
 
-                    const isActive = activeSlots?.has(slot) ?? false;
-                    const formattedValue =
-                      format === "hex"
-                        ? dmxValues[slot].toString(16).padStart(2, "0")
-                        : dmxValues[slot].toString();
-                    return (
-                      <td
-                        key={column}
-                        aria-label={
-                          isActive
-                            ? _({
-                                ...MESSAGES.activeSlot,
-                                values: { value: formattedValue },
-                              })
-                            : undefined
-                        }
-                        className={cn(
-                          "h-8 px-1",
-                          isActive && "font-bold text-orange-500",
-                        )}
-                      >
-                        {formattedValue}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
+                      const isActive = activeSlots?.has(slot) ?? false;
+                      const formattedValue =
+                        format === "hex"
+                          ? dmxValues[slot].toString(16).padStart(2, "0")
+                          : dmxValues[slot].toString();
+                      return (
+                        <td
+                          key={column}
+                          aria-label={
+                            isActive
+                              ? _({
+                                  ...MESSAGES.activeSlot,
+                                  values: { value: formattedValue },
+                                })
+                              : undefined
+                          }
+                          className={cn(
+                            "h-8 px-1",
+                            isActive && "font-bold text-orange-500",
+                          )}
+                        >
+                          {formattedValue}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

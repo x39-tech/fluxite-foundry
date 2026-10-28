@@ -1,6 +1,8 @@
 import { Trans } from "@lingui/react/macro";
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
+import { MessageDescriptor } from "@lingui/core";
+import { useState } from "react";
 import { CircleQuestionMarkIcon, PlusIcon } from "lucide-react";
 import { EntityId } from "app/persistentState";
 import { Button } from "components/scn-ui/Button";
@@ -8,6 +10,7 @@ import { Label } from "components/scn-ui/Label";
 import { FieldSet } from "components/FieldSet";
 import { RenderError } from "components/RenderError";
 import { TagInputField } from "components/EditorFields/TagInputField";
+import { ValidationPopover } from "components/ValidationPopover";
 import {
   Tooltip,
   TooltipContent,
@@ -21,11 +24,12 @@ import {
   useEditedDmxSerializerId,
 } from "./state";
 import { DmxParameterGroup } from "./DmxParameterGroup";
+import { parseSlotNumbers, slotNumberFromOffset } from "./slotNumbers";
 
 const MESSAGES = {
-  offsetsUsed: msg({
-    id: "deviceClassEditor.dmxChunk.offsetsUsed",
-    message: "Offsets Used",
+  slotsUsed: msg({
+    id: "deviceClassEditor.dmxChunk.slotsUsed",
+    message: "Slots Used",
   }),
 };
 
@@ -37,6 +41,7 @@ export const DmxChunkEditor = ({ chunkId }: Props) => {
   const { _ } = useLingui();
 
   const serializerId = useEditedDmxSerializerId();
+  const [rejection, setRejection] = useState<MessageDescriptor>();
   const dmx = useDmxSerializer();
   const chunk = dmx?.chunks[chunkId];
 
@@ -52,8 +57,8 @@ export const DmxChunkEditor = ({ chunkId }: Props) => {
         <FieldSet>
           <div className="flex items-center gap-2">
             <Label>
-              <Trans id="deviceClassEditor.dmxChunk.offsetsUsed">
-                Offsets Used
+              <Trans id="deviceClassEditor.dmxChunk.slotsUsed">
+                Slots Used
               </Trans>
             </Label>
             <Tooltip>
@@ -61,21 +66,36 @@ export const DmxChunkEditor = ({ chunkId }: Props) => {
                 <CircleQuestionMarkIcon className="size-4 text-muted-foreground" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                <Trans id="deviceClassEditor.dmxChunk.offsetsUsedHelp">
-                  The DMX slot offsets this group occupies, relative to the
-                  start of the footprint.
+                <Trans id="deviceClassEditor.dmxChunk.slotsUsedHelp">
+                  DMX slots are numbered from 1 at the beginning of the
+                  device&apos;s footprint. Slots are ordered from most to least
+                  significant byte.
                 </Trans>
               </TooltipContent>
             </Tooltip>
           </div>
-          <TagInputField
-            className="w-xs"
-            aria-label={_(MESSAGES.offsetsUsed)}
-            values={chunk.offsets.map((offset) => offset.toString())}
-            onValuesChanged={(newValues) =>
-              changeDmxChunkOffsets(serializerId, chunkId, newValues)
-            }
-          />
+          <ValidationPopover
+            result={{ isValid: rejection === undefined, feedback: rejection }}
+          >
+            <div onBlur={() => setRejection(undefined)}>
+              <TagInputField
+                className="w-xs"
+                aria-label={_(MESSAGES.slotsUsed)}
+                values={chunk.offsets.map((offset) =>
+                  slotNumberFromOffset(offset).toString(),
+                )}
+                onValuesChanged={(newValues) => {
+                  const result = parseSlotNumbers(newValues, dmx, chunkId);
+                  if (!result.isValid) {
+                    setRejection(result.feedback);
+                    return;
+                  }
+                  setRejection(undefined);
+                  changeDmxChunkOffsets(serializerId, chunkId, result.offsets);
+                }}
+              />
+            </div>
+          </ValidationPopover>
         </FieldSet>
         <Button
           variant="ghost"

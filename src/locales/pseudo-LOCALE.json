@@ -1,4 +1,15 @@
 {
+  "deviceClassEditor.dmxChunk.notASlotNumber": {
+    "message": "“{input}” is not a slot number from 1 to {max}",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/slotNumbers.ts"
+      ]
+    ],
+    "translation": ""
+  },
   "deviceClassEditor.paramInstantiation.noMaximum": {
     "message": "(no maximum)",
     "placeholders": {},
@@ -2748,6 +2759,17 @@
     ],
     "translation": ""
   },
+  "deviceClassEditor.dmxChunk.slotsUsedHelp": {
+    "message": "DMX slots are numbered from 1 at the beginning of the device's footprint. Slots are ordered from most to least significant byte.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxChunkEditor.tsx"
+      ]
+    ],
+    "translation": ""
+  },
   "deviceClassEditor.sequenceStep.dmx": {
     "message": "DMX:",
     "placeholders": {},
@@ -4887,20 +4909,6 @@
     ],
     "translation": ""
   },
-  "deviceClassEditor.dmxChunk.offsetsUsed": {
-    "message": "Offsets Used",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/features/deviceClassEditor/dmxEditor/DmxChunkEditor.tsx"
-      ],
-      [
-        "src/features/deviceClassEditor/dmxEditor/DmxChunkEditor.tsx"
-      ]
-    ],
-    "translation": ""
-  },
   "deviceClassEditor.dmxController.parameters.on": {
     "message": "On",
     "placeholders": {},
@@ -6143,13 +6151,38 @@
     ],
     "translation": ""
   },
+  "deviceClassEditor.dmxChunk.slotInUse": {
+    "message": "Slot {slot} is already used by another slot group",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/slotNumbers.ts"
+      ]
+    ],
+    "translation": ""
+  },
   "deviceClassEditor.dmxChunk.slotLabel": {
-    "message": "Slot {offsets}",
+    "message": "Slot {slots}",
     "placeholders": {},
     "comments": [],
     "origin": [
       [
         "src/features/deviceClassEditor/dmxEditor/state.ts"
+      ]
+    ],
+    "translation": ""
+  },
+  "deviceClassEditor.dmxChunk.slotsUsed": {
+    "message": "Slots Used",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxChunkEditor.tsx"
+      ],
+      [
+        "src/features/deviceClassEditor/dmxEditor/DmxChunkEditor.tsx"
       ]
     ],
     "translation": ""
@@ -6412,17 +6445,6 @@
     "origin": [
       [
         "src/features/deviceClassEditor/widgets.tsx"
-      ]
-    ],
-    "translation": ""
-  },
-  "deviceClassEditor.dmxChunk.offsetsUsedHelp": {
-    "message": "The DMX slot offsets this group occupies, relative to the start of the footprint.",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/features/deviceClassEditor/dmxEditor/DmxChunkEditor.tsx"
       ]
     ],
     "translation": ""

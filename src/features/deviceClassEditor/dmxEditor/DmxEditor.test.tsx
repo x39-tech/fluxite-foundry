@@ -26,9 +26,9 @@ function serializerIds(): EntityId[] {
   return Object.keys(serializers()) as EntityId[];
 }
 
-/** Adds a slot group to a mode and moves it onto the given offsets. */
+/** Adds a slot group to a mode and gives it the given zero-based offsets. */
 function addChunkWithOffsets(
-  offsets: string[],
+  offsets: number[],
   serializerId: EntityId = serializerIds()[0],
 ) {
   addDmxChunk(serializerId);
@@ -45,13 +45,13 @@ function slotGroupRows(name: string) {
 }
 
 test("lists each slot group by the offsets it uses", () => {
-  addChunkWithOffsets(["3"]);
-  addChunkWithOffsets(["9", "10"]);
+  addChunkWithOffsets([3]);
+  addChunkWithOffsets([9, 10]);
 
   render(<DmxEditor tabId={TAB_ID} />);
 
-  expect(slotGroupRows("Slot 3").length).toBeGreaterThan(0);
-  expect(slotGroupRows("Slot 9, 10").length).toBeGreaterThan(0);
+  expect(slotGroupRows("Slot 4").length).toBeGreaterThan(0);
+  expect(slotGroupRows("Slot 10, 11").length).toBeGreaterThan(0);
 });
 
 test("adds a slot group", async () => {
@@ -61,30 +61,30 @@ test("adds a slot group", async () => {
 
   await user.click(screen.getByRole("button", { name: "Add DMX Slot Group" }));
 
-  // The first group added takes the first free offset.
-  expect(slotGroupRows("Slot 0").length).toBeGreaterThan(0);
+  // The first group added takes the first free slot.
+  expect(slotGroupRows("Slot 1").length).toBeGreaterThan(0);
 });
 
 test("opens the editor for a newly added slot group", async () => {
   const user = userEvent.setup();
-  addChunkWithOffsets(["3"]);
+  addChunkWithOffsets([3]);
 
   render(<DmxEditor tabId={TAB_ID} />);
 
-  expect(screen.queryByText("Offsets Used")).not.toBeInTheDocument();
+  expect(screen.queryByText("Slots Used")).not.toBeInTheDocument();
 
   await user.click(screen.getByRole("button", { name: "Add DMX Slot Group" }));
 
   expect(
-    screen.getByRole("button", { name: "Slot 0", pressed: true }),
+    screen.getByRole("button", { name: "Slot 1", pressed: true }),
   ).toBeInTheDocument();
-  expect(screen.getByText("Offsets Used")).toBeInTheDocument();
+  expect(screen.getByText("Slots Used")).toBeInTheDocument();
 });
 
 test("orders the slot groups by their first offset", () => {
-  addChunkWithOffsets(["27"]);
-  addChunkWithOffsets(["3"]);
-  addChunkWithOffsets(["9", "10"]);
+  addChunkWithOffsets([27]);
+  addChunkWithOffsets([3]);
+  addChunkWithOffsets([9, 10]);
 
   render(<DmxEditor tabId={TAB_ID} />);
 
@@ -93,20 +93,20 @@ test("orders the slot groups by their first offset", () => {
     .getAllByRole("button", { name: /^Slot / })
     .map((button) => button.textContent);
 
-  expect(rows).toEqual(["Slot 3", "Slot 9, 10", "Slot 27"]);
+  expect(rows).toEqual(["Slot 4", "Slot 10, 11", "Slot 28"]);
 });
 
 test("opens the editor for the slot group that is selected", async () => {
   const user = userEvent.setup();
-  addChunkWithOffsets(["3"]);
+  addChunkWithOffsets([3]);
 
   render(<DmxEditor tabId={TAB_ID} />);
 
-  expect(screen.queryByText("Offsets Used")).not.toBeInTheDocument();
+  expect(screen.queryByText("Slots Used")).not.toBeInTheDocument();
 
-  await user.click(screen.getByRole("button", { name: "Slot 3" }));
+  await user.click(screen.getByRole("button", { name: "Slot 4" }));
 
-  expect(screen.getByText("Offsets Used")).toBeInTheDocument();
+  expect(screen.getByText("Slots Used")).toBeInTheDocument();
   expect(
     screen.getByRole("button", { name: "Mapping Group" }),
   ).toBeInTheDocument();
@@ -114,27 +114,89 @@ test("opens the editor for the slot group that is selected", async () => {
 
 test("filters the slot groups by the search text", async () => {
   const user = userEvent.setup();
-  addChunkWithOffsets(["3"]);
-  addChunkWithOffsets(["27"]);
+  addChunkWithOffsets([3]);
+  addChunkWithOffsets([27]);
 
   render(<DmxEditor tabId={TAB_ID} />);
 
-  await user.type(screen.getByRole("searchbox"), "27");
+  await user.type(screen.getByRole("searchbox"), "28");
 
-  expect(slotGroupRows("Slot 27").length).toBeGreaterThan(0);
-  expect(slotGroupRows("Slot 3")).toHaveLength(0);
+  expect(slotGroupRows("Slot 28").length).toBeGreaterThan(0);
+  expect(slotGroupRows("Slot 4")).toHaveLength(0);
 });
 
 test("deletes a slot group", async () => {
   const user = userEvent.setup();
-  addChunkWithOffsets(["3"]);
+  addChunkWithOffsets([3]);
 
   render(<DmxEditor tabId={TAB_ID} />);
 
-  await user.click(screen.getByRole("button", { name: "Slot 3" }));
+  await user.click(screen.getByRole("button", { name: "Slot 4" }));
   await user.click(screen.getByRole("button", { name: "Delete" }));
 
-  expect(slotGroupRows("Slot 3")).toHaveLength(0);
+  expect(slotGroupRows("Slot 4")).toHaveLength(0);
+});
+
+describe("slots used", () => {
+  const slotsUsed = () => screen.getByLabelText("Slots Used");
+
+  function chunkOffsets(): number[][] {
+    return Object.values(serializers()[serializerIds()[0]].chunks).map(
+      (chunk) => chunk.offsets,
+    );
+  }
+
+  async function openSlotGroupAndType(text: string) {
+    const user = userEvent.setup();
+    render(<DmxEditor tabId={TAB_ID} />);
+    await user.click(screen.getByRole("button", { name: "Slot 4" }));
+    await user.type(within(slotsUsed()).getByRole("textbox"), text);
+  }
+
+  test("shows the slots a group uses numbered from 1", async () => {
+    addChunkWithOffsets([3, 0]);
+    const user = userEvent.setup();
+
+    render(<DmxEditor tabId={TAB_ID} />);
+    await user.click(screen.getByRole("button", { name: "Slot 4, 1" }));
+
+    expect(within(slotsUsed()).getByText("4")).toBeInTheDocument();
+    expect(within(slotsUsed()).getByText("1")).toBeInTheDocument();
+  });
+
+  test("stores the slots entered as zero-based offsets", async () => {
+    addChunkWithOffsets([3]);
+
+    await openSlotGroupAndType("1{Enter}");
+
+    expect(chunkOffsets()).toEqual([[3, 0]]);
+  });
+
+  test.each(["0", "513", "2.5", "abc"])(
+    "rejects %s as a slot number",
+    async (input) => {
+      addChunkWithOffsets([3]);
+
+      await openSlotGroupAndType(`${input}{Enter}`);
+
+      expect(chunkOffsets()).toEqual([[3]]);
+      expect(
+        screen.getByText(`“${input}” is not a slot number from 1 to 512`),
+      ).toBeInTheDocument();
+    },
+  );
+
+  test("rejects a slot that another slot group uses", async () => {
+    addChunkWithOffsets([3]);
+    addChunkWithOffsets([5]);
+
+    await openSlotGroupAndType("6{Enter}");
+
+    expect(chunkOffsets()).toEqual([[3], [5]]);
+    expect(
+      screen.getByText("Slot 6 is already used by another slot group"),
+    ).toBeInTheDocument();
+  });
 });
 
 describe("modes", () => {
@@ -177,22 +239,22 @@ describe("modes", () => {
 
   test("edits the slot groups of the selected mode", async () => {
     const user = userEvent.setup();
-    addChunkWithOffsets(["3"]);
+    addChunkWithOffsets([3]);
 
     render(<DmxEditor tabId={TAB_ID} />);
 
     await user.click(screen.getByRole("button", { name: "Add Mode" }));
 
     expect(modeSelect()).toHaveTextContent("mode-2");
-    expect(slotGroupRows("Slot 3")).toHaveLength(0);
+    expect(slotGroupRows("Slot 4")).toHaveLength(0);
 
     await user.click(
       screen.getByRole("button", { name: "Add DMX Slot Group" }),
     );
     await selectMode(user, "mode-1");
 
-    expect(slotGroupRows("Slot 3").length).toBeGreaterThan(0);
-    expect(slotGroupRows("Slot 0")).toHaveLength(0);
+    expect(slotGroupRows("Slot 4").length).toBeGreaterThan(0);
+    expect(slotGroupRows("Slot 1")).toHaveLength(0);
   });
 
   test("changes the ID of the selected mode", async () => {
@@ -221,7 +283,7 @@ describe("modes", () => {
 
   test("duplicates the selected mode and edits the copy", async () => {
     const user = userEvent.setup();
-    addChunkWithOffsets(["3"]);
+    addChunkWithOffsets([3]);
 
     render(<DmxEditor tabId={TAB_ID} />);
 
@@ -229,7 +291,7 @@ describe("modes", () => {
 
     expect(modeIds()).toEqual(["mode-1", "mode-2"]);
     expect(modeSelect()).toHaveTextContent("mode-2");
-    expect(slotGroupRows("Slot 3").length).toBeGreaterThan(0);
+    expect(slotGroupRows("Slot 4").length).toBeGreaterThan(0);
   });
 
   test("deletes the selected mode once the user confirms", async () => {
@@ -266,8 +328,8 @@ describe("modes", () => {
     const user = userEvent.setup();
     addDmxMode();
     const [first, second] = serializerIds();
-    addChunkWithOffsets(["3"], first);
-    addChunkWithOffsets(["9"], second);
+    addChunkWithOffsets([3], first);
+    addChunkWithOffsets([9], second);
 
     render(
       <>
@@ -289,15 +351,15 @@ describe("modes", () => {
       "mode-1",
     );
     expect(
-      left.queryAllByRole("button", { name: "Slot 3" }).length,
+      left.queryAllByRole("button", { name: "Slot 4" }).length,
     ).toBeGreaterThan(0);
-    expect(left.queryAllByRole("button", { name: "Slot 9" })).toHaveLength(0);
+    expect(left.queryAllByRole("button", { name: "Slot 10" })).toHaveLength(0);
     expect(right.getByRole("combobox", { name: "Mode" })).toHaveTextContent(
       "mode-2",
     );
     expect(
-      right.queryAllByRole("button", { name: "Slot 9" }).length,
+      right.queryAllByRole("button", { name: "Slot 10" }).length,
     ).toBeGreaterThan(0);
-    expect(right.queryAllByRole("button", { name: "Slot 3" })).toHaveLength(0);
+    expect(right.queryAllByRole("button", { name: "Slot 4" })).toHaveLength(0);
   });
 });

@@ -125,8 +125,8 @@ describe("ActiveSequencesPane", () => {
       />,
     );
 
-    // Should show slot numbers
-    expect(screen.getByText("Slots: 5, 6")).toBeInTheDocument();
+    // Offsets 5 and 6 are shown as one-based slot numbers
+    expect(screen.getByText("Slots: 6, 7")).toBeInTheDocument();
 
     // Should show step info (1-indexed, so step 2 of 4)
     expect(screen.getByText("Step 2 of 4")).toBeInTheDocument();
@@ -215,9 +215,9 @@ describe("ActiveSequencesPane", () => {
 
     const slots = screen.getAllByText(/^Slots:/);
     expect(slots).toHaveLength(2);
-    // Slot 5 should come first (sorted by offset)
-    expect(slots[0]).toHaveTextContent("Slots: 5");
-    expect(slots[1]).toHaveTextContent("Slots: 10");
+    // Offset 5 should come first (sorted by offset)
+    expect(slots[0]).toHaveTextContent("Slots: 6");
+    expect(slots[1]).toHaveTextContent("Slots: 11");
   });
 
   it("does not show queued count when there are no queued sequences", () => {
