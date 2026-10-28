@@ -1,6 +1,6 @@
 // Reports why a field's contents were rejected, anchored to the field itself.
 
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { CircleAlertIcon } from "lucide-react";
 import { Trans } from "@lingui/react/macro";
 import { useLingui } from "@lingui/react";
@@ -23,6 +23,14 @@ export const ValidationPopover = ({
 }: Props) => {
   const { _ } = useLingui();
 
+  // Cache the last shown feedback. This avoids glitches where the message
+  // reverts to the fallback while the popover is closing.
+  const [shownFeedback, setShownFeedback] = useState(result.feedback);
+  if (result.feedback !== undefined && result.feedback !== shownFeedback) {
+    setShownFeedback(result.feedback);
+  }
+  const feedback = result.feedback ?? shownFeedback;
+
   return (
     <Popover open={!result.isValid && result.feedback !== undefined}>
       <PopoverAnchor className={anchorClassName}>{children}</PopoverAnchor>
@@ -34,8 +42,8 @@ export const ValidationPopover = ({
         <Alert variant="destructive">
           <CircleAlertIcon />
           <AlertDescription>
-            {result.feedback ? (
-              _(result.feedback)
+            {feedback ? (
+              _(feedback)
             ) : (
               <Trans id="validation.unknown">An unknown error occurred.</Trans>
             )}

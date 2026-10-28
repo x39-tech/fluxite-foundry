@@ -56,6 +56,13 @@ test("Renders exactly 512 slots (64 rows of 8) without error", () => {
   expect(screen.getByText("cd")).toBeInTheDocument(); // last slot
 });
 
+test("Labels each row with the one-based range of its slots", () => {
+  render(<DmxDisplay dmxValues={new Uint8Array(9)} />);
+
+  expect(screen.getByRole("rowheader", { name: "1-8" })).toBeInTheDocument();
+  expect(screen.getByRole("rowheader", { name: "9-16" })).toBeInTheDocument();
+});
+
 test("Switches between hex and decimal display formats", async () => {
   const user = userEvent.setup();
   const dmxValues = new Uint8Array([171]); // 0xab
